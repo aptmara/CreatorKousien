@@ -1,0 +1,71 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Unity specific
+*.meta -text
+*.unity binary
+*.prefab binary
+*.asset binary
+*.mat binary
+*.anim binary
+*.controller binary
+*.overrideController binary
+*.physicMaterial binary
+*.physicsMaterial2D binary
+*.playable binary
+*.mask binary
+*.brush binary
+*.flare binary
+*.fontsettings binary
+*.guiskin binary
+*.guitexture binary
+*.mixer binary
+*.renderTexture binary
+*.terrainlayer binary
+*.wlt binary
+
+# Image formats
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.webp binary
+*.psd binary
+*.tiff binary
+*.tga binary
+*.bmp binary
+*.exr binary
+
+# Audio formats
+*.wav binary
+*.mp3 binary
+*.ogg binary
+*.aif binary
+*.aiff binary
+
+# Video formats
+*.mp4 binary
+*.mov binary
+*.webm binary
+*.avi binary
+
+# 3D models
+*.fbx binary
+*.obj binary
+*.blend binary
+*.dae binary
+*.3ds binary
+*.dxf binary
+
+# Archives
+*.zip binary
+*.7z binary
+*.tar binary
+*.gz binary
+*.rar binary
+
+# Executables and Libraries
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
