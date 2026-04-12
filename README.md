@@ -1,59 +1,98 @@
 # CreatorKousien
 
-CreatorKousien プロジェクトのリポジトリです。
-本リポジトリでは Unity を使用したゲーム開発を行っています。
+![Unity Version](https://img.shields.io/badge/Unity-6000.3.7f1-black.svg?style=flat&logo=unity)
+![CI Status](https://github.com/aptmara/CreatorKousien/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/badge/License-Private-blue.svg)
+
+本リポジトリは、戦略的なフィールド移動とカードベースの戦闘を組み合わせたゲーム、**『CreatorKousien』** の開発プロジェクトです。
+疎結合な設計（Decoupling）とドメイン駆動の責務分離を徹底し、拡張性とメンテナンス性を重視しています。
 
 ---
 
-## 🏛️ プロジェクトアーキテクチャ概要
+## 🎮 ゲーム概要と特徴
 
-本プロジェクトは、疎結合な「システム / データ / コマンド / UI」の分離を基本とした設計を採用しています。
-
-### 👥 担当メンバーと範囲
-| 担当 | メンバー | 主な領域 |
-| :--- | :--- | :--- |
-| **進行/バトル** | 寺田 / 滝谷 | 全体制御、GameManager、戦闘解決、ターン管理 |
-| **盤面/効果** | 浅野 | フィールド、プレイヤー移動、床効果基盤 |
-| **カード/効果** | 越智 | カードロジック、汎用効果定義 |
-| **エネミー** | 岩井 | 敵AI、攻撃予告管理 |
-| **UI/表示** | 山本 | UI全般、フィールド・キャラクター表示 |
-
-### 🔍 詳細設計ドキュメント
-* **[プロジェクトアーキテクチャ詳細 (Markdown)](./docs/ARCHITECTURE.md)**: GitHub 上での静的な設計確認
-* **[インタラクティブ・ナビゲーター (HTML)](./docs/architecture_navigator.html)**: 検索・フィルタ可能な詳細設計ブラウザ
-* **[開発・運用ガイドライン (CONTRIBUTING.md)](./docs/CONTRIBUTING.md)**: 開発フロー、命名規則、PR手順
+- **フィールド移動**: 盤面上の座標、移動可否、占有状態を管理。
+- **カードシステム**: 表裏で効果が変化するカードによる戦略的なバトル。
+- **床効果 (Tile Effects)**: 踏み込んだ際や滞在時に発生する多様な効果。
+- **敵AIと予告**: 敵の行動パターンを選択し、攻撃範囲を事前に予告する仕組み。
 
 ---
 
-## 🚀 開発に参加する方へ
+## 🛠️ 技術スタックと設計方針
 
-円滑な共同開発と品質維持のため、本リポジトリでは独自の運用ルールを定めています。
+### 開発環境
+- **Unity**: `6000.3.7f1`
+- **Scripting**: C# 11+
+- **Rendering**: Universal Render Pipeline (URP)
 
-### 📌 簡易版ブランチルール
-作業ブランチは必ず以下の形式で作成してください。
-
-**形式:** `<type>/#<issue番号>-<内容>`
-
-* `feature/`: 新機能追加
-* `fix/`: バグ修正
-* `refactor/`: リファクタリング
-* `docs/`: ドキュメント修正
-* `chore/`: 環境・設定変更
-
-**例:** `feature/#12-player-move`
+### 設計思想: "Decoupling Logic from View"
+1. **ロジックの分離**: ゲームコアロジックは可能な限り `Pure C#` で記述し、Unity API (`MonoBehaviour`) への依存を最小限に抑えています。
+2. **所有権の徹底**: 各データ（RuntimeData）を書き換えてよいシステム（Owner）を厳格に定義しています。
+3. **仲介者パターン (Mediator)**: システム間の直接参照を避け、`GameMediator` を介したイベント通信や順序制御を行います。
 
 ---
 
-## 🛠️ プロジェクト構成
-* `Assets/`: Unity アセット、スクリプトなど
-* `ProjectSettings/`: Unity プロジェクト設定
-* `Packages/`: Unity パッケージ管理
-* `docs/`: 開発ドキュメント、運用ルール、設計書
+## 👥 担当メンバーとドメイン範囲
+
+| 担当 | メンバー | 主なドメインと責務 | 関連システム |
+| :--- | :--- | :--- | :--- |
+| **進行/バトル** | **寺田 / 滝谷** | ゲームライフサイクル、フェーズ管理、戦闘解決 | `GameManager`, `BattleManager`, `TurnManager` |
+| **盤面/効果** | **浅野** | 盤面座標管理、プレイヤー移動、床効果基盤 | `FieldService`, `TileEffectSystem`, `StageData` |
+| **カード/効果** | **越智** | カードデッキ・手札管理、汎用効果定義 | `CardSystem`, `CardData`, `EffectSystem` |
+| **エネミー** | **岩井** | 敵行動AI、攻撃範囲予告の生成と更新 | `EnemySystem`, `EnemyAI`, `AttackTelegraphSystem` |
+| **UI/表示** | **山本** | HP/手札/フィールド等の表示・演出・入力 | `UIManager`, `FieldView`, `CardView` |
 
 ---
 
-## 📋 運用プロセス
-1. **Issue を確認**: すべての作業は Issue から始まります。
-2. **ブランチ作成**: `master` から命名規則に従いブランチを切ります。
-3. **PR 作成・レビュー**: `Closes #番号` を含めて PR を作成し、1人以上の承認を得てマージします。
-4. **マージ方式**: 原則 `Squash and merge` を採用しています。
+## 📁 ディレクトリ構造
+
+```text
+Assets/
+├── Scripts/            # プログラムソースコード
+│   ├── Core/           # ゲーム進行管理、システム仲介
+│   ├── Field/          # 盤面、移動ロジック
+│   ├── Battle/         # 戦闘解決ロジック
+│   ├── Card/           # カード管理
+│   ├── Enemy/          # 敵AI、攻撃予告
+│   ├── UI/             # 表示、演出、入力
+│   └── Data/           # ScriptableObject 定義
+├── Prefabs/            # プレハブ（ドメイン毎に分割）
+├── Settings/           # プロジェクト、描画設定
+└── TutorialInfo/       # テンプレート用（初期フォルダ）
+
+docs/                   # 詳細ドキュメント・設計書
+```
+
+---
+
+## 📖 開発・設計リソース
+
+開発を開始する前に、以下のドキュメントを必ず確認してください。
+
+- 🗺️ **[詳細設計ドキュメント (Markdown)](./docs/ARCHITECTURE.md)**: 責務、データの所有権、参照フローの解説。
+- 🧭 **[設計ナビゲーター (HTML)](./docs/architecture_navigator.html)**: 検索・フィルタ可能な詳細設計ブラウザ。
+- ✍️ **[コード・アセット命名規則 (STYLE_GUIDE.md)](./docs/STYLE_GUIDE.md)**: 接尾辞のルール、配置ディレクトリの指定。
+- 📋 **[開発・運用ガイドライン (CONTRIBUTING.md)](./docs/CONTRIBUTING.md)**: 命名、フロー、PR手順。
+
+---
+
+## 🚀 開発の進め方
+
+### 1. セットアップ
+1. Unity `6000.3.7f1` をインストールします。
+2. 本リポジトリをクローンし、Unityで開きます。
+3. IDE（VS/Rider等）で `.editorconfig` が読み込まれていることを確認してください。
+
+### 2. 開発フロー
+- すべての作業は **Issue 起点** です。
+- ブランチ作成: `git switch -c <type>/#<issue番号>-<内容>`
+  - 例: `feature/#12-player-move`
+- コミットメッセージ: `<type>: <変更内容>`
+
+### 3. プルリクエスト (PR)
+- PR作成時に自動で **PRテンプレート** が適用されます。
+- チェックリストを確認し、セルフチェックを行ってください。
+- **CI チェック**: GitHub Actions によりコード整形とメタファイル漏れが自動チェックされます。
+
+### 4. マージ
+- 1人以上のレビュー承認後、`Squash and merge` でマージしてください。
