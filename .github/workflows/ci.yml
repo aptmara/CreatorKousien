@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  lint:
+    name: Code Formatting Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.x
+
+      - name: Check Formatting
+        run: dotnet format --verify-no-changes --verbosity diagnostic
+
+  meta-check:
+    name: Meta File Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for missing .meta files
+        run: |
+          # アセットフォルダ内の全ファイルをリストし、対応する .meta ファイルが存在するか確認する
+          # .git や Packages は除外
+          find Assets -name "*" ! -name "*.meta" -type f | while read file; do
+            if [ ! -f "$file.meta" ]; then
+              echo "Error: Missing .meta file for $file"
+              exit 1
+            fi
+          done
+          # フォルダ自体の .meta ファイルもチェック
+          find Assets -type d | while read dir; do
+            if [ "$dir" != "Assets" ] && [ ! -f "$dir.meta" ]; then
+              echo "Error: Missing .meta file for directory $dir"
+              exit 1
+            fi
+          done
