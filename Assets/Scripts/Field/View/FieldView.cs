@@ -70,6 +70,7 @@ public class FieldView : MonoBehaviour
                 if (cellData != null)
                 {
                     cellView.UpdateState(cellData.IsPassable);
+                    cellView.SetTile(cellData.CurrentTile);
                 }
 
                 _cellViews.Add(new Vector2Int(x, y), cellView); // 生成したセルを保存

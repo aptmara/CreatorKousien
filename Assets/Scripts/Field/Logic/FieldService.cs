@@ -6,9 +6,10 @@
 // Created	: 2026-04-12
 //
 // Notes	:
-// -
+// - 特殊床の生成を追加 (4/13)
 // ------------------------------------------------------------
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// 盤面の座標計算、移動可否判定、占有更新などのロジックを担当するクラス
@@ -32,7 +33,64 @@ public class FieldService
         // ----- 1. 盤面サイズの決定と作成 -----
         _fieldState = new FieldState(stageData.Width, stageData.Height);
 
-        // ----- 2. 障害物の配置 -----
+        // 重複配置を避けるための「空きマス候補」リスト
+        List<Vector2Int> availableCells = new List<Vector2Int>();
+
+
+        // ----- 2. デフォルト床で全マスを初期化 -----
+        for (int x = 0; x < stageData.Width; x++)
+        {
+            for (int y = 0; y < stageData.Height; y++)
+            {
+                var cell = _fieldState.GetCell(x, y);
+                cell.CurrentTile = stageData.DefaultTile; // デフォルト床を設定
+
+                // デフォルト床が設定されていれば、その通行可否を適用
+                if (stageData.DefaultTile != null)
+                {
+                    cell.IsPassable = stageData.DefaultTile.CanStand;
+                }
+
+                availableCells.Add(new Vector2Int(x, y)); // 全マスを「空きマス候補」に追加
+            }
+        }
+
+
+        // ----- 3. 特殊床のランダム配置 -----
+        if (stageData.SpecialTileRules != null)
+        {
+            foreach (var rule in stageData.SpecialTileRules)
+            {
+                // 確率の抽選 (0.0 - 1.0)
+                if (Random.value <= rule.SpawnProbability)
+                {
+                    for (int i = 0; i < rule.SpawnCount; i++)
+                    {
+                        if (availableCells.Count == 0)
+                            break;
+
+                        // ランダムなマスを選ぶ
+                        int randomIndex = Random.Range(0, availableCells.Count);
+                        Vector2Int pos = availableCells[randomIndex];
+
+                        // 床を特殊床に変更
+                        var cell = _fieldState.GetCell(pos.x, pos.y);
+                        cell.CurrentTile = rule.SpecialTile;
+
+                        if (rule.SpecialTile != null)
+                        {
+                            cell.IsPassable = rule.SpecialTile.CanStand; // 特殊床の通行可否を適用
+                        }
+
+                        // 重複上書きなしの仕様を満たすため、候補リストから除外
+                        availableCells.RemoveAt(randomIndex);
+                    }
+                }
+            }
+        }
+
+
+        // ----- 4. 障害物の配置 -----
         if (stageData.ObstaclePositions != null)
         {
             // 障害物の配置情報がある場合、盤面に反映

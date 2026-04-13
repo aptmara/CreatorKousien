@@ -45,7 +45,7 @@ public class FieldState
         {
             for (int y = 0; y < height; y++)
             {
-                _grid[x, y] = new GridCellData(true);
+                _grid[x, y] = new GridCellData();
             }
         }
     }

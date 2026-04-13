@@ -34,6 +34,41 @@ public class GridCellView : MonoBehaviour
 
 
     /// <summary>
+    /// 床の定義データに基づいて見た目を更新する処理
+    /// </summary>
+    /// <param name="tile">床の定義データ</param>
+    public void SetTile(TileTypeDefinition tile)
+    {
+        if (tile == null || _renderer == null)
+        {
+            return;
+        }
+
+        // デバック用: 床の名前やIDに応じて色を変える
+        switch (tile.TileId)
+        {
+            case 0: // 例: 通常の床
+                _renderer.material.color = Color.white;
+                break;
+            case 1: // 例: 壁
+                _renderer.material.color = Color.gray;
+                break;
+            case 2: // 例: 水
+                _renderer.material.color = Color.blue;
+                break;
+            default:
+                _renderer.material.color = Color.magenta; // 定義されていない床タイプはマゼンタで表示
+                break;
+        }
+
+        if (!tile.CanStand)
+        {
+            _renderer.material.color = Color.black;
+        }
+    }
+
+
+    /// <summary>
     /// マスの通行可能/不可状態に応じて見た目を更新する処理
     /// </summary>
     /// <param name="isPassable">通行可能かどうか</param>

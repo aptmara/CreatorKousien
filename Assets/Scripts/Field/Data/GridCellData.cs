@@ -26,11 +26,19 @@ public class GridCellData
     public int OccupierId { get; set; } = -1;
 
     /// <summary>
+    /// 現在このマスに設定されている床タイプ
+    /// </summary>
+    public TileTypeDefinition CurrentTile { get; set; }
+
+    /// <summary>
     /// コンストラクタ
     /// </summary>
-    /// <param name="isPassable">通行可能フラグの初期値</param>
-    public GridCellData(bool isPassable = true)
+    /// <param name="initialTile">初期の床タイプ</param>
+    public GridCellData(TileTypeDefinition initialTile = null)
     {
-         IsPassable = isPassable;
+        CurrentTile = initialTile;
+
+        // タイルが設定されていればその通行可能フラグを使用、なければ通行可能とする
+        IsPassable = initialTile != null ? initialTile.CanStand : true;
     }
 }
