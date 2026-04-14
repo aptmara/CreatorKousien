@@ -69,7 +69,6 @@ public class FieldView : MonoBehaviour
                 var cellData = state.GetCell(x, y);
                 if (cellData != null)
                 {
-                    cellView.UpdateState(cellData.IsPassable);
                     cellView.SetTile(cellData.CurrentTile);
                 }
 

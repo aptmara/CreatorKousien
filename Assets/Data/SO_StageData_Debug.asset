@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8b83289a05446744bea2aac39d3c1f6, type: 3}
   m_Name: SO_StageData_Debug
   m_EditorClassIdentifier: Assembly-CSharp::StageData
-  _width: 3
+  _width: 6
   _height: 3
   _obstaclePositions: []
   _playerStartPosition: {x: 0, y: 0}

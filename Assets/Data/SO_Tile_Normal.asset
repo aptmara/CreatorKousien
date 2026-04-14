@@ -20,5 +20,5 @@ MonoBehaviour:
     OnExitEffectId: -1
     OnTurnEndEffectId: -1
     WhiteStayEffectId: -1
-  ModelPrefab: {fileID: 2108118140862340274, guid: e64bbbc86208b8a449675e5ddda5d1d8, type: 3}
+  ModelPrefab: {fileID: 2108118140862340274, guid: 796fb82fc15bb3a489baf119b74c0387, type: 3}
   EffectPrefab: {fileID: 0}
