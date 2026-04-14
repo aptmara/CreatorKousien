@@ -12,3 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51dbb898cad931649b45be4cb248bbb5, type: 3}
   m_Name: SO_CardPool
   m_EditorClassIdentifier: Assembly-CSharp::CardPool
+  data:
+  - cardID: 0
+    rate: 2
+  - cardID: 1
+    rate: 1
+  - cardID: 2
+    rate: 1

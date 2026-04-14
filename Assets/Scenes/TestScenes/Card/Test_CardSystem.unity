@@ -367,8 +367,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65dc2a7f824255244b858058accea619, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardTestSystem
-  cardData: {fileID: 11400000, guid: bcbe6c362f7df9c4abd1eb621943a0a0, type: 2}
-  cardList: 00000000010000000200000003000000
+  _cardData: {fileID: 11400000, guid: bcbe6c362f7df9c4abd1eb621943a0a0, type: 2}
+  _cardPool: {fileID: 11400000, guid: 7e39d3a0c4ed251449aebd45b302f079, type: 2}
+  _cardList: 00000000010000000200000003000000
 --- !u!4 &1930096516
 Transform:
   m_ObjectHideFlags: 0

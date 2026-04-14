@@ -12,7 +12,87 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28907a67571dbe849b63f6039a2e8f6d, type: 3}
   m_Name: SO_EffectDataBase
   m_EditorClassIdentifier: Assembly-CSharp::EffectDataBase
-  _effectList: []
+  _effectList:
+  - effectID: 0
+    value: []
+    moveValue: {x: 0, y: 0}
+    duration: 0
+    effectName: 
+    effectInfo: 
+    effectIcon: {fileID: 0}
+    effectType: 0
+  - effectID: 1
+    value: []
+    moveValue: {x: 0, y: 0}
+    duration: 0
+    effectName: 
+    effectInfo: 
+    effectIcon: {fileID: 0}
+    effectType: 0
+  - effectID: 2
+    value: []
+    moveValue: {x: 0, y: 0}
+    duration: 0
+    effectName: 
+    effectInfo: 
+    effectIcon: {fileID: 0}
+    effectType: 0
+  - effectID: 3
+    value: []
+    moveValue: {x: 0, y: 0}
+    duration: 0
+    effectName: 
+    effectInfo: 
+    effectIcon: {fileID: 0}
+    effectType: 0
+  - effectID: 4
+    value: []
+    moveValue: {x: 0, y: 0}
+    duration: 0
+    effectName: 
+    effectInfo: 
+    effectIcon: {fileID: 0}
+    effectType: 0
+  - effectID: 5
+    value: []
+    moveValue: {x: 0, y: 0}
+    duration: 0
+    effectName: 
+    effectInfo: 
+    effectIcon: {fileID: 0}
+    effectType: 0
+  - effectID: 6
+    value: []
+    moveValue: {x: 0, y: 0}
+    duration: 0
+    effectName: 
+    effectInfo: 
+    effectIcon: {fileID: 0}
+    effectType: 0
+  - effectID: 7
+    value: []
+    moveValue: {x: 0, y: 0}
+    duration: 0
+    effectName: 
+    effectInfo: 
+    effectIcon: {fileID: 0}
+    effectType: 0
+  - effectID: 8
+    value: []
+    moveValue: {x: 0, y: 0}
+    duration: 0
+    effectName: 
+    effectInfo: 
+    effectIcon: {fileID: 0}
+    effectType: 0
+  - effectID: 9
+    value: []
+    moveValue: {x: 0, y: 0}
+    duration: 0
+    effectName: 
+    effectInfo: 
+    effectIcon: {fileID: 0}
+    effectType: 0
   _fallbackEffect:
     effectID: 0
     value: []

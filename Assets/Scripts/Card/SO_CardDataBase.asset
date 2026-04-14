@@ -29,7 +29,7 @@ MonoBehaviour:
     direction: 3
     faceUpEffectID: 0
     faceDownEffectID: 0
-  - cardID: 0
+  - cardID: 5
     direction: 3
     faceUpEffectID: 0
     faceDownEffectID: 0
