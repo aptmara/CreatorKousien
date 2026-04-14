@@ -9,6 +9,7 @@
 // - 特殊床の生成を追加 (4/13)
 // ------------------------------------------------------------
 using UnityEngine;
+using System;
 using System.Collections.Generic;
 
 /// <summary>
@@ -22,6 +23,12 @@ public class FieldService
     /// 現在の盤面状態へのアクセスプロパティ
     /// </summary>
     public FieldState State => _fieldState;
+
+
+    /// <summary>
+    /// Characterが移動した際に発行されるイベント。引数は「移動したキャラクターのID」「移動前のX座標」「移動前のY座標」
+    /// </summary>
+    public event Action<int, int, int> OnActorMoved;
 
 
     /// <summary>
@@ -62,7 +69,7 @@ public class FieldService
             foreach (var rule in stageData.SpecialTileRules)
             {
                 // 確率の抽選 (0.0 - 1.0)
-                if (Random.value <= rule.SpawnProbability)
+                if (UnityEngine.Random.value <= rule.SpawnProbability)
                 {
                     for (int i = 0; i < rule.SpawnCount; i++)
                     {
@@ -70,7 +77,7 @@ public class FieldService
                             break;
 
                         // ランダムなマスを選ぶ
-                        int randomIndex = Random.Range(0, availableCells.Count);
+                        int randomIndex = UnityEngine.Random.Range(0, availableCells.Count);
                         Vector2Int pos = availableCells[randomIndex];
 
                         // 床を特殊床に変更
@@ -107,6 +114,37 @@ public class FieldService
 
 
     /// <summary>
+    /// 移動の実行リクエスト
+    /// </summary>
+    /// <param name="actorId">移動させるアクタID</param>
+    /// <param name="currentX">現在のX座標</param>
+    /// <param name="currentY">現在のY座標</param>
+    /// <param name="dx">X方向の移動量</param>
+    /// <param name="dy">Y方向の移動量</param>
+    /// <returns></returns>
+    public bool TryMoveActor(int actorId, int currentX, int currentY, int dx, int dy)
+    {
+        int nextX = currentX + dx;
+        int nextY = currentY + dy;
+
+        // ----- 1. 移動可能かの判定 -----
+        if (CanMoveTo(nextX, nextY))
+        {
+            // ----- 2. 占有状態の更新 -----
+            UpdateOccupancy(actorId, currentX, currentY, nextX, nextY);
+
+            // ----- 3. 移動イベントの発行 -----
+            OnActorMoved?.Invoke(actorId, nextX, nextY); // 移動イベントを発行
+
+            // ----- 4. 成功の返却 -----
+            return true;
+        }
+
+        return false;   // 移動不可の場合はfalseを返す
+    }
+
+
+    /// <summary>
     /// 指定した座標に移動可能かどうかを判定するロジック
     /// </summary>
     /// <param name="targetX">目的地のX座標</param>
@@ -138,6 +176,7 @@ public class FieldService
     }
 
 
+
     /// <summary>
     /// キャラクターの占有位置を更新。移動が確定した際に呼び出し。
     /// </summary>
@@ -149,22 +188,22 @@ public class FieldService
     /// <returns>更新が成功した場合はtrue、それ以外はfalse</returns>
     public bool UpdateOccupancy(int moverId, int fromX, int fromY, int toX, int toY)
     {
-        // ----- 1. 移動できるかの判定 -----
-        if (!CanMoveTo(toX, toY))
+        // ----- 1. 占有状態の解除 -----
+        if (fromX >= 0 && fromY >= 0)   // 移動元が有効な座標であれば占有解除を試みる
         {
-            return false;               // 移動不可なら更新しない
+            var fromCell = _fieldState.GetCell(fromX, fromY);
+            if (fromCell != null && fromCell.OccupierId == moverId)
+            {
+                fromCell.OccupierId = -1;   // 移動元の占有を解除
+            }
         }
 
-        // ----- 2. 占有状態の解除 -----
-        var fromCell = _fieldState.GetCell(fromX, fromY);
-        if (fromCell != null && fromCell.OccupierId == moverId)
+        // ----- 2. 占有状態の設定 -----
+        if (toX >= 0 && toY >= 0)
         {
-            fromCell.OccupierId = -1;   // 移動元の占有を解除
+            var toCell = _fieldState.GetCell(toX, toY);
+            toCell.OccupierId = moverId;    // 移動先を占有
         }
-
-        // ----- 3. 占有状態の設定 -----
-        var toCell = _fieldState.GetCell(toX, toY);
-        toCell.OccupierId = moverId;    // 移動先を占有
 
         return true;                    // 更新成功
     }

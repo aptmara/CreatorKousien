@@ -21,6 +21,9 @@ public class StageData : ScriptableObject
     [Tooltip("フィールドの高さ")]
     [SerializeField] private int _height = 3;   // フィールドの高さ
 
+    [Tooltip("1セルのサイズ")]
+    public float CellSize = 1.0f;
+
 
     /// <summary>
     /// フィールドの幅

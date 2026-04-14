@@ -24,11 +24,6 @@ public class FieldView : MonoBehaviour
     [Tooltip("1マスのPrefab。GridCellViewコンポーネントがアタッチされている必要がある")]
     [SerializeField] private GridCellView _cellPrefab;      // 1マスのPrefab
 
-
-    [Header("表示設定")]
-    [Tooltip("マス同士の間隔")]
-    [SerializeField] private float _cellSize = 1.0f;        // マス同士の間隔
-
     // 生成したセルのリスト
     private Dictionary<Vector2Int, GridCellView> _cellViews = new Dictionary<Vector2Int, GridCellView>();
 
@@ -38,7 +33,7 @@ public class FieldView : MonoBehaviour
     /// 盤面を左上から順に配置するように修正 (4/13)
     /// </summary>
     /// <param name="state">盤面の実行時データ</param>
-    public void BuildView(FieldState state)
+    public void BuildView(FieldState state,float cellSize)
     {
         // ----- 1. 既存のセルを削除 -----
         foreach (Transform child in _gridParent)
@@ -56,7 +51,7 @@ public class FieldView : MonoBehaviour
                 // 座標計算の修正：
                 // 右方向へ+X、
                 // 下方向へ+Y = Unity空間では-Zとして配置するように修正 (4/13)
-                Vector3 localPos = new Vector3(x * _cellSize, 0, -y * _cellSize);   // マスの位置を計算
+                Vector3 localPos = new Vector3(x * cellSize, 0, -y * cellSize);   // マスの位置を計算
 
                 // プレハブを生成
                 GridCellView cellView = Instantiate(_cellPrefab, _gridParent);

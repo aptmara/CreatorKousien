@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StageData
   _width: 6
   _height: 3
+  CellSize: 1.1
   _obstaclePositions: []
-  _playerStartPosition: {x: 0, y: 0}
+  _playerStartPosition: {x: 1, y: 1}
   _defaultTile: {fileID: 11400000, guid: 4f1d1c0c71057174f9279a40a873120f, type: 2}
   _specialTileRules:
   - SpecialTile: {fileID: 11400000, guid: 67f961d2870a7954183ae68532d67628, type: 2}
