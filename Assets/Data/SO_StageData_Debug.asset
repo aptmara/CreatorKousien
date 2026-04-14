@@ -21,4 +21,4 @@ MonoBehaviour:
   _specialTileRules:
   - SpecialTile: {fileID: 11400000, guid: 67f961d2870a7954183ae68532d67628, type: 2}
     SpawnProbability: 1
-    SpawnCount: 2
+    SpawnCount: 4

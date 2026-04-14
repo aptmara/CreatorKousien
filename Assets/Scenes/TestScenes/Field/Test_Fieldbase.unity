@@ -3162,7 +3162,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 475797395100696768, guid: 43f268a4758fb8a44a5fb966d8fe6e30, type: 3}
       propertyPath: m_Name
-      value: '@Enemy'
+      value: "@\u54FA\u4E73\u7DB1\u98DF\u8089\u76EE\u30CD\u30B3\u79D1\u30CD\u30B3\u5C5EBear"
       objectReference: {fileID: 0}
     - target: {fileID: 2013640654511641444, guid: 43f268a4758fb8a44a5fb966d8fe6e30, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3203,6 +3203,14 @@ PrefabInstance:
     - target: {fileID: 2013640654511641444, guid: 43f268a4758fb8a44a5fb966d8fe6e30, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3342946890846431285, guid: 43f268a4758fb8a44a5fb966d8fe6e30, type: 3}
+      propertyPath: m_Name
+      value: Heart_Bear
+      objectReference: {fileID: 0}
+    - target: {fileID: 8037411736785410973, guid: 43f268a4758fb8a44a5fb966d8fe6e30, type: 3}
+      propertyPath: m_Name
+      value: Heart_Cat
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3296,6 +3304,6 @@ SceneRoots:
   - {fileID: 367945926}
   - {fileID: 1533097880}
   - {fileID: 909016371428394861}
+  - {fileID: 3111443742512297804}
   - {fileID: 124674662}
   - {fileID: 862764824}
-  - {fileID: 3111443742512297804}
