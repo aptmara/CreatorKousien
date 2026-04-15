@@ -6,7 +6,7 @@
 // Created	: 2026-04-14
 //
 // Notes	:
-// -
+// - 設計書に基づき、絶対座標から移動量に変換 (4/15)
 // ------------------------------------------------------------
 using UnityEngine;
 
@@ -33,14 +33,9 @@ public struct MoveCommand
 
 
     /// <summary>
-    /// 移動先のX座標
+    /// 移動量 (X, Yの相対的な変化量)
     /// </summary>
-    public int TargetX;
-
-    /// <summary>
-    /// 移動先のY座標
-    /// </summary>
-    public int TargetY;
+    public Vector2Int Delta;
 
     /// <summary>
     /// 移動の種類
@@ -51,14 +46,12 @@ public struct MoveCommand
     /// コンストラクタ
     /// </summary>
     /// <param name="actorId">アクターID</param>
-    /// <param name="targetX">移動先のX座標</param>
-    /// <param name="targetY">移動先のY座標</param>
+    /// <param name="delta">移動量 (右へ１マスなら new Vector2Int(1, 0))</param>
     /// <param name="type">移動の種類</param>
-    public MoveCommand(int actorId, int targetX, int targetY, MoveType type = MoveType.Walk)
+    public MoveCommand(int actorId, Vector2Int delta, MoveType type = MoveType.Walk)
     {
         ActorId = actorId;      /// アクターIDを設定
-        TargetX = targetX;      /// 移動先のX座標を設定
-        TargetY = targetY;      /// 移動先のY座標を設定
+        Delta = delta;
         Type = type;            /// 移動の種類を設定
     }
 }

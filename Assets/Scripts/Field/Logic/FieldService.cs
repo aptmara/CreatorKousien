@@ -7,6 +7,8 @@
 //
 // Notes	:
 // - 特殊床の生成を追加 (4/13)
+// - MoveCommandを導入して移動の種類を区別できるように (4/15)
+// - Fieldに自陣、敵陣の概念を追加 (4/15)
 // ------------------------------------------------------------
 using UnityEngine;
 using System;
@@ -24,9 +26,10 @@ public class FieldService
     /// </summary>
     public FieldState State => _fieldState;
 
+    private Dictionary<int, Vector2Int> _actorPositions = new Dictionary<int, Vector2Int>(); /// キャラクターIDとその位置のマッピング
 
     /// <summary>
-    /// Characterが移動した際に発行されるイベント。引数は「移動したキャラクターのID」「移動前のX座標」「移動前のY座標」
+    /// Characterが移動した際に発行されるイベント。引数は「移動したキャラクターのID」「移動先のX座標」「移動先のY座標」
     /// </summary>
     public event Action<int, int, int> OnActorMoved;
 
@@ -39,6 +42,8 @@ public class FieldService
     {
         // ----- 1. 盤面サイズの決定と作成 -----
         _fieldState = new FieldState(stageData.Width, stageData.Height);
+        _actorPositions.Clear();   // キャラクター位置のマッピングも初期化
+
 
         // 重複配置を避けるための「空きマス候補」リスト
         List<Vector2Int> availableCells = new List<Vector2Int>();
@@ -114,30 +119,55 @@ public class FieldService
 
 
     /// <summary>
+    /// ActorIDから現在の座標を取得するメソッド。存在しないIDの場合は(-1, -1)を返す
+    /// </summary>
+    /// <param name="actorId"></param>
+    /// <returns></returns>
+    public Vector2Int GetActorPosition(int actorId)
+    {
+        if (_actorPositions.TryGetValue(actorId, out Vector2Int pos))
+        {
+            return pos;
+        }
+        return new Vector2Int(-1, -1); // 存在しないアクターIDの場合は無効な座標を返す
+    }
+
+
+    /// <summary>
     /// 移動の実行リクエスト
     /// </summary>
-    /// <param name="actorId">移動させるアクタID</param>
-    /// <param name="currentX">現在のX座標</param>
-    /// <param name="currentY">現在のY座標</param>
-    /// <param name="dx">X方向の移動量</param>
-    /// <param name="dy">Y方向の移動量</param>
-    /// <returns></returns>
-    public bool TryMoveActor(int actorId, int currentX, int currentY, int dx, int dy)
+    /// <param name="command">移動の種類とDeltaを含むコマンド</param>
+    /// <param name="currentPos">移動元の現在位置</param>
+    /// <returns>移動が成功した場合はtrue、それ以外はfalse</returns>
+    public bool TryMoveActor(MoveCommand command)
     {
-        int nextX = currentX + dx;
-        int nextY = currentY + dy;
-
-        // ----- 1. 移動可能かの判定 -----
-        if (CanMoveTo(nextX, nextY))
+        Vector2Int currentPos = GetActorPosition(command.ActorId);
+        if (currentPos.x == -1)
         {
-            // ----- 2. 占有状態の更新 -----
-            UpdateOccupancy(actorId, currentX, currentY, nextX, nextY);
+            return false;   // アクターIDが存在しない場合は移動不可
+        }
 
-            // ----- 3. 移動イベントの発行 -----
-            OnActorMoved?.Invoke(actorId, nextX, nextY); // 移動イベントを発行
+        Vector2Int targetPos;
 
-            // ----- 4. 成功の返却 -----
-            return true;
+        //----- 1. Movetypeに応じてDeltaを変換 -----
+        if (command.Type == MoveType.Warp)
+        {
+            targetPos = command.Delta; // ワープはDeltaを絶対座標として扱う
+        }
+        else
+        {
+            // 通常移動とノックバックはDeltaを相対座標として扱う
+            targetPos = currentPos + command.Delta;
+        }
+
+        // ----- 2. 移動可能か判定 -----
+        if (CanMoveTo(command.ActorId, targetPos.x, targetPos.y))
+        {
+            // 移動が可能な場合、占有状態を更新
+            UpdateOccupancy(command.ActorId, currentPos.x, currentPos.y, targetPos.x, targetPos.y);
+            // 移動イベントを発行
+            OnActorMoved?.Invoke(command.ActorId, targetPos.x, targetPos.y);
+            return true;    // 移動成功
         }
 
         return false;   // 移動不可の場合はfalseを返す
@@ -147,10 +177,11 @@ public class FieldService
     /// <summary>
     /// 指定した座標に移動可能かどうかを判定するロジック
     /// </summary>
+    /// <param name="actorId">移動を試みるキャラクターのID</param>
     /// <param name="targetX">目的地のX座標</param>
     /// <param name="targetY">目的地のY座標</param>
     /// <returns>移動可能な場合は true, それ以外は false</returns>
-    public bool CanMoveTo(int targetX, int targetY)
+    public bool CanMoveTo(int actorId, int targetX, int targetY)
     {
         // ----- 1. 盤面外判定 -----
         if (_fieldState.IsOutOfBounds(targetX, targetY))
@@ -172,6 +203,19 @@ public class FieldService
             return false;   // 他のオブジェクトが占有しているセルは移動不可
         }
 
+        // ----- 4. テリトリーチェック -----
+        bool isPlayer = (actorId == 1);         // 仮にID=1がプレイヤーとする
+        int borderX = _fieldState.Width / 2;    // 盤面の中央を境界とする例
+
+        if (isPlayer && targetX >= borderX)
+        {
+            return false;   // プレイヤーは右半分に移動できない
+        }
+        if (!isPlayer && targetX < borderX)
+        {
+            return false;   // 敵は左半分に移動できない
+        }
+
         return true;
     }
 
@@ -185,8 +229,7 @@ public class FieldService
     /// <param name="fromY">  移動元のY座標</param>
     /// <param name="toX">    移動先のX座標</param>
     /// <param name="toY">    移動先のY座標</param>
-    /// <returns>更新が成功した場合はtrue、それ以外はfalse</returns>
-    public bool UpdateOccupancy(int moverId, int fromX, int fromY, int toX, int toY)
+    public void UpdateOccupancy(int moverId, int fromX, int fromY, int toX, int toY)
     {
         // ----- 1. 占有状態の解除 -----
         if (fromX >= 0 && fromY >= 0)   // 移動元が有効な座標であれば占有解除を試みる
@@ -203,8 +246,8 @@ public class FieldService
         {
             var toCell = _fieldState.GetCell(toX, toY);
             toCell.OccupierId = moverId;    // 移動先を占有
-        }
 
-        return true;                    // 更新成功
+            _actorPositions[moverId] = new Vector2Int(toX, toY); // キャラクター位置のマッピングも更新
+        }
     }
 }

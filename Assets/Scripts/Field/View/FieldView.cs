@@ -8,6 +8,7 @@
 // Notes	:
 // - 盤面全体の見た目を管理するクラス。
 // - 左上(0,0)を原点とし、右方向へ+X、下方向へ+Y(Unity空間では-Z)として配置するよう修正 (4/13)
+// - 乗ったマス、過去のマスを記録して、マスの見た目を変える機能追加 (4/15)
 // ------------------------------------------------------------
 using UnityEngine;
 using System.Collections.Generic;
@@ -27,6 +28,7 @@ public class FieldView : MonoBehaviour
     // 生成したセルのリスト
     private Dictionary<Vector2Int, GridCellView> _cellViews = new Dictionary<Vector2Int, GridCellView>();
 
+    private Vector2Int _lastOccupiedPos = new Vector2Int(-1, -1); // 最後にキャラクターがいたマスの座標を保存する変数
 
     /// <summary>
     /// FieldStateのデータに基づいて初期の盤面モデルを生成・配置
@@ -72,5 +74,38 @@ public class FieldView : MonoBehaviour
         }
 
         Debug.Log($"[FieldView] {state.Width}x{state.Height}の盤面を生成しました。");
+    }
+
+    public void HighlightCell(int x, int y)
+    {
+        // 前のマスを元に戻す
+        if (_cellViews.TryGetValue(_lastOccupiedPos, out var oldCell))
+        {
+            oldCell.SetOccupied(false); // 前のマスの見た目を元に戻す
+        }
+
+        // 新しいマスをアニメーション
+        Vector2Int newPos = new Vector2Int(x, y);
+        if (_cellViews.TryGetValue(newPos, out var newCell))
+        {
+            newCell.SetOccupied(true);
+        }
+
+        _lastOccupiedPos = newPos; // 最後にキャラクターがいたマスの座標を更新
+    }
+
+
+    /// <summary>
+    /// 座標から対応するGridCellViewを取得するメソッド
+    /// </summary>
+    /// <param name="pos">対応する座標</param>
+    /// <returns></returns>
+    public GridCellView GetCellView(Vector2Int pos)
+    {
+        if (_cellViews.TryGetValue(pos, out var cell))
+        {
+            return cell;
+        }
+        return null;
     }
 }
