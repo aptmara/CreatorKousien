@@ -3,6 +3,8 @@ using UnityEngine;
 public class StageManager
 {
 
+    int _StageNo = 0;
+
     public void Initialize()
     {
 

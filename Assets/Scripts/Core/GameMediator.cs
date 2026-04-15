@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// ターンの進行管理クラス
 /// </summary>
-public class GameMadiator
+public class GameMediator
 {
     int turnNum;
 

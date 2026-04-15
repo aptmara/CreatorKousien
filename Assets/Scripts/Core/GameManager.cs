@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// 仲介クラスのインスタンス生成
     /// </summary>
-    GameMadiator _mediator;
+    GameMediator _mediator;
     /// <summary>
     /// バトルマネージャーインスタンス
     /// </summary>
@@ -26,10 +26,6 @@ public class GameManager : MonoBehaviour
     /// ステージマネージャーインスタンス
     /// </summary>
     StageManager _stageManager;
-
-    
-
-    int StageNo = 0;
 
     private void Awake()
     {
