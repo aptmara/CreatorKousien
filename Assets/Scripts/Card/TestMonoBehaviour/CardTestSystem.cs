@@ -23,4 +23,9 @@ public class CardTestSystem : MonoBehaviour
         Debug.Log("PoolSystem判定 ID" + _poolSystem.PickRandumCard());
     }
 
+    // Update is called once per frame
+    void Update()
+    {
+       
+    }
 }

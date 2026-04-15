@@ -32,8 +32,8 @@ public struct EffectValue
     [SerializeField] private TargetType targetType;
     public TargetType TargetType => targetType;
     // 効果自体の値
-    [SerializeField] private int value;
-    public int Value => value;
+    [SerializeField] private float value;
+    public float Value => value;
 }
 
 [System.Serializable]
@@ -89,18 +89,18 @@ public class EffectDataBase : ScriptableObject
             // IDの数値チェック
             if(CheckID(effectData))
             {
-                Debug.Log("[EffectDataBase]要素数" + i + "番のIDの値が不正です！");
+                Debug.LogError("[EffectDataBase]要素数" + i + "番のIDの値が不正です！");
                 isSafe = false;
             }
             // アイコンチェック
             if (CheckIcon(effectData))
             {
-                Debug.Log("[EffectDataBase]要素数" + i + "番のアイコンの値が不正です！");
+                Debug.LogError("[EffectDataBase]要素数" + i + "番のアイコンの値が不正です！");
             }
             // 重複チェック
             if(CheckDuplicateID(effectData, hasData))
             {
-                Debug.Log("[EffectDataBase]要素数" + i + "のID" + effectData.EffectID + "が重複しています！");
+                Debug.LogError("[EffectDataBase]要素数" + i + "のID" + effectData.EffectID + "が重複しています！");
                 isSafe = false;
             }
             
@@ -144,4 +144,11 @@ public class EffectDataBase : ScriptableObject
 
         return ret;
     }
+
+#if UNITY_EDITOR
+    public IReadOnlyList<EffectData> GetEffectList()
+    {
+        return _effectList;
+    }
+#endif
 }

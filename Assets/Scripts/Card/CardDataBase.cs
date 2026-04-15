@@ -18,28 +18,32 @@ public enum SlotDirection
 }
 
 [System.Serializable]
-public struct CardData
+public class CardData
 {
+    //! ID
     [SerializeField] private int cardID;
     public int CardID => cardID;
-
+    //! 方向
     [SerializeField] private SlotDirection direction;
     public SlotDirection Direction => direction;
-
     // 固定長配列の構造体を作ることができないため両面分変数で持つ
+    //! 表面の効果ID
     [SerializeField] private int faceUpEffectID;
-    public int FaceUpEffectID => faceUpEffectID;
-
+    //! 裏面の効果ID
     [SerializeField] private int faceDownEffectID;
-    public int FaceDownEffectID => faceDownEffectID;
+
+    //! 外部に効果IDを渡す用の配列。外部に初期化関数を呼ばせる以外で安全に初期化する方法がなさそうなため、毎回作成する
+    private int[] faceEffectID => new int[(int)CardFace.MaxFace] { faceUpEffectID, faceDownEffectID };
 
 }
 
 [CreateAssetMenu(fileName = "SO_CardDataBase", menuName = "CreatorKousien/Data/CardDataBase")]
 public class CardDataBase : ScriptableObject
 {
+    //! カードリスト、要素数は関係なくIDかで探索しカードが引き出される。
     [SerializeField]
     CardData[] _cardList;
+    //! 値が不正だった際に渡す予備のカード
     [SerializeField]
     CardData _fallBackCard;
     public CardData FallBackCard => _fallBackCard;
@@ -70,18 +74,18 @@ public class CardDataBase : ScriptableObject
             // IDの数値チェック
             if (CheckID(cardData))
             {
-                Debug.Log("[CardDataBase]要素数" + i + "番のIDの値が不正です！");
+                Debug.LogError("[CardDataBase]要素数" + i + "番のIDの値が不正です！");
                 isSafe = false;
             }
             // 方向チェック
             if (CheckDirection(cardData))
             {
-                Debug.Log("[CardDataBase]要素数" + i + "番の方向の値が不正です！");
+                Debug.LogError("[CardDataBase]要素数" + i + "番の方向の値が不正です！");
             }
             // 重複チェック
             if (CheckDuplicateID(cardData, hasData))
             {
-                Debug.Log("[CardDataBase]要素数" + i + "のID" + cardData.CardID + "が重複しています！");
+                Debug.LogError("[CardDataBase]要素数" + i + "のID" + cardData.CardID + "が重複しています！");
                 isSafe = false;
             }
 

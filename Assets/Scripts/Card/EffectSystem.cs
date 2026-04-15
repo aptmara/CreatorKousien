@@ -21,7 +21,7 @@ public class EffectSystem
     //! 
     List<RegisterEffectData> _registerEffects;
 
-    EffectSystem(EffectDataBase effectDataBase)
+    public EffectSystem(EffectDataBase effectDataBase)
     {
         _registerEffects = new List<RegisterEffectData>();
         _effectDataBase = effectDataBase;
@@ -37,16 +37,29 @@ public class EffectSystem
 
     public void ApplyAllEffect()
     {
+        int i = 0;
+        List<int> deleteEffectCounts = new List<int>();
         foreach (var effect in _registerEffects)
         {
             // 遅延中だった場合は処理しない
             if (effect.currentDuration > 0) continue;
 
             // 処理を反映
-            if(!ApplyEffect(effect.data))
+            if(ApplyEffect(effect.data))
             {
-                Debug.Log("[EffectSystem]" + effect.data.EffectName + "の反映に失敗しました")
+                deleteEffectCounts.Add(i);
             }
+            else
+            {
+                Debug.Log("[EffectSystem]" + effect.data.EffectName + "の反映に失敗しました");
+            }
+
+            i++;
+        }
+        // 使用した効果を削除
+        foreach(var count in deleteEffectCounts)
+        {
+            _registerEffects.RemoveAt(count);
         }
 
     }
@@ -63,6 +76,7 @@ public class EffectSystem
 
     bool ApplyEffect(EffectData data)
     {
+        Debug.Log("ID" + data.EffectID + "効果名" + data.EffectName + "実行！");
         return true;
     }
 }
