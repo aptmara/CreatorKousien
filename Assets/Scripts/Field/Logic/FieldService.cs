@@ -77,6 +77,8 @@ public class FieldService
 
                 cell.CurrentTile = defaultTile; // デフォルト床を配置
 
+                cell.DefaultTile = defaultTile; // デフォルト床の定義も保存
+
                 // デフォルト床が設定されていれば、その通行可否を適用
                 if (defaultTile != null)
                 {
