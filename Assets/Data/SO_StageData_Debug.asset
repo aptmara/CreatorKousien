@@ -25,5 +25,8 @@ MonoBehaviour:
   PlayerSpecialTileRules:
   - SpecialTile: {fileID: 11400000, guid: 67f961d2870a7954183ae68532d67628, type: 2}
     SpawnProbability: 1
-    SpawnCount: 1
+    MinSpawnCount: 1
+    MaxSpawnCount: 1
+    LifespanTurns: 3
+    SpawnIntervalTurns: 1
   EnemySpecialTileRules: []

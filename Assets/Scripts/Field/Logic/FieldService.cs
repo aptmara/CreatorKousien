@@ -133,33 +133,45 @@ public class FieldService
             {
                 var cell = _fieldState.GetCell(x, y);
                 bool isPlayerSide = (x < _currentBorderX);
-                TileTypeDefinition defaultTile = isPlayerSide ? _currentStageData.PlayerDefaultTile : _currentStageData.EnemyDefaultTile;
 
-                // TODO: ターンを跨ぐ床かどうかの判定を追加します
-                if (cell.CurrentTile != defaultTile)
+                // 床の寿命が切れているかどうかを判定
+                bool justDied = false;
+
+                if (cell.RemainingLifespan > 0)
                 {
-                    ChangeCellTile(x, y, defaultTile); // デフォルト床にリセット
+                    cell.RemainingLifespan--; // 寿命を減らす
+
+                    if (cell.RemainingLifespan == 0)
+                    {
+                        ChangeCellTile(x, y, cell.DefaultTile); // 床を消す
+                        justDied = true;                        // 寿命が切れたことを記録
+                    }
                 }
 
-                // 障害物ではなく、誰も使っていないマスを新しいスポーン候補にする
+                // 空きマスの判定を「デフォルト床かどうか」にする
+                bool isDefaultTile = (cell.CurrentTile == cell.DefaultTile);
+
                 if (cell.IsPassable && cell.OccupierId == -1 && !_currentStageData.ObstaclePositions.Contains(new Vector2Int(x, y)))
                 {
-                    if (isPlayerSide)
+                    if (isDefaultTile && !justDied)
                     {
-                        playerCells.Add(new Vector2Int(x, y)); // プレイヤー側のマス
-                    }
-                    else
-                    {
-                        enemyCells.Add(new Vector2Int(x, y));  // 敵側のマス
+                        if (isPlayerSide)
+                        {
+                            playerCells.Add(new Vector2Int(x, y)); // プレイヤー側の空きマス
+                        }
+                        else
+                        {
+                            enemyCells.Add(new Vector2Int(x, y));  // 敵側の空きマス
+                        }
                     }
                 }
             }
-
-            // ----- 2. ターンが変わったことを受け取って、特殊床のスポーンルールを再適用 -----
-            Vector2Int playerPos = GetActorPosition(1); // 仮にID=1がプレイヤーとする
-            ApplySpawnRules(_currentStageData.PlayerSpecialTileRules, playerCells, playerPos, _currentTurnCount); // プレイヤー側の特殊床配置
-            ApplySpawnRules(_currentStageData.EnemySpecialTileRules, enemyCells, new Vector2Int(-1, -1), _currentTurnCount);   // 敵側の特殊床配置
         }
+
+        // ----- 2. ターンが変わったことを受け取って、特殊床のスポーンルールを再適用 -----
+        Vector2Int playerPos = GetActorPosition(1); // 仮にID=1がプレイヤーとする
+        ApplySpawnRules(_currentStageData.PlayerSpecialTileRules, playerCells, playerPos, _currentTurnCount); // プレイヤー側の特殊床配置
+        ApplySpawnRules(_currentStageData.EnemySpecialTileRules, enemyCells, new Vector2Int(-1, -1), _currentTurnCount);   // 敵側の特殊床配置
     }
 
 
