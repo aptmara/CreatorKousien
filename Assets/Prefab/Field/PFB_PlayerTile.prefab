@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6503584205654029499}
   - component: {fileID: 6844923250632566387}
   m_Layer: 0
-  m_Name: PFB_DefTile
+  m_Name: PFB_PlayerTile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -67,7 +67,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c8c0dc6d578ee364dbba46cfcbb8643a, type: 2}
+  - {fileID: 2100000, guid: 67064556ef33b2745955a59d28ad610c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -42,13 +42,12 @@ public class PlayerView : MonoBehaviour
     /// <summary>
     /// 初期位置のセットアップ
     /// </summary>
-    /// <param name="startGridPos"> 初期の盤面座標</param>
-    /// <param name="cellSize">     セルのサイズ</param>
-    public void Initialize(Vector2Int startGridPos, float cellSize)
+    /// <param name="startGridPos"> 初期のプレイヤー座標</param>
+    public void Initialize(Vector3 startWorldPos)
     {
         _baseHeight = transform.position.y; // 初期の高さを保存
 
-        UpdateTargetPosition(startGridPos, cellSize);
+        UpdateTargetPosition(startWorldPos);
         transform.position = _targetWorldPos;           // 初期位置を設定
     }
 
@@ -56,11 +55,10 @@ public class PlayerView : MonoBehaviour
     /// <summary>
     /// PlayerSystemからの移動通知を受け取る
     /// </summary>
-    /// <param name="gridPosition"></param>
-    /// <param name="cellSize"></param>
-    public void UpdateTargetPosition(Vector2Int gridPosition, float cellSize)
+    /// <param name="cellWorldPos">FieldViewから取得したマスのワールド座標</param>
+    public void UpdateTargetPosition(Vector3 cellWorldPos)
     {
-        _targetWorldPos = new Vector3(gridPosition.x * cellSize, _baseHeight, -gridPosition.y * cellSize);
+        _targetWorldPos = new Vector3(cellWorldPos.x, _baseHeight, cellWorldPos.z);
     }
 
     /// <summary>

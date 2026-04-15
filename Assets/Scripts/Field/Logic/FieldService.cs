@@ -9,6 +9,8 @@
 // - 特殊床の生成を追加 (4/13)
 // - MoveCommandを導入して移動の種類を区別できるように (4/15)
 // - Fieldに自陣、敵陣の概念を追加 (4/15)
+// - Turnが変わったことを受け取れるように変更 (4/16)
+// - タイル変更イベントを追加 (4/16)
 // ------------------------------------------------------------
 using UnityEngine;
 using System;
@@ -33,6 +35,16 @@ public class FieldService
     /// </summary>
     public event Action<int, int, int> OnActorMoved;
 
+    /// <summary>
+    /// タイルが変更されたときに発行されるイベント。引数は「X座標」「Y座標」「新しいタイルの定義」
+    /// </summary>
+    public event Action<int, int, TileTypeDefinition> OnTileChanged;
+
+    private int _currentBorderX;            /// 実行中の境界線を保存しておく変数
+
+    private StageData _currentStageData;    /// 現在のステージデータを保存しておく変数 (特殊床のスポーンルールなどで参照するため)
+
+    private int _currentTurnCount = 0;      /// 現在のターン数を保存しておく変数 (ターンを跨ぐ床の寿命管理などで参照するため)
 
     /// <summary>
     /// ステージデータを元に盤面を初期化し、障害物などを配置
@@ -42,11 +54,14 @@ public class FieldService
     {
         // ----- 1. 盤面サイズの決定と作成 -----
         _fieldState = new FieldState(stageData.Width, stageData.Height);
-        _actorPositions.Clear();   // キャラクター位置のマッピングも初期化
+        _actorPositions.Clear();                // キャラクター位置のマッピングも初期化
+        _currentBorderX = stageData.BorderX;    // ステージデータから境界線のX座標を保存
+        _currentStageData = stageData;          // ステージデータも保存しておく（特殊床のスポーンルールで参照するため）
 
 
         // 重複配置を避けるための「空きマス候補」リスト
-        List<Vector2Int> availableCells = new List<Vector2Int>();
+        List<Vector2Int> playerCells = new List<Vector2Int>();   // プレイヤーが配置可能なマスのリスト
+        List<Vector2Int> enemyCells  = new List<Vector2Int>();   // 敵が配置可能なマスのリスト
 
 
         // ----- 2. デフォルト床で全マスを初期化 -----
@@ -55,51 +70,34 @@ public class FieldService
             for (int y = 0; y < stageData.Height; y++)
             {
                 var cell = _fieldState.GetCell(x, y);
-                cell.CurrentTile = stageData.DefaultTile; // デフォルト床を設定
+                bool isPlayerSide = (x < _currentBorderX);
+
+                // 自陣と敵陣で異なるデフォルト床を設定
+                TileTypeDefinition defaultTile = isPlayerSide ? stageData.PlayerDefaultTile : stageData.EnemyDefaultTile;
+
+                cell.CurrentTile = defaultTile; // デフォルト床を配置
 
                 // デフォルト床が設定されていれば、その通行可否を適用
-                if (stageData.DefaultTile != null)
+                if (defaultTile != null)
                 {
-                    cell.IsPassable = stageData.DefaultTile.CanStand;
+                    cell.IsPassable = defaultTile.CanStand;
                 }
 
-                availableCells.Add(new Vector2Int(x, y)); // 全マスを「空きマス候補」に追加
+                if (x < _currentBorderX)
+                {
+                    playerCells.Add(new Vector2Int(x, y)); // プレイヤー側のマス
+                }
+                else
+                {
+                    enemyCells.Add(new Vector2Int(x, y));  // 敵側のマス
+                }
             }
         }
 
 
         // ----- 3. 特殊床のランダム配置 -----
-        if (stageData.SpecialTileRules != null)
-        {
-            foreach (var rule in stageData.SpecialTileRules)
-            {
-                // 確率の抽選 (0.0 - 1.0)
-                if (UnityEngine.Random.value <= rule.SpawnProbability)
-                {
-                    for (int i = 0; i < rule.SpawnCount; i++)
-                    {
-                        if (availableCells.Count == 0)
-                            break;
-
-                        // ランダムなマスを選ぶ
-                        int randomIndex = UnityEngine.Random.Range(0, availableCells.Count);
-                        Vector2Int pos = availableCells[randomIndex];
-
-                        // 床を特殊床に変更
-                        var cell = _fieldState.GetCell(pos.x, pos.y);
-                        cell.CurrentTile = rule.SpecialTile;
-
-                        if (rule.SpecialTile != null)
-                        {
-                            cell.IsPassable = rule.SpecialTile.CanStand; // 特殊床の通行可否を適用
-                        }
-
-                        // 重複上書きなしの仕様を満たすため、候補リストから除外
-                        availableCells.RemoveAt(randomIndex);
-                    }
-                }
-            }
-        }
+        ApplySpawnRules(stageData.PlayerSpecialTileRules, playerCells, stageData.PlayerStartPosition, 0); // プレイヤー側の特殊床配置
+        ApplySpawnRules(stageData.EnemySpecialTileRules, enemyCells, new Vector2Int(-1, -1), 0);   // 敵側の特殊床配置
 
 
         // ----- 4. 障害物の配置 -----
@@ -112,6 +110,148 @@ public class FieldService
                 if (cell != null)
                 {
                     cell.IsPassable = false; // 障害物は通行不可
+                }
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// ターン進行処理
+    /// </summary>
+    public void ProcessTurnChange()
+    {
+        _currentTurnCount++;                                     // ターン数をカウント
+
+        List<Vector2Int> playerCells = new List<Vector2Int>();   // プレイヤーが配置可能なマスのリスト
+        List<Vector2Int> enemyCells = new List<Vector2Int>();    // 敵が配置可能なマスのリスト
+
+        // ----- 1. 既存の特殊床を全てリセット -----
+        for (int x = 0; x < _fieldState.Width; x++)
+        {
+            for (int y = 0; y < _fieldState.Height; y++)
+            {
+                var cell = _fieldState.GetCell(x, y);
+                bool isPlayerSide = (x < _currentBorderX);
+                TileTypeDefinition defaultTile = isPlayerSide ? _currentStageData.PlayerDefaultTile : _currentStageData.EnemyDefaultTile;
+
+                // TODO: ターンを跨ぐ床かどうかの判定を追加します
+                if (cell.CurrentTile != defaultTile)
+                {
+                    ChangeCellTile(x, y, defaultTile); // デフォルト床にリセット
+                }
+
+                // 障害物ではなく、誰も使っていないマスを新しいスポーン候補にする
+                if (cell.IsPassable && cell.OccupierId == -1 && !_currentStageData.ObstaclePositions.Contains(new Vector2Int(x, y)))
+                {
+                    if (isPlayerSide)
+                    {
+                        playerCells.Add(new Vector2Int(x, y)); // プレイヤー側のマス
+                    }
+                    else
+                    {
+                        enemyCells.Add(new Vector2Int(x, y));  // 敵側のマス
+                    }
+                }
+            }
+
+            // ----- 2. ターンが変わったことを受け取って、特殊床のスポーンルールを再適用 -----
+            Vector2Int playerPos = GetActorPosition(1); // 仮にID=1がプレイヤーとする
+            ApplySpawnRules(_currentStageData.PlayerSpecialTileRules, playerCells, playerPos, _currentTurnCount); // プレイヤー側の特殊床配置
+            ApplySpawnRules(_currentStageData.EnemySpecialTileRules, enemyCells, new Vector2Int(-1, -1), _currentTurnCount);   // 敵側の特殊床配置
+        }
+    }
+
+
+    /// <summary>
+    /// マスのデータを置き換え、同時に見た目の更新イベントを発行するヘルパー
+    /// </summary>
+    /// <param name="x">置き換え先のX座標</param>
+    /// <param name="y">置き換え先のY座標</param>
+    /// <param name="newTile">新しいタイルの定義</param>
+    private void ChangeCellTile(int x, int y, TileTypeDefinition newTile)
+    {
+        var cell = _fieldState.GetCell(x, y);
+        cell.CurrentTile = newTile; // 新しい床を配置
+        if (newTile != null)
+        {
+            cell.IsPassable = newTile.CanStand; // 新しい床の通行可否を適用
+        }
+
+        OnTileChanged?.Invoke(x, y, newTile); // タイル変更イベントを発行
+    }
+
+
+    /// <summary>
+    /// 特殊床のスポーンルールを適用して、盤面に特殊床をランダム配置するロジック
+    /// </summary>
+    /// <param name="rules">スポーンルール</param>
+    /// <param name="availableCells">配置可能なセルのリスト</param>
+    /// <param name="safeZoneCenter">安全地帯の中心座標</param>
+    /// <param name="currentTurn">現在のターン数</param>
+    private void ApplySpawnRules(StageData.SpecialTileSpawnRule[] rules, List<Vector2Int> availableCells, Vector2Int safeZoneCenter, int currentTurn)
+    {
+        if (rules == null)
+        {
+            return; // ルールがないか、候補がない場合は何もしない
+        }
+
+        foreach (var rule in rules)
+        {
+            // ----- 1.新頻度のチェック -----
+            if (currentTurn > 0 && _currentTurnCount % rule.SpawnIntervalTurns != 0)
+                continue; // ターン間隔の条件を満たさない場合はスキップ
+
+            if (UnityEngine.Random.value <= rule.SpawnProbability)
+            {
+                int targetSpawnCount = UnityEngine.Random.Range(rule.MinSpawnCount, rule.MaxSpawnCount + 1); // スポーン数をランダムに決定
+
+                for (int i = 0; i < targetSpawnCount; i++)
+                {
+                    if (availableCells.Count == 0)
+                    {
+                        break; // 配置可能なセルがなくなったら終了
+                    }
+
+                    int randomIndex = -1;
+                    bool found = false;
+
+                    for (int attempt = 0; attempt < 10; attempt++)
+                    {
+                        int tempIndex = UnityEngine.Random.Range(0, availableCells.Count);
+                        Vector2Int candidatePos = availableCells[tempIndex];
+
+                        // 自分自身の足元じゃないか判定
+                        if (safeZoneCenter.x >= 0 && safeZoneCenter.y >= 0)
+                        {
+                            if (candidatePos != safeZoneCenter)
+                            {
+                                found = true;
+                                randomIndex = tempIndex;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            found = true;
+                            randomIndex = tempIndex;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        continue;
+                    }
+
+                    Vector2Int pos = availableCells[randomIndex];
+                    var cell = _fieldState.GetCell(pos.x, pos.y);
+
+                    cell.DefaultTile = (pos.x < _currentBorderX) ? _currentStageData.PlayerDefaultTile : _currentStageData.EnemyDefaultTile;    // デフォルト床を設定
+                    cell.RemainingLifespan = rule.LifespanTurns;                                                                                // 寿命を設定
+
+                    ChangeCellTile(pos.x, pos.y, rule.SpecialTile);                                                                             // セルのタイルをルールで指定された特殊床に変更
+                    availableCells.RemoveAt(randomIndex);                                                                                       // 配置したセルは候補から削除
                 }
             }
         }
@@ -205,13 +345,12 @@ public class FieldService
 
         // ----- 4. テリトリーチェック -----
         bool isPlayer = (actorId == 1);         // 仮にID=1がプレイヤーとする
-        int borderX = _fieldState.Width / 2;    // 盤面の中央を境界とする例
 
-        if (isPlayer && targetX >= borderX)
+        if (isPlayer && targetX >= _currentBorderX)
         {
             return false;   // プレイヤーは右半分に移動できない
         }
-        if (!isPlayer && targetX < borderX)
+        if (!isPlayer && targetX < _currentBorderX)
         {
             return false;   // 敵は左半分に移動できない
         }

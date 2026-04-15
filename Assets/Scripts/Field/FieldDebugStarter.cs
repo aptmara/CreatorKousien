@@ -56,7 +56,9 @@ public class FieldDebugStarter : MonoBehaviour
         _tileEffectSystem = new TileEffectSystem(_fieldService.State);
 
         // ----- 2. FieldViewに盤面を描画させる -----
-        _fieldView.BuildView(_fieldService.State, _debugStageData.CellSize);
+        _fieldView.BuildView(_fieldService.State, _debugStageData);
+
+        _fieldService.OnTileChanged += _fieldView.UpdateCellTileModel; // FieldServiceのタイル変更イベントにFieldViewの更新メソッドを登録
 
 
         // ----- 3. PlayerSystemの初期化とPlayerViewへの反映 -----
@@ -85,10 +87,10 @@ public class FieldDebugStarter : MonoBehaviour
             };
 
             // PlayerSystemの座標が変わったらPlayerViewに反映する
-            float cellSize = _debugStageData.CellSize; // セルのサイズ
             _playerSystem.OnPositionChanged += (gridPos) =>
             {
-               _playerView.UpdateTargetPosition(gridPos, cellSize);
+                Vector3 actualPos = _fieldView.GetCellWorldPosition(gridPos.x, gridPos.y);
+                _playerView.UpdateTargetPosition(actualPos);
             };
 
             // PlayerSystemが死亡判定を受けたらPlayerViewに反映する
@@ -98,7 +100,10 @@ public class FieldDebugStarter : MonoBehaviour
             };
 
             // ----- 4. PlayerViewの初期位置をセットアップ -----
-            _playerView.Initialize(startPos, cellSize);
+            Vector3 startWorldPos = _fieldView.GetCellWorldPosition(startPos.x, startPos.y);
+            _playerView.Initialize(startWorldPos);
+            _playerView.SetStandingTile(_fieldView.GetCellView(startPos));                      // 初期マスの高さを取得
+
             _fieldService.UpdateOccupancy(_playerSystem.RuntimeData.ActorId, -1, -1, startPos.x, startPos.y);
             _tileEffectSystem.TriggerOnEnter(_playerSystem.RuntimeData.ActorId, startPos.x, startPos.y);
             _fieldView.HighlightCell(startPos.x, startPos.y);
@@ -132,6 +137,8 @@ public class FieldDebugStarter : MonoBehaviour
             Debug.Log("<color=cyan>--- ターン終了 ---</color>");
             var pos = _playerSystem.RuntimeData.Position;
             _tileEffectSystem.TriggerOnTurnEnd(_playerSystem.RuntimeData.ActorId, pos.x, pos.y);
+
+            _fieldService.ProcessTurnChange(); // ターン終了の処理をFieldServiceに通知
         }
     }
 
