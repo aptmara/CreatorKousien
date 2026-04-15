@@ -65,8 +65,6 @@ namespace CreatorKousien.Data
     [System.Serializable]
     public class EnemyActionPattern
     {
-        [Header("発動条件")]
-
         [Tooltip("この行動を発動するためのトリガー条件")]
         public ConditionType Condition;
 
@@ -77,7 +75,6 @@ namespace CreatorKousien.Data
         [Min(0)]
         public int CooldownTurns = 0;
 
-        [Header("攻撃内容")]
 
         [Tooltip("攻撃の種別。ダメージ計算や防御判定、UIのマスの色分け等に利用します。")]
         public AttackPatternType AttackType;

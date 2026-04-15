@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8b83289a05446744bea2aac39d3c1f6, type: 3}
+  m_Name: SO_StageData_Debug
+  m_EditorClassIdentifier: Assembly-CSharp::StageData
+  _width: 6
+  _height: 3
+  _obstaclePositions: []
+  _playerStartPosition: {x: 0, y: 0}
+  _defaultTile: {fileID: 11400000, guid: 4f1d1c0c71057174f9279a40a873120f, type: 2}
+  _specialTileRules:
+  - SpecialTile: {fileID: 11400000, guid: 67f961d2870a7954183ae68532d67628, type: 2}
+    SpawnProbability: 1
+    SpawnCount: 2
