@@ -147,17 +147,23 @@ namespace CreatorKousien.Enemy
         //            break;
 
         //        case TargetSelection.LocalGridShape:
-        //            // 5x5のローカルグリッドの評価
-        //            int localIndex = 0;
-        //            for (int y = -2; y <= 2; y++)
+        //            // TargetOriginに合わせて基準点を取得
+        //            int centerIndex = GetLocalGridCenterIndex(pattern.OriginRule);
+        //            int cx = centerIndex % 5;
+        //            int cy = centerIndex / 5;
+
+        //            for (int i = 0; i < 25; i++)
         //            {
-        //                for (int x = -2;  x <= 2; x++)
+        //                if (pattern.LocalTargetGrid[i])
         //                {
-        //                    if (pattern.LocalTargetGrid[localIndex])
-        //                    {
-        //                        result.Add(new Vector2Int(origin.x + x, origin.y + y));
-        //                    }
-        //                    localIndex++;
+        //                    int x = i % 5;
+        //                    int y = i / 5;
+
+        //                    // 相対的なずれを計算
+        //                    int dx = x - cx;
+        //                    int dy = y - cy;
+
+        //                    result.Add(new Vector2Int(origin.x + dx, origin.y + dy));
         //                }
         //            }
         //            break;
@@ -167,6 +173,21 @@ namespace CreatorKousien.Enemy
         //    result.RemoveAll(pos => !field.IsInBounds(pos) || !field.IsPassable(pos));
 
         //    return result;
+        //}
+
+        ///// <summary>
+        ///// TargetOrigin に応じて、5x5のグリッド内の基準点のインデックスを返す
+        ///// </summary>
+        //private int GetLocalGridCenterIndex(TargetOrigin originRule)
+        //{
+        //    switch (originRule)
+        //    {
+        //        case TargetOrigin.FrontRowCenter: return 2;     // 一番上の真ん中
+        //        case TargetOrigin.BackRowCenter: return 22;     // 一番下の真ん中
+        //        case TargetOrigin.LeftEdgeCenter: return 10;    // 左端の真ん中
+        //        case TargetOrigin.RightEdgeCenter: return 14;   // 右端の真ん中
+        //        default: return 12;                             // それ以外はど真ん中
+        //    }
         //}
 
         //// 内部ロジック: 行動の確定と条件判定
