@@ -28,8 +28,7 @@ public class FieldDebugStarter : MonoBehaviour
     [Tooltip("プレイヤーの情報")]
     [SerializeField] private PlayerData _debugPlayerData;    // プレイヤーの情報
 
-    [Tooltip("プレイヤーのViewコンポーネント")]
-    [SerializeField] private PlayerView _playerView;      // プレイヤーのViewコンポーネント
+    private PlayerView _playerView;      // プレイヤーのViewコンポーネント
 
     // テスト用のFieldServiceインスタンス
     private FieldService _fieldService;                     // テスト用のFieldServiceインスタンス
@@ -62,9 +61,22 @@ public class FieldDebugStarter : MonoBehaviour
 
 
         // ----- 3. PlayerSystemの初期化とPlayerViewへの反映 -----
-        if (_debugPlayerData != null && _playerView != null)
+        if (_debugPlayerData != null)
         {
             Vector2Int startPos = _debugStageData.PlayerStartPosition;
+
+            // ----- プレイヤーオブジェクトの生成 -----
+            GameObject spawnedPlayer = Instantiate(_debugPlayerData.PlayerPrefab);
+            spawnedPlayer.name = "PlayerCharacter"; // プレイヤーオブジェクトの名前を設定
+
+            // ----- 生成したオブジェクトからPlayerViewを取得 -----
+            _playerView = spawnedPlayer.GetComponentInChildren<PlayerView>();
+
+            if (_playerView == null)
+            {
+                Debug.LogError("[FieldDebug] プレイヤーオブジェクトにPlayerViewコンポーネントがアタッチされていません!");
+                return;
+            }
 
             _playerSystem = new PlayerSystem();
             _playerSystem.Initialize(_debugPlayerData, startPos);
