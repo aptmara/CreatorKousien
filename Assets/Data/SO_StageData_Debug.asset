@@ -15,8 +15,8 @@ MonoBehaviour:
   _width: 6
   _height: 3
   _borderX: 3
-  CellSize: 1.1
-  BorderGap: 0.5
+  CellSize: 1.5
+  BorderGap: 1.5
   BorderPrefab: {fileID: 6644790013973758042, guid: f6b436d072149b84ca00f28288876136, type: 3}
   ObstaclePositions: []
   _playerStartPosition: {x: 1, y: 1}

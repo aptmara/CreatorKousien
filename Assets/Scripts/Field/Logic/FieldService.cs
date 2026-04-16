@@ -46,6 +46,73 @@ public class FieldService
 
     private int _currentTurnCount = 0;      /// 現在のターン数を保存しておく変数 (ターンを跨ぐ床の寿命管理などで参照するため)
 
+
+    // 盤面情報取得API
+    // ----------------------------------------------------------------------
+
+    /// <summary>
+    /// 盤面のサイズを取得
+    /// </summary>
+    public Vector2Int GetFieldSize() => new Vector2Int(_fieldState.Width, _fieldState.Height);
+
+    /// <summary>
+    /// プレイヤーのテリトリーX範囲を取得。左端が0で、境界線の1つ手前までがプレイヤーのテリトリー
+    /// </summary>
+    /// <returns>自陣のX座標の[min, max]</returns>
+    public Vector2Int GetPlayerTerritoryX() => new Vector2Int(0, _currentBorderX - 1); // プレイヤーのテリトリーX範囲
+
+    /// <summary>
+    /// 敵陣のテリトリーX範囲を取得。境界線から右端までが敵のテリトリー
+    /// </summary>
+    /// <returns>敵陣のX座標の[min, max]</returns>
+    public Vector2Int GetEnemyTerritoryX() => new Vector2Int(_currentBorderX, _fieldState.Width - 1); // 敵のテリトリーX範囲
+
+    /// <summary>
+    /// 現在の境界線(BorderX)を取得
+    /// </summary>
+    /// <returns></returns>
+    public int GetBorderX() => _currentBorderX;
+
+    /// <summary>
+    /// 指定座標が盤面外かどうかを判定するAPI
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
+    public bool IsOutOfBounds(int x, int y) => _fieldState.IsOutOfBounds(x, y); // 盤面外判定API
+
+    /// <summary>
+    /// 指定座標に障害物があるかどうかを判定するAPI。盤面外も障害物とみなす
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
+    public bool IsObstacle(int x, int y)
+    {
+        if (IsOutOfBounds(x, y))
+        {
+            return true;   // 盤面外は障害物とする
+        }
+        return !_fieldState.GetCell(x, y).IsPassable; // 通行不可のセルは障害物とする
+    }
+
+    /// <summary>
+    /// 指定座標に誰が占有しているかを取得するAPI。盤面外は-1（占有者なし）とみなす
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
+    public int GetOccupierId(int x, int y)
+    {
+        if (IsOutOfBounds(x, y))
+        {
+            return -1;  // 盤面外は占有者なしとする
+        }
+        return _fieldState.GetCell(x, y).OccupierId; // セルの占有者IDを返す
+    }
+
+
+
     /// <summary>
     /// ステージデータを元に盤面を初期化し、障害物などを配置
     /// </summary>
