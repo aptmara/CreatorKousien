@@ -57,7 +57,7 @@ public class GameManager : MonoBehaviour
         }
         else if (scene.name == "Select")
         {
-            
+
         }
         else if (scene.name == "Game")
         {
@@ -108,7 +108,7 @@ public class GameManager : MonoBehaviour
     {
         // StageNoに応じた読み込みとインスタンス生成
         // Mediatorの初期化
-        _mediator = new GameMadiator();
+        _mediator = new GameMediator();
         _mediator.Initialize();
         // バトルマネージャーの初期化
         _battleManager = new BattleManager();
@@ -132,11 +132,11 @@ public class GameManager : MonoBehaviour
 
     void UpdateGameScene()
     {
-        
+
     }
     void UpdateResultScene()
     {
-        
+
     }
 
 }

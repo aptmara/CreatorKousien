@@ -27,6 +27,6 @@ MonoBehaviour:
     SpawnProbability: 1
     MinSpawnCount: 1
     MaxSpawnCount: 1
-    LifespanTurns: 3
+    LifespanTurns: 1
     SpawnIntervalTurns: 1
   EnemySpecialTileRules: []
