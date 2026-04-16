@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEditor.Rendering.Universal;
 
 public class EffectSystem
 {
@@ -62,7 +61,7 @@ public class EffectSystem
         // 使用した効果を削除
         for(int j = deleteEffectCounts.Count - 1; j >= 0; j--)
         {
-            _registerEffects.RemoveAt(i);
+            _registerEffects.RemoveAt(deleteEffectCounts[j]);
         }
 
     }
