@@ -1,4 +1,3 @@
-using NUnit.Framework;
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor.Rendering.Universal;
@@ -42,8 +41,11 @@ public class EffectSystem
         foreach (var effect in _registerEffects)
         {
             // 遅延中だった場合は処理しない
-            if (effect.currentDuration > 0) continue;
-
+            if (effect.currentDuration > 0)
+            {
+                i++;
+                continue;
+            }
             // 処理を反映
             if(ApplyEffect(effect.data))
             {
@@ -55,11 +57,12 @@ public class EffectSystem
             }
 
             i++;
+
         }
         // 使用した効果を削除
-        foreach(var count in deleteEffectCounts)
+        for(int j = deleteEffectCounts.Count - 1; j >= 0; j--)
         {
-            _registerEffects.RemoveAt(count);
+            _registerEffects.RemoveAt(i);
         }
 
     }

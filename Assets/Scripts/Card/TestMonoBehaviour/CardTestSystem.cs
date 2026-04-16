@@ -18,7 +18,7 @@ public class CardTestSystem : MonoBehaviour
     {
         _cardData.CheckAllData();
         _cardSystem = new CardSystem(_cardData, _cardList);
-        _poolSystem = new PoolSystem(_cardPool);
+        _poolSystem = new PoolSystem(_cardPool, _cardData.FallBackCard.CardID);
 
         Debug.Log("PoolSystem判定 ID" + _poolSystem.PickRandumCard());
     }

@@ -1,4 +1,3 @@
-using NUnit.Framework;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -57,26 +56,32 @@ public class CardSystem
             CardData data = _dataBase.FallBackCard;
             // 確認用にデータを取得
             CardData checkData = _dataBase.GetCard(haveCardID[i]);
-            if (_haveCard.Length > i && checkData.Direction == (SlotDirection)i)
+            if (IsSafeHandData(i, checkData, haveCardID))
             {
                 // チェックが通ったのでデータを確定
                 data = checkData;
             }
-            else if (data.Direction != (SlotDirection)i)
-            {
-                Debug.LogError("[CardSystem]登録されたカードの方向が不正です。カードID" + data.CardID + "の方向は" + data.Direction.ToString() + "ですが" + ((SlotDirection)i).ToString() + "に設定されました");
-            }
-            else if (_haveCard.Length < i)
-            {
-                Debug.LogError("[CardSystem]渡された手札の枚数が不足しています、" + _haveCard.Length + "枚のカード情報が渡されました");
-            }
             else
             {
-                Debug.Log("[CardSystem]未設定のエラーです、異常な状態、あるいはエラーメッセージの条件が間違っている可能性があります。");
+                HandErrorMessage(i, checkData, haveCardID);
             }
+
             // インスタンスを作成
             _haveCard[i] = CreateHaveCard(0, data, (SlotDirection)i);
         }
+    }
+
+    bool IsSafeHandData(int index, CardData checkData, List<int> haveCardID)
+    {
+        return haveCardID.Count >= index && checkData.Direction == (SlotDirection)index;
+    }
+
+    void HandErrorMessage(int index, CardData checkData, List<int> haveCardID)
+    {
+        // エラーメッセージ
+        if (checkData.Direction != (SlotDirection)index) Debug.LogError("[CardSystem]登録されたカードの方向が不正です。カードID" + checkData.CardID + "の方向は" + checkData.Direction.ToString() + "ですが" + ((SlotDirection)index).ToString() + "に設定されました");
+
+        if (haveCardID.Count <= index) Debug.LogError("[CardSystem]渡された手札の枚数が不足しています、" + haveCardID.Count + "枚のカード情報が渡されました");
     }
 
     CardRuntimeData CreateHaveCard(int instanceID,CardData data, SlotDirection direction)

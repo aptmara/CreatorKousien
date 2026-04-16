@@ -4,9 +4,12 @@ using UnityEngine;
 public class PoolSystem
 {
     CardPool _cardPool;
-    public PoolSystem(CardPool cardPool)
+    int _fallBackID;
+
+    public PoolSystem(CardPool cardPool, int fallBackID)
     {
         _cardPool = cardPool;
+        _fallBackID = fallBackID;
     }
 
     public void SetPool(CardPool cardPool)
@@ -21,6 +24,13 @@ public class PoolSystem
         foreach (var card in _cardPool.Data)
         {
             maxRate += card.Rate;
+        }
+        // 不正な値
+        if(maxRate == 0.0f)
+        {
+            // 
+            Debug.LogError("カード出現率が不正だったためFallBackIDを返します");
+            return _fallBackID;
         }
 
         float random = Random.Range(0.0f, maxRate);
