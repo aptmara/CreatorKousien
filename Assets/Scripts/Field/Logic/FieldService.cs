@@ -355,43 +355,14 @@ public class FieldService
 
 
     /// <summary>
-    /// 移動の実行リクエスト
+    /// UseCaseから、キャラクターが移動したことを受け取るためのメソッド
     /// </summary>
-    /// <param name="command">移動の種類とDeltaを含むコマンド</param>
-    /// <param name="currentPos">移動元の現在位置</param>
-    /// <returns>移動が成功した場合はtrue、それ以外はfalse</returns>
-    public bool TryMoveActor(MoveCommand command)
+    /// <param name="actorId">移動したキャラクターのID</param>
+    /// <param name="x">移動先のX座標</param>
+    /// <param name="y">移動先のY座標</param>
+    public void NotifyActorMoved(int actorId, int x, int y)
     {
-        Vector2Int currentPos = GetActorPosition(command.ActorId);
-        if (currentPos.x == -1)
-        {
-            return false;   // アクターIDが存在しない場合は移動不可
-        }
-
-        Vector2Int targetPos;
-
-        //----- 1. Movetypeに応じてDeltaを変換 -----
-        if (command.Type == MoveType.Warp)
-        {
-            targetPos = command.Delta; // ワープはDeltaを絶対座標として扱う
-        }
-        else
-        {
-            // 通常移動とノックバックはDeltaを相対座標として扱う
-            targetPos = currentPos + command.Delta;
-        }
-
-        // ----- 2. 移動可能か判定 -----
-        if (CanMoveTo(command.ActorId, targetPos.x, targetPos.y))
-        {
-            // 移動が可能な場合、占有状態を更新
-            UpdateOccupancy(command.ActorId, currentPos.x, currentPos.y, targetPos.x, targetPos.y);
-            // 移動イベントを発行
-            OnActorMoved?.Invoke(command.ActorId, targetPos.x, targetPos.y);
-            return true;    // 移動成功
-        }
-
-        return false;   // 移動不可の場合はfalseを返す
+        OnActorMoved?.Invoke(actorId, x, y);
     }
 
 
