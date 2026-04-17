@@ -13,6 +13,9 @@ using CreatorKousien.Command;
 using CreatorKousien.UseCase;
 using CreatorKousien.Core;
 using UnityEngine.InputSystem;
+using CreatorKousien.Field;
+using CreatorKousien.Data;
+using CreatorKousien.Player;
 
 public class TestBattleStarter : MonoBehaviour
 {

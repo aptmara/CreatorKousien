@@ -10,6 +10,7 @@
 // ------------------------------------------------------------
 using UnityEngine;
 using CreatorKousien.Command;
+using CreatorKousien.Field;
 
 namespace CreatorKousien.UseCase
 {
