@@ -57,7 +57,7 @@ public class GameManager : MonoBehaviour
         }
         else if (scene.name == "Select")
         {
-            
+
         }
         else if (scene.name == "Game")
         {
@@ -132,11 +132,11 @@ public class GameManager : MonoBehaviour
 
     void UpdateGameScene()
     {
-        
+
     }
     void UpdateResultScene()
     {
-        
+
     }
 
 }

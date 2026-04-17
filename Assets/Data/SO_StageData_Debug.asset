@@ -14,10 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StageData
   _width: 6
   _height: 3
-  _obstaclePositions: []
-  _playerStartPosition: {x: 0, y: 0}
-  _defaultTile: {fileID: 11400000, guid: 4f1d1c0c71057174f9279a40a873120f, type: 2}
-  _specialTileRules:
+  _borderX: 3
+  CellSize: 1.5
+  BorderGap: 1.5
+  BorderPrefab: {fileID: 6644790013973758042, guid: f6b436d072149b84ca00f28288876136, type: 3}
+  ObstaclePositions: []
+  _playerStartPosition: {x: 1, y: 1}
+  PlayerDefaultTile: {fileID: 11400000, guid: 4f1d1c0c71057174f9279a40a873120f, type: 2}
+  EnemyDefaultTile: {fileID: 11400000, guid: 55b9258eedc583e4fbe6afd686c8bd44, type: 2}
+  PlayerSpecialTileRules:
   - SpecialTile: {fileID: 11400000, guid: 67f961d2870a7954183ae68532d67628, type: 2}
     SpawnProbability: 1
-    SpawnCount: 2
+    MinSpawnCount: 1
+    MaxSpawnCount: 1
+    LifespanTurns: 1
+    SpawnIntervalTurns: 1
+  EnemySpecialTileRules: []

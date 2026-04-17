@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28907a67571dbe849b63f6039a2e8f6d, type: 3}
+  m_Name: SO_EffectDataBase
+  m_EditorClassIdentifier: Assembly-CSharp::EffectDataBase
+  _effectList:
+  - effectID: 0
+    value:
+    - valueType: 0
+      targetType: 1
+      value: 20
+    - valueType: 2
+      targetType: 0
+      value: 10
+    moveValue: {x: 0, y: 0}
+    duration: 0
+    effectName: "\u7532\u6590\u30DF\u30B5\u30A4\u30EB"
+    effectInfo: "\u30D0\u30C1\u30FC\u30F3\uFF01\uFF01"
+    effectIcon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+    effectType: 0
+  - effectID: 1
+    value: []
+    moveValue: {x: 0, y: 0}
+    duration: 2
+    effectName: "\u7532\u6590\u30B7\u30FC\u30EB\u30C9"
+    effectInfo: "\u3042\u307E\u308A\u306B\u3082\u786C\u3044"
+    effectIcon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+    effectType: 2
+  - effectID: 2
+    value: []
+    moveValue: {x: 0, y: 0}
+    duration: 0
+    effectName: 
+    effectInfo: 
+    effectIcon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+    effectType: 0
+  - effectID: 3
+    value: []
+    moveValue: {x: 0, y: 0}
+    duration: 0
+    effectName: 
+    effectInfo: 
+    effectIcon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+    effectType: 0
+  - effectID: 4
+    value: []
+    moveValue: {x: 0, y: 0}
+    duration: 0
+    effectName: 
+    effectInfo: 
+    effectIcon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+    effectType: 0
+  _fallbackEffect:
+    effectID: 0
+    value: []
+    moveValue: {x: 0, y: 0}
+    duration: 0
+    effectName: FallBack
+    effectInfo: FallBack
+    effectIcon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+    effectType: 0

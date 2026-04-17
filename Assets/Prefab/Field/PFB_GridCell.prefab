@@ -76,3 +76,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridCellView
   _modelContainer: {fileID: 0}
+  _sinkDepth: -0.2
+  _animSpeed: 10
