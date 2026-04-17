@@ -14,9 +14,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using CreatorKousien.Data;
 using CreatorKousien.Command;
-using CreatorKousien.Field;
-using CreatorKousien.Player;
-// using CreatorKousien.Battle;
 
 namespace CreatorKousien.Enemy
 {
@@ -27,7 +24,6 @@ namespace CreatorKousien.Enemy
     {
         private EnemyRuntimeData _myData;               // この敵自体の現在状態
         private EnemyData _masterData;                  // 設計図 (行動パターン一覧)
-        private AttackTelegraphSystem _telegraphSystem; // 予告を登録するカレンダー
 
         // --- 内部ステート ---
         private int _localTurnCount = 0;
@@ -43,7 +39,6 @@ namespace CreatorKousien.Enemy
         {
             _myData = myData;
             _masterData = masterData;
-            _telegraphSystem = telegraphSystem;
 
             // クールダウン辞書の初期化
             foreach (var pattern in _masterData.ActionPatterns)
@@ -52,7 +47,12 @@ namespace CreatorKousien.Enemy
             }
         }
 
-        public ICommand Think(FieldService fieldService, PlayerRuntimeData playerData)
+        /// <summary>
+        /// AIの思考ルーチン
+        /// </summary>
+        /// <param name="situation"></param>
+        /// <returns></returns>
+        public EnemyIntent Think(BattleSituation situation)
         {
             _localTurnCount++;
             TickCooldowns();    // 毎ターン、全スキルのクールダウンを1減らす
@@ -61,22 +61,30 @@ namespace CreatorKousien.Enemy
             foreach (var pattern in _masterData.ActionPatterns)
             {
                 // 1. 発動条件を満たしているか
-                if (!CheckCondition(pattern, playerData)) continue;
+                if (!CheckCondition(pattern, situation.PlayerPos)) continue;
 
                 // 2. クールダウン中ではないか
                 if (_cooldownTimers[pattern] > 0) continue;
 
                 // 3. 基準点の絶対座標を算出
-                Vector2Int originPos = GetOriginPosition(pattern.OriginRule, fieldService, playerData);
+                Vector2Int originPos = GetOriginPosition(pattern.OriginRule, situation);
 
                 // 4. 基準点を元に実際の攻撃範囲を計算
-                List<Vector2Int> targetCells = CalculateTargetCells(pattern, originPos, fieldService);
+                List<Vector2Int> rawCells = CalculateTargetCells(pattern, originPos, situation);
 
                 // 5. 有効なターゲットますが1つも無ければスキップして次の行動を考える
-                if (targetCells.Count == 0) continue;
+                if (rawCells.Count == 0) continue;
+                _cooldownTimers[pattern] = pattern.CooldownTurns;
 
-                // 6. 行動を決定し、カレンダーに登録
-                return ExecuteAction(pattern, targetCells);
+                // 6. 行動を決定し、予約を提出
+                return new EnemyIntent
+                {
+                    SourceActorId = _myData.ActorId,
+                    AttackInfo = pattern.AttackInfo,
+                    RawTargetCells = rawCells,
+                    ChargeTurns = pattern.ChargeTurns,
+                    IsInterruptible = pattern.IsInterruptible
+                };
             }
 
             // どの条件も満たさなかった場合、何もしない
@@ -90,41 +98,43 @@ namespace CreatorKousien.Enemy
         /// 攻撃範囲の基準となるマスを算出する
         /// </summary>
         /// <param name="originRule"></param>
-        /// <param name="field"></param>
-        /// <param name="player"></param>
+        /// <param name="situation"></param>
         /// <returns></returns>
-        private Vector2Int GetOriginPosition(TargetOrigin originRule, FieldService field, PlayerRuntimeData player)
+        private Vector2Int GetOriginPosition(TargetOrigin originRule, BattleSituation situation)
         {
-            // 番名の最大X, Yインデックスの取得
-            int maxX = field.GetFieldSize().x - 1;
-            int maxY = field.GetFieldSize().y - 1;
-
             switch (originRule)
             {
                 case TargetOrigin.PlayerPosition:
-                    return player.Position;
+                    return situation.PlayerPos;
 
                 case TargetOrigin.FieldCenter:
-                    return new Vector2Int(maxX / 2, maxY / 2);
+                    return new Vector2Int(situation.MaxX / 2, situation.MaxY / 2);
 
                 case TargetOrigin.FrontRowCenter:
-                    return new Vector2Int(maxX / 2, 0);
+                    return new Vector2Int(situation.MaxX / 2, 0);
 
                 case TargetOrigin.BackRowCenter:
-                    return new Vector2Int(maxX / 2, maxY);
+                    return new Vector2Int(situation.MaxX / 2, situation.MaxY);
 
                 case TargetOrigin.LeftEdgeCenter:
-                    return new Vector2Int(0, maxY / 2);
+                    return new Vector2Int(0, situation.MaxY / 2);
 
                 case TargetOrigin.RightEdgeCenter:
-                    return new Vector2Int(maxX, maxY / 2);
+                    return new Vector2Int(situation.MaxX, situation.MaxY / 2);
 
                 default:
-                    return player.Position;
+                    return situation.PlayerPos;
             }
         }
 
-        private List<Vector2Int> CalculateTargetCells(EnemyActionPattern pattern, Vector2Int origin, FieldService field)
+        /// <summary>
+        /// EnemyActionPatternに応じて攻撃範囲のマスを決定する
+        /// </summary>
+        /// <param name="pattern"></param>
+        /// <param name="origin"></param>
+        /// <param name="situation"></param>
+        /// <returns></returns>
+        private List<Vector2Int> CalculateTargetCells(EnemyActionPattern pattern, Vector2Int origin,  BattleSituation situation)
         {
             List<Vector2Int> result = new List<Vector2Int>();
 
@@ -166,7 +176,7 @@ namespace CreatorKousien.Enemy
             }
 
             // 場外 & 障害物クリッピング
-            result.RemoveAll(pos => field.IsOutOfBounds(pos.x, pos.y) || field.IsObstacle(pos.x, pos.y));
+            result.RemoveAll(pos => !situation.IsValidCell(pos.x, pos.y));
 
             return result;
         }
@@ -214,8 +224,6 @@ namespace CreatorKousien.Enemy
                     IsInterruptible = pattern.IsInterruptible
                 };
 
-                _telegraphSystem.RegisterTelegraph(telegraph);
-
                 return null;
             }
             else
@@ -231,7 +239,7 @@ namespace CreatorKousien.Enemy
         /// <param name="pattern"></param>
         /// <param name="player"></param>
         /// <returns></returns>
-        private bool CheckCondition(EnemyActionPattern pattern, PlayerRuntimeData player)
+        private bool CheckCondition(EnemyActionPattern pattern, Vector2Int playerPos)
         {
             switch (pattern.Condition)
             {
@@ -250,8 +258,8 @@ namespace CreatorKousien.Enemy
 
                 case ConditionType.PlayerInDistance:
                     // マンハッタン距離で計算
-                    int distance = Mathf.Abs(_myData.Position.x - player.Position.x)
-                                 + Mathf.Abs(_myData.Position.y - player.Position.y);
+                    int distance = Mathf.Abs(_myData.Position.x - playerPos.x)
+                                 + Mathf.Abs(_myData.Position.y - playerPos.y);
                     return distance <= pattern.ConditionValue;
 
                 default:

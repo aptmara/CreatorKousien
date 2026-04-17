@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using CreatorKousien.Data;
 using CreatorKousien.Command;
-// using CreatorKousien.Battle;
 
 namespace CreatorKousien.Enemy
 {
