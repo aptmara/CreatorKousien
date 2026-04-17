@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CreatorKousien.Data;
 using JetBrains.Annotations;
+using System.Runtime.Serialization;
 
 namespace CreatorKousien.Enemy
 {
@@ -49,6 +50,40 @@ namespace CreatorKousien.Enemy
             _enemyAIMap[actorId] = ai;
         }
 
+        /// <summary>
+        /// 対象の敵にダメージを与え、死亡した場合は true を返す
+        /// </summary>
+        /// <param name="actorId"></param>
+        /// <param name="damage"></param>
+        /// <returns></returns>
+        public bool TakeDamage(int actorId, int damage)
+        {
+            var data = GetEnemyData(actorId);
+            if (data == null) return false;
+
+            data.CurrentHp -= damage;
+            Debug.Log($"[EnemySystem] 敵(ID:{actorId}) に {damage} ダメージ！ 残りHP: {data.CurrentHp}");
+
+            if (data.CurrentHp <= 0)
+            {
+                OnDeath(actorId);
+                return true;
+            }
+
+            return false;
+        }
+
+        private void OnDeath(int actorId)
+        {
+            Debug.Log($"<color=red>[EnemySystem] 敵(ID:{actorId}) 撃破！！</color>");
+
+            // この敵が予約していた攻撃をすべて消去
+            _telegraphSystem.CancelTelegraphsByActorId(actorId);
+
+            // 辞書からデータを削除
+            _enemyDataMap.Remove(actorId);
+            _enemyAIMap.Remove(actorId);
+        }
 
         /// <summary>
         /// 対象の敵AIを取得する

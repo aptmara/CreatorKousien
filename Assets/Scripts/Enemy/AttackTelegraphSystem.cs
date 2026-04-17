@@ -73,5 +73,16 @@ namespace CreatorKousien.Enemy
                 // TODO: マスの演出を消すイベントを飛ばす
             }
         }
+
+        public void CancelTelegraphsByActorId(int actorId)
+        {
+            int removeCount = _activeTelegraphs.RemoveAll(t => t.SourceActorId == actorId);
+
+            if (removeCount > 0)
+            {
+                Debug.Log($"[AttackTelegraphSystem] Actor:{actorId} の予告を {removeCount} 件キャンセルしました。");
+                // TODO: Viewへ赤いマスを消すように通知
+            }
+        }
     }
 }
