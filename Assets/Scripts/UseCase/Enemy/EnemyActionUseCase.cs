@@ -12,6 +12,7 @@ using CreatorKousien.Core;
 using CreatorKousien.Enemy;
 using CreatorKousien.Field;
 using CreatorKousien.Player;
+using System.Collections.Generic;
 
 namespace CreatorKousien.UseCase
 {
@@ -23,6 +24,7 @@ namespace CreatorKousien.UseCase
         private EnemySystem _enemySystem;
         private FieldService _fieldService;
         private PlayerSystem _playerSystem;
+        private AttackTelegraphSystem _TelegraphSystem;
         private CommandDispatcher _dispatcher;
 
         /// <summary>
@@ -32,11 +34,12 @@ namespace CreatorKousien.UseCase
         /// <param name="FieldService"></param>
         /// <param name="PlayerSystem"></param>
         /// <param name="Dispatcher"></param>
-        public EnemyActionUseCase(EnemySystem EnemySystem, FieldService FieldService, PlayerSystem PlayerSystem, CommandDispatcher Dispatcher)
+        public EnemyActionUseCase(EnemySystem EnemySystem, FieldService FieldService, PlayerSystem PlayerSystem, AttackTelegraphSystem telegraphSystem, CommandDispatcher Dispatcher)
         {
             _enemySystem = EnemySystem;
             _fieldService = FieldService;
             _playerSystem = PlayerSystem;
+            _TelegraphSystem = telegraphSystem;
             _dispatcher = Dispatcher;
         }
 
@@ -46,27 +49,54 @@ namespace CreatorKousien.UseCase
         /// <param name="command"></param>
         public void Execute(EnemyActionCommand command)
         {
-            // 対象となる敵のAIデータを取得
+            // 1. 対象となる敵のAIデータを取得
             EnemyAI ai = _enemySystem.GetEnemyAI(command.EnemyActorId);
-            EnemyRuntimeData enemyData = _enemySystem.GetEnemyData(command.EnemyActorId);
 
-            if (ai == null || enemyData == null)
+            if (ai == null) return;
+
+            // 2. 司令塔が各システムから必要な情報を取得
+            Vector2Int pPos = _playerSystem.RuntimeData.Position;
+            Vector2Int fSize = _fieldService.GetFieldSize();
+            int border = _fieldService.GetBorderX();
+
+            // 3. 戦況パッケージを作成
+            var situation = new BattleSituation
             {
-                Debug.LogWarning($"[EnemyActionUseCase] ActorID: {command.EnemyActorId} の敵が見つかりません。");
-                return;
+                PlayerPos = pPos,
+                MaxX = fSize.x - 1,
+                MaxY = fSize.y - 1,
+                BorderX = border,
+                IsValidCell = (x, y) => !_fieldService.IsOutOfBounds(x, y) && !_fieldService.IsObstacle(x, y)
+            };
+
+            // 4. AIに思考を依頼
+            EnemyIntent intent = ai.Think(situation);
+            if (intent == null) return;
+
+            // 5. FieldServiceを使ってクリッピング
+            var validCells = new List<Vector2Int>();
+            foreach (var pos in intent.RawTargetCells)
+            {
+                if (!_fieldService.IsOutOfBounds(pos.x, pos.y) && !_fieldService.IsObstacle(pos.x, pos.y))
+                {
+                    validCells.Add(pos);
+                }
             }
 
-            // プレイヤーの現在情報を取得
-            PlayerRuntimeData playerData = _playerSystem.RuntimeData;
+            if (validCells.Count == 0) return;  // 全部場外なら終了
 
-            // AIに思考を依頼
-            ICommand instantActionCommand = ai.Think(_fieldService, playerData);
-
-            // もし実行のコマンドが返ってきたら、Dispatcherに横流し
-            if (instantActionCommand != null)
+            // 6. 予約カレンダーに登録
+            var telegraphData = new TelegraphRuntimeData
             {
-                _dispatcher.Dispatch(instantActionCommand);
-            }
+                TelegraphId = intent.SourceActorId * 1000 + Random.Range(1, 999), // 簡易ID
+                SourceActorId = intent.SourceActorId,
+                AttackInfo = intent.AttackInfo,
+                TargetCells = validCells,
+                RemainingTurn = intent.ChargeTurns,
+                IsInterruptible = intent.IsInterruptible
+            };
+
+            _TelegraphSystem.RegisterTelegraph(telegraphData);
 
             // TODO: Mediator経由でViewに赤いマスを描画させる？敵の思考完了イベントを送る？
         }
