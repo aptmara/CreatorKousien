@@ -49,17 +49,6 @@ namespace CreatorKousien.Data
     }
 
     /// <summary>
-    /// 攻撃種別
-    /// </summary>
-    public enum AttackPatternType
-    {
-        [Tooltip("通常の攻撃")] Normal,
-        [Tooltip("ガードを崩す溜め攻撃")] HeavyCharge,
-        [Tooltip("プレイヤーの攻撃を防ぐ")] Defend,
-        [Tooltip("特殊なデバフなどを付与")] Special
-    }
-
-    /// <summary>
     /// AIの1つの行動ルールと、その結果発生する攻撃の内容を定義するクラス
     /// </summary>
     [System.Serializable]
@@ -75,9 +64,8 @@ namespace CreatorKousien.Data
         [Min(0)]
         public int CooldownTurns = 0;
 
-
-        [Tooltip("攻撃の種別。ダメージ計算や防御判定、UIのマスの色分け等に利用します。")]
-        public AttackPatternType AttackType;
+        [Tooltip("攻撃の性質(倍率やヒット数)")]
+        public AttackProperty AttackInfo;
 
         [Tooltip("起点を中心に、どのように攻撃範囲を展開するか")]
         public TargetOrigin OriginRule;

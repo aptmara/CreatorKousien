@@ -24,6 +24,6 @@ MonoBehaviour:
     AttackType: 0
     OriginRule: 0
     TargetRule: 0
-    LocalTargetGrid: 
+    LocalTargetGrid: 00000000000000000000000000000000000000000000000000
     ChargeTurns: 0
     IsInterruptible: 0

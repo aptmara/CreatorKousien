@@ -9,7 +9,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using CreatorKousien.Data;
-using NUnit.Framework.Internal.Commands;
+using CreatorKousien.Command;
 // using CreatorKousien.Battle;
 
 namespace CreatorKousien.Enemy
@@ -29,38 +29,35 @@ namespace CreatorKousien.Enemy
             // TODO: GameManagerにイベントを飛ばす？
         }
 
-        // TODO: 他ドメイン結合待ち
-        // AttackCommand
-        // ============================================================
+        /// <summary>
+        /// ターン経過処理。RemainingTurnを減らし、0になったら攻撃コマンドを発行する。
+        /// TurnEndUseCaseから呼ばれる想定
+        /// </summary>
+        /// <returns></returns>
+        public List<AttackCommand> ProcessTurn()
+        {
+            List<AttackCommand> commandsToExecute = new List<AttackCommand>();
 
-        ///// <summary>
-        ///// ターン経過処理。RemainingTurnを減らし、0になったら攻撃コマンドを発行する。
-        ///// </summary>
-        ///// <returns></returns>
-        //public List<AttackCommand> ProcessTurn()
-        //{
-        //    List<AttackCommand> commandsToExecute = new List<AttackCommand>();
+            for (int i = _activeTelegraphs.Count - 1; i >= 0; i--)
+            {
+                var telegraph = _activeTelegraphs[i];
+                telegraph.RemainingTurn--;
 
-        //    for (int i = _activeTelegraphs.Count - 1; i >= 0; i--)
-        //    {
-        //        var telegraph = _activeTelegraphs[i];
-        //        telegraph.RemainingTurn--;
+                if (telegraph.RemainingTurn <= 0)
+                {
+                    commandsToExecute.Add(new Command.AttackCommand
+                    (
+                        telegraph.SourceActorId,
+                        telegraph.AttackInfo,
+                        telegraph.TargetCells
+                    ));
 
-        //        if (telegraph.RemainingTurn <= 0 )
-        //        {
-        //            commandsToExecute.Add(new AttackCommand
-        //            {
-        //                SourceActorId = telegraph.SourceActorId,
-        //                PatternType = telegraph.PatternType,
-        //                TargetCells = telegraph.TargetCells
-        //            });
-
-        //            _activeTelegraphs.RemoveAt(i);
-        //            // TODO: GameManagerにイベントを飛ばす？
-        //        }
-        //    }
-        //    return commandsToExecute;
-        //}
+                    _activeTelegraphs.RemoveAt(i);
+                    // TODO: GameManagerにイベントを飛ばす？
+                }
+            }
+            return commandsToExecute;
+        }
 
         /// <summary>
         /// プレイヤーの攻撃によるキャンセル処理
