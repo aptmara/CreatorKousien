@@ -8,14 +8,15 @@
 // Notes	:
 // - デバック用GameManagerのような役割を果たすクラスです。実際のゲームでは、GameManagerがこれらの配線を行うことになると思いますが、テストバトル用に簡略化してあります。
 // ------------------------------------------------------------
-using UnityEngine;
 using CreatorKousien.Command;
-using CreatorKousien.UseCase;
 using CreatorKousien.Core;
-using UnityEngine.InputSystem;
-using CreatorKousien.Field;
 using CreatorKousien.Data;
+using CreatorKousien.Field;
 using CreatorKousien.Player;
+using CreatorKousien.UseCase;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class TestBattleStarter : MonoBehaviour
 {
@@ -26,19 +27,24 @@ public class TestBattleStarter : MonoBehaviour
     [Header("プレイヤー設定")]
     [SerializeField] private PlayerData _testPlayerData;
 
-    private CommandDispatcher _dispatcher;
-    private PlayerSystem _playerSystem;
+    private PlayerSystem _playerSystem;         /// PlayerSystemのインスタンスを保持する変数
+    private GameMediator _mediator;             /// GameMediatorのインスタンスを保持する変数
 
     private void Start()
     {
-        // 1. システムを生成
+        // ----- 1. システムを生成 -----
         FieldService fieldService = new FieldService();
         fieldService.Initialize(_testStageData);
         _fieldView.BuildView(fieldService.State, _testStageData);
 
         TileEffectSystem tileEffect = new TileEffectSystem(fieldService.State);
 
-        // 2. プレイヤーのシステム（裏側）と見た目（表側）の初期化
+        // BattleManagerの生成
+        BattleManager battleManager = new BattleManager();
+
+
+
+        // ----- 2. プレイヤーのシステム（裏側）と見た目（表側）の初期化 -----
         _playerSystem = new PlayerSystem();
         Vector2Int startGridPos = _testStageData.PlayerStartPosition;
 
@@ -48,18 +54,29 @@ public class TestBattleStarter : MonoBehaviour
 
         // 表側のセットアップ
         Vector3 startWorldPos = _fieldView.GetCellWorldPosition(startGridPos.x, startGridPos.y);
-
         // PlayerDataに入っているPrefabを、初期座標に生成する！
         GameObject playerObj = Instantiate(_testPlayerData.PlayerPrefab, startWorldPos, Quaternion.identity);
         // 生成したオブジェクトから PlayerView コンポーネントを取得する！
         PlayerView playerView = playerObj.GetComponent<PlayerView>();
-
         playerView.Initialize(startWorldPos);
         playerView.SetStandingTile(_fieldView.GetCellView(startGridPos));
-
         _fieldView.HighlightCell(startGridPos.x, startGridPos.y); // 初期位置をハイライトしておくとわかりやすいかも！
 
-        // 3. イベントの配線
+
+
+        // ----- 3. イベントの配線 -----
+        GameEventBus eventBus = new GameEventBus();
+
+        // 戻って来た通知を受け取って画面を動かす
+        eventBus.OnTelegraphRequested += (targetCells, isWarning) =>
+        {
+            _fieldView.ShowTelegraph(targetCells, isWarning);
+        };
+        eventBus.OnAttackHit += (targetActorId) =>
+        {
+            Debug.Log($"<color=red>[View] ActorID:{targetActorId} に攻撃ヒットエフェクトを再生！</color>");
+        };
+
         fieldService.OnActorMoved += (actorId, x, y) =>
         {
             if (actorId == _playerSystem.RuntimeData.ActorId)
@@ -74,25 +91,40 @@ public class TestBattleStarter : MonoBehaviour
             }
         };
 
-        // 4. UseCaseとDispatcherを生成
+
+        // ----- 4. UseCaseとDispatcherの紐づけ -----
+        CommandDispatcher dispatcher = new CommandDispatcher();
+
+        // コマンドディスパッチャーを生成して、移動コマンドを処理できるようにする！
         MoveUseCase moveUseCase = new MoveUseCase(fieldService, tileEffect);
-        _dispatcher = new CommandDispatcher(moveUseCase);
+        AttackUseCase attackUseCase = new AttackUseCase(battleManager, fieldService, dispatcher);
+        // EnemyActionUseCase enemyUseCase = new EnemyActionUseCase();
+
+        // UseCaseをDispatcherに登録
+        dispatcher.Register<MoveCommand>(moveUseCase.Execute);
+        dispatcher.Register<AttackCommand>(attackUseCase.Execute);
+
+
+        // ----- 5. Mediatorを生成して、システムやビューを登録する -----
+        _mediator = new GameMediator();
+        _mediator.Initialize(dispatcher, eventBus);
 
         Debug.Log("テストバトルの配線完了！十字キーで移動コマンドを発行できます！");
     }
 
     private void Update()
     {
-        if (_dispatcher == null) return;
+        if (_mediator == null) return;
 
         var keyboard = Keyboard.current;
         if (keyboard == null) return;
 
         int pId = _playerSystem.RuntimeData.ActorId; // プレイヤーのID(1)
 
-        if (keyboard.upArrowKey.wasPressedThisFrame) _dispatcher.Dispatch(new MoveCommand(pId, GridDirection.Up, 1));
-        if (keyboard.downArrowKey.wasPressedThisFrame) _dispatcher.Dispatch(new MoveCommand(pId, GridDirection.Down, 1));
-        if (keyboard.leftArrowKey.wasPressedThisFrame) _dispatcher.Dispatch(new MoveCommand(pId, GridDirection.Left, 1));
-        if (keyboard.rightArrowKey.wasPressedThisFrame) _dispatcher.Dispatch(new MoveCommand(pId, GridDirection.Right, 1));
+        // 移動テスト
+        if (keyboard.upArrowKey.wasPressedThisFrame) _mediator.SendCommand(new MoveCommand(pId, GridDirection.Up, 1));
+        if (keyboard.downArrowKey.wasPressedThisFrame) _mediator.SendCommand(new MoveCommand(pId, GridDirection.Down, 1));
+        if (keyboard.leftArrowKey.wasPressedThisFrame) _mediator.SendCommand(new MoveCommand(pId, GridDirection.Left, 1));
+        if (keyboard.rightArrowKey.wasPressedThisFrame) _mediator.SendCommand(new MoveCommand(pId, GridDirection.Right, 1));
     }
 }

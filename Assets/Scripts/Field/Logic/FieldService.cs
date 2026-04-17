@@ -27,16 +27,16 @@ namespace CreatorKousien.Field
     {
         private FieldState _fieldState; /// 盤面の状態
 
-                                        /// <summary>
-                                        /// 現在の盤面状態へのアクセスプロパティ
-                                        /// </summary>
+        /// <summary>
+        /// 現在の盤面状態へのアクセスプロパティ
+        /// </summary>
         public FieldState State => _fieldState;
 
         private Dictionary<int, Vector2Int> _actorPositions = new Dictionary<int, Vector2Int>(); /// キャラクターIDとその位置のマッピング
 
-                                                                                                 /// <summary>
-                                                                                                 /// Characterが移動した際に発行されるイベント。引数は「移動したキャラクターのID」「移動先のX座標」「移動先のY座標」
-                                                                                                 /// </summary>
+        /// <summary>
+        /// Characterが移動した際に発行されるイベント。引数は「移動したキャラクターのID」「移動先のX座標」「移動先のY座標」
+        /// </summary>
         public event Action<int, int, int> OnActorMoved;
 
         /// <summary>
@@ -115,7 +115,51 @@ namespace CreatorKousien.Field
             return _fieldState.GetCell(x, y).OccupierId; // セルの占有者IDを返す
         }
 
+        /// <summary>
+        /// ActorIDから現在の座標を取得するメソッド。存在しないIDの場合は(-1, -1)を返す
+        /// </summary>
+        /// <param name="actorId"></param>
+        /// <returns></returns>
+        public Vector2Int GetActorPosition(int actorId)
+        {
+            if (_actorPositions.TryGetValue(actorId, out Vector2Int pos))
+            {
+                return pos;
+            }
+            return new Vector2Int(-1, -1); // 存在しないアクターIDの場合は無効な座標を返す
+        }
 
+
+        /// <summary>
+        /// 指定されたマスのリストに存在するキャラクターのIDを全て取得するメソッド
+        /// </summary>
+        /// <param name="targetCells">検索したいマスのリスト</param>
+        /// <returns>マス内にいたキャラクターのIDのリスト</returns>
+        public List<int> GetActorsInCells(List<Vector2Int> targetCells)
+        {
+            List<int> hitActorIds = new List<int>();
+
+            foreach (var pos in targetCells)
+            {
+                // そのマスにいるキャラクターのIDを取得する関数を呼び出す
+                int actorId = GetOccupierId(pos.x, pos.y);
+
+                // 誰かがいて、まだリストに追加されていなければ追加する
+                if (actorId != -1 && !hitActorIds.Contains(actorId))
+                {
+                    hitActorIds.Add(actorId);
+                }
+            }
+
+            return hitActorIds;
+        }
+
+
+
+
+
+        // ステージ初期化・ターン進行処理・その他判定
+        // ----------------------------------------------------------------------
 
         /// <summary>
         /// ステージデータを元に盤面を初期化し、障害物などを配置
@@ -343,19 +387,6 @@ namespace CreatorKousien.Field
         }
 
 
-        /// <summary>
-        /// ActorIDから現在の座標を取得するメソッド。存在しないIDの場合は(-1, -1)を返す
-        /// </summary>
-        /// <param name="actorId"></param>
-        /// <returns></returns>
-        public Vector2Int GetActorPosition(int actorId)
-        {
-            if (_actorPositions.TryGetValue(actorId, out Vector2Int pos))
-            {
-                return pos;
-            }
-            return new Vector2Int(-1, -1); // 存在しないアクターIDの場合は無効な座標を返す
-        }
 
 
         /// <summary>

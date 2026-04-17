@@ -7,6 +7,7 @@
 //
 // Notes	:
 // - 随時コマンドやUseCaseに応じて更新する予定
+// - AttackCommand,EnemyActionCommandの追加に伴い、Dispatcherも更新 (4/17)
 // ------------------------------------------------------------
 using UnityEngine;
 using System;
@@ -28,17 +29,21 @@ namespace CreatorKousien.Core
 
 
         /// <summary>
-        /// GameManagerから各種UseCaseを受け取って、辞書に登録する
+        /// コンストラクタ
         /// </summary>
-        /// <param name="moveUseCase">移動要求コマンド</param>
-        public CommandDispatcher(MoveUseCase moveUseCase /* 将来的にここにコマンドをどんどん追加！ */)
+        public CommandDispatcher() {}
+
+
+        /// <summary>
+        /// コマンドの型と、それを処理する関数を登録するメソッド
+        /// [T]が来たら[handler]を実行する、というルールを登録する
+        /// [T]はICommandを実装したクラスでなければならない
+        /// </summary>
+        /// <typeparam name="T">ICommandの実装クラス</typeparam>
+        /// <param name="handler">実行するUseCase</param>
+        public void Register<T>(Action<T> handler) where T : ICommand
         {
-            // MoveCommandの処理を登録
-            _handlers[typeof(MoveCommand)] = cmd =>
-            {
-                var moveCmd = (MoveCommand)cmd;
-                moveUseCase.Execute(moveCmd);
-            };
+            _handlers[typeof(T)] = (cmd) => handler((T)cmd);
         }
 
 

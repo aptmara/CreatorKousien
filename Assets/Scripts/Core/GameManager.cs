@@ -10,7 +10,7 @@ using UnityEditor.Experimental.Rendering;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
-
+using CreatorKousien.Core;
 
 public class GameManager : MonoBehaviour
 {
@@ -108,12 +108,12 @@ public class GameManager : MonoBehaviour
     {
         // StageNoに応じた読み込みとインスタンス生成
         // Mediatorの初期化
-        _mediator = new GameMediator();
-        _mediator.Initialize();
+        // _mediator = new GameMediator();
+        // _mediator.Initialize();
         // バトルマネージャーの初期化
         _battleManager = new BattleManager();
         _battleManager.Initialize();
-        _mediator.SetBattleManager(_battleManager);
+        // _mediator.SetBattleManager(_battleManager);
     }
 
     void InitializeResultScene()
