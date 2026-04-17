@@ -6,7 +6,7 @@
 // Created	: 2026-04-14
 //
 // Notes	:
-// -
+// - 攻撃予告用の関数を追加 (4/17)
 // ------------------------------------------------------------
 using UnityEngine;
 
@@ -121,6 +121,28 @@ public class GridCellView : MonoBehaviour
                 _targetLocalPos,
                 Time.deltaTime * _animSpeed
             );
+        }
+    }
+
+    /// <summary>
+    /// 攻撃予告などの危険状態をセットする
+    /// </summary>
+    /// <param name="isWarning">警告状態かどうか</param>
+    public void SetWarning(bool isWarning)
+    {
+        if (_renderer != null)
+        {
+            if (isWarning)
+            {
+                // 危険な赤色に光らせる！
+                _renderer.material.SetColor("_EmissionColor", Color.red * 1.5f);
+                _renderer.material.EnableKeyword("_EMISSION");
+            }
+            else
+            {
+                // 警告解除時は元の状態に戻す
+                SetOccupied(_isOccupied);
+            }
         }
     }
 }

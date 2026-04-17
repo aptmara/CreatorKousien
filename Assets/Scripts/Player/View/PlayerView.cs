@@ -8,6 +8,7 @@
 // Notes	:
 // -
 // ------------------------------------------------------------
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -18,16 +19,37 @@ public class PlayerView : MonoBehaviour
     // ----- Inspectorで設定する変数 -----
     [Header("Playerの描画に関する設定")]
     [Tooltip("アニメーターコンポーネントをアタッチしてください")]
-    [SerializeField] private Animator _animator; // プレイヤーのアニメーター
+    [SerializeField] private Animator _animator;                // プレイヤーのアニメーター
 
     [Tooltip("目標座標へ向かう際の滑らかさ（Lerpの補間速度）")]
     [SerializeField] private float _lerpSpeed = 10f;
 
+    [Tooltip("モデルが床に埋まる場合、ここを0.5等に設定して高さを持ち上げる")]
+    [SerializeField] private float _modelYOffset = 0.5f;        // モデルの高さオフセット
+
+    [Tooltip("ジャンプの高さ")]
+    [SerializeField] private float _jumpHeight = 1f;            // ジャンプの高さ
+    [Tooltip("1マスの移動にかかる時間")]
+    [SerializeField] private float _moveDuration = 0.25f;       // ジャンプの時間
+
     private Vector3 _targetWorldPos;    // 目標座標（ワールド座標）
-
     private GridCellView _standingTile; // プレイヤーが立っているマスの参照
-
     private float _baseHeight;          // プレイヤーの基本的な高さ（マスの高さを考慮する前の高さ）
+    private Coroutine _moveCoroutine;   // 移動中のコルーチンの参照
+
+
+    /// <summary>
+    /// 初期位置のセットアップ
+    /// </summary>
+    /// <param name="startGridPos"> 初期のプレイヤー座標</param>
+    public void Initialize(Vector3 startWorldPos)
+    {
+        _baseHeight = startWorldPos.y + _modelYOffset;
+
+        UpdateTargetPosition(startWorldPos);
+        transform.position = _targetWorldPos;           // 初期位置を設定
+    }
+
 
     /// <summary>
     /// 立っている床をセットする
@@ -39,18 +61,6 @@ public class PlayerView : MonoBehaviour
     }
 
 
-    /// <summary>
-    /// 初期位置のセットアップ
-    /// </summary>
-    /// <param name="startGridPos"> 初期のプレイヤー座標</param>
-    public void Initialize(Vector3 startWorldPos)
-    {
-        _baseHeight = transform.position.y; // 初期の高さを保存
-
-        UpdateTargetPosition(startWorldPos);
-        transform.position = _targetWorldPos;           // 初期位置を設定
-    }
-
 
     /// <summary>
     /// PlayerSystemからの移動通知を受け取る
@@ -59,6 +69,54 @@ public class PlayerView : MonoBehaviour
     public void UpdateTargetPosition(Vector3 cellWorldPos)
     {
         _targetWorldPos = new Vector3(cellWorldPos.x, _baseHeight, cellWorldPos.z);
+
+        if (_moveCoroutine != null)
+        {
+            StopCoroutine(_moveCoroutine);
+        }
+        _moveCoroutine = StartCoroutine(JumpRoutine(_targetWorldPos));
+    }
+
+
+    private IEnumerator JumpRoutine(Vector3 targetPos)
+    {
+        if (_animator != null)
+        {
+            _animator.SetBool("IsMoving", true);
+
+            Vector3 startPos = transform.position;
+            float elapsed = 0f;
+
+            while (elapsed < _moveDuration)
+            {
+                elapsed += Time.deltaTime;
+                float percent = elapsed / _moveDuration;
+
+                // 直線的な移動位置
+                Vector3 currentPos = Vector3.Lerp(startPos, targetPos, percent);
+
+                // ジャンプの高さを加算
+                float jumpOffset = Mathf.Sin(percent * Mathf.PI) * _jumpHeight; // ジャンプの高さをサイン波で計算
+
+                // 床の高さを考慮してY座標を調整
+                float tileSinkOffset = _standingTile != null ? _standingTile.CurrentVisualOffset : 0f;
+
+                // 最終的な位置を計算
+                currentPos.y = currentPos.y + jumpOffset + tileSinkOffset;
+
+                transform.position = currentPos;
+                yield return null;
+            }
+
+            // 最終位置を確実にセット
+            float finalTileOffset = _standingTile != null ? _standingTile.CurrentVisualOffset : 0f;
+            transform.position = new Vector3(targetPos.x, targetPos.y + finalTileOffset, targetPos.z);
+
+            if (_animator != null)
+            {
+                _animator.SetBool("IsMoving", false);
+            }
+        }
     }
 
     /// <summary>

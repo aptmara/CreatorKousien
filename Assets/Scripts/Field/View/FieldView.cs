@@ -9,6 +9,7 @@
 // - 盤面全体の見た目を管理するクラス。
 // - 左上(0,0)を原点とし、右方向へ+X、下方向へ+Y(Unity空間では-Z)として配置するよう修正 (4/13)
 // - 乗ったマス、過去のマスを記録して、マスの見た目を変える機能追加 (4/15)
+// - カメラの位置をStageに対応する形で調整
 // ------------------------------------------------------------
 using UnityEngine;
 using System.Collections.Generic;
@@ -24,6 +25,16 @@ public class FieldView : MonoBehaviour
 
     [Tooltip("1マスのPrefab。GridCellViewコンポーネントがアタッチされている必要がある")]
     [SerializeField] private GridCellView _cellPrefab;      // 1マスのPrefab
+
+
+    [Header("カメラ設定")]
+    [Tooltip("カメラの高さ")]
+    [SerializeField] private float _cameraHeight = 4.5f;      // カメラの高さ
+    [Tooltip("カメラのZ方向の引き")]
+    [SerializeField] private float _cameraOffsetZ = -7f;    // カメラのZ方向の引き
+    [Tooltip("カメラのX軸の回転角度")]
+    [SerializeField] private float _cameraAngleX = 35f;   // カメラのX軸の回転角度
+
 
     // 生成したセルのリスト
     private Dictionary<Vector2Int, GridCellView> _cellViews = new Dictionary<Vector2Int, GridCellView>();
@@ -96,9 +107,48 @@ public class FieldView : MonoBehaviour
             borderObj.name = "BorderLineObject";                                        // オブジェクトの名前を設定
         }
 
+        // カメラの位置を調整
+        SetupCamera(state, stageData);
+
         Debug.Log($"[FieldView] {state.Width}x{state.Height}の盤面を生成しました。");
     }
 
+
+    /// <summary>
+    /// カメラを盤面の中心に合わせるメソッド
+    /// </summary>
+    /// <param name="state">    フィールドの状態</param>
+    /// <param name="stageData">ステージのデータ</param>
+    private void SetupCamera(FieldState state, StageData stageData)
+    {
+        Camera mainCam = Camera.main;
+        if (mainCam == null)
+        {
+            Debug.LogWarning("[FieldView] メインカメラが設定されていません。カメラの位置を調整できません。");
+            return;
+        }
+
+        // 盤面の中心を計算
+        float centerX = (state.Width - 1) * stageData.CellSize / 2f;
+        if (stageData.BorderGap > 0f)
+        {
+            centerX += stageData.BorderGap / 2f;
+        }
+        float centerZ = -(state.Height - 1) * stageData.CellSize / 2f;
+
+        // カメラの位置と角度をセット
+        mainCam.transform.position = new Vector3(centerX, _cameraHeight, centerZ + _cameraOffsetZ);
+        mainCam.transform.rotation = Quaternion.Euler(_cameraAngleX, 0, 0);
+
+        Debug.Log($"[FieldView] カメラの位置を調整しました。位置: {mainCam.transform.position}, 角度: {mainCam.transform.rotation.eulerAngles}");
+    }
+
+
+    /// <summary>
+    /// マスのアニメショーンを行うメソッド
+    /// </summary>
+    /// <param name="x">X座標</param>
+    /// <param name="y">Y座標</param>
     public void HighlightCell(int x, int y)
     {
         // 前のマスを元に戻す
@@ -160,5 +210,48 @@ public class FieldView : MonoBehaviour
 
             // TODO: ここで、マスの見た目を更新するためのアニメーションやエフェクトを追加できるぜよ
         }
+    }
+
+
+    /// <summary>
+    /// 指定された複数のマスを攻撃予告にするメソッド
+    /// </summary>
+    /// <param name="position">攻撃予告を表示するマスのリスト</param>
+    /// <param name="isWarning">警告状態かどうか</param>
+    public void ShowTelegraph(List<Vector2Int> position, bool isWarning)
+    {
+        foreach (var pos in position)
+        {
+            var cell = GetCellView(pos);
+            if (cell != null)
+            {
+                cell.SetWarning(isWarning);
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// 指定されたマスのリストに存在するキャラクターのIDを全て取得するメソッド
+    /// </summary>
+    /// <param name="targetCells">検索したいマスのリスト</param>
+    /// <returns>マス内にいたキャラクターのIDのリスト</returns>
+    public List<int> GetActorsInCells(List<Vector2Int> targetCells)
+    {
+        List<int> hitActorIds = new List<int>();
+
+        foreach (var pos in targetCells)
+        {
+            // そのマスにいるキャラクターのIDを取得する関数を呼び出す
+            int actorId = GetOccupierId(pos.x, pos.y);
+
+            // 誰かがいて、まだリストに追加されていなければ追加する
+            if (actorId != -1 && !hitActorIds.Contains(actorId))
+            {
+                hitActorIds.Add(actorId);
+            }
+        }
+
+        return hitActorIds;
     }
 }
