@@ -13,7 +13,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using CreatorKousien.Data;
-using UnityEngine.Rendering;
+using CreatorKousien.Command;
 // TODO: 他メンバーのマージ次第
 // using CreatorKousien.Field;
 // using CreatorKousien.Battle;
@@ -52,221 +52,213 @@ namespace CreatorKousien.Enemy
             }
         }
 
-        // TODO: 他ドメイン結合待ち
-        // FieldService, PlayerRuntimeData, AttackCommand
+        public ICommand Think(FieldService fieldService, PlayerRuntimeData playerData)
+        {
+            _localTurnCount++;
+            TickCooldowns();    // 毎ターン、全スキルのクールダウンを1減らす
+
+            // リストの上から優先して評価
+            foreach (var pattern in _masterData.ActionPatterns)
+            {
+                // 1. 発動条件を満たしているか
+                if (!CheckCondition(pattern, playerData)) continue;
+
+                // 2. クールダウン中ではないか
+                if (_cooldownTimers[pattern] > 0) continue;
+
+                // 3. 基準点の絶対座標を算出
+                Vector2Int originPos = GetOriginPosition(pattern.OriginRule, fieldService, playerData);
+
+                // 4. 基準点を元に実際の攻撃範囲を計算
+                List<Vector2Int> targetCells = CalculateTargetCells(pattern, originPos, fieldService);
+
+                // 5. 有効なターゲットますが1つも無ければスキップして次の行動を考える
+                if (targetCells.Count == 0) continue;
+
+                // 6. 行動を決定し、カレンダーに登録
+                return ExecuteAction(pattern, targetCells);
+            }
+
+            // どの条件も満たさなかった場合、何もしない
+            return null;
+        }
+
+        // 内部ロジック: 座標計算 & クリッピング
         // ============================================================
 
-        //public AttackCommand ? Think(FieldService fieldService, PlayerRuntimeData playerData)
-        //{
-        //    _localTurnCount++;
-        //    TickCooldowns();    // 毎ターン、全スキルのクールダウンを1減らす
+        /// <summary>
+        /// 攻撃範囲の基準となるマスを算出する
+        /// </summary>
+        /// <param name="originRule"></param>
+        /// <param name="field"></param>
+        /// <param name="player"></param>
+        /// <returns></returns>
+        private Vector2Int GetOriginPosition(TargetOrigin originRule, FieldService field, PlayerRuntimeData player)
+        {
+            // 番名の最大X, Yインデックスの取得
+            int maxX = field.GetFieldSize().x - 1;
+            int maxY = field.GetFieldSize().y - 1;
 
-        //    // リストの上から優先して評価
-        //    foreach (var pattern in _masterData.ActionPatterns)
-        //    {
-        //        // 1. 発動条件を満たしているか
-        //        if (!CheckCondition(pattern, playerData)) continue;
+            switch (originRule)
+            {
+                case TargetOrigin.PlayerPosition:
+                    return player.Position;
 
-        //        // 2. クールダウン中ではないか
-        //        if (_cooldownTimers[pattern] > 0) continue;
+                case TargetOrigin.FieldCenter:
+                    return new Vector2Int(maxX / 2, maxY / 2);
 
-        //        // 3. 基準点の絶対座標を算出
-        //        Vector2Int originPos = GetOriginPosition(pattern.OriginRule, fieldService, playerData);
+                case TargetOrigin.FrontRowCenter:
+                    return new Vector2Int(maxX / 2, 0);
 
-        //        // 4. 基準点を元に実際の攻撃範囲を計算
-        //        List<Vector2Int> targetCells = CalculateTargetCells(pattern, originPos, fieldService);
+                case TargetOrigin.BackRowCenter:
+                    return new Vector2Int(maxX / 2, maxY);
 
-        //        // 5. 有効なターゲットますが1つも無ければスキップして次の行動を考える
-        //        if (targetCells.Count == 0) continue;
+                case TargetOrigin.LeftEdgeCenter:
+                    return new Vector2Int(0, maxY / 2);
 
-        //        // 6. 行動を決定し、カレンダーに登録
-        //        return ExecuteAction(pattern, targetCells);
-        //    }
+                case TargetOrigin.RightEdgeCenter:
+                    return new Vector2Int(maxX, maxY / 2);
 
-        //    // どの条件も満たさなかった場合、何もしない
-        //    return null;
-        //}
+                default:
+                    return player.Position;
+            }
+        }
 
-        //// 内部ロジック: 座標計算 & クリッピング
-        //// ============================================================
+        private List<Vector2Int> CalculateTargetCells(EnemyActionPattern pattern, Vector2Int origin, FieldService field)
+        {
+            List<Vector2Int> result = new List<Vector2Int>();
 
-        ///// <summary>
-        ///// 攻撃範囲の基準となるマスを算出する
-        ///// </summary>
-        ///// <param name="originRule"></param>
-        ///// <param name="field"></param>
-        ///// <param name="player"></param>
-        ///// <returns></returns>
-        //private Vector2Int GetOriginPosition(TargetOrigin originRule, FieldService field, PlayerRuntimeData player)
-        //{
-        //    // 番名の最大X, Yインデックスの取得
-        //    int maxX = field.GridSizeX - 1;
-        //    int maxY = field.GridSizeY - 1;
+            switch (pattern.TargetRule)
+            {
+                case TargetSelection.SingleCell:
+                    result.Add(origin);
+                    break;
 
-        //    switch (originRule)
-        //    {
-        //        case TargetOrigin.PlayerPosition:
-        //            return player.Position;
+                case TargetSelection.Cross:
+                    result.Add(origin);
+                    result.Add(new Vector2Int(origin.x + 1, origin.y));
+                    result.Add(new Vector2Int(origin.x - 1, origin.y));
+                    result.Add(new Vector2Int(origin.x, origin.y + 1));
+                    result.Add(new Vector2Int(origin.x, origin.y - 1));
+                    break;
 
-        //        case TargetOrigin.FieldCenter:
-        //            return new Vector2Int(maxX / 2, maxY / 2);
+                case TargetSelection.LocalGridShape:
+                    // TargetOriginに合わせて基準点を取得
+                    int centerIndex = GetLocalGridCenterIndex(pattern.OriginRule);
+                    int cx = centerIndex % 5;
+                    int cy = centerIndex / 5;
 
-        //        case TargetOrigin.FrontRowCenter:
-        //            return new Vector2Int(maxX / 2, 0);
+                    for (int i = 0; i < 25; i++)
+                    {
+                        if (pattern.LocalTargetGrid[i])
+                        {
+                            int x = i % 5;
+                            int y = i / 5;
 
-        //        case TargetOrigin.BackRowCenter:
-        //            return new Vector2Int(maxX / 2, maxY);
+                            // 相対的なずれを計算
+                            int dx = x - cx;
+                            int dy = y - cy;
 
-        //        case TargetOrigin.LeftEdgeCenter:
-        //            return new Vector2Int(0, maxY / 2);
+                            result.Add(new Vector2Int(origin.x + dx, origin.y + dy));
+                        }
+                    }
+                    break;
+            }
 
-        //        case TargetOrigin.RightEdgeCenter:
-        //            return new Vector2Int(maxX, maxY / 2);
+            // 場外 & 障害物クリッピング
+            // TODO: 実装待ち
+            // result.RemoveAll(pos => !field.IsInBounds(pos) || !field.IsPassable(pos));
 
-        //        default:
-        //            return player.Position;
-        //    }
-        //}
+            return result;
+        }
 
-        //private List<Vector2Int> CalculateTargetCells(EnemyActionPattern pattern, Vector2Int origin, FieldService field)
-        //{
-        //    List<Vector2Int> result = new List<Vector2Int>();
+        /// <summary>
+        /// TargetOrigin に応じて、5x5のグリッド内の基準点のインデックスを返す
+        /// </summary>
+        private int GetLocalGridCenterIndex(TargetOrigin originRule)
+        {
+            switch (originRule)
+            {
+                case TargetOrigin.FrontRowCenter: return 2;     // 一番上の真ん中
+                case TargetOrigin.BackRowCenter: return 22;     // 一番下の真ん中
+                case TargetOrigin.LeftEdgeCenter: return 10;    // 左端の真ん中
+                case TargetOrigin.RightEdgeCenter: return 14;   // 右端の真ん中
+                default: return 12;                             // それ以外はど真ん中
+            }
+        }
 
-        //    switch (pattern.TargetRule)
-        //    {
-        //        case TargetSelection.SingleCell:
-        //            result.Add(origin);
-        //            break;
+        // 内部ロジック: 行動の確定と条件判定
+        // ============================================================
 
-        //        case TargetSelection.Cross:
-        //            result.Add(origin);
-        //            result.Add(new Vector2Int(origin.x + 1, origin.y));
-        //            result.Add(new Vector2Int(origin.x - 1, origin.y));
-        //            result.Add(new Vector2Int(origin.x, origin.y + 1));
-        //            result.Add(new Vector2Int(origin.x, origin.y - 1));
-        //            break;
+        /// <summary>
+        /// 決定した行動を実行し、クールダウンを適用する
+        /// </summary>
+        /// <param name="pattern"></param>
+        /// <param name="targets"></param>
+        /// <returns></returns>
+        private ICommand ExecuteAction(EnemyActionPattern pattern, List<Vector2Int> targets)
+        {
+            // クールダウン開始
+            _cooldownTimers[pattern] = pattern.CooldownTurns;
 
-        //        case TargetSelection.LocalGridShape:
-        //            // TargetOriginに合わせて基準点を取得
-        //            int centerIndex = GetLocalGridCenterIndex(pattern.OriginRule);
-        //            int cx = centerIndex % 5;
-        //            int cy = centerIndex / 5;
+            if (pattern.ChargeTurns > 0)
+            {
+                // 予告攻撃
+                var telegraph = new TelegraphRuntimeData
+                {
+                    // 重複しない固有IDを発行
+                    TelegraphId = _myData.ActorId * 1000 + _localTurnCount,
+                    SourceActorId = _myData.ActorId,
+                    TargetCells = targets,
+                    RemainingTurn = pattern.ChargeTurns,
+                    AttackInfo = pattern.AttackInfo,
+                    IsInterruptible = pattern.IsInterruptible
+                };
 
-        //            for (int i = 0; i < 25; i++)
-        //            {
-        //                if (pattern.LocalTargetGrid[i])
-        //                {
-        //                    int x = i % 5;
-        //                    int y = i / 5;
+                _telegraphSystem.RegisterTelegraph(telegraph);
 
-        //                    // 相対的なずれを計算
-        //                    int dx = x - cx;
-        //                    int dy = y - cy;
+                return null;
+            }
+            else
+            {
+                // 即時攻撃
+                return new AttackCommand(_myData.ActorId, pattern.AttackInfo, targets);
+            }
+        }
 
-        //                    result.Add(new Vector2Int(origin.x + dx, origin.y + dy));
-        //                }
-        //            }
-        //            break;
-        //    }
+        /// <summary>
+        /// スキルの発動条件を満たしているかチェックする
+        /// </summary>
+        /// <param name="pattern"></param>
+        /// <param name="player"></param>
+        /// <returns></returns>
+        private bool CheckCondition(EnemyActionPattern pattern, PlayerRuntimeData player)
+        {
+            switch (pattern.Condition)
+            {
+                case ConditionType.Always:
+                    return true;
 
-        //    // 場外 & 障害物クリッピング
-        //    result.RemoveAll(pos => !field.IsInBounds(pos) || !field.IsPassable(pos));
+                case ConditionType.HpUnderPercent:
+                    // 現在のHP / 最大HP * 100 でパーセンテージを計算
+                    float currentHpPercent = ((float)_myData.CurrentHp / _masterData.MaxHp) * 100f;
+                    return currentHpPercent <= pattern.ConditionValue;
 
-        //    return result;
-        //}
+                case ConditionType.TurnMultiple:
+                    // 指定ターン周期
+                    if (pattern.ConditionValue <= 0) return false;
+                    return _localTurnCount % pattern.ConditionValue == 0;
 
-        ///// <summary>
-        ///// TargetOrigin に応じて、5x5のグリッド内の基準点のインデックスを返す
-        ///// </summary>
-        //private int GetLocalGridCenterIndex(TargetOrigin originRule)
-        //{
-        //    switch (originRule)
-        //    {
-        //        case TargetOrigin.FrontRowCenter: return 2;     // 一番上の真ん中
-        //        case TargetOrigin.BackRowCenter: return 22;     // 一番下の真ん中
-        //        case TargetOrigin.LeftEdgeCenter: return 10;    // 左端の真ん中
-        //        case TargetOrigin.RightEdgeCenter: return 14;   // 右端の真ん中
-        //        default: return 12;                             // それ以外はど真ん中
-        //    }
-        //}
+                case ConditionType.PlayerInDistance:
+                    // マンハッタン距離で計算
+                    int distance = Mathf.Abs(_myData.Position.x - player.Position.x)
+                                 + Mathf.Abs(_myData.Position.y - player.Position.y);
+                    return distance <= pattern.ConditionValue;
 
-        //// 内部ロジック: 行動の確定と条件判定
-        //// ============================================================
-
-        ///// <summary>
-        ///// 決定した行動を実行し、クールダウンを適用する
-        ///// </summary>
-        ///// <param name="pattern"></param>
-        ///// <param name="targets"></param>
-        ///// <returns></returns>
-        //private AttackCommand? ExecuteAction(EnemyActionPattern pattern, List<Vector2Int> targets)
-        //{
-        //    // クールダウン開始
-        //    _cooldownTimers[pattern] = pattern.CooldownTurns;
-
-        //    if (pattern.ChargeTurns > 0)
-        //    {
-        //        // 予告攻撃
-        //        var telegraph = new TelegraphRuntimeData
-        //        {
-        //            // 重複しない固有IDを発行
-        //            TelegraphId = _myData.ActorId * 1000 + _localTurnCount,
-        //            SourceActorId = _myData.ActorId,
-        //            TargetCells = targets,
-        //            RemainingTurn = pattern.ChargeTurns,
-        //            PatternType = pattern.AttackType,
-        //            IsInterruptible = pattern.IsInterruptible
-        //        };
-
-        //        _telegraphSystem.RegisterTelegraph(telegraph);
-
-        //        return null;
-        //    }
-        //    else
-        //    {
-        //        // 即時攻撃
-        //        return new AttackCommand
-        //        {
-        //            SourceActorId = _myData.ActorId,
-        //            PatternType = pattern.AttackType,
-        //            TargetCells = targets,
-        //        };
-        //    }
-        //}
-
-        ///// <summary>
-        ///// スキルの発動条件を満たしているかチェックする
-        ///// </summary>
-        ///// <param name="pattern"></param>
-        ///// <param name="player"></param>
-        ///// <returns></returns>
-        //private bool CheckCondition(EnemyActionPattern pattern, PlayerRuntimeData player)
-        //{
-        //    switch (pattern.Condition)
-        //    {
-        //        case ConditionType.Always:
-        //            return true;
-
-        //        case ConditionType.HpUnderPercent:
-        //            // 現在のHP / 最大HP * 100 でパーセンテージを計算
-        //            float currentHpPercent = ((float)_myData.CurrentHp / _masterData.MaxHp) * 100f;
-        //            return currentHpPercent <= pattern.ConditionValue;
-
-        //        case ConditionType.TurnMultiple:
-        //            // 指定ターン周期
-        //            if (pattern.ConditionValue <= 0) return false;
-        //            return _localTurnCount % pattern.ConditionValue == 0;
-
-        //        case ConditionType.PlayerInDistance:
-        //            // マンハッタン距離で計算
-        //            int distance = Mathf.Abs(_myData.Position.x - player.Position.x)
-        //                         + Mathf.Abs(_myData.Position.y - player.Position.y);
-        //            return distance <= pattern.ConditionValue;
-
-        //        default:
-        //            return false;
-        //    }
-        //}
+                default:
+                    return false;
+            }
+        }
 
         private void TickCooldowns()
         {

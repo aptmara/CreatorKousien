@@ -23,7 +23,7 @@ MonoBehaviour:
     CooldownTurns: 1
     AttackType: 0
     OriginRule: 0
-    TargetRule: 2
+    TargetRule: 0
     LocalTargetGrid: 00000000000000000000000000000000000000000000000000
     ChargeTurns: 0
     IsInterruptible: 0
