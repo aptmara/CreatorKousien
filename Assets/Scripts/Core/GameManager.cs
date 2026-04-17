@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using CreatorKousien.Core;
+using CreatorKousien.Battle;
 
 public class GameManager : MonoBehaviour
 {
@@ -111,8 +112,8 @@ public class GameManager : MonoBehaviour
         // _mediator = new GameMediator();
         // _mediator.Initialize();
         // バトルマネージャーの初期化
-        _battleManager = new BattleManager();
-        _battleManager.Initialize();
+        // _battleManager = new BattleManager();
+        // _battleManager.Initialize();
         // _mediator.SetBattleManager(_battleManager);
     }
 

@@ -17,6 +17,7 @@ using CreatorKousien.UseCase;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using CreatorKousien.Battle;
 
 public class TestBattleStarter : MonoBehaviour
 {
@@ -40,7 +41,7 @@ public class TestBattleStarter : MonoBehaviour
         TileEffectSystem tileEffect = new TileEffectSystem(fieldService.State);
 
         // BattleManagerの生成
-        BattleManager battleManager = new BattleManager();
+        // BattleManager battleManager = new BattleManager();
 
 
 
@@ -97,12 +98,12 @@ public class TestBattleStarter : MonoBehaviour
 
         // コマンドディスパッチャーを生成して、移動コマンドを処理できるようにする！
         MoveUseCase moveUseCase = new MoveUseCase(fieldService, tileEffect);
-        AttackUseCase attackUseCase = new AttackUseCase(battleManager, fieldService, dispatcher);
+        // AttackUseCase attackUseCase = new AttackUseCase(battleManager, fieldService, dispatcher);
         // EnemyActionUseCase enemyUseCase = new EnemyActionUseCase();
 
         // UseCaseをDispatcherに登録
         dispatcher.Register<MoveCommand>(moveUseCase.Execute);
-        dispatcher.Register<AttackCommand>(attackUseCase.Execute);
+        // dispatcher.Register<AttackCommand>(attackUseCase.Execute);
 
 
         // ----- 5. Mediatorを生成して、システムやビューを登録する -----

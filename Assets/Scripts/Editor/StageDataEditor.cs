@@ -10,6 +10,7 @@
 // ------------------------------------------------------------
 using UnityEngine;
 using UnityEditor;
+using CreatorKousien.Data;
 
 [CustomEditor(typeof(StageData))]
 public class StageDataEditor : Editor

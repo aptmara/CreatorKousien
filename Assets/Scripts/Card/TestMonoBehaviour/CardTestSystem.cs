@@ -18,13 +18,13 @@ public class CardTestSystem : MonoBehaviour
     {
         _cardData.CheckAllData();
         _cardSystem = new CardSystem(_cardData, _cardList);
-        _poolSystem = new PoolSystem(_cardPool, _cardData.FallBackCard.CardID);
+        //_poolSystem = new PoolSystem(_cardPool, _cardData.FallBackCard.CardID);
 
     }
 
     // Update is called once per frame
     void Update()
     {
-       
+
     }
 }
