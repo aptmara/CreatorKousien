@@ -45,7 +45,7 @@ namespace CreatorKousien.Core
         /// </summary>
         /// <param name="targetCells">表示するセルのリスト</param>
         /// <param name="isWarning">  警告表示かどうか</param>
-        public void PublishTelegraph(List<Vector2> targetCells, bool isWarning)
+        public void PublishTelegraph(List<Vector2Int> targetCells, bool isWarning)
         {
             OnTelegraphRequested?.Invoke(targetCells, isWarning);
         }
