@@ -10,7 +10,8 @@ using UnityEngine;
 using CreatorKousien.Command;
 using CreatorKousien.Core;
 using CreatorKousien.Enemy;
-// using CreatorKousien.Player;
+using CreatorKousien.Field;
+using CreatorKousien.Player;
 
 namespace CreatorKousien.UseCase
 {

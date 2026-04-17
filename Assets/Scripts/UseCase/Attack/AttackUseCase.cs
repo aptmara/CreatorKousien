@@ -8,7 +8,8 @@
 
 using CreatorKousien.Command;
 using CreatorKousien.Core;
-using NUnit.Framework;
+using CreatorKousien.Field;
+using CreatorKousien.Battle;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -40,7 +41,12 @@ namespace CreatorKousien.UseCase
                 int occupierId = _fieldService.GetOccupierId(cell.x, cell.y);
                 if (occupierId != -1)
                 {
-                    targetActorIds.Add(occupierId);
+                    // 重複ヒットを防ぐためのチェック
+                    // TODO: 後に実装
+                    if (!targetActorIds.Contains(occupierId))
+                    {
+                        targetActorIds.Add(occupierId);
+                    }
                 }
             }
 
@@ -48,12 +54,12 @@ namespace CreatorKousien.UseCase
             if (targetActorIds.Count == 0)
             {
                 // TODO: 空振りエフェクト、どんな感じで渡すかは検討中
+                Debug.Log($"[AttackUseCase] Actor:{command.SourceActorId} の攻撃は空振りに終わった！");
                 return;
             }
 
             // 3. 誰かいた場合、BattleManagerにダメージ計算を依頼
-            // TODO: BattleManager実装待ち
-            // _battleManager.ResolveAttack(command.SourceActorId, targetActorIds, command.Property);
+            _battleManager.ResolveAttack(command.SourceActorId, targetActorIds, command.Property);
 
             // 4. 計算が終わったら、Viewへヒット演出エフェクトを指示
             // TODO: ヒットエフェクト

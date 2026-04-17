@@ -14,8 +14,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using CreatorKousien.Data;
 using CreatorKousien.Command;
-// TODO: 他メンバーのマージ次第
-// using CreatorKousien.Field;
+using CreatorKousien.Field;
+using CreatorKousien.Player;
 // using CreatorKousien.Battle;
 
 namespace CreatorKousien.Enemy
@@ -166,8 +166,7 @@ namespace CreatorKousien.Enemy
             }
 
             // 場外 & 障害物クリッピング
-            // TODO: 実装待ち
-            // result.RemoveAll(pos => !field.IsInBounds(pos) || !field.IsPassable(pos));
+            result.RemoveAll(pos => field.IsOutOfBounds(pos.x, pos.y) || field.IsObstacle(pos.x, pos.y));
 
             return result;
         }
