@@ -793,9 +793,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: daff62db301ec28479e82a4217918a2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FieldDebugStarter
-  _debugStageData: {fileID: 11400000, guid: c61c20e2e9d7cc14facac2a12621c5e0, type: 2}
-  _fieldView: {fileID: 1533097879}
-  _debugPlayerData: {fileID: 11400000, guid: cb353a2b39307e74fbb36421622824ee, type: 2}
 --- !u!1 &449503698
 GameObject:
   m_ObjectHideFlags: 0
@@ -2605,6 +2602,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TestBattleStarter
   _testStageData: {fileID: 11400000, guid: c61c20e2e9d7cc14facac2a12621c5e0, type: 2}
   _fieldView: {fileID: 1533097879}
+  _testPlayerData: {fileID: 11400000, guid: cb353a2b39307e74fbb36421622824ee, type: 2}
 --- !u!1 &1452153482
 GameObject:
   m_ObjectHideFlags: 0
@@ -2748,6 +2746,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FieldView
   _gridParent: {fileID: 124674662}
   _cellPrefab: {fileID: 8499134434229793095, guid: e64bbbc86208b8a449675e5ddda5d1d8, type: 3}
+  _cameraHeight: 4.4
+  _cameraOffsetZ: -6
+  _cameraAngleX: 35
 --- !u!4 &1533097880
 Transform:
   m_ObjectHideFlags: 0

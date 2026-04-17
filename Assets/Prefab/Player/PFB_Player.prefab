@@ -590,6 +590,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerView
   _animator: {fileID: 8148175009263531723}
   _lerpSpeed: 10
+  _modelYOffset: 1.25
 --- !u!95 &8148175009263531723
 Animator:
   serializedVersion: 7
