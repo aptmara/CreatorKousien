@@ -233,31 +233,6 @@ namespace CreatorKousien.Field
                 }
             }
         }
-
-
-        /// <summary>
-        /// 指定されたマスのリストに存在するキャラクターのIDを全て取得するメソッド
-        /// </summary>
-        /// <param name="targetCells">検索したいマスのリスト</param>
-        /// <returns>マス内にいたキャラクターのIDのリスト</returns>
-        public List<int> GetActorsInCells(List<Vector2Int> targetCells)
-        {
-            List<int> hitActorIds = new List<int>();
-
-            foreach (var pos in targetCells)
-            {
-                // そのマスにいるキャラクターのIDを取得する関数を呼び出す
-                int actorId = GetOccupierId(pos.x, pos.y);
-
-                // 誰かがいて、まだリストに追加されていなければ追加する
-                if (actorId != -1 && !hitActorIds.Contains(actorId))
-                {
-                    hitActorIds.Add(actorId);
-                }
-            }
-
-            return hitActorIds;
-        }
     }
 
 }
