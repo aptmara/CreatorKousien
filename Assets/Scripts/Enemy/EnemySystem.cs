@@ -39,7 +39,8 @@ namespace CreatorKousien.Enemy
                 ActorId = actorId,
                 EnemyId = data.EnemyId,
                 Position = spawnPos,
-                CurrentHp = data.MaxHp
+                CurrentHp = data.MaxHp,
+                CurrentAttack = data.Attack
             };
 
             var ai = new EnemyAI(runtimeData, data, _telegraphSystem);

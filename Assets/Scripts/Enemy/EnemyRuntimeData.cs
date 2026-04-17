@@ -16,5 +16,6 @@ namespace CreatorKousien.Enemy
         public int EnemyId;         // 大元の設計図のID
         public Vector2Int Position; // 現在の座標
         public int CurrentHp;       // 今のHP
+        public int CurrentAttack;   // 今の基礎攻撃力
     }
 }
