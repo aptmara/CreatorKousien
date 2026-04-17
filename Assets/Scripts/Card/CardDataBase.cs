@@ -34,7 +34,7 @@ public class CardData
     [SerializeField] private int faceDownEffectID;
 
     //! 外部に効果IDを渡す用の配列。外部に初期化関数を呼ばせる以外で安全に初期化する方法がなさそうなため、毎回作成する
-    private int[] faceEffectID => new int[(int)CardFace.MaxFace] { faceUpEffectID, faceDownEffectID };
+    public int[] faceEffectID => new int[(int)CardFace.MaxFace] { faceUpEffectID, faceDownEffectID };
 
 }
 

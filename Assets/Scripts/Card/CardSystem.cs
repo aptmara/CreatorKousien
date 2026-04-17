@@ -1,26 +1,44 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
+using static UnityEngine.LightAnchor;
 
-struct CardRuntimeData
+class CardRuntimeData
 {
     //! 実行データのID
-    int instanceID;
+    int _instanceID;
+    public int InstanceID => _instanceID;
     //! 登録されているカードの効果
-    int cardID;
+    int _cardID;
+    public int CardID => _cardID;
     //! 効果変更などを加味したカードの効果
-    int currentCardID;
+    int _currentCardID;
+    public int CurrentCardID => _currentCardID;
     //! カードの表裏
-    CardFace currentFace;
+    CardFace _currentFace;
+    public CardFace CurrentFace => _currentFace;
     //! 実行データとしてのカードの方向
-    SlotDirection instanceCardDirection;
+    SlotDirection _instanceCardDirection;
+    public SlotDirection InstanceCardDirection => _instanceCardDirection;
 
     public CardRuntimeData(int instanceID, int cardID, CardFace face, SlotDirection instanceCardDirection)
     {
-        this.instanceID = instanceID;
-        this.cardID = cardID;
-        this.currentCardID = cardID;
-        this.currentFace = face;
-        this.instanceCardDirection = instanceCardDirection;
+        this._instanceID = instanceID;
+        this._cardID = cardID;
+        this._currentCardID = cardID;
+        this._currentFace = face;
+        this._instanceCardDirection = instanceCardDirection;
+    }
+
+    public void FlipFace()
+    {
+        if(_currentFace == CardFace.FaceUp)
+        {
+            _currentFace = CardFace.FaceDown;
+        }
+        else if(_currentFace == CardFace.FaceDown)
+        {
+            _currentFace = CardFace.FaceUp;
+        }
     }
 }
 
@@ -29,13 +47,13 @@ public class CardSystem
     //! データベース
     private CardDataBase _dataBase;
     //! 手札
-    private CardRuntimeData[] _haveCard;
+    private Dictionary<SlotDirection ,CardRuntimeData> _haveCard;
     // コンストラクタ
     public CardSystem(CardDataBase dataBase, List<int> haveCardID)
     {
         // 初期化
         _dataBase = dataBase;
-        _haveCard = new CardRuntimeData[(int)SlotDirection.MaxDirection];
+        _haveCard = new Dictionary<SlotDirection, CardRuntimeData>();
         // 渡されたIDからカードのインスタンスを作成
         SetCardInstance(haveCardID);
     }
@@ -67,7 +85,7 @@ public class CardSystem
             }
 
             // インスタンスを作成
-            _haveCard[i] = CreateHaveCard(0, data, (SlotDirection)i);
+            _haveCard[(SlotDirection)i] = CreateHaveCard(0, data, (SlotDirection)i);
         }
     }
 
@@ -88,5 +106,19 @@ public class CardSystem
     {
         return new CardRuntimeData(instanceID, data.CardID, CardFace.FaceUp, direction);
     }
-    
+
+    public int UseSlotCard(SlotDirection useDirection)
+    {
+        int effectID = GetSlotEffect(useDirection); 
+        _haveCard[useDirection].FlipFace();
+
+        return effectID;
+    }
+
+    int GetSlotEffect(SlotDirection direction)
+    {
+        int cardID = _haveCard[direction].CardID;
+        CardFace face = _haveCard[direction].CurrentFace;
+        return _dataBase.GetCard(cardID).faceEffectID[(int)face];
+    }
 }
