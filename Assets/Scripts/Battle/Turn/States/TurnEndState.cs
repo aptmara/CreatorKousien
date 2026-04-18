@@ -16,6 +16,9 @@ namespace CreatorKousien.Battle
     public class TurnEndState : IBattlePhaseState
     {
         public PhaseType Type => PhaseType.TurnEnd;
+        private readonly TurnManager _owner;
+
+        public TurnEndState(TurnManager owner) => _owner = owner;
 
         public void Enter()
         {
