@@ -42,6 +42,11 @@ namespace CreatorKousien.Battle
             TargetCells = targetCells;
         }
 
+        /// <summary>
+        /// 移動用コンストラクタ
+        /// </summary>
+        /// <param name="actorId"></param>
+        /// <param name="direction"></param>
         public ActionRuntimeData(int actorId, GridDirection direction)
         {
             ActorId = actorId;
