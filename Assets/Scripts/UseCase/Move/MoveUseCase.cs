@@ -11,6 +11,7 @@
 using UnityEngine;
 using CreatorKousien.Command;
 using CreatorKousien.Field;
+using CreatorKousien.Core;
 
 namespace CreatorKousien.UseCase
 {
@@ -21,17 +22,18 @@ namespace CreatorKousien.UseCase
     {
         private FieldService _fieldService;         /// フィールドサービス
         private TileEffectSystem _tileEffect;       /// タイルエフェクトシステム
-
+        private GameEventBus _eventBus;
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
         /// <param name="fieldService">フィールドサービス</param>
         /// <param name="tileEffect">タイルエフェクトシステム</param>
-        public MoveUseCase(FieldService fieldService, TileEffectSystem tileEffect)
+        public MoveUseCase(FieldService fieldService, TileEffectSystem tileEffect, GameEventBus eventBus)
         {
             _fieldService = fieldService;
             _tileEffect = tileEffect;
+            _eventBus = eventBus;
         }
 
 
@@ -42,6 +44,7 @@ namespace CreatorKousien.UseCase
             if (currentPos.x == -1)
             {
                 Debug.LogWarning($"[MoveUseCase] ActorId {cmd.MoverId} の現在位置が見つかりません。移動をキャンセルします。");
+                _eventBus.PublishActionLogicCompleted(cmd.MoverId); // 失敗しても完了通知
                 return;
             }
 
@@ -60,6 +63,7 @@ namespace CreatorKousien.UseCase
             if (!_fieldService.CanMoveTo(cmd.MoverId, targetPos.x, targetPos.y))
             {
                 Debug.Log($"[MoveUseCase] ActorId {cmd.MoverId} は位置 ({targetPos.x}, {targetPos.y}) に移動できません。");
+                _eventBus.PublishActionLogicCompleted(cmd.MoverId); // 失敗しても完了通知
                 return;
             }
 
@@ -73,6 +77,9 @@ namespace CreatorKousien.UseCase
             _tileEffect.TriggerOnEnter(cmd.MoverId, targetPos.x, targetPos.y); // 移動先のマスに入るときの床効果を呼び出す
 
             _fieldService.NotifyActorMoved(cmd.MoverId, targetPos.x, targetPos.y); // Actorの移動をFieldServiceに通知（必要に応じて）
+
+            // ----- 5. 完了通知 -----
+            _eventBus.PublishActionLogicCompleted(cmd.MoverId);
 
         }
     }

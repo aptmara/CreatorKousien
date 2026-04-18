@@ -10,7 +10,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using CreatorKousien.Core;
-using System.Linq.Expressions;
 
 namespace CreatorKousien.Battle
 {
@@ -18,7 +17,10 @@ namespace CreatorKousien.Battle
     {
         private PhaseManager _phaseManager;
         private CommandDispatcher _dispatcher;
+        private GameEventBus _eventBus;
+
         public CommandDispatcher Dispatcher => _dispatcher;
+        public GameEventBus EventBus => _eventBus;
 
         private CommandPhaseState _commandPhase;
         private ActionPhaseState  _actionPhase;
@@ -27,18 +29,13 @@ namespace CreatorKousien.Battle
         private Queue<ActionRuntimeData> _actionQueue = new Queue<ActionRuntimeData>();
 
         /// <summary>
-        /// コマンドフェーズが開始したタイミングで発火するイベント。
-        /// TODO: これをEventBusに移すか、Mediator経由でViewに通知するかは要検討ですが、とりあえず置いておきます。
-        /// </summary>
-        public event System.Action OnCommandPhaseStarted;
-
-        /// <summary>
         /// バトル開始時の初期化処理
         /// </summary>
         /// <param name="dispatcher"></param>
-        public void Initialize(CommandDispatcher dispatcher)
+        public void Initialize(CommandDispatcher dispatcher, GameEventBus eventBus)
         {
             _dispatcher = dispatcher;
+            _eventBus = eventBus;
             _phaseManager = new PhaseManager();
 
             _commandPhase = new CommandPhaseState(this);
@@ -106,6 +103,12 @@ namespace CreatorKousien.Battle
                         nextAction.MoveDirection,
                         1));    // 1マス移動
                     break;
+
+                default:
+                    // 待機の場合
+                    Debug.Log($"[TurnManager] ActorID:{nextAction.ActorId} は待機、または行動をスキップした。");
+                    _eventBus.PublishActionLogicCompleted(nextAction.ActorId);
+                    break;
             }
         }
 
@@ -142,15 +145,6 @@ namespace CreatorKousien.Battle
             {
                 _actionPhase.OnActionAnimationComplete();
             }
-        }
-
-
-        /// <summary>
-        /// コマンドフェーズが開始したタイミングで呼び出される想定のメソッド。
-        /// </summary>
-        public void NotifyCommandPhaseStarted()
-        {
-            OnCommandPhaseStarted?.Invoke();
         }
 
 

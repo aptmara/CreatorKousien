@@ -52,6 +52,10 @@ namespace CreatorKousien.Core
         /// </summary>
         public event Action<int> OnActionLogicCompleted;
 
+        /// <summary>
+        /// コマンドフェーズが開始したことを全体に通知する
+        /// </summary>
+        public event Action OnCommandPhaseStarted;
 
 
 
@@ -108,6 +112,15 @@ namespace CreatorKousien.Core
         public void PublishActionLogicCompleted(int actorId)
         {
             OnActionLogicCompleted?.Invoke(actorId);
+        }
+
+
+        /// <summary>
+        /// コマンドフェーズ開始イベントを発火するメソッド
+        /// </summary>
+        public void PublishCommandPhaseStarted()
+        {
+            OnCommandPhaseStarted?.Invoke();
         }
     }
 }

@@ -10,6 +10,7 @@
 // ------------------------------------------------------------
 using UnityEngine;
 using CreatorKousien.Command;
+using CreatorKousien.Battle;
 
 namespace CreatorKousien.Core
 {
@@ -32,14 +33,22 @@ namespace CreatorKousien.Core
 
 
         /// <summary>
+        /// ターン進行を管理するマネージャへの参照
+        /// </summary>
+        public TurnManager TurnManager { get; private set; }
+
+
+        /// <summary>
         /// 初期化処理。CommandDispatcherを受け取って、内部で保持する。
         /// </summary>
         /// <param name="dispatcher">ディスパッチャーの参照</param>
         /// <param name="eventBus">イベントバスの参照</param>
-        public void Initialize(CommandDispatcher dispatcher, GameEventBus eventBus)
+        /// <param name="turnManager">ターンマネージャーの参照</param>
+        public void Initialize(CommandDispatcher dispatcher, GameEventBus eventBus, TurnManager turnManager)
         {
             _dispatcher = dispatcher;
             EventBus = eventBus;
+            TurnManager = turnManager;
             Debug.Log("[GameMediator] 起動完了");
         }
 
@@ -59,6 +68,31 @@ namespace CreatorKousien.Core
 
             // ディスパッチャーに丸投げする
             _dispatcher.Dispatch(cmd);
+        }
+
+
+        /// <summary>
+        /// プレイヤーが選択したアクションを、TurnManagerの予約キューに送信する
+        /// </summary>
+        /// <param name="action"></param>
+        public void SubmitPlayerAction(ActionRuntimeData action)
+        {
+            if (TurnManager != null)
+            {
+                TurnManager.SubmitPlayerAction(action);
+            }
+        }
+
+
+        /// <summary>
+        /// Viewでのアニメーション再生が完了したことをTurnManagerに報告する
+        /// </summary>
+        public void CompleteCurrentActionAnimation()
+        {
+            if (TurnManager != null)
+            {
+                TurnManager.CompleteCurrentActionAnimation();
+            }
         }
     }
 }
