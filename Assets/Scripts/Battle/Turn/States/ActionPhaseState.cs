@@ -17,14 +17,14 @@ namespace CreatorKousien.Battle
     {
         public PhaseType Type => PhaseType.Action;
         private readonly TurnManager _owner;
-        private bool _isActionProcessing = false;
+        private bool _isWaitingForAnimation = false;
 
         public ActionPhaseState(TurnManager owner) => _owner = owner;
 
         public void Enter()
         {
             Debug.Log("--- アクションフェーズ開始 ---");
-            ProcessNext();
+            ExecuteNextStep();
         }
 
         public void Update()
@@ -32,8 +32,9 @@ namespace CreatorKousien.Battle
             // TODO: EventBus 等からの演出終了通知を待機
         }
 
-        private void ProcessNext()
+        private void ExecuteNextStep()
         {
+            _isWaitingForAnimation = true;
             _owner.ExecuteNextAction();
         }
 
@@ -45,10 +46,11 @@ namespace CreatorKousien.Battle
         /// <summary>
         /// View側のアニメーションが完了した時に、外部から呼ばれる想定
         /// </summary>
-        public void NotifyActionComplete()
+        public void OnActionAnimationComplete()
         {
             // 次の1手を実行
-            ProcessNext();
+            _isWaitingForAnimation = false;
+            ExecuteNextStep();
         }
     }
 }
