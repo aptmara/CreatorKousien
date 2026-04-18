@@ -39,11 +39,13 @@ namespace CreatorKousien.UseCase
 
         public void Execute(MoveCommand cmd)
         {
+            string actorLabel = (cmd.MoverId == 1) ? "<color=#00e6ff>PLAYER</color>" : $"<color=#ff4d4d>ENEMY(ID:{cmd.MoverId})</color>";
+
             // ----- 1. 現在の位置を取得 -----
             Vector2Int currentPos = _fieldService.GetActorPosition(cmd.MoverId);
             if (currentPos.x == -1)
             {
-                Debug.LogWarning($"[MoveUseCase] ActorId {cmd.MoverId} の現在位置が見つかりません。移動をキャンセルします。");
+                Debug.LogWarning($"[MOVE] {actorLabel} : 現在位置不明のため中断");
                 _eventBus.PublishActionLogicCompleted(cmd.MoverId); // 失敗しても完了通知
                 return;
             }
@@ -62,13 +64,13 @@ namespace CreatorKousien.UseCase
             // ----- 3. FieldServiceに移動リクエストを送る -----
             if (!_fieldService.CanMoveTo(cmd.MoverId, targetPos.x, targetPos.y))
             {
-                Debug.Log($"[MoveUseCase] ActorId {cmd.MoverId} は位置 ({targetPos.x}, {targetPos.y}) に移動できません。");
+                Debug.Log($"<b>[MOVE]</b> {actorLabel} : <color=gray>{targetPos} への移動不可</color>");
                 _eventBus.PublishActionLogicCompleted(cmd.MoverId); // 失敗しても完了通知
                 return;
             }
 
             // ----- 4. 移動を実行 -----
-            Debug.Log($"<color=cyan>[MoveUseCase] ActorID:{cmd.MoverId} が {currentPos} から {targetPos} へ移動します！</color>");
+            Debug.Log($"<b>[MOVE]</b> {actorLabel} : {currentPos} ⇒ <color=yellow>{targetPos}</color>");
 
             _tileEffect.TriggerOnExit(cmd.MoverId, currentPos.x, currentPos.y); // 現在のマスから出るときの床効果を呼び出す
 
@@ -78,7 +80,10 @@ namespace CreatorKousien.UseCase
 
             _fieldService.NotifyActorMoved(cmd.MoverId, targetPos.x, targetPos.y); // Actorの移動をFieldServiceに通知（必要に応じて）
 
-            // ----- 5. 完了通知 -----
+            // ----- 5. 見た目の更新を依頼 -----
+            _eventBus.PublishActorMoveRequested(cmd.MoverId, targetPos);
+
+            // ----- 6. 完了通知 -----
             _eventBus.PublishActionLogicCompleted(cmd.MoverId);
 
         }

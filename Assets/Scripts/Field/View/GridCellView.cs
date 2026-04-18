@@ -89,7 +89,7 @@ namespace CreatorKousien.Field
         /// <param name="isOccupied">乗っているかどうか</param>
         public void SetOccupied(bool isOccupied)
         {
-            Debug.Log($"{gameObject.name} の SetOccupied が {isOccupied} で呼ばれました！");
+            // Debug.Log($"{gameObject.name} の SetOccupied が {isOccupied} で呼ばれました！");
             _isOccupied = isOccupied;
 
             // キャラクターがいる場合は沈む位置、いない場合は元の位置を目標に設定

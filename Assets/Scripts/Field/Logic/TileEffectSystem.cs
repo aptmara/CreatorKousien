@@ -45,14 +45,14 @@ namespace CreatorKousien.Field
             // ----- 1. 乗った瞬間の効果 -----
             if (profile.OnEnterEffectId != 1)
             {
-                Debug.Log($"[TileEffect] Actor: {targetId} が ({x},{y}) に進入 -> OnEnter効果(ID:{profile.OnEnterEffectId}) 発動!");
+                // Debug.Log($"[TileEffect] Actor: {targetId} が ({x},{y}) に進入 -> OnEnter効果(ID:{profile.OnEnterEffectId}) 発動!");
                 // TODO: はるひこのEffectSystemに送る予定
             }
 
             // ----- 2. 常時効果の適用開始 -----
             if (profile.WhiteStayEffectId != -1)
             {
-                Debug.Log($"[TileEffect] Actor: {targetId} に WhileStay効果(ID: {profile.WhiteStayEffectId}) を付与状態に!");
+                // Debug.Log($"[TileEffect] Actor: {targetId} に WhileStay効果(ID: {profile.WhiteStayEffectId}) を付与状態に!");
                 // TODO: はるひこのEffectSystemに送る予定
             }
         }
@@ -73,13 +73,13 @@ namespace CreatorKousien.Field
             // ----- 1. 離れた瞬間の効果 -----
             if (profile.OnExitEffectId != -1)
             {
-                Debug.Log($"[TileEffect] Actor: {targetId} が ({oldX},{oldY}) から離脱 -> OnExit効果(ID:{profile.OnExitEffectId}) 発動!");
+                // Debug.Log($"[TileEffect] Actor: {targetId} が ({oldX},{oldY}) から離脱 -> OnExit効果(ID:{profile.OnExitEffectId}) 発動!");
             }
 
             // ----- 2. 常時効果の解除 -----
             if (profile.WhiteStayEffectId != -1)
             {
-                Debug.Log($"[TileEffect] Actor: {targetId} の WhileStay効果(ID: {profile.WhiteStayEffectId}) を解除!");
+                // Debug.Log($"[TileEffect] Actor: {targetId} の WhileStay効果(ID: {profile.WhiteStayEffectId}) を解除!");
             }
         }
 
