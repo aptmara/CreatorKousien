@@ -10,20 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7fcc4216f72acfa4aa761d98ab00a249, type: 3}
-  m_Name: Stage0_Enemy
+  m_Name: SO_Bear
   m_EditorClassIdentifier: Assembly-CSharp::CreatorKousien.Data.EnemyData
-  EnemyId: 0
-  EnemyName: KAIKIN
+  EnemyId: 1
+  EnemyName: Bear
   MaxHp: 100
   Attack: 10
-  EnemyPrefab: {fileID: 475797395100696768, guid: 43f268a4758fb8a44a5fb966d8fe6e30, type: 3}
+  EnemyPrefab: {fileID: 584640615908992076, guid: db91a133d75819347bd60fe339629264, type: 3}
   ActionPatterns:
   - Condition: 0
     ConditionValue: 0
-    CooldownTurns: 1
-    AttackType: 0
+    CooldownTurns: 0
+    AttackInfo:
+      Type: 0
+      DamageMultiplier: 0
+      HitCount: 0
     OriginRule: 0
-    TargetRule: 0
-    LocalTargetGrid: 00000000000000000000000000000000000000000000000000
+    TargetRule: 2
+    LocalTargetGrid: 00000000000000010000000001000000000100000000000000
     ChargeTurns: 0
     IsInterruptible: 0

@@ -15,12 +15,18 @@ MonoBehaviour:
   _width: 6
   _height: 3
   _borderX: 3
-  CellSize: 1
-  BorderGap: 0.5
-  BorderPrefab: {fileID: 0}
+  CellSize: 1.5
+  BorderGap: 1.25
+  BorderPrefab: {fileID: 6644790013973758042, guid: f6b436d072149b84ca00f28288876136, type: 3}
   ObstaclePositions: []
-  _playerStartPosition: {x: 0, y: 0}
-  PlayerDefaultTile: {fileID: 0}
-  EnemyDefaultTile: {fileID: 0}
-  PlayerSpecialTileRules: []
+  _playerStartPosition: {x: 1, y: 1}
+  PlayerDefaultTile: {fileID: 11400000, guid: 4f1d1c0c71057174f9279a40a873120f, type: 2}
+  EnemyDefaultTile: {fileID: 11400000, guid: 55b9258eedc583e4fbe6afd686c8bd44, type: 2}
+  PlayerSpecialTileRules:
+  - SpecialTile: {fileID: 11400000, guid: 67f961d2870a7954183ae68532d67628, type: 2}
+    SpawnProbability: 0.5
+    MinSpawnCount: 1
+    MaxSpawnCount: 2
+    LifespanTurns: 1
+    SpawnIntervalTurns: 1
   EnemySpecialTileRules: []
