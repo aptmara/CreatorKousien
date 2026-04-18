@@ -5,21 +5,35 @@ using System.Collections.Generic;
 public class CardTestSystem : MonoBehaviour
 {
     [SerializeField]
-    CardDataBase _cardData;
+    CardDataBase _cardDataBase;
     [SerializeField]
-    CardPool _cardPool;
+    int _poolID;
     [SerializeField]
-    List<int> _cardList;
+    int upCardID;
+    [SerializeField]
+    int downCardID;
+    [SerializeField]
+    int leftCardID;
+    [SerializeField]
+    int rightCardID;
+
+    [SerializeField]
+    PoolDataBase _poolDataBase;
 
     CardSystem _cardSystem;
     PoolSystem _poolSystem;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        _cardData.CheckAllData();
-        _cardSystem = new CardSystem(_cardData, _cardList);
-        //_poolSystem = new PoolSystem(_cardPool, _cardData.FallBackCard.CardID);
+        _cardDataBase.CheckAllData();
+        Dictionary<SlotDirection, int> haveCardID = new Dictionary<SlotDirection, int>();
+        haveCardID[SlotDirection.Up] = upCardID;
+        haveCardID[SlotDirection.Down] = downCardID;
+        haveCardID[SlotDirection.Left]  = leftCardID;
+        haveCardID[SlotDirection.Right] = rightCardID;
 
+        _cardSystem = new CardSystem(_cardDataBase, haveCardID);
+        _poolSystem = new PoolSystem(_poolID, _cardDataBase.FallBackCard.CardID, _poolDataBase);
     }
 
     // Update is called once per frame

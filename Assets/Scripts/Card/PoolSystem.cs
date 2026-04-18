@@ -9,11 +9,11 @@ public class PoolSystem
     int _fallBackID;
     PoolDataBase _poolDataBase;
 
-    public PoolSystem(CardPool cardPool, int fallBackID, PoolDataBase PoolDataBase)
+    public PoolSystem(int poolID, int fallBackID, PoolDataBase PoolDataBase)
     {
-        _cardPool = cardPool;
         _fallBackID = fallBackID;
         _poolDataBase = PoolDataBase;
+        SetPool(poolID);
     }
 
     public void SetPool(int poolID)
