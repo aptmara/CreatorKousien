@@ -10,8 +10,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using CreatorKousien.Data;
 
-namespace CreatorKousien.Enemy
+namespace CreatorKousien.Battle
 {
+    /// <summary>
+    /// 盤面に表示されている1つ分の予告データ。
+    /// エネミーかプレイヤーかは ActorId で判別する。
+    /// </summary>
     public class TelegraphRuntimeData
     {
         public int TelegraphId;                 // この予告自体の固有ID
