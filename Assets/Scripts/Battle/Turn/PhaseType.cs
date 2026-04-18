@@ -13,9 +13,9 @@ namespace CreatorKousien.Battle
     /// </summary>
     public enum PhaseType
     {
-        Init,           // バトル開始 (イントロ等)
-        Preparation,    // 準備 (時間ゲージ減少、カード選択、敵の思考)
-        Execution,      // 実行 (6手のアクションを順次解決)
-        TurnEnd         // ターン終了 (床効果、次ターンの準備)
+        Init,       // バトル開始 (イントロ等)
+        Command,    // 準備 (時間ゲージ減少、カード選択、敵の思考)
+        Action,     // 実行 (6手のアクションを順次解決)
+        TurnEnd     // ターン終了 (床効果、次ターンの準備)
     }
 }
