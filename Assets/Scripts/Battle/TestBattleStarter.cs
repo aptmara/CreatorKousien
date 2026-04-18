@@ -7,79 +7,98 @@
 //
 // Notes	:
 // - デバック用GameManagerのような役割を果たすクラスです。実際のゲームでは、GameManagerがこれらの配線を行うことになると思いますが、テストバトル用に簡略化してあります。
+// - BattleSetupDataを使うように変更(4/18)
 // ------------------------------------------------------------
 using CreatorKousien.Command;
 using CreatorKousien.Core;
 using CreatorKousien.Data;
 using CreatorKousien.Field;
 using CreatorKousien.Player;
+using CreatorKousien.Enemy;
 using CreatorKousien.UseCase;
+using CreatorKousien.Battle;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using CreatorKousien.Battle;
-using CreatorKousien.Enemy;
 
 public class TestBattleStarter : MonoBehaviour
 {
-    [Header("ステージ設定")]
-    [SerializeField] private StageData _testStageData;
-    [SerializeField] private FieldView _fieldView;
+    [Header("ステージセットアップデータ設定")]
+    [Tooltip("インスペクターで作成した BattleSetupData をアタッチしてください")]
+    [SerializeField] private BattleSetupData _setupData;
 
-    [Header("プレイヤー設定")]
-    [SerializeField] private PlayerData _testPlayerData;
+    [Header("Viewの参照")]
+    [SerializeField] private FieldView _fieldView;
 
     private PlayerSystem _playerSystem;         /// PlayerSystemのインスタンスを保持する変数
     private GameMediator _mediator;             /// GameMediatorのインスタンスを保持する変数
+    private ActionTelegraphSystem telegraphSystem; /// ActionTelegraphSystemのインスタンスを保持する変数
 
     private void Start()
     {
-        // ----- 1. システムを生成 -----
-        FieldService fieldService = new FieldService();
-        fieldService.Initialize(_testStageData);
-        _fieldView.BuildView(fieldService.State, _testStageData);
-
-        TileEffectSystem tileEffect = new TileEffectSystem(fieldService.State);
-
-        // BattleManagerの生成
-        BattleManager battleManager = new BattleManager();
-        ActionTelegraphSystem telegraphSystem = new ActionTelegraphSystem();
-        EnemySystem enemySystem = new EnemySystem(telegraphSystem);
-
-        // 敵のスポーン（テスト用に1体だけ）
-        EnemyData dummyEnemyData = ScriptableObject.CreateInstance<EnemyData>();
-        dummyEnemyData.EnemyId = 100;
-        dummyEnemyData.MaxHp = 50;
-        dummyEnemyData.Attack = 5;
-        int dummyEnemyActorId = 2; // 敵のActorIDは2
-        Vector2Int dummyEnemyPos = new Vector2Int(3, 2);
-
-        enemySystem.SpawnEnemy(dummyEnemyActorId, dummyEnemyData, dummyEnemyPos);
-        fieldService.UpdateOccupancy(dummyEnemyActorId, -1, -1, dummyEnemyPos.x, dummyEnemyPos.y);
+        // 0. BattleSetupDataが正しくアタッチされているか確認
+        // ------------------------------------------------------------
+        if (_setupData == null)
+        {
+            Debug.LogError("<color=red>[TestBattleStarter] BattleSetupData がセットされていません！インスペクターを確認してください！</color>");
+            return;
+        }
 
 
 
-        // ----- 2. プレイヤーのシステム（裏側）と見た目（表側）の初期化 -----
+        // 1. システムの生成
+        // ------------------------------------------------------------
+        FieldService _fieldService = new FieldService();
+        _fieldService.Initialize(_setupData.StageData);
+        _fieldView.BuildView(_fieldService.State, _setupData.StageData);
+
+        TileEffectSystem tileEffect = new TileEffectSystem(_fieldService.State);
+
+        // バトルと敵管理のシステム
+        BattleManager _battleManager = new BattleManager();
+        telegraphSystem = new ActionTelegraphSystem();
+        EnemySystem _enemySystem = new EnemySystem(telegraphSystem);
+
+
+
+        // 2. 敵のシステムセットアップ
+        // ------------------------------------------------------------
+        foreach (var enemyInfo in _setupData.Enemies)
+        {
+            // システムに登録
+            _enemySystem.SpawnEnemy(enemyInfo.ActorId, enemyInfo.EnemyData, enemyInfo.SpawnPosition);
+
+            // 盤面のマスを占有状態にする
+            _fieldService.UpdateOccupancy(enemyInfo.ActorId, -1, -1, enemyInfo.SpawnPosition.x, enemyInfo.SpawnPosition.y);
+
+            // TODO: 敵の見た目も生成する
+        }
+
+
+
+        // 3. プレイヤーのシステム（裏側）と見た目（表側）の初期化
+        // ------------------------------------------------------------
         _playerSystem = new PlayerSystem();
-        Vector2Int startGridPos = _testStageData.PlayerStartPosition;
+        Vector2Int pPos = _setupData.StageData.PlayerStartPosition;
 
         // 裏側のセットアップ
-        _playerSystem.Initialize(_testPlayerData, startGridPos);
-        fieldService.UpdateOccupancy(_playerSystem.RuntimeData.ActorId, -1, -1, startGridPos.x, startGridPos.y);
+        _playerSystem.Initialize(_setupData.PlayerData, pPos);
+        _fieldService.UpdateOccupancy(_playerSystem.RuntimeData.ActorId, -1, -1, pPos.x, pPos.y);
 
         // 表側のセットアップ
-        Vector3 startWorldPos = _fieldView.GetCellWorldPosition(startGridPos.x, startGridPos.y);
+        Vector3 startWorldPos = _fieldView.GetCellWorldPosition(pPos.x, pPos.y);
         // PlayerDataに入っているPrefabを、初期座標に生成する！
-        GameObject playerObj = Instantiate(_testPlayerData.PlayerPrefab, startWorldPos, Quaternion.identity);
+        GameObject playerObj = Instantiate(_setupData.PlayerData.PlayerPrefab, startWorldPos, Quaternion.identity);
         // 生成したオブジェクトから PlayerView コンポーネントを取得する！
         PlayerView playerView = playerObj.GetComponent<PlayerView>();
         playerView.Initialize(startWorldPos);
-        playerView.SetStandingTile(_fieldView.GetCellView(startGridPos));
-        _fieldView.HighlightCell(startGridPos.x, startGridPos.y); // 初期位置をハイライトしておくとわかりやすいかも！
+        playerView.SetStandingTile(_fieldView.GetCellView(pPos));
+        _fieldView.HighlightCell(pPos.x, pPos.y); // 初期位置をハイライトしておくとわかりやすいかも！
 
 
 
-        // ----- 3. イベントの配線 -----
+        // 4 イベントの配線
+        // ------------------------------------------------------------
         GameEventBus eventBus = new GameEventBus();
 
         // 被ダメージ通知を受け取ったら、PlayerViewの死亡エフェクトを鳴らす！！
@@ -110,7 +129,7 @@ public class TestBattleStarter : MonoBehaviour
             Debug.Log($"<color=red>[View] ActorID:{targetActorId} に攻撃ヒットエフェクトを再生！</color>");
         };
 
-        fieldService.OnActorMoved += (actorId, x, y) =>
+        _fieldService.OnActorMoved += (actorId, x, y) =>
         {
             if (actorId == _playerSystem.RuntimeData.ActorId)
             {
@@ -125,20 +144,24 @@ public class TestBattleStarter : MonoBehaviour
         };
 
 
-        // ----- 4. UseCaseとDispatcherの紐づけ -----
+
+        // 5. UseCaseとDispatcherの紐づけ
+        // ------------------------------------------------------------
         CommandDispatcher dispatcher = new CommandDispatcher();
 
         // コマンドディスパッチャーを生成して、移動コマンドを処理できるようにする！
-        MoveUseCase moveUseCase = new MoveUseCase(fieldService, tileEffect);
-        AttackUseCase attackUseCase = new AttackUseCase(battleManager, fieldService, _playerSystem, enemySystem, dispatcher, eventBus);
-        // EnemyActionUseCase enemyUseCase = new EnemyActionUseCase();
+        MoveUseCase moveUseCase = new MoveUseCase(_fieldService, tileEffect);
+        AttackUseCase attackUseCase = new AttackUseCase(_battleManager, _fieldService, _playerSystem, _enemySystem, dispatcher, eventBus);
+        EnemyActionUseCase enemyUseCase = new EnemyActionUseCase(_enemySystem, _fieldService, _playerSystem, telegraphSystem,dispatcher);
 
         // UseCaseをDispatcherに登録
         dispatcher.Register<MoveCommand>(moveUseCase.Execute);
         dispatcher.Register<AttackCommand>(attackUseCase.Execute);
+        dispatcher.Register<EnemyActionCommand>(enemyUseCase.Execute);
 
 
-        // ----- 5. Mediatorを生成して、システムやビューを登録する -----
+        // 6. Mediatorを生成して、システムやビューを登録する
+        // ------------------------------------------------------------
         _mediator = new GameMediator();
         _mediator.Initialize(dispatcher, eventBus);
 
@@ -161,6 +184,26 @@ public class TestBattleStarter : MonoBehaviour
         if (keyboard.rightArrowKey.wasPressedThisFrame) _mediator.SendCommand(new MoveCommand(pId, GridDirection.Right, 1));
 
 
+        //  Zキーで攻撃を発動
+        if (keyboard.zKey.wasPressedThisFrame)
+        {
+            // 目の前のマスを攻撃すると仮定
+            Vector2Int targetPos = _playerSystem.RuntimeData.Position + new Vector2Int(1, 0);
+            List<Vector2Int> targets = new List<Vector2Int> { targetPos };
+
+            // 攻撃データを定義
+            AttackProperty attackProp = new AttackProperty
+            {
+                Type = AttackPatternType.Normal,
+                DamageMultiplier = 1.5f, // 威力1.5倍！
+                HitCount = 1
+            };
+
+            // Mediatorに攻撃コマンドをぶん投げる！
+            _mediator.SendCommand(new AttackCommand(pId, attackProp, targets));
+        }
+
+
         // Xキーを押すと30ダメージ受けるテスト（HP減少→被ダメージエフェクト→死亡エフェクトの一連の流れを確認するためのもの）
         if (keyboard.xKey.wasPressedThisFrame)
         {
@@ -179,22 +222,27 @@ public class TestBattleStarter : MonoBehaviour
             }
         }
 
-        if (keyboard.zKey.wasPressedThisFrame)
+        // Cキー: 敵の行動をテスト
+        if (keyboard.cKey.wasPressedThisFrame)
         {
-            // 目の前（上）のマスを攻撃すると仮定
-            Vector2Int targetPos = _playerSystem.RuntimeData.Position + new Vector2Int(0, 1);
-            List<Vector2Int> targets = new List<Vector2Int> { targetPos };
+            _mediator.SendCommand(new EnemyActionCommand(2));
+        }
 
-            // AttackProperty をセット！
-            AttackProperty attackProp = new AttackProperty
+        // Vキー: ターン進行！
+        if (keyboard.vKey.wasPressedThisFrame)
+        {
+            Debug.Log("<color=orange>[TestBattleStarter] ターン進行！敵が行動します！</color>");
+
+            // 1. 予告のターンを減らす
+            telegraphSystem.TickAll();
+
+            // 2. 残りのターンが0以下になった予告を発動する
+            var expiredTelegraphs = telegraphSystem.ExtractExpiredTelegraph();
+
+            foreach (var t in expiredTelegraphs)
             {
-                Type = AttackPatternType.Normal,
-                DamageMultiplier = 1.5f, // 威力1.5倍！
-                HitCount = 1
-            };
-
-            // Mediatorに攻撃コマンドを投げる
-            _mediator.SendCommand(new AttackCommand(pId, attackProp, targets));
+                _mediator.SendCommand(new AttackCommand(t.SourceActorId, t.AttackInfo, t.TargetCells));
+            }
         }
     }
 }

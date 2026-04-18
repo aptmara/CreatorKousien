@@ -36,10 +36,10 @@ namespace CreatorKousien.EditorUI
         /// <returns></returns>
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            float height = 8f; // 上の余白
+            float height = 10f; // 上の余白
 
             // 基本のプロパティ数 (Condition, CD, AttackType, Origin, TargetRule, Charge, Interrup) + ヘッダー2行
-            height += 9 * (LineHeight + Spacing);
+            height += 11 * (LineHeight + Spacing);
 
             // ブロック間の区切り隙間
             height += Spacing * 4;
@@ -53,7 +53,7 @@ namespace CreatorKousien.EditorUI
                 height += Spacing * 2;                  // グリッド下の余白
             }
 
-            return height + 8f; // 下の余白
+            return height + 10f; // 下の余白
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -72,7 +72,18 @@ namespace CreatorKousien.EditorUI
             SerializedProperty condProp = property.FindPropertyRelative("Condition");
             SerializedProperty condValProp = property.FindPropertyRelative("ConditionValue");
             SerializedProperty cdProp = property.FindPropertyRelative("CooldownTurns");
-            SerializedProperty attackTypeProp = property.FindPropertyRelative("AttackType");
+
+            SerializedProperty attackInfoProp = property.FindPropertyRelative("AttackInfo");
+            SerializedProperty attackTypeProp = attackInfoProp != null
+                ? attackInfoProp.FindPropertyRelative("Type")
+                : null;
+            SerializedProperty damageMultiplierProp = attackInfoProp != null
+                ? attackInfoProp.FindPropertyRelative("DamageMultiplier")
+                : null;
+            SerializedProperty hitCountProp = attackInfoProp != null
+                ? attackInfoProp.FindPropertyRelative("HitCount")
+                : null;
+
             SerializedProperty originProp = property.FindPropertyRelative("OriginRule");
             SerializedProperty targetRuleProp = property.FindPropertyRelative("TargetRule");
             SerializedProperty chargeProp = property.FindPropertyRelative("ChargeTurns");
@@ -84,15 +95,32 @@ namespace CreatorKousien.EditorUI
             EditorGUI.LabelField(currentRect, "▼ 発動条件", EditorStyles.boldLabel);
             AdvanceRect(ref currentRect);
 
-            Rect condRect = new Rect(currentRect.x, currentRect.y, currentRect.width * 0.6f, currentRect.height);
-            Rect valRect = new Rect(currentRect.x + currentRect.width * 0.6f + 4f, currentRect.y, currentRect.width * 0.4f - 4f, currentRect.height);
+            Rect condRect = new Rect(
+               currentRect.x,
+               currentRect.y,
+               currentRect.width * 0.6f,
+               currentRect.height
+           );
+            Rect valRect = new Rect(
+                currentRect.x + currentRect.width * 0.6f + 4f,
+                currentRect.y,
+                currentRect.width * 0.4f - 4f,
+                currentRect.height
+            );
 
-            EditorGUI.PropertyField(condRect, condProp, new GUIContent("条件タイプ"));
-            EditorGUI.PropertyField(valRect, condValProp, GUIContent.none);
+            if (condProp != null)
+                EditorGUI.PropertyField(condRect, condProp, new GUIContent("条件タイプ"));
+
+            if (condValProp != null)
+                EditorGUI.PropertyField(valRect, condValProp, GUIContent.none);
+
             AdvanceRect(ref currentRect);
 
-            EditorGUI.PropertyField(currentRect, cdProp, new GUIContent("クールダウン"));
+            if (cdProp != null)
+                EditorGUI.PropertyField(currentRect, cdProp, new GUIContent("クールダウン"));
+
             AdvanceRect(ref currentRect);
+
 
             // 区切り隙間
             currentRect.y += Spacing * 2;
@@ -102,15 +130,34 @@ namespace CreatorKousien.EditorUI
             EditorGUI.LabelField(currentRect, "▼ 攻撃内容", EditorStyles.boldLabel);
             AdvanceRect(ref currentRect);
 
-            EditorGUI.PropertyField(currentRect, attackTypeProp, new GUIContent("攻撃種別"));
+            if (attackTypeProp != null)
+                EditorGUI.PropertyField(currentRect, attackTypeProp, new GUIContent("攻撃種別"));
+            else
+                EditorGUI.LabelField(currentRect, "攻撃種別", "AttackInfo.Type が見つかりません");
             AdvanceRect(ref currentRect);
-            EditorGUI.PropertyField(currentRect, originProp, new GUIContent("基準点 (Origin)"));
+
+            if (damageMultiplierProp != null)
+                EditorGUI.PropertyField(currentRect, damageMultiplierProp, new GUIContent("威力倍率"));
             AdvanceRect(ref currentRect);
-            EditorGUI.PropertyField(currentRect, targetRuleProp, new GUIContent("範囲ルール"));
+
+            if (hitCountProp != null)
+                EditorGUI.PropertyField(currentRect, hitCountProp, new GUIContent("ヒット数"));
             AdvanceRect(ref currentRect);
-            EditorGUI.PropertyField(currentRect, chargeProp, new GUIContent("猶予ターン (Charge)"));
+
+            if (originProp != null)
+                EditorGUI.PropertyField(currentRect, originProp, new GUIContent("基準点 (Origin)"));
             AdvanceRect(ref currentRect);
-            EditorGUI.PropertyField(currentRect, interruptProp, new GUIContent("キャンセル可能か"));
+
+            if (targetRuleProp != null)
+                EditorGUI.PropertyField(currentRect, targetRuleProp, new GUIContent("範囲ルール"));
+            AdvanceRect(ref currentRect);
+
+            if (chargeProp != null)
+                EditorGUI.PropertyField(currentRect, chargeProp, new GUIContent("猶予ターン (Charge)"));
+            AdvanceRect(ref currentRect);
+
+            if (interruptProp != null)
+                EditorGUI.PropertyField(currentRect, interruptProp, new GUIContent("キャンセル可能か"));
             AdvanceRect(ref currentRect);
 
             // 3. 5x5グリッドブロック

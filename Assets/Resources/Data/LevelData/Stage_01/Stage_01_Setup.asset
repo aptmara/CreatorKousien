@@ -13,5 +13,8 @@ MonoBehaviour:
   m_Name: Stage_01_Setup
   m_EditorClassIdentifier: Assembly-CSharp::CreatorKousien.Data.BattleSetupData
   StageData: {fileID: 11400000, guid: 36ffa9d58076a1148b1921016cb6f8c2, type: 2}
-  PlayerData: {fileID: 0}
-  Enemies: []
+  PlayerData: {fileID: 11400000, guid: cb353a2b39307e74fbb36421622824ee, type: 2}
+  Enemies:
+  - ActorId: 2
+    EnemyData: {fileID: 11400000, guid: 467c11604cddc83409f782e7368a3bc2, type: 2}
+    SpawnPosition: {x: 1, y: 1}
