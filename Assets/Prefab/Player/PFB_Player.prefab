@@ -591,6 +591,11 @@ MonoBehaviour:
   _animator: {fileID: 8148175009263531723}
   _lerpSpeed: 10
   _modelYOffset: 1.25
+  _jumpHeight: 1
+  _moveDuration: 0.25
+  _renderers:
+  - {fileID: 3745609759605716857}
+  _damageEffectDuration: 0.2
 --- !u!95 &8148175009263531723
 Animator:
   serializedVersion: 7

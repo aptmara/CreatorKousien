@@ -63,6 +63,12 @@ namespace CreatorKousien.Player
         public void ChangeHp(int amount)
         {
             RuntimeData.CurrentHp = Mathf.Clamp(RuntimeData.CurrentHp + amount, 0, RuntimeData.MaxHp);
+
+            // HPが0以下になったら死亡処理を呼び出す
+            if (RuntimeData.CurrentHp <= 0)
+            {
+                OnDeath();
+            }
         }
 
 

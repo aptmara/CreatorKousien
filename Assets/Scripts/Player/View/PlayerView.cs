@@ -35,10 +35,34 @@ namespace CreatorKousien.Player
         [Tooltip("1マスの移動にかかる時間")]
         [SerializeField] private float _moveDuration = 0.25f;       // ジャンプの時間
 
+
+        [Header("エフェクト設定")]
+        [Tooltip("ダメージを受けた時に赤く点滅させるRenderer")]
+        [SerializeField] private Renderer[] _renderers;
+        [Tooltip("ダメージ時ののけぞり時間")]
+        [SerializeField] private float _damageEffectDuration = 0.2f; // 将来的にアニメーションに変更予定
+
+
         private Vector3 _targetWorldPos;    // 目標座標（ワールド座標）
         private GridCellView _standingTile; // プレイヤーが立っているマスの参照
         private float _baseHeight;          // プレイヤーの基本的な高さ（マスの高さを考慮する前の高さ）
         private Coroutine _moveCoroutine;   // 移動中のコルーチンの参照
+        private Color[] _originalColors;    // 元の色を保存する配列
+
+        private void Start()
+        {
+            // 元の色を保存
+            if (_renderers != null && _renderers.Length > 0)
+            {
+                _originalColors = new Color[_renderers.Length];
+                for (int i = 0; i < _renderers.Length; i++)
+                {
+                    if (_renderers[i] != null)
+                        _originalColors[i] = _renderers[i].material.color;
+                }
+            }
+        }
+
 
 
         /// <summary>
@@ -126,6 +150,65 @@ namespace CreatorKousien.Player
                 }
             }
         }
+
+
+        /// <summary>
+        /// Event Busから呼ばれる被ダメージエフェクト再生のメソッド
+        /// </summary>
+        /// <param name="damageAmount">ダメージ量</param>
+        public void PlayDamageEffect(int damageAmount)
+        {
+            // TODO: 将来的にアニメーションに変更予定。今は単純に赤く点滅させるだけのエフェクト
+            // if (_animator != null) _animator.SetTrigger("Damage");
+
+            // 赤く点滅してピクッと震えるコルーチンを開始
+            StartCoroutine(DamageRoutine());
+
+            Debug.Log($"[PlayerView] ダメージエフェクト再生: {damageAmount}ダメージ");
+
+            // TODO: ダメージ量のポップアップUIとかもここで出してもいいかも？？
+        }
+
+
+        /// <summary>
+        /// ダメージエフェクトのコルーチン。一定時間、プレイヤーのモデルを赤く点滅させる
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerator DamageRoutine()
+        {
+            // ----- 1. 赤くする -----
+            foreach (var r in _renderers)
+            {
+                if (r != null)
+                    r.material.color = Color.red; // 赤く点滅
+            }
+
+            // ----- 2. のけぞりモーション -----
+            Vector3 originalPos = transform.position;
+            transform.position = originalPos + (Random.insideUnitSphere * 0.2f);
+
+            yield return new WaitForSeconds(_damageEffectDuration);
+
+            // ----- 3. 元に戻す -----
+            for (int i = 0; i < _renderers.Length; i++)
+            {
+                if (_renderers[i] != null)
+                    _renderers[i].material.color = _originalColors[i]; // 元の色に戻す
+            }
+
+            transform.position = _targetWorldPos; // 元の位置に戻す
+        }
+
+
+        public void PlayDeathEffect()
+        {
+            // if (_animator != null) _animator.SetTrigger("Die");
+
+            Debug.Log("[PlayerView] 死亡アニメーション再生！バタンキュー！！");
+
+            // TODO: 死亡エフェクトを再生して、プレイヤーが倒れるアニメーションを再生する
+        }
+
 
         /// <summary>
         /// アクションを再生するためのメソッド
