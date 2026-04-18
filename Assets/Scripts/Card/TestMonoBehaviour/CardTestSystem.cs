@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using UnityEngine;
 using System.Collections.Generic;
-
+using CreatorKousien.Effect;
 public class CardTestSystem : MonoBehaviour
 {
     [SerializeField]

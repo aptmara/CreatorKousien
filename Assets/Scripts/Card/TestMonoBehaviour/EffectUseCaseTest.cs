@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
-
+using CreatorKousien.Command;
+using CreatorKousien.Effect;
 public class EffectUseCaseTest : MonoBehaviour
 {
     [SerializeField]
