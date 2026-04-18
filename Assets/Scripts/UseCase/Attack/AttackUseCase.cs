@@ -53,6 +53,9 @@ namespace CreatorKousien.UseCase
         /// <param name="command"></param>
         public void Execute(AttackCommand command)
         {
+            // ログ用: 誰の行動かを色分け
+            string actorLabel = GetActorLabel(command.SourceActorId);
+
             // 1. FieldServiceにマスにいるActorIDのリストをもらう
             List<int> targetActorIds = _fieldService.GetActorsInCells(command.TargetCells);
 
@@ -60,7 +63,7 @@ namespace CreatorKousien.UseCase
             if (targetActorIds.Count == 0)
             {
                 // TODO: 空振りエフェクト、どんな感じで渡すかは検討中
-                Debug.Log($"[AttackUseCase] Actor:{command.SourceActorId} の攻撃は空振りに終わった！");
+                Debug.Log($"<b>[ATTACK]</b> {actorLabel} の攻撃 ⇒ <color=orange>空振り</color>");
 
                 // アクション終了を通知
                 _eventBus.PublishActionLogicCompleted(command.SourceActorId);
@@ -76,6 +79,9 @@ namespace CreatorKousien.UseCase
             // 5. SystemにHPを減らすように指示する
             foreach (int targetId in targetActorIds)
             {
+                string targetLabel = GetActorLabel(targetId);
+                Debug.Log($"<b>[ATTACK]</b> {actorLabel} ⇒ {targetLabel} に <b><color=orange>{finalDamage}</color></b> ダメージ！");
+
                 ApplyDamageToSystem(targetId, finalDamage);
 
                 // ダメージを与えたことをイベントで通知 (4/18 追加)
@@ -84,6 +90,13 @@ namespace CreatorKousien.UseCase
 
             // ロジックが全て終わったので完了通知
             _eventBus.PublishActionLogicCompleted(command.SourceActorId);
+        }
+
+        // ラベル生成メソッド
+        private string GetActorLabel(int id)
+        {
+            if (id == 1) return "<color=#00e6ff>PLAYER</color>";
+            return $"<color=#ff4d4d>ENEMY(ID:{id})</color>";
         }
 
         /// <summary>
@@ -126,7 +139,7 @@ namespace CreatorKousien.UseCase
                     }
 
                     // TODO: 消滅エフェクトを通知
-                    // 敵が死んだことをイベントで通知 (4/18 追加)
+                    Debug.Log($"<b>[DEATH]</b> {GetActorLabel(targetId)} が倒れた！");
                     _eventBus.PublishActorDeath(targetId);
                 }
             }

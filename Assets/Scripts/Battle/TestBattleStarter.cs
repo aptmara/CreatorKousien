@@ -19,6 +19,7 @@ using CreatorKousien.Player;
 using CreatorKousien.UseCase;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -36,6 +37,8 @@ public class TestBattleStarter : MonoBehaviour
     private ActionTelegraphSystem telegraphSystem;  /// ActionTelegraphSystemのインスタンスを保持する変数
     private TurnManager _turnManager;               /// TurnManagerのインスタンスを保持する変数
     private GameEventBus _eventBus;
+
+    private Dictionary<int, EnemyView> _enemyViews = new Dictionary<int, EnemyView>();
 
     private void Start()
     {
@@ -74,7 +77,15 @@ public class TestBattleStarter : MonoBehaviour
             // 盤面のマスを占有状態にする
             _fieldService.UpdateOccupancy(enemyInfo.ActorId, -1, -1, enemyInfo.SpawnPosition.x, enemyInfo.SpawnPosition.y);
 
-            // TODO: 敵の見た目も生成する
+            // 視覚的なスポーン
+            Vector3 worldPos = _fieldView.GetCellWorldPosition(enemyInfo.SpawnPosition.x, enemyInfo.SpawnPosition.y);
+
+            // EnemyDataに設定されたPrefabを生成
+            GameObject enemyObj = Instantiate(enemyInfo.EnemyData.EnemyPrefab, worldPos, Quaternion.identity);
+            EnemyView view = enemyObj.GetComponent<EnemyView>();
+
+            view.Initialize(enemyInfo.ActorId, worldPos, _fieldView.GetCellView(enemyInfo.SpawnPosition));
+            _enemyViews.Add(enemyInfo.ActorId, view);
         }
 
 
@@ -104,21 +115,44 @@ public class TestBattleStarter : MonoBehaviour
         // ------------------------------------------------------------
         _eventBus = new GameEventBus();
 
+        // 移動リクエストの集中管理
+        _eventBus.OnActorMoveRequested += (actorId, targetGridPos) =>
+        {
+            // グリッド座標をワールド座標に変換する
+            Vector3 worldPos = _fieldView.GetCellWorldPosition(targetGridPos.x, targetGridPos.y);
+            GridCellView cellView = _fieldView.GetCellView(targetGridPos);
+
+            // プレイヤーの場合
+            if (actorId == _playerSystem.RuntimeData.ActorId)
+            {
+                playerView.UpdateTargetPosition(worldPos);
+                playerView.SetStandingTile(cellView);
+                _fieldView.HighlightCell(targetGridPos.x, targetGridPos.y);
+            }
+            // エネミーの場合
+            else if (_enemyViews.TryGetValue(actorId, out var eView))
+            {
+                eView.MoveTo(worldPos);
+                eView.SetStandingTile(cellView);
+            }
+        };
+
+
         // 被ダメージ通知を受け取ったら、PlayerViewの被弾エフェクトを鳴らす！！
         _eventBus.OnDamageTaken += (targetId, damage) =>
         {
-           if (targetId == _playerSystem.RuntimeData.ActorId)
-            {
-                playerView.PlayDamageEffect(damage);
-            }
+            if (targetId == _playerSystem.RuntimeData.ActorId) playerView.PlayDamageEffect(damage);
+            else if (_enemyViews.TryGetValue(targetId, out var eView)) eView.PlayDamageEffect();
         };
 
         // 死亡通知を受け取ったら、PlayerViewの死亡エフェクトを鳴らす！！
         _eventBus.OnActorDeath += (targetId) =>
         {
-            if (targetId == _playerSystem.RuntimeData.ActorId)
+            if (targetId == _playerSystem.RuntimeData.ActorId) playerView.PlayDeathEffect();
+            else if (_enemyViews.TryGetValue(targetId, out var eView))
             {
-                playerView.PlayDeathEffect();
+                eView.PlayDeathEffect();
+                _enemyViews.Remove(targetId); // 辞書から削除
             }
         };
 
@@ -150,7 +184,6 @@ public class TestBattleStarter : MonoBehaviour
         {
             StartCoroutine(WaitAnimationAndProceed());
         };
-
 
         // 5. UseCaseとDispatcherの紐づけ
         // ------------------------------------------------------------

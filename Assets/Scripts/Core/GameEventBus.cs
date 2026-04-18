@@ -57,6 +57,11 @@ namespace CreatorKousien.Core
         /// </summary>
         public event Action OnCommandPhaseStarted;
 
+        /// <summary>
+        /// 特定のアクターが座標移動を完了し、見た目を動かすべきタイミングで発火
+        /// </summary>
+        public event Action<int, Vector2Int> OnActorMoveRequested;
+
 
 
 
@@ -121,6 +126,17 @@ namespace CreatorKousien.Core
         public void PublishCommandPhaseStarted()
         {
             OnCommandPhaseStarted?.Invoke();
+        }
+
+
+        /// <summary>
+        /// 特定のアクターの座標移動イベントを発火するメソッド
+        /// </summary>
+        /// <param name="actorId"></param>
+        /// <param name="targetGridPos"></param>
+        public void PublishActorMoveRequested(int actorId, Vector2Int targetGridPos)
+        {
+            OnActorMoveRequested?.Invoke(actorId, targetGridPos);
         }
     }
 }
