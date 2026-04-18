@@ -46,13 +46,17 @@ public class SelectSceneView : MonoBehaviour
         _onSceneChange = onSceneChange;
 
         SetLoading(true);
-        _stageManager.OnStageListLoaded += OnStageListLoaded;
+        _stageManager.OnStageListLoaded     += OnStageListLoaded;
+        _stageManager.OnStageListLoadFailed += OnStageListLoadFailed;
     }
 
     private void OnDestroy()
     {
         if (_stageManager != null)
-            _stageManager.OnStageListLoaded -= OnStageListLoaded;
+        {
+            _stageManager.OnStageListLoaded     -= OnStageListLoaded;
+            _stageManager.OnStageListLoadFailed -= OnStageListLoadFailed;
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -84,6 +88,14 @@ public class SelectSceneView : MonoBehaviour
 
         Debug.Log($"[SelectSceneView] ボタン生成完了: {stageList.Count}件");
     }
+
+    private void OnStageListLoadFailed(Exception ex)
+    {
+        Debug.LogError($"[SelectSceneView] ステージデータのロードに失敗しました: {ex?.Message}");
+        SetLoading(false);
+        if (_errorPanel != null) _errorPanel.SetActive(true);
+    }
+
 
     // -----------------------------------------------------------------------
     // ステージ選択

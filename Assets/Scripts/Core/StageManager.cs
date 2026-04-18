@@ -44,6 +44,11 @@ namespace CreatorKousien.Core
         /// <summary>ロード完了を通知するイベント。SelectSceneViewが購読してUIを構築する。</summary>
         public event Action<IReadOnlyList<BattleSetupData>> OnStageListLoaded;
 
+        /// <summary>
+        /// ロード失敗を通知するイベント。購読側（SelectSceneView等）はローディング解除・エラー表示に使う。
+        /// </summary>
+        public event Action<Exception> OnStageListLoadFailed;
+
         /// <summary>ロード完了フラグ</summary>
         public bool IsLoaded { get; private set; } = false;
 
@@ -60,6 +65,8 @@ namespace CreatorKousien.Core
         {
             IsLoaded = false;
             _stageList.Clear();
+            // 再初期化時は選択状態をリセットする（古いインデックスが残らないよう）
+            _selectedStageNo = 0;
 
             var handle = Addressables.LoadAssetsAsync<BattleSetupData>(addressableLabel, null);
             handle.Completed += OnAddressableLoadCompleted;
@@ -72,6 +79,8 @@ namespace CreatorKousien.Core
             if (handle.Status != AsyncOperationStatus.Succeeded)
             {
                 Debug.LogError($"[StageManager] Addressableロード失敗: {handle.OperationException}");
+                // 失敗時も購読側に通知しローディング表示を解除させる
+                OnStageListLoadFailed?.Invoke(handle.OperationException);
                 return;
             }
 
@@ -101,6 +110,8 @@ namespace CreatorKousien.Core
 
             _stageList = new List<BattleSetupData>(directList);
             IsLoaded = true;
+            // 再セット時は選択状態をリセットする（古いインデックスが残らないよう）
+            _selectedStageNo = 0;
             Debug.Log($"[StageManager] SetupDirect完了。件数: {_stageList.Count}");
 
             // 同フレームで呼ばれるため、購読者がいない可能性がある
@@ -153,6 +164,13 @@ namespace CreatorKousien.Core
             {
                 Debug.LogError("[StageManager] ステージデータが取得できません（未ロードまたはリストが空）。");
                 return null;
+            }
+
+            // 範囲外ガード（再Initialize等でリスト件数が変わった場合のフェールセーフ）
+            if (_selectedStageNo < 0 || _selectedStageNo >= _stageList.Count)
+            {
+                Debug.LogWarning($"[StageManager] _selectedStageNo({_selectedStageNo})が範囲外のため0にclampして返す。");
+                _selectedStageNo = 0;
             }
 
             return _stageList[_selectedStageNo];
