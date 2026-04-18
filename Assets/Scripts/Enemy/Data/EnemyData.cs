@@ -37,6 +37,14 @@ namespace CreatorKousien.Data
         [Min(0)]
         public int Attack = 10;
 
+        [Header("基本攻撃の重み")]
+
+        [Tooltip("移動を選択する重み")]
+        public float MoveWeight = 1.0f;
+
+        [Tooltip("待機(何もしない)を選択する重み")]
+        public float WaitWeight = 0.2f;
+
         [Header("表示アセット")]
 
         [Tooltip("シーン上に生成される敵キャラクターのプレハブ")]

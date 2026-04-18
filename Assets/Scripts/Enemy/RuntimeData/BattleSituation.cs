@@ -16,5 +16,7 @@ namespace CreatorKousien.Enemy
         public int MaxX;
         public int MaxY;
         public int BorderX;
+
+        public System.Func<int, int, bool> IsValidCell;
     }
 }

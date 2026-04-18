@@ -6,9 +6,10 @@
 // Created      : 2026-04-18
 // ================================================================================
 
+using System.Collections.Generic;
 using UnityEngine;
 using CreatorKousien.Data;
-using System.Collections.Generic;
+using CreatorKousien.Battle;
 
 namespace CreatorKousien.Enemy
 {
@@ -18,9 +19,46 @@ namespace CreatorKousien.Enemy
     public class EnemyIntent
     {
         public int SourceActorId;
+        public ActionCategory Category;
         public AttackProperty AttackInfo;
         public List<Vector2Int> RawTargetCells;
+        public Vector2Int MoveDirection;
         public int ChargeTurns;
         public bool IsInterruptible;
+
+        // 静的ファクトリ：攻撃
+        public static EnemyIntent CreateAttack(int id, AttackProperty info, List<Vector2Int> cells, int charge, bool interrupt)
+        {
+            return new EnemyIntent
+            {
+                SourceActorId = id,
+                Category = ActionCategory.Attack,
+                AttackInfo = info,
+                RawTargetCells = cells,
+                ChargeTurns = charge,
+                IsInterruptible = interrupt
+            };
+        }
+
+        // 静的ファクトリ：移動
+        public static EnemyIntent CreateMove(int id, Vector2Int dir)
+        {
+            return new EnemyIntent
+            {
+                SourceActorId = id,
+                Category = ActionCategory.Move,
+                MoveDirection = dir
+            };
+        }
+
+        // 静的ファクトリ：待機
+        public static EnemyIntent CreateWait(int id)
+        {
+            return new EnemyIntent
+            {
+                SourceActorId = id,
+                Category = ActionCategory.Special // 待機は特殊カテゴリとする
+            };
+        }
     }
 }

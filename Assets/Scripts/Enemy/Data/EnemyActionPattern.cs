@@ -64,6 +64,10 @@ namespace CreatorKousien.Data
         [Min(0)]
         public int CooldownTurns = 0;
 
+        [Tooltip("この行動の選ばれやすさ")]
+        [Min(0f)]
+        public float Weight = 1.0f;
+
         [Tooltip("攻撃の性質(倍率やヒット数)")]
         public AttackProperty AttackInfo;
 
