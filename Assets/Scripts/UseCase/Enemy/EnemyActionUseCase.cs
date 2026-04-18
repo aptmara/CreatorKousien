@@ -51,44 +51,56 @@ namespace CreatorKousien.UseCase
         /// <param name="command"></param>
         public void Execute(EnemyActionCommand command)
         {
-            // 1. 3手分のプランをシミュレーションして構築する
-            List<ActionRuntimeData> plan = PlanThreeActions(command.EnemyActorId);
+            // 敵チーム全体の「合計3手」のプランを作成
+            List<ActionRuntimeData> teamPlan = PlanTeamActions();
 
-            // 2. コマンドにセットされたコールバックに結果を書き込んで、呼び出し元に返す
-            command.OnPlanGenerated?.Invoke(plan);
+            // コマンドの報告書に結果を書き込む
+            command.OnPlanGenerated?.Invoke(teamPlan);
 
             // TODO: Mediator経由でViewに赤いマスを描画させる？敵の思考完了イベントを送る？
         }
 
         /// <summary>
-        /// 敵の3手分の行動をシミュレーションして、プランを構築する内部ロジック
+        /// 存在している全敵の中からステップごとに1体を指名し、チーム全体で3手のプランを作る
         /// </summary>
-        /// <param name="actorId"></param>
         /// <returns></returns>
-        private List<ActionRuntimeData> PlanThreeActions(int actorId)
+        private List<ActionRuntimeData> PlanTeamActions()
         {
             var plan = new List<ActionRuntimeData>();
-            var ai = _enemySystem.GetEnemyAI(actorId);
-            var data = _enemySystem.GetEnemyData(actorId);
+            var aliveEnemyIds = _enemySystem.GetAllAliveEnemyIds();
 
-            if (ai == null || data == null) return plan;
+            // 敵が1体もいなければ空のプランを返す
+            if (aliveEnemyIds.Count == 0) return plan;
 
-            Vector2Int virtualPos = data.Position; // 現在地からスタート
-
-            for (int i = 0; i < 3; i++)
+            // 全エネミーの「シミュレーション用仮想座標」を初期化
+            var virtualPositions = new Dictionary<int, Vector2Int>();
+            foreach (var id in aliveEnemyIds)
             {
+                virtualPositions[id] = _enemySystem.GetEnemyData(id).Position;
+            }
+
+            // チーム全体で3手分をループ
+            for (int step = 0; step < 3; step++)
+            {
+                // このステップで行動するエネミーを1体「ランダム」で指名する
+                int actingEnemyId = aliveEnemyIds[Random.Range(0, aliveEnemyIds.Count)];
+
+                var ai = _enemySystem.GetEnemyAI(actingEnemyId);
                 var situation = CreateSituation();
-                EnemyIntent intent = ai.Think(situation, virtualPos);
+
+                // 指名されたエネミーに思考させる
+                EnemyIntent intent = ai.Think(situation, virtualPositions[actingEnemyId]);
                 var actionTicket = ConvertIntentToTicket(intent);
 
                 plan.Add(actionTicket);
 
-                // 移動したなら、次の一手のために仮想座標を更新
+                // 移動した場合は、そのエネミーの仮想座標だけを更新
                 if (intent.Category == ActionCategory.Move)
                 {
-                    virtualPos += intent.MoveDirection;
+                    virtualPositions[actingEnemyId] += intent.MoveDirection;
                 }
             }
+
             return plan;
         }
 

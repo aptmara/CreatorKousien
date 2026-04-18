@@ -103,5 +103,14 @@ namespace CreatorKousien.Enemy
         {
             return _enemyDataMap.TryGetValue(actorId, out var data) ? data : null;
         }
+
+        /// <summary>
+        /// 現在存在している全てのエネミーのActorIdリストを取得する
+        /// </summary>
+        /// <returns></returns>
+        public List<int> GetAllAliveEnemyIds()
+        {
+            return new List<int>(_enemyDataMap.Keys);
+        }
     }
 }

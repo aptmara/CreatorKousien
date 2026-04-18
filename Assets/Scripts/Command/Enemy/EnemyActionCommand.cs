@@ -17,16 +17,11 @@ namespace CreatorKousien.Command
     /// </summary>
     public sealed class EnemyActionCommand : ICommand
     {
-        /// <summary>
-        /// 行動させたい敵のActorID
-        /// </summary>
-        public int EnemyActorId { get; }
-
+        // 全てのエネミーのプランをActorIDとキーにして受けとる
         public Action<List<ActionRuntimeData>> OnPlanGenerated { get; }
 
-        public EnemyActionCommand(int enemyActorId, Action<List<ActionRuntimeData>> onPlanGenerated)
+        public EnemyActionCommand(Action<List<ActionRuntimeData>> onPlanGenerated)
         {
-            EnemyActorId = enemyActorId;
             OnPlanGenerated = onPlanGenerated;
         }
     }
