@@ -19,6 +19,9 @@ namespace CreatorKousien.Core
     /// </summary>
     public class GameEventBus
     {
+        // イベントの定義
+        // ------------------------------------------------------------
+
         /// <summary>
         /// 攻撃のヒットを通知するイベント
         /// </summary>
@@ -29,6 +32,26 @@ namespace CreatorKousien.Core
         /// </summary>
         public event Action<List<Vector2Int>, bool> OnTelegraphRequested;
 
+
+        /// <summary>
+        /// ダメージを受けたことを通知するイベント
+        /// 誰が、どれだけのダメージを受けたかを引数で渡す
+        /// </summary>
+        public event Action<int, int> OnDamageTaken;
+
+
+        /// <summary>
+        /// アクターの死亡を通知するイベント
+        /// 誰が死亡したかを引数で渡す
+        /// </summary>
+        public event Action<int> OnActorDeath;
+
+
+
+
+
+        // イベントの発火メソッド
+        // ------------------------------------------------------------
 
         /// <summary>
         /// 攻撃ヒットイベントを発火するメソッド
@@ -48,6 +71,27 @@ namespace CreatorKousien.Core
         public void PublishTelegraph(List<Vector2Int> targetCells, bool isWarning)
         {
             OnTelegraphRequested?.Invoke(targetCells, isWarning);
+        }
+
+
+        /// <summary>
+        /// ダメージイベントを発火するメソッド
+        /// </summary>
+        /// <param name="targetActorId">ダメージを受けたアクターのID</param>
+        /// <param name="damageAmount">ダメージ量</param>
+        public void PublishDamageTaken(int targetActorId, int damageAmount)
+        {
+            OnDamageTaken?.Invoke(targetActorId, damageAmount);
+        }
+
+
+        /// <summary>
+        /// アクターの死亡イベントを発火するメソッド
+        /// </summary>
+        /// <param name="actorId">死亡したアクターのID</param>
+        public void PublishActorDeath(int actorId)
+        {
+            OnActorDeath?.Invoke(actorId);
         }
     }
 }

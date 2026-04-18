@@ -68,6 +68,24 @@ public class TestBattleStarter : MonoBehaviour
         // ----- 3. イベントの配線 -----
         GameEventBus eventBus = new GameEventBus();
 
+        // 被ダメージ通知を受け取ったら、PlayerViewの死亡エフェクトを鳴らす！！
+        eventBus.OnDamageTaken += (targetId, damage) =>
+        {
+           if (targetId == _playerSystem.RuntimeData.ActorId)
+            {
+                playerView.PlayDamageEffect(damage);
+            }
+        };
+
+        // 死亡通知を受け取ったら、PlayerViewの死亡エフェクトを鳴らす！！
+        eventBus.OnActorDeath += (targetId) =>
+        {
+            if (targetId == _playerSystem.RuntimeData.ActorId)
+            {
+                playerView.PlayDeathEffect();
+            }
+        };
+
         // 戻って来た通知を受け取って画面を動かす
         eventBus.OnTelegraphRequested += (targetCells, isWarning) =>
         {
@@ -127,5 +145,24 @@ public class TestBattleStarter : MonoBehaviour
         if (keyboard.downArrowKey.wasPressedThisFrame) _mediator.SendCommand(new MoveCommand(pId, GridDirection.Down, 1));
         if (keyboard.leftArrowKey.wasPressedThisFrame) _mediator.SendCommand(new MoveCommand(pId, GridDirection.Left, 1));
         if (keyboard.rightArrowKey.wasPressedThisFrame) _mediator.SendCommand(new MoveCommand(pId, GridDirection.Right, 1));
+
+
+        // Xキーを押すと30ダメージ受けるテスト（HP減少→被ダメージエフェクト→死亡エフェクトの一連の流れを確認するためのもの）
+        if (keyboard.xKey.wasPressedThisFrame)
+        {
+            int damage = 30; // 30ダメージ受ける
+
+            // 1. システムのHPを減らす（本当はUseCase経由ですが、今回はテスト用で直接）
+            _playerSystem.ChangeHp(-damage);
+
+            // 2. 画面にエフェクトを出すようにEventBusで通知！
+            _mediator.EventBus.PublishDamageTaken(pId, damage);
+
+            // 3. もしHPが0以下になっていたら、死亡通知も飛ばす！
+            if (_playerSystem.RuntimeData.CurrentHp <= 0)
+            {
+                _mediator.EventBus.PublishActorDeath(pId);
+            }
+        }
     }
 }
