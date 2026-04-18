@@ -21,11 +21,27 @@ namespace CreatorKousien.EditorTools
     /// </summary>
     public class StageTemplateGenerator
     {
-        [MenuItem("CreatorKousien/新しいステージセットを作成", priority = 1)]
+        [MenuItem("Assets/Create/CreatorKousien/💯新しいステージセットを作成", false, 10)]
+        [MenuItem("CreatorKousien/💯新しいステージセットを作成", priority = 1)]
         public static void CreateNewStageTemplate()
         {
             // 1. 保存先のベースパス
             string basePath = "Assets/Resources/Data/LevelData";
+
+            if (Selection.activeObject != null)
+            {
+                string selectedPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+
+                // 選択しているのがフォルダの場合はそのフォルダをベースパスにする
+                if (AssetDatabase.IsValidFolder(selectedPath))
+                {
+                    basePath = selectedPath;
+                }
+                else
+                {
+                    basePath = Path.GetDirectoryName(selectedPath).Replace("\\","/");
+                }
+            }
 
             // フォルダが存在しない場合は作成
             if (!Directory.Exists(basePath))
