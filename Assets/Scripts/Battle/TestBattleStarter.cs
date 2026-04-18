@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using CreatorKousien.Battle;
+using CreatorKousien.Enemy;
 
 public class TestBattleStarter : MonoBehaviour
 {
@@ -41,7 +42,20 @@ public class TestBattleStarter : MonoBehaviour
         TileEffectSystem tileEffect = new TileEffectSystem(fieldService.State);
 
         // BattleManagerの生成
-        // BattleManager battleManager = new BattleManager();
+        BattleManager battleManager = new BattleManager();
+        ActionTelegraphSystem telegraphSystem = new ActionTelegraphSystem();
+        EnemySystem enemySystem = new EnemySystem(telegraphSystem);
+
+        // 敵のスポーン（テスト用に1体だけ）
+        EnemyData dummyEnemyData = ScriptableObject.CreateInstance<EnemyData>();
+        dummyEnemyData.EnemyId = 100;
+        dummyEnemyData.MaxHp = 50;
+        dummyEnemyData.Attack = 5;
+        int dummyEnemyActorId = 2; // 敵のActorIDは2
+        Vector2Int dummyEnemyPos = new Vector2Int(3, 2);
+
+        enemySystem.SpawnEnemy(dummyEnemyActorId, dummyEnemyData, dummyEnemyPos);
+        fieldService.UpdateOccupancy(dummyEnemyActorId, -1, -1, dummyEnemyPos.x, dummyEnemyPos.y);
 
 
 
@@ -116,12 +130,12 @@ public class TestBattleStarter : MonoBehaviour
 
         // コマンドディスパッチャーを生成して、移動コマンドを処理できるようにする！
         MoveUseCase moveUseCase = new MoveUseCase(fieldService, tileEffect);
-        // AttackUseCase attackUseCase = new AttackUseCase(battleManager, fieldService, dispatcher);
+        AttackUseCase attackUseCase = new AttackUseCase(battleManager, fieldService, _playerSystem, enemySystem, dispatcher, eventBus);
         // EnemyActionUseCase enemyUseCase = new EnemyActionUseCase();
 
         // UseCaseをDispatcherに登録
         dispatcher.Register<MoveCommand>(moveUseCase.Execute);
-        // dispatcher.Register<AttackCommand>(attackUseCase.Execute);
+        dispatcher.Register<AttackCommand>(attackUseCase.Execute);
 
 
         // ----- 5. Mediatorを生成して、システムやビューを登録する -----
@@ -163,6 +177,24 @@ public class TestBattleStarter : MonoBehaviour
             {
                 _mediator.EventBus.PublishActorDeath(pId);
             }
+        }
+
+        if (keyboard.zKey.wasPressedThisFrame)
+        {
+            // 目の前（上）のマスを攻撃すると仮定
+            Vector2Int targetPos = _playerSystem.RuntimeData.Position + new Vector2Int(0, 1);
+            List<Vector2Int> targets = new List<Vector2Int> { targetPos };
+
+            // AttackProperty をセット！
+            AttackProperty attackProp = new AttackProperty
+            {
+                Type = AttackPatternType.Normal,
+                DamageMultiplier = 1.5f, // 威力1.5倍！
+                HitCount = 1
+            };
+
+            // Mediatorに攻撃コマンドを投げる
+            _mediator.SendCommand(new AttackCommand(pId, attackProp, targets));
         }
     }
 }

@@ -4,6 +4,8 @@
 //
 // Description  : 攻撃処理の進行台本。BattleManagerへ解決を依頼する。
 // Created      : 2026-04-17
+//
+// Note         : GameEventBusを持たせて攻撃の結果を通知するようにしました！(4/18 : Asano)
 // ================================================================================
 
 using CreatorKousien.Command;
@@ -24,12 +26,25 @@ namespace CreatorKousien.UseCase
         private PlayerSystem _playerSystem;
         private EnemySystem _enemySystem;
         private CommandDispatcher _dispatcher;
+        private GameEventBus _eventBus;
 
-        public AttackUseCase(BattleManager battleManager, FieldService fieldService, CommandDispatcher dispatcher)
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="battleManager">バトルマネージャーの参照</param>
+        /// <param name="fieldService ">フィールドサービスの参照</param>
+        /// <param name="playerSystem ">プレイヤーシステムの参照</param>
+        /// <param name="enemySystem  ">敵システムの参照</param>
+        /// <param name="dispatcher   ">コマンドディスパッチャーの参照</param>
+        /// <param name="eventBus     ">ゲームイベントバスの参照</param>
+        public AttackUseCase(BattleManager battleManager, FieldService fieldService, PlayerSystem playerSystem, EnemySystem enemySystem, CommandDispatcher dispatcher, GameEventBus eventBus)
         {
             _battleManager = battleManager;
             _fieldService = fieldService;
+            _playerSystem = playerSystem;
+            _enemySystem = enemySystem;
             _dispatcher = dispatcher;
+            _eventBus = eventBus;
         }
 
         /// <summary>
@@ -59,6 +74,9 @@ namespace CreatorKousien.UseCase
             foreach (int targetId in targetActorIds)
             {
                 ApplyDamageToSystem(targetId, finalDamage);
+
+                // ダメージを与えたことをイベントで通知 (4/18 追加)
+                _eventBus.PublishDamageTaken(targetId, finalDamage);
             }
 
             // 6. 計算が終わったら、Viewへヒット演出エフェクトを指示
@@ -105,6 +123,8 @@ namespace CreatorKousien.UseCase
                     }
 
                     // TODO: 消滅エフェクトを通知
+                    // 敵が死んだことをイベントで通知 (4/18 追加)
+                    _eventBus.PublishActorDeath(targetId);
                 }
             }
         }
