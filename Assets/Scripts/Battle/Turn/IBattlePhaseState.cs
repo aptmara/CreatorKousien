@@ -1,5 +1,5 @@
 // ================================================================================
-// File         : ITurnState.cs
+// File         : IBattlePhaseState.cs
 // Author       : Iwai Shogo
 //
 // Description  : 全てのフェーズが共通で持つ台本のインターフェース。
@@ -11,7 +11,7 @@ namespace CreatorKousien.Battle
     /// <summary>
     /// 全てのフェーズが共通で持つ台本のインターフェース
     /// </summary>
-    public interface ITurnState
+    public interface IBattlePhaseState
     {
         PhaseType Type { get; }
         void Enter();   // フェーズ開始時に1回呼ばれる

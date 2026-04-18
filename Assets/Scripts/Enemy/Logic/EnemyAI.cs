@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CreatorKousien.Data;
 using CreatorKousien.Command;
+using CreatorKousien.Battle;
 
 namespace CreatorKousien.Enemy
 {
@@ -35,7 +36,7 @@ namespace CreatorKousien.Enemy
         /// <param name="myData"></param>
         /// <param name="masterData"></param>
         /// <param name="telegraphSystem"></param>
-        public EnemyAI(EnemyRuntimeData myData, EnemyData masterData, AttackTelegraphSystem telegraphSystem)
+        public EnemyAI(EnemyRuntimeData myData, EnemyData masterData)
         {
             _myData = myData;
             _masterData = masterData;
