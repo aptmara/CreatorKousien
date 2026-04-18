@@ -66,8 +66,7 @@ namespace CreatorKousien.UseCase
                 PlayerPos = pPos,
                 MaxX = fSize.x - 1,
                 MaxY = fSize.y - 1,
-                BorderX = border,
-                IsValidCell = (x, y) => !_fieldService.IsOutOfBounds(x, y) && !_fieldService.IsObstacle(x, y)
+                BorderX = border
             };
 
             // 4. AIに思考を依頼
