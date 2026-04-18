@@ -9,8 +9,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using CreatorKousien.Data;
-using JetBrains.Annotations;
-using System.Runtime.Serialization;
+using CreatorKousien.Battle;
 
 namespace CreatorKousien.Enemy
 {
@@ -20,9 +19,9 @@ namespace CreatorKousien.Enemy
         private Dictionary<int, EnemyRuntimeData> _enemyDataMap = new Dictionary<int, EnemyRuntimeData>();
         private Dictionary<int, EnemyAI> _enemyAIMap = new Dictionary<int, EnemyAI>();
 
-        private AttackTelegraphSystem _telegraphSystem;
+        private ActionTelegraphSystem _telegraphSystem;
 
-        public EnemySystem(AttackTelegraphSystem telegraphSystem)
+        public EnemySystem(ActionTelegraphSystem telegraphSystem)
         {
             _telegraphSystem = telegraphSystem;
         }
@@ -44,7 +43,7 @@ namespace CreatorKousien.Enemy
                 CurrentAttack = data.Attack
             };
 
-            var ai = new EnemyAI(runtimeData, data, _telegraphSystem);
+            var ai = new EnemyAI(runtimeData, data);
 
             _enemyDataMap[actorId] = runtimeData;
             _enemyAIMap[actorId] = ai;
@@ -78,7 +77,7 @@ namespace CreatorKousien.Enemy
             Debug.Log($"<color=red>[EnemySystem] 敵(ID:{actorId}) 撃破！！</color>");
 
             // この敵が予約していた攻撃をすべて消去
-            _telegraphSystem.CancelTelegraphsByActorId(actorId);
+            _telegraphSystem.CancelByActorId(actorId);
 
             // 辞書からデータを削除
             _enemyDataMap.Remove(actorId);

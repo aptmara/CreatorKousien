@@ -12,6 +12,7 @@ using CreatorKousien.Core;
 using CreatorKousien.Enemy;
 using CreatorKousien.Field;
 using CreatorKousien.Player;
+using CreatorKousien.Battle;
 using System.Collections.Generic;
 
 namespace CreatorKousien.UseCase
@@ -24,7 +25,7 @@ namespace CreatorKousien.UseCase
         private EnemySystem _enemySystem;
         private FieldService _fieldService;
         private PlayerSystem _playerSystem;
-        private AttackTelegraphSystem _TelegraphSystem;
+        private ActionTelegraphSystem _TelegraphSystem;
         private CommandDispatcher _dispatcher;
 
         /// <summary>
@@ -34,7 +35,7 @@ namespace CreatorKousien.UseCase
         /// <param name="FieldService"></param>
         /// <param name="PlayerSystem"></param>
         /// <param name="Dispatcher"></param>
-        public EnemyActionUseCase(EnemySystem EnemySystem, FieldService FieldService, PlayerSystem PlayerSystem, AttackTelegraphSystem telegraphSystem, CommandDispatcher Dispatcher)
+        public EnemyActionUseCase(EnemySystem EnemySystem, FieldService FieldService, PlayerSystem PlayerSystem, ActionTelegraphSystem telegraphSystem, CommandDispatcher Dispatcher)
         {
             _enemySystem = EnemySystem;
             _fieldService = FieldService;
