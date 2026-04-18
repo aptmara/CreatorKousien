@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using CreatorKousien.Effect;
 public class EffectTestSystem : MonoBehaviour
 {
     [SerializeField]
