@@ -61,6 +61,9 @@ namespace CreatorKousien.UseCase
             {
                 // TODO: 空振りエフェクト、どんな感じで渡すかは検討中
                 Debug.Log($"[AttackUseCase] Actor:{command.SourceActorId} の攻撃は空振りに終わった！");
+
+                // アクション終了を通知
+                _eventBus.PublishActionLogicCompleted(command.SourceActorId);
                 return;
             }
 
@@ -79,8 +82,8 @@ namespace CreatorKousien.UseCase
                 _eventBus.PublishDamageTaken(targetId, finalDamage);
             }
 
-            // 6. 計算が終わったら、Viewへヒット演出エフェクトを指示
-            // TODO: ヒットエフェクト
+            // ロジックが全て終わったので完了通知
+            _eventBus.PublishActionLogicCompleted(command.SourceActorId);
         }
 
         /// <summary>

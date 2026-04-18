@@ -46,6 +46,16 @@ namespace CreatorKousien.Core
         /// </summary>
         public event Action<int> OnActorDeath;
 
+        /// <summary>
+        /// アクションのロジック計算が完全に終了したことを通知するイベント
+        /// 引数は行動したActorID
+        /// </summary>
+        public event Action<int> OnActionLogicCompleted;
+
+        /// <summary>
+        /// コマンドフェーズが開始したことを全体に通知する
+        /// </summary>
+        public event Action OnCommandPhaseStarted;
 
 
 
@@ -92,6 +102,25 @@ namespace CreatorKousien.Core
         public void PublishActorDeath(int actorId)
         {
             OnActorDeath?.Invoke(actorId);
+        }
+
+
+        /// <summary>
+        /// アクション終了イベントを発火するメソッド
+        /// </summary>
+        /// <param name="actorId">行動したActorID</param>
+        public void PublishActionLogicCompleted(int actorId)
+        {
+            OnActionLogicCompleted?.Invoke(actorId);
+        }
+
+
+        /// <summary>
+        /// コマンドフェーズ開始イベントを発火するメソッド
+        /// </summary>
+        public void PublishCommandPhaseStarted()
+        {
+            OnCommandPhaseStarted?.Invoke();
         }
     }
 }

@@ -35,6 +35,7 @@ public class TestBattleStarter : MonoBehaviour
     private GameMediator _mediator;                 /// GameMediatorのインスタンスを保持する変数
     private ActionTelegraphSystem telegraphSystem;  /// ActionTelegraphSystemのインスタンスを保持する変数
     private TurnManager _turnManager;               /// TurnManagerのインスタンスを保持する変数
+    private GameEventBus _eventBus;
 
     private void Start()
     {
@@ -101,24 +102,19 @@ public class TestBattleStarter : MonoBehaviour
 
         // 4 イベントの配線
         // ------------------------------------------------------------
-        GameEventBus eventBus = new GameEventBus();
+        _eventBus = new GameEventBus();
 
         // 被ダメージ通知を受け取ったら、PlayerViewの被弾エフェクトを鳴らす！！
-        eventBus.OnDamageTaken += (targetId, damage) =>
+        _eventBus.OnDamageTaken += (targetId, damage) =>
         {
            if (targetId == _playerSystem.RuntimeData.ActorId)
             {
                 playerView.PlayDamageEffect(damage);
             }
-
-           if (_turnManager != null)
-            {
-                _turnManager.CompleteCurrentActionAnimation();
-            }
         };
 
         // 死亡通知を受け取ったら、PlayerViewの死亡エフェクトを鳴らす！！
-        eventBus.OnActorDeath += (targetId) =>
+        _eventBus.OnActorDeath += (targetId) =>
         {
             if (targetId == _playerSystem.RuntimeData.ActorId)
             {
@@ -127,11 +123,11 @@ public class TestBattleStarter : MonoBehaviour
         };
 
         // 戻って来た通知を受け取って画面を動かす
-        eventBus.OnTelegraphRequested += (targetCells, isWarning) =>
+        _eventBus.OnTelegraphRequested += (targetCells, isWarning) =>
         {
             _fieldView.ShowTelegraph(targetCells, isWarning);
         };
-        eventBus.OnAttackHit += (targetActorId) =>
+        _eventBus.OnAttackHit += (targetActorId) =>
         {
             Debug.Log($"<color=red>[View] ActorID:{targetActorId} に攻撃ヒットエフェクトを再生！</color>");
         };
@@ -150,6 +146,10 @@ public class TestBattleStarter : MonoBehaviour
             }
         };
 
+        _eventBus.OnActionLogicCompleted += (actorId) =>
+        {
+            StartCoroutine(WaitAnimationAndProceed());
+        };
 
 
         // 5. UseCaseとDispatcherの紐づけ
@@ -157,8 +157,8 @@ public class TestBattleStarter : MonoBehaviour
         CommandDispatcher dispatcher = new CommandDispatcher();
 
         // コマンドディスパッチャーを生成して、移動コマンドを処理できるようにする！
-        MoveUseCase moveUseCase = new MoveUseCase(_fieldService, tileEffect);
-        AttackUseCase attackUseCase = new AttackUseCase(_battleManager, _fieldService, _playerSystem, _enemySystem, dispatcher, eventBus);
+        MoveUseCase moveUseCase = new MoveUseCase(_fieldService, tileEffect, _eventBus);
+        AttackUseCase attackUseCase = new AttackUseCase(_battleManager, _fieldService, _playerSystem, _enemySystem, dispatcher, _eventBus);
         EnemyActionUseCase enemyUseCase = new EnemyActionUseCase(_enemySystem, _fieldService, _playerSystem, telegraphSystem,dispatcher);
 
         // UseCaseをDispatcherに登録
@@ -167,32 +167,24 @@ public class TestBattleStarter : MonoBehaviour
         dispatcher.Register<EnemyActionCommand>(enemyUseCase.Execute);
 
 
-        // 6. Mediatorを生成して、システムやビューを登録する
-        // ------------------------------------------------------------
-        _mediator = new GameMediator();
-        _mediator.Initialize(dispatcher, eventBus);
-
-        // 7. ターンマネージャーの生成と登録
+        // 6. TurnManagerの生成
         _turnManager = gameObject.AddComponent<TurnManager>();
+        _turnManager.Initialize(dispatcher, _eventBus);
 
-        _turnManager.OnCommandPhaseStarted += () =>
-        {
-            // 本当はEnemyのAIがコマンドを送るべきですが、今回はテスト用に直接TurnManagerから呼び出す形にします。
-            for (int i = 0; i < 3; i++)
-            {
-                Vector2Int targetPos = _playerSystem.RuntimeData.Position;
-                List<Vector2Int> targets = new List<Vector2Int> { targetPos };
-                AttackProperty prop = new AttackProperty { Type = AttackPatternType.Normal, DamageMultiplier = 1.0f, HitCount = 1 };
-
-                // 敵のIDは2と仮定
-                ActionRuntimeData enemyAction = new ActionRuntimeData(2, prop, targets);
-                _turnManager.SubmitEnemyAction(enemyAction);
-            }
-        };
-
-        _turnManager.Initialize(dispatcher);
+        // 7. Mediatorの生成と統合
+        _mediator = new GameMediator();
+        _mediator.Initialize(dispatcher, _eventBus, _turnManager);
 
         Debug.Log("テストバトルの配線完了！十字キーで移動コマンドを発行できます！");
+    }
+
+    private IEnumerator WaitAnimationAndProceed()
+    {
+        // 0.5秒のアニメーション待機をシミュレート
+        yield return new WaitForSeconds(0.5f);
+
+        // Mediator経由で安全にTurnManagerへ報告
+        _mediator.CompleteCurrentActionAnimation();
     }
 
     private void Update()
@@ -205,10 +197,14 @@ public class TestBattleStarter : MonoBehaviour
         int pId = _playerSystem.RuntimeData.ActorId; // プレイヤーのID(1)
 
         // 移動テスト
-        if (keyboard.upArrowKey.wasPressedThisFrame) _mediator.SendCommand(new MoveCommand(pId, GridDirection.Up, 1));
-        if (keyboard.downArrowKey.wasPressedThisFrame) _mediator.SendCommand(new MoveCommand(pId, GridDirection.Down, 1));
-        if (keyboard.leftArrowKey.wasPressedThisFrame) _mediator.SendCommand(new MoveCommand(pId, GridDirection.Left, 1));
-        if (keyboard.rightArrowKey.wasPressedThisFrame) _mediator.SendCommand(new MoveCommand(pId, GridDirection.Right, 1));
+        if (keyboard.upArrowKey.wasPressedThisFrame)
+            _mediator.SubmitPlayerAction(new ActionRuntimeData(pId, GridDirection.Up));
+        if (keyboard.downArrowKey.wasPressedThisFrame)
+            _mediator.SubmitPlayerAction(new ActionRuntimeData(pId, GridDirection.Down));
+        if (keyboard.leftArrowKey.wasPressedThisFrame)
+            _mediator.SubmitPlayerAction(new ActionRuntimeData(pId, GridDirection.Left));
+        if (keyboard.rightArrowKey.wasPressedThisFrame)
+            _mediator.SubmitPlayerAction(new ActionRuntimeData(pId, GridDirection.Right));
 
 
         //  Zキーで攻撃を発動
@@ -226,9 +222,8 @@ public class TestBattleStarter : MonoBehaviour
                 HitCount = 1
             };
 
-            // TurnManagerを通して攻撃コマンドを送る
-            ActionRuntimeData actionData = new ActionRuntimeData(pId, attackProp, targets);
-            _turnManager.SubmitPlayerAction(actionData);
+            // 攻撃コマンドを送る
+            _mediator.SubmitPlayerAction(new ActionRuntimeData(pId, attackProp, targets));
         }
 
 

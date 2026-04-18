@@ -34,7 +34,7 @@ namespace CreatorKousien.Battle
             _playerSelectedActions.Clear();
             _enemyPlannedActions.Clear();
 
-            _owner.NotifyCommandPhaseStarted();   // コマンドフェーズ開始のイベントを発火（デバック用なので改変しても大丈夫）
+            _owner.EventBus.PublishCommandPhaseStarted();
 
             // フェーズ開始と同時に、全てのエネミーの3手分を計算させる
             var planCommand = new EnemyActionCommand((teamPlan) =>
