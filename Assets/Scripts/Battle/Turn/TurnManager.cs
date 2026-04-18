@@ -18,6 +18,7 @@ namespace CreatorKousien.Battle
     {
         private PhaseManager _phaseManager;
         private CommandDispatcher _dispatcher;
+        public CommandDispatcher Dispatcher => _dispatcher;
 
         private CommandPhaseState _commandPhase;
         private ActionPhaseState  _actionPhase;

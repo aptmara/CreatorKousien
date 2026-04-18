@@ -6,6 +6,7 @@
 // Created      : 2026-04-18
 // ================================================================================
 
+using CreatorKousien.Command;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -35,12 +36,21 @@ namespace CreatorKousien.Battle
 
             _owner.NotifyCommandPhaseStarted();   // コマンドフェーズ開始のイベントを発火（デバック用なので改変しても大丈夫）
 
+            // フェーズ開始と同時に、全てのエネミーの3手分を計算させる
+            var planCommand = new EnemyActionCommand((teamPlan) =>
+            {
+                _enemyPlannedActions = teamPlan;
+                Debug.Log($"[Command Phase] 敵チーム全体の3手を受領しました！");
+            });
+
+            _owner.Dispatcher.Dispatch(planCommand);
+
             // TODO: EventBus経由で敵の予告表示をViewに出す
         }
 
         public void Update()
         {
-            // 時間ゲージのカウントダウンロジック、敵の思考、カード選択等
+            // 時間ゲージのカウントダウンロジック、カード選択等
         }
 
         /// <summary>
@@ -48,7 +58,7 @@ namespace CreatorKousien.Battle
         /// </summary>
         public void Exit()
         {
-            // ここでプレイヤーの3手と敵の3手を合体させて交互に並べる
+            // クリーンアップ処理
         }
 
         /// <summary>
