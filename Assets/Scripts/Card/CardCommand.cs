@@ -1,6 +1,8 @@
 using UnityEngine;
 using CreatorKousien.Command;
 using UnityEngine.UI;
+using NUnit.Framework;
+using System.Collections.Generic;
 public class RegisterSlotCardCommand : ICommand
 {
     // 実行ID
@@ -39,5 +41,26 @@ public class PickCommand : ICommand
     public PickCommand(int pickCount)
     {
         _pickCount = pickCount;
+    }
+}
+
+public class AdvanceTurnCommand : ICommand
+{
+    private int _turnToAdvance;
+    public int TurnToAdvance => _turnToAdvance;
+
+    public AdvanceTurnCommand(int turnToAdvance)
+    {
+        _turnToAdvance = turnToAdvance;
+    }
+}
+
+public class SetSlotCardCommand : ICommand
+{
+    private Dictionary<SlotDirection, int> _slotIDs;
+    public Dictionary<SlotDirection, int> SlotIDs => _slotIDs;
+    public SetSlotCardCommand(Dictionary<SlotDirection, int> slotIDs)
+    {
+        _slotIDs = slotIDs;
     }
 }

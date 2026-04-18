@@ -31,14 +31,8 @@ class CardRuntimeData
 
     public void FlipFace()
     {
-        if(_currentFace == CardFace.FaceUp)
-        {
-            _currentFace = CardFace.FaceDown;
-        }
-        else if(_currentFace == CardFace.FaceDown)
-        {
-            _currentFace = CardFace.FaceUp;
-        }
+        // 向きを裏返す
+        _currentFace = _currentFace == CardFace.FaceUp ? CardFace.FaceDown : CardFace.FaceUp;
     }
 }
 
@@ -49,23 +43,25 @@ public class CardSystem
     //! 手札
     private Dictionary<SlotDirection ,CardRuntimeData> _haveCard;
     // コンストラクタ
-    public CardSystem(CardDataBase dataBase, List<int> haveCardID)
+    public CardSystem(CardDataBase dataBase, Dictionary<SlotDirection, int> haveCardIDs)
     {
         // 初期化
         _dataBase = dataBase;
         _haveCard = new Dictionary<SlotDirection, CardRuntimeData>();
+
+        ResetCardInstance();
         // 渡されたIDからカードのインスタンスを作成
-        SetCardInstance(haveCardID);
+        SetCardInstance(haveCardIDs);
     }
 
     // カード作成API
-    public void SetCard(List<int> haveCardID)
+    public void SetCard(Dictionary<SlotDirection ,int> setCardID)
     {
         // 渡されたIDからカードのインスタンスを作成
-        SetCardInstance(haveCardID);
+        SetCardInstance(setCardID);
     }
 
-    void SetCardInstance(List<int> haveCardID)
+    void SetCardInstance(Dictionary<SlotDirection, int> setCardID)
     {
         // 各方向分カードを作成
         for (int i = 0; i < (int)SlotDirection.MaxDirection; i++)
@@ -73,33 +69,39 @@ public class CardSystem
             // 渡された手札を確認し、存在する場合は渡されたカードを使用、そうでない場合は予備のデータを挿入
             CardData data = _dataBase.FallBackCard;
             // 確認用にデータを取得
-            CardData checkData = _dataBase.GetCard(haveCardID[i]);
-            if (IsSafeHandData(i, checkData, haveCardID))
-            {
-                // チェックが通ったのでデータを確定
-                data = checkData;
-            }
-            else
-            {
-                HandErrorMessage(i, checkData, haveCardID);
-            }
-
+            SlotDirection direction = (SlotDirection)i;
+            int cardID;
+            bool hasData = setCardID.TryGetValue(direction, out cardID);
+            if (!hasData) continue;
+            CardData checkData = _dataBase.GetCard(cardID);
+            
+            // チェックが通ったのでデータを確定
+            data = checkData;
+            
             // インスタンスを作成
             _haveCard[(SlotDirection)i] = CreateHaveCard(0, data, (SlotDirection)i);
         }
+        // 不正データが入っていた場合抜ける
+        HandErrorMessage();
     }
 
-    bool IsSafeHandData(int index, CardData checkData, List<int> haveCardID)
-    {
-        return haveCardID.Count >= index && checkData.Direction == (SlotDirection)index;
-    }
 
-    void HandErrorMessage(int index, CardData checkData, List<int> haveCardID)
+    void HandErrorMessage()
     {
-        // エラーメッセージ
-        if (checkData.Direction != (SlotDirection)index) Debug.LogError("[CardSystem]登録されたカードの方向が不正です。カードID" + checkData.CardID + "の方向は" + checkData.Direction.ToString() + "ですが" + ((SlotDirection)index).ToString() + "に設定されました");
+        int fallBackID = _dataBase.FallBackCard.CardID;
 
-        if (haveCardID.Count <= index) Debug.LogError("[CardSystem]渡された手札の枚数が不足しています、" + haveCardID.Count + "枚のカード情報が渡されました");
+        for (int i = 0; i < (int) SlotDirection.MaxDirection; i++)
+        {
+            SlotDirection direction = (SlotDirection)i;
+            if (_haveCard[direction] == null)
+            {
+                Debug.LogError("[CardSystem]カードが存在しません");
+            }
+            else if (_haveCard[direction].CardID == fallBackID) 
+            {
+                Debug.LogError("[CardSystem]カードにFallBack値が入っています");
+            }
+        }
     }
 
     CardRuntimeData CreateHaveCard(int instanceID,CardData data, SlotDirection direction)
@@ -120,5 +122,14 @@ public class CardSystem
         int cardID = _haveCard[direction].CardID;
         CardFace face = _haveCard[direction].CurrentFace;
         return _dataBase.GetCard(cardID).faceEffectID[(int)face];
+    }
+
+    void ResetCardInstance()
+    {
+        for (int i = 0; i < (int)SlotDirection.MaxDirection; i++)
+        {
+            SlotDirection direction = (SlotDirection)i;
+            _haveCard[direction] = CreateHaveCard(-1, _dataBase.FallBackCard, direction);
+        }
     }
 }

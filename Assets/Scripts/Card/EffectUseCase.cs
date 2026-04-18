@@ -48,6 +48,17 @@ public class EffectUseCase
         // 現在の手札を取得
 
         // UIManagerにコマンドを送る
+        
+    }
 
+    public void AdvanceTurn(AdvanceTurnCommand advanceTurnCommand)
+    {
+        int turnToAdvance = advanceTurnCommand.TurnToAdvance;
+        _effectSystem.DurationUpdate(turnToAdvance);
+    }
+
+    public void SetSlotCard(SetSlotCardCommand setSlotCardCommand)
+    {
+        _cardSystem.SetCard(setSlotCardCommand.SlotIDs);
     }
 }

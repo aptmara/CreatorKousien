@@ -42,6 +42,7 @@ public class EffectSystem
             // 遅延中だった場合は処理しない
             if (effect.currentDuration > 0)
             {
+                Debug.Log("効果ID" + effect.data.EffectID + "は残り待機ターン" +　effect.currentDuration + "ターンなのでスキップします");
                 i++;
                 continue;
             }
