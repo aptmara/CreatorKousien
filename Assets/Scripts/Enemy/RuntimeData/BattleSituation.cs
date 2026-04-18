@@ -16,8 +16,5 @@ namespace CreatorKousien.Enemy
         public int MaxX;
         public int MaxY;
         public int BorderX;
-
-        // UseCaseからマスの判定関数だけを渡してもらう
-        public System.Func<int, int, bool> IsValidCell;
     }
 }

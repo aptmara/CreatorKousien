@@ -13,8 +13,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using CreatorKousien.Data;
-using CreatorKousien.Command;
-using CreatorKousien.Battle;
 
 namespace CreatorKousien.Enemy
 {
@@ -135,7 +133,7 @@ namespace CreatorKousien.Enemy
         /// <param name="origin"></param>
         /// <param name="situation"></param>
         /// <returns></returns>
-        private List<Vector2Int> CalculateTargetCells(EnemyActionPattern pattern, Vector2Int origin,  BattleSituation situation)
+        private List<Vector2Int> CalculateTargetCells(EnemyActionPattern pattern, Vector2Int origin, BattleSituation situation)
         {
             List<Vector2Int> result = new List<Vector2Int>();
 
@@ -176,9 +174,6 @@ namespace CreatorKousien.Enemy
                     break;
             }
 
-            // 場外 & 障害物クリッピング
-            result.RemoveAll(pos => !situation.IsValidCell(pos.x, pos.y));
-
             return result;
         }
 
@@ -199,40 +194,6 @@ namespace CreatorKousien.Enemy
 
         // 内部ロジック: 行動の確定と条件判定
         // ============================================================
-
-        /// <summary>
-        /// 決定した行動を実行し、クールダウンを適用する
-        /// </summary>
-        /// <param name="pattern"></param>
-        /// <param name="targets"></param>
-        /// <returns></returns>
-        private ICommand ExecuteAction(EnemyActionPattern pattern, List<Vector2Int> targets)
-        {
-            // クールダウン開始
-            _cooldownTimers[pattern] = pattern.CooldownTurns;
-
-            if (pattern.ChargeTurns > 0)
-            {
-                // 予告攻撃
-                var telegraph = new TelegraphRuntimeData
-                {
-                    // 重複しない固有IDを発行
-                    TelegraphId = _myData.ActorId * 1000 + _localTurnCount,
-                    SourceActorId = _myData.ActorId,
-                    TargetCells = targets,
-                    RemainingTurn = pattern.ChargeTurns,
-                    AttackInfo = pattern.AttackInfo,
-                    IsInterruptible = pattern.IsInterruptible
-                };
-
-                return null;
-            }
-            else
-            {
-                // 即時攻撃
-                return new AttackCommand(_myData.ActorId, pattern.AttackInfo, targets);
-            }
-        }
 
         /// <summary>
         /// スキルの発動条件を満たしているかチェックする
