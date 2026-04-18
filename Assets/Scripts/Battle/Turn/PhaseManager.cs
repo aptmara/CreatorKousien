@@ -34,7 +34,27 @@ namespace CreatorKousien.Battle
         /// <param name="nextPhase"></param>
         public void TransitionTo(PhaseType nextPhase)
         {
-            
+            if (!_states.ContainsKey(nextPhase))
+            {
+                Debug.LogError($"[PhaseManager] {nextPhase} ステートが登録されていません。");
+                return;
+            }
+
+            Debug.Log($"<color=cyan>[Phase] Exit: {CurrentPhaseType} -> Enter: {nextPhase}</color>");
+
+            _currentState?.Exit();
+            _currentState = _states[nextPhase];
+            _currentState.Enter();
         }
+
+        /// <summary>
+        /// 現在のフェーズのUpdateを回す
+        /// </summary>
+        public void Update()
+        {
+            _currentState?.Update();
+        }
+
+        public PhaseType CurrentPhaseType => _currentState?.Type ?? PhaseType.Init;
     }
 }
