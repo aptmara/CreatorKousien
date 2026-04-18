@@ -6,6 +6,10 @@
 // Created      : 2026-04-17
 // ================================================================================
 
+using CreatorKousien.Battle;
+using System;
+using System.Collections.Generic;
+
 namespace CreatorKousien.Command
 {
     /// <summary>
@@ -18,9 +22,12 @@ namespace CreatorKousien.Command
         /// </summary>
         public int EnemyActorId { get; }
 
-        public EnemyActionCommand(int enemyActorId)
+        public Action<List<ActionRuntimeData>> OnPlanGenerated { get; }
+
+        public EnemyActionCommand(int enemyActorId, Action<List<ActionRuntimeData>> onPlanGenerated)
         {
             EnemyActorId = enemyActorId;
+            OnPlanGenerated = onPlanGenerated;
         }
     }
 }

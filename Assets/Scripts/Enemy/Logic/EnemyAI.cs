@@ -23,9 +23,9 @@ namespace CreatorKousien.Enemy
     {
         private EnemyRuntimeData _myData;               // この敵自体の現在状態
         private EnemyData _masterData;                  // 設計図 (行動パターン一覧)
+        private int _localTurnCount = 0;
 
         // --- 内部ステート ---
-        private int _localTurnCount = 0;
         private Dictionary<EnemyActionPattern, int> _cooldownTimers = new Dictionary<EnemyActionPattern, int>();
 
         /// <summary>
@@ -51,43 +51,78 @@ namespace CreatorKousien.Enemy
         /// </summary>
         /// <param name="situation"></param>
         /// <returns></returns>
-        public EnemyIntent Think(BattleSituation situation)
+        public EnemyIntent Think(BattleSituation situation, Vector2Int virtualPos)
         {
             _localTurnCount++;
             TickCooldowns();    // 毎ターン、全スキルのクールダウンを1減らす
 
-            // リストの上から優先して評価
+            // 抽選候補リスト
+            List<(float weight, System.Func<EnemyIntent> actionFunc)> candidates = new List<(float, System.Func<EnemyIntent>)>();
+
+            // 1. 発動可能な攻撃パターンを候補に追加
             foreach (var pattern in _masterData.ActionPatterns)
             {
-                // 1. 発動条件を満たしているか
+                // 発動条件を満たしているか
                 if (!CheckCondition(pattern, situation.PlayerPos)) continue;
 
-                // 2. クールダウン中ではないか
+                // クールダウン中ではないか
                 if (_cooldownTimers[pattern] > 0) continue;
 
-                // 3. 基準点の絶対座標を算出
-                Vector2Int originPos = GetOriginPosition(pattern.OriginRule, situation);
+                // 基準点の絶対座標を算出
+                Vector2Int originPos = GetOriginPosition(pattern.OriginRule, situation, virtualPos);
 
-                // 4. 基準点を元に実際の攻撃範囲を計算
+                // 基準点を元に実際の攻撃範囲を計算
                 List<Vector2Int> rawCells = CalculateTargetCells(pattern, originPos, situation);
 
-                // 5. 有効なターゲットますが1つも無ければスキップして次の行動を考える
-                if (rawCells.Count == 0) continue;
-                _cooldownTimers[pattern] = pattern.CooldownTurns;
-
-                // 6. 行動を決定し、予約を提出
-                return new EnemyIntent
+                // 有効なターゲットますが1つも無ければスキップして次の行動を考える
+                if (rawCells.Count > 0)
                 {
-                    SourceActorId = _myData.ActorId,
-                    AttackInfo = pattern.AttackInfo,
-                    RawTargetCells = rawCells,
-                    ChargeTurns = pattern.ChargeTurns,
-                    IsInterruptible = pattern.IsInterruptible
-                };
+                    candidates.Add((pattern.Weight, () =>
+                    {
+                        _cooldownTimers[pattern] = pattern.CooldownTurns;
+                        return EnemyIntent.CreateAttack(_myData.ActorId, pattern.AttackInfo, rawCells, pattern.ChargeTurns, pattern.IsInterruptible);
+                    }));
+                }
             }
 
-            // どの条件も満たさなかった場合、何もしない
-            return null;
+            // 2. 移動を候補に追加
+            Vector2Int randomMoveDir = GetRandomMoveDirection();
+            candidates.Add((_masterData.MoveWeight, () => EnemyIntent.CreateMove(_myData.ActorId, randomMoveDir)));
+
+            // 3. 待機を候補に追加
+            candidates.Add((_masterData.WaitWeight, () => EnemyIntent.CreateWait(_myData.ActorId)));
+
+            // 重み付きランダム抽選
+            return ExecuteWeightedSelection(candidates);
+        }
+
+        /// <summary>
+        /// 上下左右からランダムな方向を取得する
+        /// </summary>
+        /// <returns></returns>
+        private Vector2Int GetRandomMoveDirection()
+        {
+            Vector2Int[] dirs = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+            return dirs[Random.Range(0, dirs.Length)];
+        }
+
+        private EnemyIntent ExecuteWeightedSelection(List<(float weight, System.Func<EnemyIntent> actionFunc)> candidates)
+        {
+            float totalWeight = 0;
+            foreach (var c in candidates) totalWeight += c.weight;
+
+            float randomValue = Random.Range(0, totalWeight);
+            float currentWeight = 0;
+
+            foreach (var c in candidates)
+            {
+                currentWeight += c.weight;
+                if (randomValue <= currentWeight)
+                {
+                    return c.actionFunc.Invoke();
+                }
+            }
+            return EnemyIntent.CreateWait(_myData.ActorId);
         }
 
         // 内部ロジック: 座標計算 & クリッピング
@@ -99,7 +134,7 @@ namespace CreatorKousien.Enemy
         /// <param name="originRule"></param>
         /// <param name="situation"></param>
         /// <returns></returns>
-        private Vector2Int GetOriginPosition(TargetOrigin originRule, BattleSituation situation)
+        private Vector2Int GetOriginPosition(TargetOrigin originRule, BattleSituation situation, Vector2Int virtualPos)
         {
             switch (originRule)
             {
@@ -122,7 +157,7 @@ namespace CreatorKousien.Enemy
                     return new Vector2Int(situation.MaxX, situation.MaxY / 2);
 
                 default:
-                    return situation.PlayerPos;
+                    return virtualPos;
             }
         }
 

@@ -6,14 +6,15 @@
 // Created      : 2026-04-17
 // ================================================================================
 
-using UnityEngine;
+using CreatorKousien.Battle;
 using CreatorKousien.Command;
 using CreatorKousien.Core;
+using CreatorKousien.Data;
 using CreatorKousien.Enemy;
 using CreatorKousien.Field;
 using CreatorKousien.Player;
-using CreatorKousien.Battle;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace CreatorKousien.UseCase
 {
@@ -25,7 +26,7 @@ namespace CreatorKousien.UseCase
         private EnemySystem _enemySystem;
         private FieldService _fieldService;
         private PlayerSystem _playerSystem;
-        private ActionTelegraphSystem _TelegraphSystem;
+        private ActionTelegraphSystem _telegraphSystem;
         private CommandDispatcher _dispatcher;
 
         /// <summary>
@@ -40,7 +41,7 @@ namespace CreatorKousien.UseCase
             _enemySystem = EnemySystem;
             _fieldService = FieldService;
             _playerSystem = PlayerSystem;
-            _TelegraphSystem = telegraphSystem;
+            _telegraphSystem = telegraphSystem;
             _dispatcher = Dispatcher;
         }
 
@@ -50,55 +51,103 @@ namespace CreatorKousien.UseCase
         /// <param name="command"></param>
         public void Execute(EnemyActionCommand command)
         {
-            // 1. 対象となる敵のAIデータを取得
-            EnemyAI ai = _enemySystem.GetEnemyAI(command.EnemyActorId);
+            // 1. 3手分のプランをシミュレーションして構築する
+            List<ActionRuntimeData> plan = PlanThreeActions(command.EnemyActorId);
 
-            if (ai == null) return;
+            // 2. コマンドにセットされたコールバックに結果を書き込んで、呼び出し元に返す
+            command.OnPlanGenerated?.Invoke(plan);
 
-            // 2. 司令塔が各システムから必要な情報を取得
-            Vector2Int pPos = _playerSystem.RuntimeData.Position;
-            Vector2Int fSize = _fieldService.GetFieldSize();
-            int border = _fieldService.GetBorderX();
+            // TODO: Mediator経由でViewに赤いマスを描画させる？敵の思考完了イベントを送る？
+        }
 
-            // 3. 戦況パッケージを作成
-            var situation = new BattleSituation
+        /// <summary>
+        /// 敵の3手分の行動をシミュレーションして、プランを構築する内部ロジック
+        /// </summary>
+        /// <param name="actorId"></param>
+        /// <returns></returns>
+        private List<ActionRuntimeData> PlanThreeActions(int actorId)
+        {
+            var plan = new List<ActionRuntimeData>();
+            var ai = _enemySystem.GetEnemyAI(actorId);
+            var data = _enemySystem.GetEnemyData(actorId);
+
+            if (ai == null || data == null) return plan;
+
+            Vector2Int virtualPos = data.Position; // 現在地からスタート
+
+            for (int i = 0; i < 3; i++)
             {
-                PlayerPos = pPos,
-                MaxX = fSize.x - 1,
-                MaxY = fSize.y - 1,
-                BorderX = border
-            };
+                var situation = CreateSituation();
+                EnemyIntent intent = ai.Think(situation, virtualPos);
+                var actionTicket = ConvertIntentToTicket(intent);
 
-            // 4. AIに思考を依頼
-            EnemyIntent intent = ai.Think(situation);
-            if (intent == null) return;
+                plan.Add(actionTicket);
 
-            // 5. FieldServiceを使ってクリッピング
-            var validCells = new List<Vector2Int>();
-            foreach (var pos in intent.RawTargetCells)
-            {
-                if (!_fieldService.IsOutOfBounds(pos.x, pos.y) && !_fieldService.IsObstacle(pos.x, pos.y))
+                // 移動したなら、次の一手のために仮想座標を更新
+                if (intent.Category == ActionCategory.Move)
                 {
-                    validCells.Add(pos);
+                    virtualPos += intent.MoveDirection;
                 }
             }
+            return plan;
+        }
 
-            if (validCells.Count == 0) return;  // 全部場外なら終了
+        private BattleSituation CreateSituation()
+        {
+            Vector2Int fSize = _fieldService.GetFieldSize();
+            return new BattleSituation
+            {
+                PlayerPos = _playerSystem.RuntimeData.Position,
+                MaxX = fSize.x - 1,
+                MaxY = fSize.y - 1,
+                BorderX = _fieldService.GetBorderX()
+            };
+        }
 
-            // 6. 予約カレンダーに登録
+        private ActionRuntimeData ConvertIntentToTicket(EnemyIntent intent)
+        {
+            switch (intent.Category)
+            {
+                case ActionCategory.Attack:
+                    // UseCase側でクリッピング（場外・障害物判定）を行う
+                    var validCells = intent.RawTargetCells.FindAll(p =>
+                        !_fieldService.IsOutOfBounds(p.x, p.y) && !_fieldService.IsObstacle(p.x, p.y));
+
+                    RegisterTelegraph(intent, validCells);
+                    return new ActionRuntimeData(intent.SourceActorId, intent.AttackInfo, validCells);
+
+                case ActionCategory.Move:
+                    GridDirection dir = ConvertToGridDirection(intent.MoveDirection);
+                    return new ActionRuntimeData(intent.SourceActorId, dir);
+
+                default: // Wait
+                    return new ActionRuntimeData(intent.SourceActorId, new AttackProperty { DamageMultiplier = 0 }, new List<Vector2Int>());
+            }
+        }
+
+        private void RegisterTelegraph(EnemyIntent intent, List<Vector2Int> validCells)
+        {
+            if (validCells.Count == 0) return;
+
             var telegraphData = new TelegraphRuntimeData
             {
-                TelegraphId = intent.SourceActorId * 1000 + Random.Range(1, 999), // 簡易ID
+                TelegraphId = intent.SourceActorId * 1000 + Random.Range(1, 999),
                 SourceActorId = intent.SourceActorId,
                 AttackInfo = intent.AttackInfo,
                 TargetCells = validCells,
                 RemainingTurn = intent.ChargeTurns,
                 IsInterruptible = intent.IsInterruptible
             };
+            _telegraphSystem.RegisterTelegraph(telegraphData);
+        }
 
-            _TelegraphSystem.RegisterTelegraph(telegraphData);
-
-            // TODO: Mediator経由でViewに赤いマスを描画させる？敵の思考完了イベントを送る？
+        private GridDirection ConvertToGridDirection(Vector2Int dir)
+        {
+            if (dir == Vector2Int.up) return GridDirection.Up;
+            if (dir == Vector2Int.down) return GridDirection.Down;
+            if (dir == Vector2Int.left) return GridDirection.Left;
+            if (dir == Vector2Int.right) return GridDirection.Right;
+            return GridDirection.Up;
         }
     }
 }

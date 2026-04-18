@@ -225,7 +225,7 @@ public class TestBattleStarter : MonoBehaviour
         // Cキー: 敵の行動をテスト
         if (keyboard.cKey.wasPressedThisFrame)
         {
-            _mediator.SendCommand(new EnemyActionCommand(2));
+            // _mediator.SendCommand(new EnemyActionCommand(2));
         }
 
         // Vキー: ターン進行！
