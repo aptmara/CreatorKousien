@@ -33,6 +33,8 @@ namespace CreatorKousien.Battle
             _playerSelectedActions.Clear();
             _enemyPlannedActions.Clear();
 
+            _owner.NotifyCommandPhaseStarted();   // コマンドフェーズ開始のイベントを発火（デバック用なので改変しても大丈夫）
+
             // TODO: EventBus経由で敵の予告表示をViewに出す
         }
 
@@ -94,6 +96,19 @@ namespace CreatorKousien.Battle
             }
 
             return result;
+        }
+
+
+        /// <summary>
+        /// 敵のアクションを予約するためのメソッド。（デバック用なので改変しても大丈夫）
+        /// </summary>
+        /// <param name="action"></param>
+        public void AddEnemyAction(ActionRuntimeData action)
+        {
+            if (_enemyPlannedActions.Count >= 3) return;
+
+            _enemyPlannedActions.Add(action);
+            Debug.Log($"[Command] 敵のアクションを予約: {action.Category} ({_enemyPlannedActions.Count}/3)");
         }
     }
 }

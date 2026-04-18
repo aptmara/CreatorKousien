@@ -9,14 +9,15 @@
 // - デバック用GameManagerのような役割を果たすクラスです。実際のゲームでは、GameManagerがこれらの配線を行うことになると思いますが、テストバトル用に簡略化してあります。
 // - BattleSetupDataを使うように変更(4/18)
 // ------------------------------------------------------------
+using CreatorKousien.Battle;
 using CreatorKousien.Command;
 using CreatorKousien.Core;
 using CreatorKousien.Data;
+using CreatorKousien.Enemy;
 using CreatorKousien.Field;
 using CreatorKousien.Player;
-using CreatorKousien.Enemy;
 using CreatorKousien.UseCase;
-using CreatorKousien.Battle;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -30,9 +31,10 @@ public class TestBattleStarter : MonoBehaviour
     [Header("Viewの参照")]
     [SerializeField] private FieldView _fieldView;
 
-    private PlayerSystem _playerSystem;         /// PlayerSystemのインスタンスを保持する変数
-    private GameMediator _mediator;             /// GameMediatorのインスタンスを保持する変数
-    private ActionTelegraphSystem telegraphSystem; /// ActionTelegraphSystemのインスタンスを保持する変数
+    private PlayerSystem _playerSystem;             /// PlayerSystemのインスタンスを保持する変数
+    private GameMediator _mediator;                 /// GameMediatorのインスタンスを保持する変数
+    private ActionTelegraphSystem telegraphSystem;  /// ActionTelegraphSystemのインスタンスを保持する変数
+    private TurnManager _turnManager;               /// TurnManagerのインスタンスを保持する変数
 
     private void Start()
     {
@@ -101,12 +103,17 @@ public class TestBattleStarter : MonoBehaviour
         // ------------------------------------------------------------
         GameEventBus eventBus = new GameEventBus();
 
-        // 被ダメージ通知を受け取ったら、PlayerViewの死亡エフェクトを鳴らす！！
+        // 被ダメージ通知を受け取ったら、PlayerViewの被弾エフェクトを鳴らす！！
         eventBus.OnDamageTaken += (targetId, damage) =>
         {
            if (targetId == _playerSystem.RuntimeData.ActorId)
             {
                 playerView.PlayDamageEffect(damage);
+            }
+
+           if (_turnManager != null)
+            {
+                _turnManager.CompleteCurrentActionAnimation();
             }
         };
 
@@ -165,6 +172,26 @@ public class TestBattleStarter : MonoBehaviour
         _mediator = new GameMediator();
         _mediator.Initialize(dispatcher, eventBus);
 
+        // 7. ターンマネージャーの生成と登録
+        _turnManager = gameObject.AddComponent<TurnManager>();
+
+        _turnManager.OnCommandPhaseStarted += () =>
+        {
+            // 本当はEnemyのAIがコマンドを送るべきですが、今回はテスト用に直接TurnManagerから呼び出す形にします。
+            for (int i = 0; i < 3; i++)
+            {
+                Vector2Int targetPos = _playerSystem.RuntimeData.Position;
+                List<Vector2Int> targets = new List<Vector2Int> { targetPos };
+                AttackProperty prop = new AttackProperty { Type = AttackPatternType.Normal, DamageMultiplier = 1.0f, HitCount = 1 };
+
+                // 敵のIDは2と仮定
+                ActionRuntimeData enemyAction = new ActionRuntimeData(2, prop, targets);
+                _turnManager.SubmitEnemyAction(enemyAction);
+            }
+        };
+
+        _turnManager.Initialize(dispatcher);
+
         Debug.Log("テストバトルの配線完了！十字キーで移動コマンドを発行できます！");
     }
 
@@ -199,8 +226,9 @@ public class TestBattleStarter : MonoBehaviour
                 HitCount = 1
             };
 
-            // Mediatorに攻撃コマンドをぶん投げる！
-            _mediator.SendCommand(new AttackCommand(pId, attackProp, targets));
+            // TurnManagerを通して攻撃コマンドを送る
+            ActionRuntimeData actionData = new ActionRuntimeData(pId, attackProp, targets);
+            _turnManager.SubmitPlayerAction(actionData);
         }
 
 
