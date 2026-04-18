@@ -1,8 +1,8 @@
 // ================================================================================
-// File         : ActionPhaseState.cs
+// File         : TurnEndState.cs
 // Author       : Iwai Shogo
 //
-// Description  : アクションフェーズの処理を行います 。
+// Description  : ターン終了の処理を行います。
 // Created      : 2026-04-18
 // ================================================================================
 
@@ -11,25 +11,25 @@ using UnityEngine;
 namespace CreatorKousien.Battle
 {
     /// <summary>
-    /// アクションフェーズの処理を行います。
+    /// ターン終了フェーズの処理を行います。
     /// </summary>
-    public class ActionPhaseState : IBattlePhaseState
+    public class TurnEndState : IBattlePhaseState
     {
-        public PhaseType Type => PhaseType.Action;
+        public PhaseType Type => PhaseType.TurnEnd;
 
         public void Enter()
         {
-            Debug.Log("--- アクションフェーズ開始 ---");
+            Debug.Log("--- ターン終了処理開始 ---");
         }
 
         public void Update()
         {
-            // キューの消化を TurnManager に依頼する
+            // バフなどの計算が終わったら自動で次へ行く予定
         }
 
         public void Exit()
         {
-            Debug.Log("--- アクションフェーズ終了 ---");
+            Debug.Log("--- ターン終了処理終了 ---");
         }
     }
 }
