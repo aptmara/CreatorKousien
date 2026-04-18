@@ -16,5 +16,5 @@ MonoBehaviour:
   PlayerData: {fileID: 11400000, guid: cb353a2b39307e74fbb36421622824ee, type: 2}
   Enemies:
   - ActorId: 2
-    EnemyData: {fileID: 11400000, guid: 467c11604cddc83409f782e7368a3bc2, type: 2}
-    SpawnPosition: {x: 1, y: 1}
+    EnemyData: {fileID: 11400000, guid: c4ed766433d90be4296c6029f51cb0e4, type: 2}
+    SpawnPosition: {x: 3, y: 1}

@@ -28,6 +28,7 @@ namespace CreatorKousien.Battle
         public void Update()
         {
             // バフなどの計算が終わったら自動で次へ行く予定
+            _owner.TransitionTo(PhaseType.Command);
         }
 
         public void Exit()

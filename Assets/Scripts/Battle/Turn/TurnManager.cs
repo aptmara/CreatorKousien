@@ -19,8 +19,17 @@ namespace CreatorKousien.Battle
         private PhaseManager _phaseManager;
         private CommandDispatcher _dispatcher;
 
+        private CommandPhaseState _commandPhase;
+        private ActionPhaseState  _actionPhase;
+
         // 実行フェーズで1手ずつ取り出すためのアクション予約リスト
         private Queue<ActionRuntimeData> _actionQueue = new Queue<ActionRuntimeData>();
+
+        /// <summary>
+        /// コマンドフェーズが開始したタイミングで発火するイベント。
+        /// TODO: これをEventBusに移すか、Mediator経由でViewに通知するかは要検討ですが、とりあえず置いておきます。
+        /// </summary>
+        public event System.Action OnCommandPhaseStarted;
 
         /// <summary>
         /// バトル開始時の初期化処理
@@ -31,9 +40,12 @@ namespace CreatorKousien.Battle
             _dispatcher = dispatcher;
             _phaseManager = new PhaseManager();
 
+            _commandPhase = new CommandPhaseState(this);
+            _actionPhase = new ActionPhaseState(this);
+
             // ステートを登録
-            _phaseManager.RegisterState(new CommandPhaseState(this));
-            _phaseManager.RegisterState(new ActionPhaseState(this));
+            _phaseManager.RegisterState(_commandPhase);
+            _phaseManager.RegisterState(_actionPhase);
             _phaseManager.RegisterState(new TurnEndState(this));
 
             // 最初のフェーズへ遷移
@@ -101,5 +113,57 @@ namespace CreatorKousien.Battle
         /// </summary>
         /// <param name="type"></param>
         public void TransitionTo(PhaseType type) => _phaseManager.TransitionTo(type);
+
+
+
+        // 外部からアクションを受け取るためのインターフェース
+        // ------------------------------------------------------------
+
+        /// <summary>
+        /// プレイヤーがアクションを選んだ後、Commandフェーズから呼び出される想定のメソッド。
+        /// </summary>
+        /// <param name="action">選んだアクション</param>
+        public void SubmitPlayerAction(ActionRuntimeData action)
+        {
+            if (_phaseManager.CurrentPhaseType == PhaseType.Command)
+            {
+                _commandPhase.AddPlayerAction(action);
+            }
+        }
+
+
+        /// <summary>
+        /// View側でアクションのアニメーションが完了したタイミングで呼び出される想定のメソッド。
+        /// </summary>
+        public void CompleteCurrentActionAnimation()
+        {
+            if (_phaseManager.CurrentPhaseType == PhaseType.Action)
+            {
+                _actionPhase.OnActionAnimationComplete();
+            }
+        }
+
+
+        /// <summary>
+        /// コマンドフェーズが開始したタイミングで呼び出される想定のメソッド。
+        /// </summary>
+        public void NotifyCommandPhaseStarted()
+        {
+            OnCommandPhaseStarted?.Invoke();
+        }
+
+
+        /// <summary>
+        /// 敵がアクションを決定した後、Commandフェーズから呼び出される想定のメソッド。（デバック用なので改変しても大丈夫）
+        /// </summary>
+        /// <param name="action"></param>
+        public void SubmitEnemyAction(ActionRuntimeData action)
+        {
+            if (_phaseManager.CurrentPhaseType == PhaseType.Command)
+            {
+                _commandPhase.AddEnemyAction(action);
+            }
+        }
+
     }
 }
