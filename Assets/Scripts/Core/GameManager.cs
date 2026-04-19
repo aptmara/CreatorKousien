@@ -21,8 +21,11 @@ using CreatorKousien.View;
 
 public class GameManager : MonoBehaviour
 {
+    /// <summary>
+    /// シーン状態
+    /// </summary>
     private enum GameState { Title,Select,Game,Result}
-    private GameState _currentState;
+    private GameState _currentState;// 現在のシーン状態
 
     [Header("ステージセットアップデータ設定")]
     [Tooltip("インスペクターで作成した BattleSetupData をアタッチしてください")]
@@ -40,7 +43,9 @@ public class GameManager : MonoBehaviour
     /// ステージマネージャーインスタンス
     /// </summary>
     StageManager _stageManager;
-
+    /// <summary>
+    /// ターン管理
+    /// </summary>
     TurnManager _turnManager;
 
     //==== Field ====
@@ -48,28 +53,41 @@ public class GameManager : MonoBehaviour
     [Tooltip("ここにFieldViewのPrefabをアタッチ")]
     [SerializeField]
     FieldView _fieldViewPrefab;
-    FieldView _fieldView;
-    FieldService _fieldService;
+    FieldView _fieldView;// フィールド描画情報
+    FieldService _fieldService;// 
 
     //==== EventBus ===
     GameEventBus _eventBus;
 
-    // 
+    //==== Player ====
+    /// <summary>
+    /// プレイヤーシステム
+    /// </summary>
     PlayerSystem _player;
+    /// <summary>
+    /// プレイヤー描画情報
+    /// </summary>
     PlayerView _playerView;
-
-    [SerializeField]
-    private TestTimerView _timerPrefab;
-    
     // PlayerID(固定値)
     const int PlayerID = 1;
-    EnemySystem _enemy;
 
+    [Header("視覚情報")]
+    [Tooltip("TestTimerViewのPrefabをアタッチ")]
+    [SerializeField]
+    private TestTimerView _timerPrefab;
+    TileEffectSystem _tileEffect;
+    
+    //==== Enemy ====
+    /// <summary>
+    /// 敵システム
+    /// </summary>
+    EnemySystem _enemy;
+    /// <summary>
+    /// 敵描画のディクショナリ
+    /// </summary>
     private Dictionary<int,EnemyView> _enemyViews = new Dictionary<int, EnemyView>();
 
-    TileEffectSystem _tileEffect;
     ActionTelegraphSystem _actiontelegraph;
-
 
     private void Awake()
     {
@@ -93,6 +111,7 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // 現在のシーン状態に応じて処理を変更(使わないかも)
         switch (_currentState)
         {
             case GameState.Title:
@@ -114,11 +133,10 @@ public class GameManager : MonoBehaviour
     void OnSceneLoaded(Scene scene,LoadSceneMode mode)
     {
         Debug.Log(scene.name);
-
+        // 読み込まれたシーンに応じて初期化を変更
         if (scene.name == "Title")
         {
-            Debug.Log("TitleSceneがロードされた");
-            
+            Debug.Log("TitleSceneがロードされた");   
         }
         else if(scene.name == "Select")
         {
@@ -182,47 +200,7 @@ public class GameManager : MonoBehaviour
         _fieldView.BuildView(_fieldService.State, _setupData.StageData);
 
         // 各種システムの生成
-        //==== Player Systemの生成・初期化 ====
-
-        _player = new PlayerSystem();
-        Vector2Int pPos = _setupData.StageData.PlayerStartPosition;
-
-        _player.Initialize(_setupData.PlayerData, pPos);
-        _fieldService.UpdateOccupancy(_player.RuntimeData.ActorId, -1, -1, pPos.x, pPos.y);
-
-        //_fieldView = new FieldView();
-        Vector3 startWorldPos = _fieldView.GetCellWorldPosition(pPos.x, pPos.y);
-
-        // PlayerObjectの生成
-        GameObject playerobj = Instantiate(_setupData.PlayerData.PlayerPrefab,startWorldPos,Quaternion.identity);
-        _playerView = playerobj.GetComponent<PlayerView>();
-        _playerView.Initialize(startWorldPos);
-        _playerView.SetStandingTile(_fieldView.GetCellView(pPos));
-        _fieldView.HighlightCell(pPos.x, pPos.y);
-
-        //====//====//====//====//====//====//====
-
-        //==== Enemy System ====
-        _enemy = new EnemySystem(_actiontelegraph);
-
-        foreach(var enemyInfo in _setupData.Enemies)
-        {
-            // 敵をSetupDataの情報にしたがって生成
-            _enemy.SpawnEnemy(enemyInfo.ActorId, enemyInfo.EnemyData, enemyInfo.SpawnPosition);
-
-            _fieldService.UpdateOccupancy(enemyInfo.ActorId,-1,-1,enemyInfo.SpawnPosition.x,enemyInfo.SpawnPosition.y);
-
-            Vector3 worldPos = _fieldView.GetCellWorldPosition(enemyInfo.SpawnPosition.x, enemyInfo.SpawnPosition.y);
-
-            GameObject enemyObj = Instantiate(enemyInfo.EnemyData.EnemyPrefab, worldPos, Quaternion.identity);
-
-            EnemyView view = enemyObj.GetComponent<EnemyView>();
-            view.Initialize(enemyInfo.ActorId, worldPos,_fieldView.GetCellView(enemyInfo.SpawnPosition));
-            _enemyViews.Add(enemyInfo.ActorId, view);
-        }
-
-        //====//====//====//====//====//====
-
+        InitializeCharacters();
 
         // TileEffect生成
         _tileEffect = new TileEffectSystem(_fieldService.State);
@@ -232,17 +210,9 @@ public class GameManager : MonoBehaviour
         //==== EventBusの設定 ====
         InitEventBus();
 
-        // Dispatcher生成
-        var dispatcher = new CommandDispatcher();
-        // 各種UseCaseの生成
-        MoveUseCase moveUseCase = new MoveUseCase(_fieldService,_tileEffect,_eventBus);
-        AttackUseCase attackUseCase = new AttackUseCase(_battleManager, _fieldService,_player,_enemy, dispatcher, _eventBus);
-        EnemyActionUseCase enemyUseCase = new EnemyActionUseCase(_enemy, _fieldService, _player,_actiontelegraph, dispatcher);
-        // 各種Commandの登録
-        dispatcher.Register<MoveCommand>(moveUseCase.Execute);
-        dispatcher.Register<AttackCommand>(attackUseCase.Execute);
-        dispatcher.Register<EnemyActionCommand>(enemyUseCase.Execute);
+        var dispatcher = SetupCommandDispatcher();
 
+        // TurnManagerの初期化
         _turnManager = gameObject.GetComponent<TurnManager>();
         _turnManager.Initialize(dispatcher, _eventBus);
 
@@ -274,7 +244,9 @@ public class GameManager : MonoBehaviour
 
     }
 
-
+    /// <summary>
+    /// EventBusの初期化を行う関数
+    /// </summary>
     private void InitEventBus()
     {
 
@@ -373,6 +345,72 @@ public class GameManager : MonoBehaviour
         {
             StartCoroutine(WaitAnimationAndProceed());
         };
+    }
+
+    /// <summary>
+    /// UseCaseとCommandを登録したCommandDispatcherを生成し返す
+    /// </summary>
+    /// <returns>生成したCommandDispatcher</returns>
+    private CommandDispatcher SetupCommandDispatcher()
+    {
+        // Dispatcher生成
+        var dispatcher = new CommandDispatcher();
+        // 各種UseCaseの生成
+        MoveUseCase moveUseCase = new MoveUseCase(_fieldService, _tileEffect, _eventBus);
+        AttackUseCase attackUseCase = new AttackUseCase(_battleManager, _fieldService, _player, _enemy, dispatcher, _eventBus);
+        EnemyActionUseCase enemyUseCase = new EnemyActionUseCase(_enemy, _fieldService, _player, _actiontelegraph, dispatcher);
+        // 各種Commandの登録
+        dispatcher.Register<MoveCommand>(moveUseCase.Execute);
+        dispatcher.Register<AttackCommand>(attackUseCase.Execute);
+        dispatcher.Register<EnemyActionCommand>(enemyUseCase.Execute);
+
+        return dispatcher;
+    }
+
+    /// <summary>
+    /// プレイヤーと敵のSystem初期化
+    /// </summary>
+    private void InitializeCharacters()
+    {
+        //==== Player Systemの生成・初期化 ====
+        _player = new PlayerSystem();
+        Vector2Int pPos = _setupData.StageData.PlayerStartPosition;
+        // 初期化呼び出し
+        _player.Initialize(_setupData.PlayerData, pPos);
+        _fieldService.UpdateOccupancy(_player.RuntimeData.ActorId, -1, -1, pPos.x, pPos.y);
+
+        // ワールドポジションの設定
+        Vector3 startWorldPos = _fieldView.GetCellWorldPosition(pPos.x, pPos.y);
+
+        // PlayerObjectの生成
+        GameObject playerobj = Instantiate(_setupData.PlayerData.PlayerPrefab, startWorldPos, Quaternion.identity);
+        // 描画初期化
+        _playerView = playerobj.GetComponent<PlayerView>();
+        _playerView.Initialize(startWorldPos);
+        _playerView.SetStandingTile(_fieldView.GetCellView(pPos));
+        _fieldView.HighlightCell(pPos.x, pPos.y);
+
+        //====//====//====//====//====//====//====
+
+        //==== Enemy System ====
+        _enemy = new EnemySystem(_actiontelegraph);
+
+        foreach (var enemyInfo in _setupData.Enemies)
+        {
+            // 敵をSetupDataの情報にしたがって生成
+            _enemy.SpawnEnemy(enemyInfo.ActorId, enemyInfo.EnemyData, enemyInfo.SpawnPosition);
+            _fieldService.UpdateOccupancy(enemyInfo.ActorId, -1, -1, enemyInfo.SpawnPosition.x, enemyInfo.SpawnPosition.y);
+
+            // ワールドポジションを設定
+            Vector3 worldPos = _fieldView.GetCellWorldPosition(enemyInfo.SpawnPosition.x, enemyInfo.SpawnPosition.y);
+            // 敵オブジェクト生成
+            GameObject enemyObj = Instantiate(enemyInfo.EnemyData.EnemyPrefab, worldPos, Quaternion.identity);
+            // 描画初期化
+            EnemyView view = enemyObj.GetComponent<EnemyView>();
+            view.Initialize(enemyInfo.ActorId, worldPos, _fieldView.GetCellView(enemyInfo.SpawnPosition));
+            _enemyViews.Add(enemyInfo.ActorId, view);
+        }
+        //====//====//====//====//====//====
     }
 
     /// <summary>
