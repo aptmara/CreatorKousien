@@ -52,6 +52,8 @@ public class GameManager : MonoBehaviour
 
     // 
     PlayerSystem _player;
+    // PlayerID(固定値)
+    const int PlayerID = 1;
     EnemySystem _enemy;
 
     private Dictionary<int,EnemyView> _enemyViews = new Dictionary<int, EnemyView>();
@@ -131,6 +133,7 @@ public class GameManager : MonoBehaviour
 
     void InitializeSelectScene()
     {
+        Debug.Log("[GameManager] GameSceneStart");
         _stageManager = new StageManager();
         _stageManager.Initialize();
 
