@@ -219,6 +219,39 @@ public class TestBattleStarter : MonoBehaviour
             }
         };
 
+
+        _eventBus.OnMoveFailed += (actorId, failX, failY) =>
+        {
+            // 1マスのサイズを取得
+            float cellSize = _setupData.StageData.CellSize;
+
+            if (actorId == _playerSystem.RuntimeData.ActorId)
+            {
+                // 今の座標と、行こうとした座標の「差分」を計算
+                Vector2Int currentPos = _playerSystem.RuntimeData.Position;
+                Vector2Int delta = new Vector2Int(failX - currentPos.x, failY - currentPos.y);
+
+                // 盤面上の+Y方向(下)は、Unityの3D空間では-Z方向になるので補正
+                Vector3 offset = new Vector3(delta.x * cellSize, 0, -delta.y * cellSize);
+
+                // 自分の現在地にオフセットを足した「仮想の目標地点」に向かって壁ドン！
+                playerView.PlayMoveFailEffect(playerView.transform.position + offset);
+            }
+            else if (_enemyViews.TryGetValue(actorId, out EnemyView eView))
+            {
+                var eData = _enemySystem.GetEnemyData(actorId);
+                if (eData != null)
+                {
+                    Vector2Int currentPos = eData.Position;
+                    Vector2Int delta = new Vector2Int(failX - currentPos.x, failY - currentPos.y);
+                    Vector3 offset = new Vector3(delta.x * cellSize, 0, -delta.y * cellSize);
+
+                    eView.PlayMoveFailEffect(eView.transform.position + offset);
+                }
+            }
+        };
+
+
         _eventBus.OnActionLogicCompleted += (actorId) =>
         {
             StartCoroutine(WaitAnimationAndProceed());
