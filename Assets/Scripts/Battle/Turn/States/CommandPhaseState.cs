@@ -6,9 +6,10 @@
 // Created      : 2026-04-18
 // ================================================================================
 
-using CreatorKousien.Command;
 using System.Collections.Generic;
 using UnityEngine;
+using CreatorKousien.Command;
+using CreatorKousien.Data;
 
 namespace CreatorKousien.Battle
 {
@@ -26,6 +27,11 @@ namespace CreatorKousien.Battle
         // 敵がこのターンに行う予定のアクション
         private List<ActionRuntimeData> _enemyPlannedActions = new List<ActionRuntimeData>();
 
+        // --- タイマー機能用の変数 ---
+        private readonly float _timeLimit = 5.0f;
+        private float _currentTime;
+        private bool _isTimeUp;
+
         public CommandPhaseState(TurnManager owner) => _owner = owner;
 
         public void Enter()
@@ -33,6 +39,10 @@ namespace CreatorKousien.Battle
             Debug.Log("--- コマンドフェーズ開始 ---");
             _playerSelectedActions.Clear();
             _enemyPlannedActions.Clear();
+
+            // タイマーの初期化
+            _currentTime = _timeLimit;
+            _isTimeUp = false;
 
             _owner.EventBus.PublishCommandPhaseStarted();
 
@@ -51,6 +61,29 @@ namespace CreatorKousien.Battle
         public void Update()
         {
             // 時間ゲージのカウントダウンロジック、カード選択等
+
+            // 既にタイムアップしているか、3手入力済みなら何もしない
+            if (_isTimeUp || _playerSelectedActions.Count >= 3) return;
+
+            // タイマーを減算
+            _currentTime -= Time.deltaTime;
+
+            // Viewへ毎フレーム残り時間を通知
+            _owner.EventBus.PublishCommandTimerUpdated(_currentTime, _timeLimit);
+
+            // タイムアップ判定
+            if (_currentTime <= 0f)
+            {
+                _currentTime = 0f;
+                _isTimeUp = true;
+
+                Debug.Log("<color=red>[Command Phase] タイムアップ！未入力の枠は待機になります。</color>");
+                _owner.EventBus.PublishCommandTimeUp();
+
+                // 足りない手数を強制的に待機で埋めて次へ
+                FillRemainingActionsWithWait();
+                FinishPhase();
+            }
         }
 
         /// <summary>
@@ -86,6 +119,20 @@ namespace CreatorKousien.Battle
 
             _owner.SetActionQueue(mergedQueue);
             _owner.TransitionTo(PhaseType.Action);
+        }
+
+        // 足りない手数を待機で埋めるメソッド
+        private void FillRemainingActionsWithWait()
+        {
+            while (_playerSelectedActions.Count < 3)
+            {
+                var waitAction = new ActionRuntimeData(
+                    1,
+                    new AttackProperty { DamageMultiplier = 0 },
+                    new List<Vector2Int>()
+                );
+                _playerSelectedActions.Add(waitAction);
+            }
         }
 
         /// <summary>
