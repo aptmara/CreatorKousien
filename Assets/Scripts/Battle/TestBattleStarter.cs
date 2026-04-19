@@ -32,6 +32,10 @@ public class TestBattleStarter : MonoBehaviour
     [Header("Viewの参照")]
     [SerializeField] private FieldView _fieldView;
 
+    [Header("UIプレファブ")]
+    [Tooltip("TimerViewがアタッチされたプレファブをセットしてください")]
+    [SerializeField] private CreatorKousien.View.TestTimerView _timerPrefab;
+
     private PlayerSystem _playerSystem;             /// PlayerSystemのインスタンスを保持する変数
     private GameMediator _mediator;                 /// GameMediatorのインスタンスを保持する変数
     private ActionTelegraphSystem telegraphSystem;  /// ActionTelegraphSystemのインスタンスを保持する変数
@@ -114,6 +118,16 @@ public class TestBattleStarter : MonoBehaviour
         // 4 イベントの配線
         // ------------------------------------------------------------
         _eventBus = new GameEventBus();
+
+        // プレファブからタイマーを生成
+        if (_timerPrefab != null)
+        {
+            // 画面上部に生成
+            Vector3 timerPosition = new Vector3(4.375f, 3, 0);
+
+            var timerInstance = Instantiate(_timerPrefab, timerPosition, Quaternion.identity);
+            timerInstance.Initialize(_eventBus);
+        }
 
         // 移動リクエストの集中管理
         _eventBus.OnActorMoveRequested += (actorId, targetGridPos) =>
