@@ -165,7 +165,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   _setupData: {fileID: 11400000, guid: 3d98fbf307fad104b8be3c6364724560, type: 2}
-  _fieldView: {fileID: 0}
+  _fieldView: {fileID: 5856990483480166941, guid: c26a5104deaaa1a468db69e250c977be, type: 3}
 --- !u!114 &614215743
 MonoBehaviour:
   m_ObjectHideFlags: 0
