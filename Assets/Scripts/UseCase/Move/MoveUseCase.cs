@@ -65,6 +65,9 @@ namespace CreatorKousien.UseCase
             if (!_fieldService.CanMoveTo(cmd.MoverId, targetPos.x, targetPos.y))
             {
                 Debug.Log($"<b>[MOVE]</b> {actorLabel} : <color=gray>{targetPos} への移動不可</color>");
+
+                _eventBus.OnMoveFailed?.Invoke(cmd.MoverId, targetPos.x, targetPos.y); // 移動失敗イベントを発火（必要に応じて）
+
                 _eventBus.PublishActionLogicCompleted(cmd.MoverId); // 失敗しても完了通知
                 return;
             }

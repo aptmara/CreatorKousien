@@ -109,5 +109,52 @@ namespace CreatorKousien.Enemy
             // TODO: パーティクルの生成など
             Destroy(gameObject, 0.5f);
         }
+
+
+        /// <summary>
+        /// 移動失敗時に、少しだけ前に出て戻る演出を再生する
+        /// </summary>
+        /// <param name="failTargetWorldPos">意向としていた目標のワールド座標</param>
+        public void PlayMoveFailEffect(Vector3 failTargetWorldPos)
+        {
+            StartCoroutine(BumpRoutine(failTargetWorldPos));
+        }
+
+
+        /// <summary>
+        /// 移動失敗の演出ルーチン。目標に向かって少しだけ移動し、すぐに元の位置に戻る。
+        /// </summary>
+        /// <param name="failTargetWorldPos"></param>
+        /// <returns></returns>
+        private System.Collections.IEnumerator BumpRoutine(Vector3 failTargetWorldPos)
+        {
+            Vector3 startPos = transform.position;
+
+            // 目標に向かって「20%」だけ進んだ位置をぶつかるポインタにする
+            Vector3 bumpPos = Vector3.Lerp(startPos, failTargetWorldPos, 0.2f);
+
+            // ぶつかる位置まで移動
+            float duration = 0.08f;
+            float elapsed = 0;
+
+            // ----- 1. 目標に向かって少しだけ移動 -----
+            while (elapsed < duration)
+            {
+                transform.position = Vector3.Lerp(startPos, bumpPos, elapsed / duration);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            // ----- 2. 元の位置に戻る -----
+            elapsed = 0;
+            while (elapsed < duration)
+            {
+                transform.position = Vector3.Lerp(bumpPos, startPos, elapsed / duration);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            transform.position = startPos;
+        }
     }
 }
