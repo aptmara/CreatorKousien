@@ -5,16 +5,17 @@
 // Created: 2026-04-13
 //=========================================================================
 using System;
-using Unity.VisualScripting;
-using UnityEditor.Experimental.Rendering;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using CreatorKousien.Core;
 using CreatorKousien.Battle;
 
 public class GameManager : MonoBehaviour
 {
+    private enum GameState { Title,Select,Game,Result}
+    private GameState _currentState;
+
+
     /// <summary>
     /// 仲介クラスのインスタンス生成
     /// </summary>
@@ -36,7 +37,7 @@ public class GameManager : MonoBehaviour
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    private void OnDisable()
+    private void OnDestroy()
     {
         // イベントを解除（メモリリーク防止）
         SceneManager.sceneLoaded -= OnSceneLoaded;
@@ -50,23 +51,20 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Scene scene = SceneManager.GetActiveScene();
-
-        if (scene.name == "Title")
+        switch (_currentState)
         {
-            Debug.Log("TitleSceneがロードされた");
-        }
-        else if (scene.name == "Select")
-        {
-
-        }
-        else if (scene.name == "Game")
-        {
-
-        }
-        else if (scene.name == "Result")
-        {
-
+            case GameState.Title:
+                UpdateTitleScene();
+                break;
+            case GameState.Select:
+                UpdateSelectScene();
+                break;
+            case GameState.Game:
+                UpdateGameScene();
+                break;
+            case GameState.Result:
+                UpdateResultScene();
+                break;
         }
     }
 
@@ -93,9 +91,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void SceneChangeStart(String sceneName)
+    void SceneChangeStart(string sceneName)
     {
-        // 修了処理
+        // 終了処理
         SceneManager.LoadScene(sceneName);
     }
 
@@ -103,18 +101,41 @@ public class GameManager : MonoBehaviour
     {
         _stageManager = new StageManager();
         _stageManager.Initialize();
+
+        // 追記項目
+        /*
+        Version selectView = FindFirstObjectByType<SelectSceneView>();
+        if(selectView == null)
+        {
+            Debug.LogError("[GameManager] SelectViewが見つかりません");
+            return;
+        }
+        selectView.Setup(_stageManager, SceneChangeStart);
+        */
     }
 
     void InitializeGameScene()
     {
+        // BattleSetupDataの取得
+        /*
+        BattleSetupData setup = _stageManager.GetSelectBattleSetupData();
+        if(setup == null)
+        {
+            Debug.LogError("[GameManager] ステージデータが取得できません");
+            return;
+        }
+        */
+        Debug.Log("[GameManager] GameSceneStart");
         // StageNoに応じた読み込みとインスタンス生成
         // Mediatorの初期化
-        // _mediator = new GameMediator();
-        // _mediator.Initialize();
+        var dispatcher = new CommandDispatcher();
+        var eventBus = new GameEventBus();
+
+        _mediator = new GameMediator();
+        _mediator.Initialize(dispatcher,eventBus);
         // バトルマネージャーの初期化
-        // _battleManager = new BattleManager();
+        //_battleManager = new BattleManager();
         // _battleManager.Initialize();
-        // _mediator.SetBattleManager(_battleManager);
     }
 
     void InitializeResultScene()
