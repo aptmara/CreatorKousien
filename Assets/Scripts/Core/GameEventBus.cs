@@ -32,6 +32,11 @@ namespace CreatorKousien.Core
         /// </summary>
         public event Action<List<Vector2Int>, bool> OnTelegraphRequested;
 
+        /// <summary>
+        /// 攻撃が発動したマスを一斉に光らせるイベント。引数は攻撃が発動したマスの座標リスト。
+        /// </summary>
+        public event Action<List<Vector2Int>> OnAttackAreaExecuted;
+
 
         /// <summary>
         /// ダメージを受けたことを通知するイベント
@@ -62,6 +67,18 @@ namespace CreatorKousien.Core
         /// </summary>
         public event Action<int, Vector2Int> OnActorMoveRequested;
 
+        /// <summary>
+        /// コマンドフェーズのタイマーが更新されたことを通知するイベント
+        /// 引数1: 残り時間, 引数2: 最大時間
+        /// </summary>
+        public event Action<float, float> OnCommandTimerUpdated;
+
+        /// <summary>
+        /// コマンドフェーズの制限時間が切れたことを通知するイベント
+        /// </summary>
+        public event Action OnCommandTimeUp;
+
+
 
 
 
@@ -87,6 +104,16 @@ namespace CreatorKousien.Core
         {
             OnTelegraphRequested?.Invoke(targetCells, isWarning);
         }
+
+        /// <summary>
+        /// 攻撃が発動したエリアの視覚的ハイライトを要求するメソッド
+        /// </summary>
+        /// <param name="targetCells"></param>
+        public void PublishAttackAreaExecuted(List<Vector2Int> targetCells)
+        {
+            OnAttackAreaExecuted?.Invoke(targetCells);
+        }
+
 
 
         /// <summary>
@@ -137,6 +164,26 @@ namespace CreatorKousien.Core
         public void PublishActorMoveRequested(int actorId, Vector2Int targetGridPos)
         {
             OnActorMoveRequested?.Invoke(actorId, targetGridPos);
+        }
+
+
+        /// <summary>
+        /// タイマー更新イベントを発火するメソッド
+        /// </summary>
+        /// <param name="currentTime"></param>
+        /// <param name="maxTime"></param>
+        public void PublishCommandTimerUpdated(float currentTime, float maxTime)
+        {
+            OnCommandTimerUpdated?.Invoke(currentTime, maxTime);
+        }
+
+
+        /// <summary>
+        /// タイムアップイベントを発火するメソッド
+        /// </summary>
+        public void PublishCommandTimeUp()
+        {
+            OnCommandTimeUp?.Invoke();
         }
     }
 }
