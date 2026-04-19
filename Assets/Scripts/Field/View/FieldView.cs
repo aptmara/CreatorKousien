@@ -233,6 +233,24 @@ namespace CreatorKousien.Field
                 }
             }
         }
-    }
 
+        /// <summary>
+        /// アクションフェーズで攻撃が発動したマスを一斉に光らせるメソッド
+        /// </summary>
+        /// <param name="positions"></param>
+        public void ShowAttackArea(List<Vector2Int> positions, bool show)
+        {
+            if (positions == null)
+                return;
+
+            foreach (var pos in positions)
+            {
+                var cell = GetCellView(pos);
+                if (cell != null)
+                {
+                    cell.SetAttackHighlight(show);
+                }
+            }
+        }
+    }
 }
