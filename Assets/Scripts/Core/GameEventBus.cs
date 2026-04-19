@@ -35,7 +35,7 @@ namespace CreatorKousien.Core
         /// <summary>
         /// 攻撃が発動したマスを一斉に光らせるイベント。引数は攻撃が発動したマスの座標リスト。
         /// </summary>
-        public event Action<List<Vector2Int>> OnAttackAreaExecuted;
+        public System.Action<List<Vector2Int>> OnAttackAreaExecuted;
 
 
         /// <summary>
