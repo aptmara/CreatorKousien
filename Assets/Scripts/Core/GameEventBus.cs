@@ -47,6 +47,10 @@ namespace CreatorKousien.Core
         /// </summary>
         public System.Action<List<Vector2Int>> OnAttackAreaExecuted;
 
+        /// <summary>
+        /// 移動に失敗したことを通知するイベント(ActorID, 失敗した先のX, 失敗した先のY)
+        /// </summary>
+        public System.Action<int, int, int> OnMoveFailed;
 
         /// <summary>
         /// ダメージを受けたことを通知するイベント
