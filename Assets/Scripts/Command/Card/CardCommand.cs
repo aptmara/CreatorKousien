@@ -6,57 +6,34 @@ using System.Collections.Generic;
 
 namespace CreatorKousien.Command
 {
-    public class RegisterSlotCardCommand : ICommand
+    public class UseCardCommand : ICommand
     {
-        // 実行ID
+        // 実行方向
         private SlotDirection _registerSlotDirection;
         public SlotDirection RegisterSlotDirection => _registerSlotDirection;
 
-        public RegisterSlotCardCommand(SlotDirection registerSlotDirection)
+        public UseCardCommand(SlotDirection registerSlotDirection)
         {
             _registerSlotDirection = registerSlotDirection;
         }
     }
+    
 
-    public class ApplyEffectCommand : ICommand
-    {
-        public ApplyEffectCommand()
-        {
-        }
-    }
-
-    public class SetPoolCommand : ICommand
+    public class PickCommand : ICommand
     {
         private int _poolID;
         public int PoolID => _poolID;
 
-        public SetPoolCommand(int poolID)
-        {
-            _poolID = poolID;
-        }
-    }
-
-    public class PickCommand : ICommand
-    {
         //! カード抽選枚数
         private int _pickCount;
         public int PickCount => _pickCount;
-        public PickCommand(int pickCount)
+        public PickCommand(int poolID, int pickCount)
         {
+            _poolID = poolID;
             _pickCount = pickCount;
         }
     }
 
-    public class AdvanceTurnCommand : ICommand
-    {
-        private int _turnToAdvance;
-        public int TurnToAdvance => _turnToAdvance;
-
-        public AdvanceTurnCommand(int turnToAdvance)
-        {
-            _turnToAdvance = turnToAdvance;
-        }
-    }
 
     public class SetSlotCardCommand : ICommand
     {
