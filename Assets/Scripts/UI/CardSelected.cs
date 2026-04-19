@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class CardSelected : MonoBehaviour
 {
-    private CardData selectedCard;
+    private UICardData selectedCard;
 
-    public event Action<CardData> OnSelectionChanged;
+    public event Action<UICardData> OnSelectionChanged;
 
-    public void SetSelectedCard(CardData data)
+    public void SetSelectedCard(UICardData data)
     {
         if(data == null)
         {
@@ -34,7 +34,7 @@ public class CardSelected : MonoBehaviour
         OnSelectionChanged?.Invoke(null);
     }
 
-    public CardData GetSelectedCardData()
+    public UICardData GetSelectedCardData()
     {
         return selectedCard;
     }
@@ -44,7 +44,7 @@ public class CardSelected : MonoBehaviour
         return selectedCard != null;
     }
 
-    public bool IsCardSelected(CardData data)
+    public bool IsCardSelected(UICardData data)
     {
         if(selectedCard == null || data ==null)
         {

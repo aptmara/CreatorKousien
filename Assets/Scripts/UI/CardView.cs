@@ -13,12 +13,12 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     [SerializeField] private GameObject hoverHighLight;
     [SerializeField] private GameObject selectHighLight;
 
-    private CardData currentData;
+    private UICardData currentData;
     private RectTransform rectTransform;
 
-    public event Action<CardData> OnHoverEntered;
-    public event Action<CardData> OnHoverExited;
-    public event Action<CardData> OnClicked;
+    public event Action<UICardData> OnHoverEntered;
+    public event Action<UICardData> OnHoverExited;
+    public event Action<UICardData> OnClicked;
 
     public RectTransform RectTransform => rectTransform;
 
@@ -27,7 +27,7 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         rectTransform = GetComponent<RectTransform>();
     }
 
-    public void SetCardData(CardData data)
+    public void SetCardData(UICardData data)
     {
         currentData = data;
         if (data == null)
@@ -56,7 +56,7 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         SetSelected(false);
     }
 
-    public CardData GetCardData()
+    public UICardData GetCardData()
     {
         return currentData;
     }

@@ -37,7 +37,7 @@ public enum ViewType
 /// 一旦のカードデータ
 /// </summary>
 [System.Serializable]
-public class CardData
+public class UICardData
 {
     public string MasterId;
     public string InstanceId;

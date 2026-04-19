@@ -8,9 +8,9 @@ public class CardSlotView : MonoBehaviour
 
     private CardSlotLayoutData layoutData;
 
-    public event Action<CardData> OnCardHoverEntered;
-    public event Action<CardData> OnCardHoverExited;
-    public event Action<CardData> OnCardClicked;
+    public event Action<UICardData> OnCardHoverEntered;
+    public event Action<UICardData> OnCardHoverExited;
+    public event Action<UICardData> OnCardClicked;
 
     private void Awake()
     {
@@ -22,7 +22,7 @@ public class CardSlotView : MonoBehaviour
         UnsubscribeCardEvents();
     }
 
-    public void SetCardDataList(IReadOnlyList<CardData> dataList)
+    public void SetCardDataList(IReadOnlyList<UICardData> dataList)
     {
         if(dataList ==null)
         {
@@ -59,7 +59,7 @@ public class CardSlotView : MonoBehaviour
         RefreshSelectionVisual(null, null);
     }
 
-    public void RefreshSelectionVisual(CardData hovered,CardData selected)
+    public void RefreshSelectionVisual(UICardData hovered,UICardData selected)
     {
         foreach(CardView view in cardViews)
         {
@@ -68,7 +68,7 @@ public class CardSlotView : MonoBehaviour
                 continue;
             }
 
-            CardData data = view.GetCardData();
+            UICardData data = view.GetCardData();
 
             bool isHovered =
                 hovered != null &&
@@ -154,17 +154,17 @@ public class CardSlotView : MonoBehaviour
         }
     }
 
-    private void HandleHoverEntered(CardData data)
+    private void HandleHoverEntered(UICardData data)
     {
         OnCardHoverEntered?.Invoke(data);
     }
 
-    private void HandleHoverExited(CardData data)
+    private void HandleHoverExited(UICardData data)
     {
         OnCardHoverExited?.Invoke(data);
     }
 
-    private void HandleClicked(CardData data)
+    private void HandleClicked(UICardData data)
     {
         OnCardClicked?.Invoke(data);
     }

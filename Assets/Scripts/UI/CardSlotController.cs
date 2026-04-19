@@ -7,7 +7,7 @@ public class CardSlotController : MonoBehaviour
     [SerializeField] private CardSlotView cardSlotView;
     [SerializeField] private CardSelected cardSelected;
 
-    private CardData currentHoveredCard;
+    private UICardData currentHoveredCard;
 
     private void Start()
     {
@@ -34,17 +34,17 @@ public class CardSlotController : MonoBehaviour
         }
     }
 
-    public CardData GetHoveredCardData()
+    public UICardData GetHoveredUICardData()
     {
         return currentHoveredCard;
     }
 
-    public CardData GetSelectedCardData()
+    public UICardData GetSelectedUICardData()
     {
         return cardSelected != null ? cardSelected.GetSelectedCardData() : null;
     }
 
-    public bool IsCardHovered(CardData data)
+    public bool IsCardHovered(UICardData data)
     {
         if(currentHoveredCard == null || data ==null)
         {
@@ -89,7 +89,7 @@ public class CardSlotController : MonoBehaviour
         }
     }
 
-    private void HandleCardHoverEntered(CardData data)
+    private void HandleCardHoverEntered(UICardData data)
     {
         if(IsHandLocked())
         {
@@ -101,7 +101,7 @@ public class CardSlotController : MonoBehaviour
         UpdateVisuals();
     }
 
-    private void HandleCardHoverExited(CardData data)
+    private void HandleCardHoverExited(UICardData data)
     {
         if(data == null || currentHoveredCard == null)
         {
@@ -114,7 +114,7 @@ public class CardSlotController : MonoBehaviour
         }
     }
 
-    private void HandleCardClicked(CardData data)
+    private void HandleCardClicked(UICardData data)
     {
         if(IsHandLocked())
         {
@@ -129,7 +129,7 @@ public class CardSlotController : MonoBehaviour
         cardSelected.SetSelectedCard(data);
     }
 
-    private void HandleSelectionChanged(CardData selected)
+    private void HandleSelectionChanged(UICardData selected)
     {
         UpdateVisuals();
     }
@@ -141,7 +141,7 @@ public class CardSlotController : MonoBehaviour
             return;
         }
 
-        CardData selected = cardSelected != null ? cardSelected.GetSelectedCardData() : null;
+        UICardData selected = cardSelected != null ? cardSelected.GetSelectedCardData() : null;
         cardSlotView.RefreshSelectionVisual(currentHoveredCard, selected);
     }
 }
