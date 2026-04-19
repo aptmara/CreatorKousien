@@ -183,10 +183,23 @@ public class TestBattleStarter : MonoBehaviour
 
 
         // 戻って来た通知を受け取って画面を動かす
-        _eventBus.OnTelegraphRequested += (targetCells, isWarning) =>
+        _eventBus.OnTelegraphRequested += (targetCells, isWarning, stepOrder) =>
         {
-            _fieldView.ShowTelegraph(targetCells, isWarning);
+            _fieldView.ShowTelegraph(targetCells, isWarning, stepOrder);
         };
+
+        // 移動予告の通知を受け取って画面を動かす
+        _eventBus.OnMoveTelegraphRequested += (targetCell, isWarning, stepOrder) =>
+        {
+            _fieldView.ShowMoveTelegraph(targetCell, isWarning, stepOrder);
+        };
+
+        // 予告のクリアの通知を受け取って画面を動かす
+        _eventBus.OnClearAllTelegraphsRequested += () =>
+        {
+            _fieldView.ClearAllTelegraph();
+        };
+
         _eventBus.OnAttackHit += (targetActorId) =>
         {
             Debug.Log($"<color=red>[View] ActorID:{targetActorId} に攻撃ヒットエフェクトを再生！</color>");
@@ -218,7 +231,7 @@ public class TestBattleStarter : MonoBehaviour
         // コマンドディスパッチャーを生成して、移動コマンドを処理できるようにする！
         MoveUseCase moveUseCase = new MoveUseCase(_fieldService, tileEffect, _eventBus);
         AttackUseCase attackUseCase = new AttackUseCase(_battleManager, _fieldService, _playerSystem, _enemySystem, dispatcher, _eventBus);
-        EnemyActionUseCase enemyUseCase = new EnemyActionUseCase(_enemySystem, _fieldService, _playerSystem, telegraphSystem,dispatcher);
+        EnemyActionUseCase enemyUseCase = new EnemyActionUseCase(_enemySystem, _fieldService, _playerSystem, telegraphSystem, dispatcher, _eventBus);
 
         // UseCaseをDispatcherに登録
         dispatcher.Register<MoveCommand>(moveUseCase.Execute);

@@ -46,6 +46,9 @@ namespace CreatorKousien.Battle
 
             _owner.EventBus.PublishCommandPhaseStarted();
 
+            // 新しい思考を始める前に、画面上の前回の予告を全て消す
+            _owner.EventBus.PublishClearAllTelegraphs();
+
             // フェーズ開始と同時に、全てのエネミーの3手分を計算させる
             var planCommand = new EnemyActionCommand((teamPlan) =>
             {

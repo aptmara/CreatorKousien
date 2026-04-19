@@ -211,6 +211,14 @@ public class GameManager : MonoBehaviour
         InitEventBus();
 
         var dispatcher = SetupCommandDispatcher();
+        // 各種UseCaseの生成
+        MoveUseCase moveUseCase = new MoveUseCase(_fieldService,_tileEffect,_eventBus);
+        AttackUseCase attackUseCase = new AttackUseCase(_battleManager, _fieldService,_player,_enemy, dispatcher, _eventBus);
+        EnemyActionUseCase enemyUseCase = new EnemyActionUseCase(_enemy, _fieldService, _player,_actiontelegraph, dispatcher, _eventBus);
+        // 各種Commandの登録
+        dispatcher.Register<MoveCommand>(moveUseCase.Execute);
+        dispatcher.Register<AttackCommand>(attackUseCase.Execute);
+        dispatcher.Register<EnemyActionCommand>(enemyUseCase.Execute);
 
         // TurnManagerの初期化
         _turnManager = gameObject.GetComponent<TurnManager>();

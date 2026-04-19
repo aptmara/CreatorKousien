@@ -30,7 +30,17 @@ namespace CreatorKousien.Core
         /// <summary>
         /// 敵の攻撃予告の表示/非表示を通知するイベント
         /// </summary>
-        public event Action<List<Vector2Int>, bool> OnTelegraphRequested;
+        public event Action<List<Vector2Int>, bool, int> OnTelegraphRequested;
+
+        /// <summary>
+        /// 敵の移動予告を通知するイベント
+        /// </summary>
+        public event Action<Vector2Int, bool, int> OnMoveTelegraphRequested;
+
+        /// <summary>
+        /// 画面上の全ての予告表示をクリアするイベント
+        /// </summary>
+        public event Action OnClearAllTelegraphsRequested;
 
         /// <summary>
         /// 攻撃が発動したマスを一斉に光らせるイベント。引数は攻撃が発動したマスの座標リスト。
@@ -82,6 +92,7 @@ namespace CreatorKousien.Core
 
 
 
+
         // イベントの発火メソッド
         // ------------------------------------------------------------
 
@@ -100,10 +111,23 @@ namespace CreatorKousien.Core
         /// </summary>
         /// <param name="targetCells">表示するセルのリスト</param>
         /// <param name="isWarning">  警告表示かどうか</param>
-        public void PublishTelegraph(List<Vector2Int> targetCells, bool isWarning)
+        public void PublishTelegraph(List<Vector2Int> targetCells, bool isWarning, int stepOrder = 0)
         {
-            OnTelegraphRequested?.Invoke(targetCells, isWarning);
+            OnTelegraphRequested?.Invoke(targetCells, isWarning, stepOrder);
         }
+
+
+        /// <summary>
+        /// 移動予告の表示イベントを発火するメソッド
+        /// </summary>
+        /// <param name="targetCell"></param>
+        /// <param name="isWarning"></param>
+        /// <param name="stepOrder"></param>
+        public void PublishMoveTelegraph(Vector2Int targetCell, bool isWarning, int stepOrder = 0)
+        {
+            OnMoveTelegraphRequested?.Invoke(targetCell, isWarning, stepOrder);
+        }
+
 
         /// <summary>
         /// 攻撃が発動したエリアの視覚的ハイライトを要求するメソッド
@@ -114,6 +138,14 @@ namespace CreatorKousien.Core
             OnAttackAreaExecuted?.Invoke(targetCells);
         }
 
+
+        /// <summary>
+        /// 予告表示クリアイベントを発火するイベント
+        /// </summary>
+        public void PublishClearAllTelegraphs()
+        {
+            OnClearAllTelegraphsRequested?.Invoke();
+        }
 
 
         /// <summary>
