@@ -156,6 +156,13 @@ namespace CreatorKousien.Enemy
                 case TargetOrigin.RightEdgeCenter:
                     return new Vector2Int(situation.MaxX, situation.MaxY / 2);
 
+                case TargetOrigin.RandomPassableCell:
+                    // プレイヤー陣地 (X座標が 0 〜 BorderX - 1) の中からランダムな座標を生成
+                    return new Vector2Int(
+                        Random.Range(0, situation.BorderX),
+                        Random.Range(0, situation.MaxY + 1)
+                    );
+
                 default:
                     return virtualPos;
             }

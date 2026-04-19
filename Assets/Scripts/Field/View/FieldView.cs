@@ -222,17 +222,45 @@ namespace CreatorKousien.Field
         /// </summary>
         /// <param name="position">攻撃予告を表示するマスのリスト</param>
         /// <param name="isWarning">警告状態かどうか</param>
-        public void ShowTelegraph(List<Vector2Int> position, bool isWarning)
+        /// <param name="stepOrder">何手目か</param>
+        public void ShowTelegraph(List<Vector2Int> position, bool isWarning, int stepOrder = 0)
         {
             foreach (var pos in position)
             {
                 var cell = GetCellView(pos);
                 if (cell != null)
                 {
-                    cell.SetWarning(isWarning);
+                    cell.SetWarning(isWarning, stepOrder);
                 }
             }
         }
+
+
+        /// <summary>
+        /// 移動予告を表示するメソッド
+        /// </summary>
+        /// <param name="position">移動予告を表示するマス</param>
+        /// <param name="isWarning">警告状態かどうか</param>
+        /// <param name="stepOrder">何手目か</param>
+        public void ShowMoveTelegraph(Vector2Int position, bool isWarning, int stepOrder = 0)
+        {
+            var cell = GetCellView(position);
+            if (cell != null)
+            {
+                cell.SetMoveIntent(isWarning, stepOrder);
+            }
+        }
+
+
+        public void ClearAllTelegraph()
+        {
+            foreach (var cell in _cellViews.Values)
+            {
+                cell.SetWarning(false);
+                cell.SetMoveIntent(false);
+            }
+        }
+
 
         /// <summary>
         /// アクションフェーズで攻撃が発動したマスを一斉に光らせるメソッド

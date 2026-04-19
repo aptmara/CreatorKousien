@@ -11,6 +11,7 @@
 using UnityEngine;
 using CreatorKousien.Field;
 using CreatorKousien.Data;
+using UnityEditor.ShaderGraph;
 
 namespace CreatorKousien.Field
 {
@@ -26,6 +27,18 @@ namespace CreatorKousien.Field
 
         [Tooltip("沈む速度")]
         [SerializeField] private float _animSpeed = 10f;        // 沈む速度
+
+        [Header("予告カラー設定")]
+        [Tooltip("1手目、2手目、3手目の色を設定")]
+        [SerializeField]
+        private Color[] _stepColors = new Color[]
+        {
+            new Color(1f, 0.8f, 0f), // 1手目: 黄色
+            new Color(0f, 0.8f, 1f), // 2手目: オレンジ
+            new Color(1f, 0.0f, 0f)  // 3手目: 赤
+        };
+
+        private GameObject _moveIntentSphere;   // 移動予告用の仮Sphere
 
 
         private GameObject _currentModel;                       // 現在表示しているモデル
@@ -132,14 +145,16 @@ namespace CreatorKousien.Field
         /// 攻撃予告などの危険状態をセットする
         /// </summary>
         /// <param name="isWarning">警告状態かどうか</param>
-        public void SetWarning(bool isWarning)
+        /// <param name="stepOrder">何手目か</param>
+        public void SetWarning(bool isWarning, int stepOrder = 0)
         {
             if (_renderer != null)
             {
                 if (isWarning)
                 {
                     // 危険な赤色に光らせる！
-                    _renderer.material.SetColor("_EmissionColor", Color.red * 1.5f);
+                    Color warnColor = _stepColors[Mathf.Clamp(stepOrder, 0, _stepColors.Length - 1)];
+                    _renderer.material.SetColor("_EmissionColor", warnColor * 1.5f);
                     _renderer.material.EnableKeyword("_EMISSION");
                 }
                 else
@@ -147,6 +162,40 @@ namespace CreatorKousien.Field
                     // 警告解除時は元の状態に戻す
                     SetOccupied(_isOccupied);
                 }
+            }
+        }
+
+
+        /// <summary>
+        /// 移動予告の仮Sphereを表示・非表示する
+        /// </summary>
+        /// <param name="show"></param>
+        /// <param name="stepOrder"></param>
+        public void SetMoveIntent(bool show, int stepOrder = 0)
+        {
+            if (show)
+            {
+                if (_moveIntentSphere == null)
+                {
+                    _moveIntentSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    _moveIntentSphere.transform.SetParent(transform);
+                    _moveIntentSphere.transform.localPosition = new Vector3(0, 1.0f, 0); // マスの上に浮かす
+                    _moveIntentSphere.transform.localScale = Vector3.one * 0.4f;
+
+                    // コライダー削除
+                    Destroy(_moveIntentSphere.GetComponent<Collider>());
+                }
+
+                _moveIntentSphere.SetActive(true);
+
+                // Sphereの色を手数に合わせる
+                Renderer sphereRenderer = _moveIntentSphere.GetComponent<Renderer>();
+                Color intentColor = _stepColors[Mathf.Clamp(stepOrder, 0, _stepColors.Length - 1)];
+                sphereRenderer.material.color = intentColor;
+            }
+            else
+            {
+                if (_moveIntentSphere != null) _moveIntentSphere.SetActive(false);
             }
         }
 
