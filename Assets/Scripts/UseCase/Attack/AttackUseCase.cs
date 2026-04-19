@@ -56,6 +56,9 @@ namespace CreatorKousien.UseCase
             // ログ用: 誰の行動かを色分け
             string actorLabel = GetActorLabel(command.SourceActorId);
 
+            // 攻撃が発動した瞬間に対象のマスをEventBusで通知 (4/19 追加)
+            _eventBus.OnAttackAreaExecuted?.Invoke(command.TargetCells);
+
             // 1. FieldServiceにマスにいるActorIDのリストをもらう
             List<int> targetActorIds = _fieldService.GetActorsInCells(command.TargetCells);
 

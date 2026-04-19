@@ -149,6 +149,29 @@ namespace CreatorKousien.Field
                 }
             }
         }
+
+
+        /// <summary>
+        /// アクションフェーズでの攻撃時のハイライトをセット
+        /// </summary>
+        /// <param name="show">ハイライトするかどうか</param>
+        public void SetAttackHighlight(bool show)
+        {
+            if (_renderer != null)
+            {
+                if (show)
+                {
+                    // 攻撃発動時はオレンジ色に光らせる！
+                    _renderer.material.SetColor("_EmissionColor", new Color(1f, 0.5f, 0f) * 2.5f);
+                    _renderer.material.EnableKeyword("_EMISSION");
+                }
+                else
+                {
+                    // ハイライト解除時は元の状態に戻す
+                    SetOccupied(_isOccupied);
+                }
+            }
+        }
     }
 
 }

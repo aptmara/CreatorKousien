@@ -156,6 +156,18 @@ public class TestBattleStarter : MonoBehaviour
             }
         };
 
+
+        // 攻撃範囲表示のリクエストを受け取ったら、FieldViewに盤面を光らせるように指示する！
+        _eventBus.OnAttackAreaExecuted += (targetCells) =>
+        {
+            // 1. 盤面をオレンジ色に光らせる！
+            _fieldView.ShowAttackArea(targetCells, true);
+
+            // 2. 0.3秒後に消すコルーチンを回す
+            StartCoroutine(HideAttackAreaRoutine(targetCells));
+        };
+
+
         // 戻って来た通知を受け取って画面を動かす
         _eventBus.OnTelegraphRequested += (targetCells, isWarning) =>
         {
@@ -300,5 +312,19 @@ public class TestBattleStarter : MonoBehaviour
                 _mediator.SendCommand(new AttackCommand(t.SourceActorId, t.AttackInfo, t.TargetCells));
             }
         }
+    }
+
+    /// <summary>
+    /// 盤面の光を消すコルーチン。攻撃エフェクトが残る時間を待ってから、FieldViewに光を消すように指示する。
+    /// </summary>
+    /// <param name="targetCells"></param>
+    /// <returns></returns>
+    private System.Collections.IEnumerator HideAttackAreaRoutine(List<Vector2Int> targetCells)
+    {
+        // 攻撃のエフェクトが残る時間
+        yield return new WaitForSeconds(0.3f);
+
+        // 盤面の光を消す
+        _fieldView.ShowAttackArea(targetCells, false);
     }
 }
