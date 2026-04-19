@@ -15,6 +15,9 @@ using CreatorKousien.Field;
 using CreatorKousien.Player;
 using CreatorKousien.Enemy;
 using CreatorKousien.Command;
+using System.Collections;
+using System.Threading;
+using CreatorKousien.View;
 
 public class GameManager : MonoBehaviour
 {
@@ -44,6 +47,7 @@ public class GameManager : MonoBehaviour
     [Header("Fiela")]
     [Tooltip("ここにFieldViewのPrefabをアタッチ")]
     [SerializeField]
+    FieldView _fieldViewPrefab;
     FieldView _fieldView;
     FieldService _fieldService;
 
@@ -52,6 +56,11 @@ public class GameManager : MonoBehaviour
 
     // 
     PlayerSystem _player;
+    PlayerView _playerView;
+
+    [SerializeField]
+    private TestTimerView _timerPrefab;
+    
     // PlayerID(固定値)
     const int PlayerID = 1;
     EnemySystem _enemy;
@@ -133,7 +142,7 @@ public class GameManager : MonoBehaviour
 
     void InitializeSelectScene()
     {
-        Debug.Log("[GameManager] GameSceneStart");
+        Debug.Log("[GameManager] SelectSceneStart");
         _stageManager = new StageManager();
         _stageManager.Initialize();
 
@@ -164,6 +173,14 @@ public class GameManager : MonoBehaviour
         // バトルマネージャーの初期化
         _battleManager = new BattleManager();
 
+        // FieldView初期化
+        _fieldView = Instantiate(_fieldViewPrefab);
+        
+        // FieldServiceの生成
+        _fieldService = new FieldService();
+        _fieldService.Initialize(_setupData.StageData);
+        _fieldView.BuildView(_fieldService.State, _setupData.StageData);
+
         // 各種システムの生成
         //==== Player Systemの生成・初期化 ====
 
@@ -173,19 +190,20 @@ public class GameManager : MonoBehaviour
         _player.Initialize(_setupData.PlayerData, pPos);
         _fieldService.UpdateOccupancy(_player.RuntimeData.ActorId, -1, -1, pPos.x, pPos.y);
 
-        _fieldView = new FieldView();
+        //_fieldView = new FieldView();
         Vector3 startWorldPos = _fieldView.GetCellWorldPosition(pPos.x, pPos.y);
 
         // PlayerObjectの生成
         GameObject playerobj = Instantiate(_setupData.PlayerData.PlayerPrefab,startWorldPos,Quaternion.identity);
-        PlayerView playerView = playerobj.GetComponent<PlayerView>();
-        playerView.Initialize(startWorldPos);
-        playerView.SetStandingTile(_fieldView.GetCellView(pPos));
+        _playerView = playerobj.GetComponent<PlayerView>();
+        _playerView.Initialize(startWorldPos);
+        _playerView.SetStandingTile(_fieldView.GetCellView(pPos));
         _fieldView.HighlightCell(pPos.x, pPos.y);
 
         //====//====//====//====//====//====//====
 
         //==== Enemy System ====
+        _enemy = new EnemySystem(_actiontelegraph);
 
         foreach(var enemyInfo in _setupData.Enemies)
         {
@@ -205,14 +223,17 @@ public class GameManager : MonoBehaviour
 
         //====//====//====//====//====//====
 
-        // Dispatcher生成
-        var dispatcher = new CommandDispatcher();
 
         // TileEffect生成
         _tileEffect = new TileEffectSystem(_fieldService.State);
         // ActionTelegraph生成
         _actiontelegraph = new ActionTelegraphSystem();
 
+        //==== EventBusの設定 ====
+        InitEventBus();
+
+        // Dispatcher生成
+        var dispatcher = new CommandDispatcher();
         // 各種UseCaseの生成
         MoveUseCase moveUseCase = new MoveUseCase(_fieldService,_tileEffect,_eventBus);
         AttackUseCase attackUseCase = new AttackUseCase(_battleManager, _fieldService,_player,_enemy, dispatcher, _eventBus);
@@ -222,7 +243,7 @@ public class GameManager : MonoBehaviour
         dispatcher.Register<AttackCommand>(attackUseCase.Execute);
         dispatcher.Register<EnemyActionCommand>(enemyUseCase.Execute);
 
-        _turnManager = gameObject.AddComponent<TurnManager>();
+        _turnManager = gameObject.GetComponent<TurnManager>();
         _turnManager.Initialize(dispatcher, _eventBus);
 
         // Mediatorの初期化
@@ -253,4 +274,127 @@ public class GameManager : MonoBehaviour
 
     }
 
+
+    private void InitEventBus()
+    {
+
+        // 4 イベントの配線
+        // ------------------------------------------------------------
+        _eventBus = new GameEventBus();
+
+        // プレファブからタイマーを生成
+        if (_timerPrefab != null)
+        {
+            // 画面上部に生成
+            Vector3 timerPosition = new Vector3(4.375f, 3, 0);
+
+            var timerInstance = Instantiate(_timerPrefab, timerPosition, Quaternion.identity);
+            timerInstance.Initialize(_eventBus);
+        }
+
+        // 移動リクエストの集中管理
+        _eventBus.OnActorMoveRequested += (actorId, targetGridPos) =>
+        {
+            // グリッド座標をワールド座標に変換する
+            Vector3 worldPos = _fieldView.GetCellWorldPosition(targetGridPos.x, targetGridPos.y);
+            GridCellView cellView = _fieldView.GetCellView(targetGridPos);
+
+            // プレイヤーの場合
+            if (actorId == _player.RuntimeData.ActorId)
+            {
+                _playerView.UpdateTargetPosition(worldPos);
+                _playerView.SetStandingTile(cellView);
+                _fieldView.HighlightCell(targetGridPos.x, targetGridPos.y);
+            }
+            // エネミーの場合
+            else if (_enemyViews.TryGetValue(actorId, out var eView))
+            {
+                eView.MoveTo(worldPos);
+                eView.SetStandingTile(cellView);
+            }
+        };
+
+
+        // 被ダメージ通知を受け取ったら、PlayerViewの被弾エフェクトを鳴らす！！
+        _eventBus.OnDamageTaken += (targetId, damage) =>
+        {
+            if (targetId == _player.RuntimeData.ActorId) _playerView.PlayDamageEffect(damage);
+            else if (_enemyViews.TryGetValue(targetId, out var eView)) eView.PlayDamageEffect();
+        };
+
+        // 死亡通知を受け取ったら、PlayerViewの死亡エフェクトを鳴らす！！
+        _eventBus.OnActorDeath += (targetId) =>
+        {
+            if (targetId == _player.RuntimeData.ActorId) _playerView.PlayDeathEffect();
+            else if (_enemyViews.TryGetValue(targetId, out var eView))
+            {
+                eView.PlayDeathEffect();
+                _enemyViews.Remove(targetId); // 辞書から削除
+            }
+        };
+
+
+        // 攻撃範囲表示のリクエストを受け取ったら、FieldViewに盤面を光らせるように指示する！
+        _eventBus.OnAttackAreaExecuted += (targetCells) =>
+        {
+            // 1. 盤面をオレンジ色に光らせる！
+            _fieldView.ShowAttackArea(targetCells, true);
+
+            // 2. 0.3秒後に消すコルーチンを回す
+            StartCoroutine(HideAttackAreaRoutine(targetCells));
+        };
+
+
+        // 戻って来た通知を受け取って画面を動かす
+        _eventBus.OnTelegraphRequested += (targetCells, isWarning) =>
+        {
+            _fieldView.ShowTelegraph(targetCells, isWarning);
+        };
+        _eventBus.OnAttackHit += (targetActorId) =>
+        {
+            Debug.Log($"<color=red>[View] ActorID:{targetActorId} に攻撃ヒットエフェクトを再生！</color>");
+        };
+
+        _fieldService.OnActorMoved += (actorId, x, y) =>
+        {
+            if (actorId == _player.RuntimeData.ActorId)
+            {
+                _player.SyncPosition(new Vector2Int(x, y));
+
+                Vector3 targetWorldPos = _fieldView.GetCellWorldPosition(x, y);
+                _playerView.UpdateTargetPosition(targetWorldPos);
+                _playerView.SetStandingTile(_fieldView.GetCellView(new Vector2Int(x, y)));
+
+                _fieldView.HighlightCell(x, y);
+            }
+        };
+
+        _eventBus.OnActionLogicCompleted += (actorId) =>
+        {
+            StartCoroutine(WaitAnimationAndProceed());
+        };
+    }
+
+    /// <summary>
+    /// 盤面の光を消すコルーチン。攻撃エフェクトが残る時間を待ってから、FieldViewに光を消すように指示する。
+    /// </summary>
+    /// <param name="targetCells"></param>
+    /// <returns></returns>
+    private System.Collections.IEnumerator HideAttackAreaRoutine(List<Vector2Int> targetCells)
+    {
+        // 攻撃のエフェクトが残る時間
+        yield return new WaitForSeconds(0.3f);
+
+        // 盤面の光を消す
+        _fieldView.ShowAttackArea(targetCells, false);
+    }
+
+    private IEnumerator WaitAnimationAndProceed()
+    {
+        // 0.5秒のアニメーション待機をシミュレート
+        yield return new WaitForSeconds(0.5f);
+
+        // Mediator経由で安全にTurnManagerへ報告
+        _mediator.CompleteCurrentActionAnimation();
+    }
 }
