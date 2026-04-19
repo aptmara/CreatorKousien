@@ -64,6 +64,10 @@ public struct EffectData
     [SerializeField] private Sprite effectIcon;
     public Sprite EffectIcon => effectIcon;
 
+    //! 効果範囲
+    [SerializeField] private List<Vector2Int> targetCells;
+    public List<Vector2Int> TargetCells => targetCells;
+
     //! カード効果全体で見た分類
     [SerializeField] private EffectType effectType;
     public EffectType EffectType => effectType;
