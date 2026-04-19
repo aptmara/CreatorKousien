@@ -7,6 +7,8 @@
 //
 // Notes	:
 // - ステージデータとバトルセットアップデータのテンプレートを自動生成することで、ステージ作成の初期設定を効率化
+// - 生成した BattleSetupData は BattleSetupDataAddressableWatcher によって自動で
+//   Addressables "StageData" ラベルに登録される
 // ------------------------------------------------------------
 #if UNITY_EDITOR
 using UnityEditor;
@@ -79,7 +81,11 @@ namespace CreatorKousien.EditorTools
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            // 5. 作成したSetupDataを選択状態にする
+            // 5. Addressables "StageData" ラベルを付与
+            // AssetPostprocessor が自動検出するが、生成直後に確実に登録するため明示的にも呼ぶ
+            BattleSetupDataAddressableWatcher.RegisterAddressable(setupDataPath);
+
+            // 6. 作成したSetupDataを選択状態にする
             Selection.activeObject = setupData;
             EditorGUIUtility.PingObject(setupData);
 
@@ -88,3 +94,4 @@ namespace CreatorKousien.EditorTools
     }
 }
 #endif
+
