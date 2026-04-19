@@ -2571,6 +2571,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TestBattleStarter
   _setupData: {fileID: 11400000, guid: 2d76b62dd01db5f4f95ceab8525699fe, type: 2}
   _fieldView: {fileID: 1533097879}
+  _timerPrefab: {fileID: 5766762249608327027, guid: 2611125c2e7c57140836b7571cdb3ac6, type: 3}
 --- !u!1 &1452153482
 GameObject:
   m_ObjectHideFlags: 0

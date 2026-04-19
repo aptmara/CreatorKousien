@@ -78,3 +78,7 @@ MonoBehaviour:
   _modelContainer: {fileID: 0}
   _sinkDepth: -0.2
   _animSpeed: 10
+  _stepColors:
+  - {r: 0.4746089, g: 0, b: 1, a: 1}
+  - {r: 0, g: 0.011921406, b: 1, a: 1}
+  - {r: 0, g: 0.9556165, b: 1, a: 1}

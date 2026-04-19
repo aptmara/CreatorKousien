@@ -28,6 +28,7 @@ namespace CreatorKousien.UseCase
         private PlayerSystem _playerSystem;
         private ActionTelegraphSystem _telegraphSystem;
         private CommandDispatcher _dispatcher;
+        private GameEventBus _eventBus;
 
         /// <summary>
         /// GameManagerから必要なSystemとDispacherを渡して初期化する
@@ -36,13 +37,14 @@ namespace CreatorKousien.UseCase
         /// <param name="FieldService"></param>
         /// <param name="PlayerSystem"></param>
         /// <param name="Dispatcher"></param>
-        public EnemyActionUseCase(EnemySystem EnemySystem, FieldService FieldService, PlayerSystem PlayerSystem, ActionTelegraphSystem telegraphSystem, CommandDispatcher Dispatcher)
+        public EnemyActionUseCase(EnemySystem EnemySystem, FieldService FieldService, PlayerSystem PlayerSystem, ActionTelegraphSystem telegraphSystem, CommandDispatcher Dispatcher, GameEventBus eventBus)
         {
             _enemySystem = EnemySystem;
             _fieldService = FieldService;
             _playerSystem = PlayerSystem;
             _telegraphSystem = telegraphSystem;
             _dispatcher = Dispatcher;
+            _eventBus = eventBus;
         }
 
         /// <summary>
@@ -76,7 +78,7 @@ namespace CreatorKousien.UseCase
             var virtualPositions = new Dictionary<int, Vector2Int>();
             foreach (var id in aliveEnemyIds)
             {
-                virtualPositions[id] = _enemySystem.GetEnemyData(id).Position;
+                virtualPositions[id] = _fieldService.GetActorPosition(id);
             }
 
             // チーム全体で3手分をループ
@@ -88,9 +90,12 @@ namespace CreatorKousien.UseCase
                 var ai = _enemySystem.GetEnemyAI(actingEnemyId);
                 var situation = CreateSituation();
 
+                // 現在の仮想座標を取得
+                Vector2Int currentVirtualPos = virtualPositions[actingEnemyId];
+
                 // 指名されたエネミーに思考させる
                 EnemyIntent intent = ai.Think(situation, virtualPositions[actingEnemyId]);
-                var actionTicket = ConvertIntentToTicket(intent);
+                var actionTicket = ConvertIntentToTicket(intent, step, currentVirtualPos);
 
                 plan.Add(actionTicket);
 
@@ -116,7 +121,7 @@ namespace CreatorKousien.UseCase
             };
         }
 
-        private ActionRuntimeData ConvertIntentToTicket(EnemyIntent intent)
+        private ActionRuntimeData ConvertIntentToTicket(EnemyIntent intent, int step, Vector2Int currentVirtualPos)
         {
             switch (intent.Category)
             {
@@ -126,10 +131,33 @@ namespace CreatorKousien.UseCase
                         !_fieldService.IsOutOfBounds(p.x, p.y) && !_fieldService.IsObstacle(p.x, p.y));
 
                     RegisterTelegraph(intent, validCells);
+
+                    // Viewに攻撃予告の色変更を指示
+                    _eventBus.PublishTelegraph(validCells, true, step);
+
                     return new ActionRuntimeData(intent.SourceActorId, intent.AttackInfo, validCells);
 
                 case ActionCategory.Move:
                     GridDirection dir = ConvertToGridDirection(intent.MoveDirection);
+
+                    Vector2Int targetPos = currentVirtualPos + intent.MoveDirection;
+                    
+                    // 盤面内かどうかに加え、敵陣内（x が BorderX 以上）かどうかもチェック
+                    int borderX = _fieldService.GetBorderX();
+                    bool isValidMove = !_fieldService.IsOutOfBounds(targetPos.x, targetPos.y)
+                                    && !_fieldService.IsObstacle(targetPos.x, targetPos.y)
+                                    && targetPos.x >= borderX;
+
+                    // Viewに移動予告のSphere表示を指示
+                    if (isValidMove)
+                    {
+                        _eventBus.PublishMoveTelegraph(targetPos, true, step);
+                    }
+                    else
+                    {
+                        // 無効ならその場に止まる
+                    }
+
                     return new ActionRuntimeData(intent.SourceActorId, dir);
 
                 default: // Wait
@@ -155,10 +183,10 @@ namespace CreatorKousien.UseCase
 
         private GridDirection ConvertToGridDirection(Vector2Int dir)
         {
-            if (dir == Vector2Int.up) return GridDirection.Up;
-            if (dir == Vector2Int.down) return GridDirection.Down;
-            if (dir == Vector2Int.left) return GridDirection.Left;
-            if (dir == Vector2Int.right) return GridDirection.Right;
+            if (dir == new Vector2Int(0, -1))   return GridDirection.Up;
+            if (dir == new Vector2Int(0, 1))    return GridDirection.Down;
+            if (dir == new Vector2Int(-1, 0))   return GridDirection.Left;
+            if (dir == new Vector2Int(1, 0))    return GridDirection.Right;
             return GridDirection.Up;
         }
     }
