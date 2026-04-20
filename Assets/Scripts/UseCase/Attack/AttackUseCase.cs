@@ -56,6 +56,14 @@ namespace CreatorKousien.UseCase
             // ログ用: 誰の行動かを色分け
             string actorLabel = GetActorLabel(command.SourceActorId);
 
+            // ゴーストアクション防止
+            Vector2Int currentPos = _fieldService.GetActorPosition(command.SourceActorId);
+            if (currentPos.x == -1)
+            {
+                _eventBus.PublishActionLogicCompleted(command.SourceActorId);
+                return;
+            }
+
             // 攻撃が発動した瞬間に対象のマスをEventBusで通知 (4/19 追加)
             _eventBus.OnAttackAreaExecuted?.Invoke(command.TargetCells);
 
@@ -111,7 +119,7 @@ namespace CreatorKousien.UseCase
         {
             if (actorId == 1)
             {
-                // return _playerSystem.RuntimeData.CurrentAttack;
+                // TODO: return _playerSystem.RuntimeData.CurrentAttack;
                 return 10;
             }
             else
