@@ -24,8 +24,8 @@ MonoBehaviour:
     ConditionValue: 0
     CooldownTurns: 0
     Weight: 1
-    AttackInfo:
-      Type: 0
+    Type: 1
+    Property:
       DamageMultiplier: 1
       HitCount: 1
     OriginRule: 6
