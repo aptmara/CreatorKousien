@@ -44,10 +44,29 @@ function mapPriority(rawValue) {
 
 /**
  * @param {string} rawValue 入力値
- * @returns {string}
+ * @returns {string | null}
  */
 function mapDate(rawValue) {
-  return String(rawValue || '').trim();
+  const value = String(rawValue || '').trim();
+  const matched = value.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (!matched) {
+    return null;
+  }
+
+  const year = Number(matched[1]);
+  const month = Number(matched[2]);
+  const day = Number(matched[3]);
+  const candidate = new Date(Date.UTC(year, month - 1, day));
+  if (
+    Number.isNaN(candidate.getTime()) ||
+    candidate.getUTCFullYear() !== year ||
+    candidate.getUTCMonth() !== month - 1 ||
+    candidate.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return `${matched[1]}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
 /**
@@ -157,13 +176,13 @@ async function run({ core, github, process }) {
    */
   async function setDateField(fieldName, rawValue) {
     const value = mapDate(rawValue);
-    if (!value || normalize(value) === '_no response_') {
+    if (!rawValue || normalize(rawValue) === '_no response_') {
       console.log(`Skip ${fieldName}: value is empty.`);
       return;
     }
 
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-      core.setFailed(`${fieldName} は YYYY-MM-DD 形式で指定してください。受信値: ${rawValue}`);
+    if (!value) {
+      core.setFailed(`${fieldName} は YYYY-MM-DD または YYYY-M-D 形式で指定してください。受信値: ${rawValue}`);
       return;
     }
 
