@@ -20,6 +20,7 @@ namespace CreatorKousien.Battle
     {
         public PhaseType Type => PhaseType.Command;
         private readonly TurnManager _owner;
+        private readonly HandState _handState;
 
         // プレイヤーがこのフェーズ中に選択したアクション(最大3手)
         private List<ActionRuntimeData> _playerSelectedActions = new List<ActionRuntimeData>();
@@ -32,11 +33,19 @@ namespace CreatorKousien.Battle
         private float _currentTime;
         private bool _isTimeUp;
 
-        public CommandPhaseState(TurnManager owner) => _owner = owner;
+        public CommandPhaseState(TurnManager owner, HandState handState)
+        {
+            _owner = owner;
+            _handState = handState;
+        }
 
         public void Enter()
         {
             Debug.Log("--- コマンドフェーズ開始 ---");
+
+            // デバッグログ: 現在のカード状況を報告
+            ReportCurrentHand();
+
             _playerSelectedActions.Clear();
             _enemyPlannedActions.Clear();
 
@@ -59,6 +68,22 @@ namespace CreatorKousien.Battle
             _owner.Dispatcher.Dispatch(planCommand);
 
             // TODO: EventBus経由で敵の予告表示をViewに出す
+        }
+
+        private void ReportCurrentHand()
+        {
+            string report = "<b>【現在の手札状況】</b>\n";
+            foreach (SlotPosition slot in System.Enum.GetValues(typeof(SlotPosition)))
+            {
+                var card = _handState.GetCard(slot);
+                if (card != null)
+                {
+                    var effect = card.GetCurrentEffect();
+                    string faceStr = card.CurrentFace == CardFace.Front ? "<color=lime>【表】</color>" : "<color=yellow>【裏】</color>";
+                    report += $"{slot}: {card.BaseData.CardName} {faceStr} -> 実行内容: {effect.EffectName} ({effect.Type})\n";
+                }
+            }
+            Debug.Log(report);
         }
 
         public void Update()
@@ -106,7 +131,7 @@ namespace CreatorKousien.Battle
             if (_playerSelectedActions.Count >= 3) return;
 
             _playerSelectedActions.Add(action);
-            Debug.Log($"[Command] プレイヤーのアクションを予約: {action.Category} ({_playerSelectedActions.Count}/3)");
+            Debug.Log($"[Command] プレイヤーのアクションを予約: {action.Type} ({_playerSelectedActions.Count}/3)");
 
             // 3手選んだら自動で実行フェーズへ
             if (_playerSelectedActions.Count == 3)
@@ -131,7 +156,8 @@ namespace CreatorKousien.Battle
             {
                 var waitAction = new ActionRuntimeData(
                     1,
-                    new AttackProperty { DamageMultiplier = 0 },
+                    ActionType.Wait,
+                    new ActionProperty { DamageMultiplier = 0 },
                     new List<Vector2Int>()
                 );
                 _playerSelectedActions.Add(waitAction);
@@ -168,7 +194,7 @@ namespace CreatorKousien.Battle
             if (_enemyPlannedActions.Count >= 3) return;
 
             _enemyPlannedActions.Add(action);
-            Debug.Log($"[Command] 敵のアクションを予約: {action.Category} ({_enemyPlannedActions.Count}/3)");
+            Debug.Log($"[Command] 敵のアクションを予約: {action.Type} ({_enemyPlannedActions.Count}/3)");
         }
     }
 }

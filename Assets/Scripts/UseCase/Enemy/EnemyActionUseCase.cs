@@ -100,7 +100,7 @@ namespace CreatorKousien.UseCase
                 plan.Add(actionTicket);
 
                 // 移動した場合は、そのエネミーの仮想座標だけを更新
-                if (intent.Category == ActionCategory.Move)
+                if (intent.Type == ActionType.Move)
                 {
                     virtualPositions[actingEnemyId] += intent.MoveDirection;
                 }
@@ -123,9 +123,10 @@ namespace CreatorKousien.UseCase
 
         private ActionRuntimeData ConvertIntentToTicket(EnemyIntent intent, int step, Vector2Int currentVirtualPos)
         {
-            switch (intent.Category)
+            switch (intent.Type)
             {
-                case ActionCategory.Attack:
+                case ActionType.FastAttack:
+                case ActionType.WideAttack:
                     // UseCase側でクリッピング（場外・障害物判定）を行う
                     var validCells = intent.RawTargetCells.FindAll(p =>
                         !_fieldService.IsOutOfBounds(p.x, p.y) && !_fieldService.IsObstacle(p.x, p.y));
@@ -135,9 +136,9 @@ namespace CreatorKousien.UseCase
                     // Viewに攻撃予告の色変更を指示
                     _eventBus.PublishTelegraph(validCells, true, step);
 
-                    return new ActionRuntimeData(intent.SourceActorId, intent.AttackInfo, validCells);
+                    return new ActionRuntimeData(intent.SourceActorId, intent.Type, intent.Property, validCells);
 
-                case ActionCategory.Move:
+                case ActionType.Move:
                     GridDirection dir = ConvertToGridDirection(intent.MoveDirection);
 
                     Vector2Int targetPos = currentVirtualPos + intent.MoveDirection;
@@ -160,8 +161,11 @@ namespace CreatorKousien.UseCase
 
                     return new ActionRuntimeData(intent.SourceActorId, dir);
 
+                case ActionType.Guard:
+                    return new ActionRuntimeData(intent.SourceActorId, intent.Type, intent.Property, new List<Vector2Int>());
+
                 default: // Wait
-                    return new ActionRuntimeData(intent.SourceActorId, new AttackProperty { DamageMultiplier = 0 }, new List<Vector2Int>());
+                    return new ActionRuntimeData(intent.SourceActorId, intent.Type, new ActionProperty { DamageMultiplier = 0 }, new List<Vector2Int>());
             }
         }
 
@@ -173,7 +177,7 @@ namespace CreatorKousien.UseCase
             {
                 TelegraphId = intent.SourceActorId * 1000 + Random.Range(1, 999),
                 SourceActorId = intent.SourceActorId,
-                AttackInfo = intent.AttackInfo,
+                Property = intent.Property,
                 TargetCells = validCells,
                 RemainingTurn = intent.ChargeTurns,
                 IsInterruptible = intent.IsInterruptible

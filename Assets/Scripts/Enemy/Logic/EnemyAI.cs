@@ -77,20 +77,27 @@ namespace CreatorKousien.Enemy
                 // 有効なターゲットますが1つも無ければスキップして次の行動を考える
                 if (rawCells.Count > 0)
                 {
-                    candidates.Add((pattern.Weight, () =>
+                    candidates.Add((pattern.Weight, (System.Func<EnemyIntent>)(() =>
                     {
                         _cooldownTimers[pattern] = pattern.CooldownTurns;
-                        return EnemyIntent.CreateAttack(_myData.ActorId, pattern.AttackInfo, rawCells, pattern.ChargeTurns, pattern.IsInterruptible);
-                    }));
+                        return EnemyIntent.CreateAttack(
+                            _myData.ActorId,
+                            pattern.Type,
+                            pattern.Property,
+                            rawCells,
+                            pattern.ChargeTurns,
+                            pattern.IsInterruptible
+                        );
+                    })));
                 }
             }
 
             // 2. 移動を候補に追加
             Vector2Int randomMoveDir = GetRandomMoveDirection();
-            candidates.Add((_masterData.MoveWeight, () => EnemyIntent.CreateMove(_myData.ActorId, randomMoveDir)));
+            candidates.Add((_masterData.MoveWeight, (System.Func<EnemyIntent>)(() => EnemyIntent.CreateMove(_myData.ActorId, randomMoveDir))));
 
             // 3. 待機を候補に追加
-            candidates.Add((_masterData.WaitWeight, () => EnemyIntent.CreateWait(_myData.ActorId)));
+            candidates.Add((_masterData.WaitWeight, (System.Func<EnemyIntent>)(() => EnemyIntent.CreateWait(_myData.ActorId))));
 
             // 重み付きランダム抽選
             return ExecuteWeightedSelection(candidates);

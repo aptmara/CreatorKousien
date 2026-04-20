@@ -37,11 +37,20 @@ public class TestBattleStarter : MonoBehaviour
     [Tooltip("TimerViewがアタッチされたプレファブをセットしてください")]
     [SerializeField] private CreatorKousien.View.TestTimerView _timerPrefab;
 
+    [Header("テスト用カードアセット (4スロット分)")]
+    [SerializeField] private CardData _cardUp;
+    [SerializeField] private CardData _cardDown;
+    [SerializeField] private CardData _cardLeft;
+    [SerializeField] private CardData _cardRight;
+
     private PlayerSystem _playerSystem;             /// PlayerSystemのインスタンスを保持する変数
     private GameMediator _mediator;                 /// GameMediatorのインスタンスを保持する変数
     private ActionTelegraphSystem telegraphSystem;  /// ActionTelegraphSystemのインスタンスを保持する変数
     private TurnManager _turnManager;               /// TurnManagerのインスタンスを保持する変数
     private GameEventBus _eventBus;
+
+    private CardSystem _cardSystem;
+    private HandState _handState;
 
     private Dictionary<int, EnemyView> _enemyViews = new Dictionary<int, EnemyView>();
 
@@ -70,7 +79,12 @@ public class TestBattleStarter : MonoBehaviour
         telegraphSystem = new ActionTelegraphSystem();
         EnemySystem _enemySystem = new EnemySystem(telegraphSystem);
 
+        // CardSystemの生成
+        _handState = new HandState();
+        _cardSystem = new CardSystem(_handState);
 
+        // インスペクターで設定したカードをランタイムデータに変換してセット
+        SetupInitialHand();
 
         // 2. 敵のシステムセットアップ
         // ------------------------------------------------------------
@@ -262,30 +276,40 @@ public class TestBattleStarter : MonoBehaviour
             StartCoroutine(WaitAnimationAndProceed());
         };
 
-        // 5. UseCaseとDispatcherの紐づけ
-        // ------------------------------------------------------------
+        // 5. TurnManagerの生成
         CommandDispatcher dispatcher = new CommandDispatcher();
+
+        _turnManager = gameObject.AddComponent<TurnManager>();
+        _turnManager.Initialize(dispatcher, _eventBus, _handState);
+
+        // 6. UseCaseとDispatcherの紐づけ
+        // ------------------------------------------------------------
 
         // コマンドディスパッチャーを生成して、移動コマンドを処理できるようにする！
         MoveUseCase moveUseCase = new MoveUseCase(_fieldService, tileEffect, _eventBus);
         AttackUseCase attackUseCase = new AttackUseCase(_battleManager, _fieldService, _playerSystem, _enemySystem, dispatcher, _eventBus);
         EnemyActionUseCase enemyUseCase = new EnemyActionUseCase(_enemySystem, _fieldService, _playerSystem, telegraphSystem, dispatcher, _eventBus);
+        PlayerActionUseCase playerActionUseCase = new PlayerActionUseCase(_cardSystem, _turnManager, _playerSystem, _fieldService);
 
         // UseCaseをDispatcherに登録
         dispatcher.Register<MoveCommand>(moveUseCase.Execute);
         dispatcher.Register<AttackCommand>(attackUseCase.Execute);
         dispatcher.Register<EnemyActionCommand>(enemyUseCase.Execute);
-
-
-        // 6. TurnManagerの生成
-        _turnManager = gameObject.AddComponent<TurnManager>();
-        _turnManager.Initialize(dispatcher, _eventBus);
+        dispatcher.Register<PlayerActionCommand>(playerActionUseCase.Execute);
 
         // 7. Mediatorの生成と統合
         _mediator = new GameMediator();
         _mediator.Initialize(dispatcher, _eventBus, _turnManager);
 
         Debug.Log("テストバトルの配線完了！十字キーで移動コマンドを発行できます！");
+    }
+
+    private void SetupInitialHand()
+    {
+        if (_cardUp) _cardSystem.SetCardToSlot(SlotPosition.Up, new CardRuntimeData(0, _cardUp));
+        if (_cardDown) _cardSystem.SetCardToSlot(SlotPosition.Down, new CardRuntimeData(1, _cardDown));
+        if (_cardLeft) _cardSystem.SetCardToSlot(SlotPosition.Left, new CardRuntimeData(2, _cardLeft));
+        if (_cardRight) _cardSystem.SetCardToSlot(SlotPosition.Right, new CardRuntimeData(3, _cardRight));
     }
 
     private IEnumerator WaitAnimationAndProceed()
@@ -308,13 +332,16 @@ public class TestBattleStarter : MonoBehaviour
 
         // 移動テスト
         if (keyboard.upArrowKey.wasPressedThisFrame)
-            _mediator.SubmitPlayerAction(new ActionRuntimeData(pId, GridDirection.Up));
+            _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Up));
+
         if (keyboard.downArrowKey.wasPressedThisFrame)
-            _mediator.SubmitPlayerAction(new ActionRuntimeData(pId, GridDirection.Down));
+            _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Down));
+
         if (keyboard.leftArrowKey.wasPressedThisFrame)
-            _mediator.SubmitPlayerAction(new ActionRuntimeData(pId, GridDirection.Left));
+            _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Left));
+
         if (keyboard.rightArrowKey.wasPressedThisFrame)
-            _mediator.SubmitPlayerAction(new ActionRuntimeData(pId, GridDirection.Right));
+            _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Right));
 
 
         //  Zキーで攻撃を発動
@@ -325,15 +352,14 @@ public class TestBattleStarter : MonoBehaviour
             List<Vector2Int> targets = new List<Vector2Int> { targetPos };
 
             // 攻撃データを定義
-            AttackProperty attackProp = new AttackProperty
+            ActionProperty attackProp = new ActionProperty
             {
-                Type = AttackPatternType.Normal,
                 DamageMultiplier = 1.5f, // 威力1.5倍！
                 HitCount = 1
             };
 
             // 攻撃コマンドを送る
-            _mediator.SubmitPlayerAction(new ActionRuntimeData(pId, attackProp, targets));
+            _mediator.SubmitPlayerAction(new ActionRuntimeData(pId, ActionType.FastAttack, attackProp, targets));
         }
 
 
@@ -374,7 +400,7 @@ public class TestBattleStarter : MonoBehaviour
 
             foreach (var t in expiredTelegraphs)
             {
-                _mediator.SendCommand(new AttackCommand(t.SourceActorId, t.AttackInfo, t.TargetCells));
+                _mediator.SendCommand(new AttackCommand(t.SourceActorId, t.Property, t.TargetCells));
             }
         }
     }

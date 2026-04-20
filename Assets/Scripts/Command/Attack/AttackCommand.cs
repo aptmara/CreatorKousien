@@ -18,12 +18,12 @@ namespace CreatorKousien.Command
         public int SourceActorId { get; }
 
         /// <summary>攻撃の性質</summary>
-        public AttackProperty Property { get; }
+        public ActionProperty Property { get; }
 
         /// <summary>攻撃が着弾するマスのリスト</summary>
         public List<Vector2Int> TargetCells { get; }
 
-        public AttackCommand(int sourceActorId, AttackProperty property, List<Vector2Int> targetCells)
+        public AttackCommand(int sourceActorId, ActionProperty property, List<Vector2Int> targetCells)
         {
             SourceActorId = sourceActorId;
             Property = property;
