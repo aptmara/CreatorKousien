@@ -94,134 +94,31 @@ jobs:
         with:
           github-token: ${{ secrets.PROJECT_TOKEN }}
           script: |
-            const issue = context.payload.issue;
-            const user = 'aptmara';
-            const projectNumber = 4;
-            const itemIdHint = process.env.ITEM_ID_HINT;
-
-            const projectQuery = `
-              query($login: String!, $number: Int!) {
-                user(login: $login) {
-                  projectV2(number: $number) {
-                    id
-                    fields(first: 50) {
-                      nodes {
-                        ... on ProjectV2Field { id name dataType }
-                        ... on ProjectV2SingleSelectField { id name dataType options { id name } }
-                      }
-                    }
-                  }
-                }
-              }
-            `;
-
-            const itemQuery = `
-              query($login: String!, $number: Int!, $first: Int!, $after: String) {
-                user(login: $login) {
-                  projectV2(number: $number) {
-                    items(first: $first, after: $after) {
-                      nodes {
-                        id
-                        content {
-                          ... on Issue { id number }
-                        }
-                      }
-                      pageInfo {
-                        hasNextPage
-                        endCursor
-                      }
-                    }
-                  }
-                }
-              }
-            `;
-
-            const addMutation = `
-              mutation($projectId: ID!, $contentId: ID!) {
-                addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
-                  item {
-                    id
-                  }
-                }
-              }
-            `;
-
-            async function findItemId() {
-              let after = null;
-
-              while (true) {
-                const response = await github.graphql(itemQuery, {
-                  login: user,
-                  number: projectNumber,
-                  first: 100,
-                  after,
-                });
-
-                const items = response.user.projectV2.items;
-                const hit = items.nodes.find((node) => node.content && node.content.number === issue.number);
-                if (hit) {
-                  return hit.id;
-                }
-
-                if (!items.pageInfo.hasNextPage) {
-                  return null;
-                }
-
-                after = items.pageInfo.endCursor;
-              }
+            const path = require('path');
+            const fs = require('fs');
+            const scriptPath = path.join(process.env.GITHUB_WORKSPACE, '.github/workflows/scripts/resolve-project-item.js');
+            if (!fs.existsSync(scriptPath)) {
+              core.setFailed(`Script not found: ${scriptPath}`);
+              return;
             }
 
-            const projectResponse = await github.graphql(projectQuery, {
-              login: user,
-              number: projectNumber,
+            const resolveProjectItem = require(scriptPath);
+            const result = await resolveProjectItem({
+              core,
+              github,
+              issue: context.payload.issue,
+              itemIdHint: process.env.ITEM_ID_HINT,
+              projectNumber: 4,
+              user: 'aptmara',
             });
-
-            const project = projectResponse.user.projectV2;
-            if (!project) {
-              core.setFailed(`Project ${projectNumber} was not found for user ${user}.`);
+            if (!result) {
               return;
             }
 
-            let itemId = itemIdHint || null;
-            if (!itemId) {
-              itemId = await findItemId();
-            }
-
-            if (!itemId) {
-              try {
-                const addResponse = await github.graphql(addMutation, {
-                  projectId: project.id,
-                  contentId: issue.node_id,
-                });
-                itemId = addResponse.addProjectV2ItemById.item.id;
-              } catch (error) {
-                console.log(`Add item fallback failed: ${error.message}`);
-                itemId = await findItemId();
-              }
-            }
-
-            if (!itemId) {
-              core.setFailed('Project item could not be resolved.');
-              return;
-            }
-
-            const fields = {};
-            const fieldOptions = {};
-            for (const field of project.fields.nodes) {
-              fields[field.name] = field.id;
-              if (field.options) {
-                const options = {};
-                for (const option of field.options) {
-                  options[option.name] = option.id;
-                }
-                fieldOptions[field.name] = options;
-              }
-            }
-
-            core.setOutput('project_id', project.id);
-            core.setOutput('item_id', itemId);
-            core.setOutput('fields', JSON.stringify(fields));
-            core.setOutput('field_options', JSON.stringify(fieldOptions));
+            core.setOutput('project_id', result.projectId);
+            core.setOutput('item_id', result.itemId);
+            core.setOutput('fields', JSON.stringify(result.fields));
+            core.setOutput('field_options', JSON.stringify(result.fieldOptions));
 
       - name: Set Project Fields
         if: steps.check-token.outputs.token_exists == 'true' && steps.project-data.outputs.project_id != ''
