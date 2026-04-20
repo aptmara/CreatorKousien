@@ -126,6 +126,7 @@ namespace CreatorKousien.UseCase
             switch (intent.Type)
             {
                 case ActionType.FastAttack:
+                case ActionType.WideAttack:
                     // UseCase側でクリッピング（場外・障害物判定）を行う
                     var validCells = intent.RawTargetCells.FindAll(p =>
                         !_fieldService.IsOutOfBounds(p.x, p.y) && !_fieldService.IsObstacle(p.x, p.y));
@@ -159,6 +160,9 @@ namespace CreatorKousien.UseCase
                     }
 
                     return new ActionRuntimeData(intent.SourceActorId, dir);
+
+                case ActionType.Guard:
+                    return new ActionRuntimeData(intent.SourceActorId, intent.Type, intent.Property, new List<Vector2Int>());
 
                 default: // Wait
                     return new ActionRuntimeData(intent.SourceActorId, intent.Type, new ActionProperty { DamageMultiplier = 0 }, new List<Vector2Int>());
