@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SO_TestEffect_FastAttack2
   m_EditorClassIdentifier: Assembly-CSharp::CreatorKousien.Data.EffectData
   EffectId: 4
-  EffectName: "\u8FD1\u8DDD\u96E2\u653B\u6483"
+  EffectName: Attack
   Description: 
   EffectIcon: {fileID: 0}
   Type: 1

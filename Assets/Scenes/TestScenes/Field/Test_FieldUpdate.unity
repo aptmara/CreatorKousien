@@ -2716,7 +2716,10 @@ MonoBehaviour:
   _setupData: {fileID: 11400000, guid: 2d76b62dd01db5f4f95ceab8525699fe, type: 2}
   _fieldView: {fileID: 1637151667}
   _timerPrefab: {fileID: 5766762249608327027, guid: 2611125c2e7c57140836b7571cdb3ac6, type: 3}
-  _uiManagerPrefab: {fileID: 8011523601526239762, guid: fe3c5a506c8771c4da070800e1f21bcc, type: 3}
+  _cardUp: {fileID: 0}
+  _cardDown: {fileID: 0}
+  _cardLeft: {fileID: 0}
+  _cardRight: {fileID: 0}
 --- !u!1 &1452153482
 GameObject:
   m_ObjectHideFlags: 0

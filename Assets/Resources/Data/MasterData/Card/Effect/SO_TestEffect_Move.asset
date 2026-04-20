@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SO_TestEffect_Move
   m_EditorClassIdentifier: Assembly-CSharp::CreatorKousien.Data.EffectData
   EffectId: 1
-  EffectName: "\u79FB\u52D5"
+  EffectName: Move
   Description: 
   EffectIcon: {fileID: 0}
   Type: 0

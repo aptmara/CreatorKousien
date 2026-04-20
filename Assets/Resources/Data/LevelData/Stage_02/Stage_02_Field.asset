@@ -16,10 +16,10 @@ MonoBehaviour:
   _height: 3
   _borderX: 3
   CellSize: 1.5
-  BorderGap: 1.25
+  BorderGap: 1.5
   BorderPrefab: {fileID: 6644790013973758042, guid: f6b436d072149b84ca00f28288876136, type: 3}
   ObstaclePositions: []
-  _playerStartPosition: {x: 0, y: 0}
+  _playerStartPosition: {x: 1, y: 1}
   PlayerDefaultTile: {fileID: 11400000, guid: 4f1d1c0c71057174f9279a40a873120f, type: 2}
   EnemyDefaultTile: {fileID: 11400000, guid: 55b9258eedc583e4fbe6afd686c8bd44, type: 2}
   PlayerSpecialTileRules: []

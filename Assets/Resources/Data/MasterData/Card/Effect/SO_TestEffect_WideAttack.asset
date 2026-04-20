@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SO_TestEffect_WideAttack
   m_EditorClassIdentifier: Assembly-CSharp::CreatorKousien.Data.EffectData
   EffectId: 2
-  EffectName: "\u7BC4\u56F2\u653B\u6483"
+  EffectName: Wide Attack
   Description: 
   EffectIcon: {fileID: 0}
   Type: 2

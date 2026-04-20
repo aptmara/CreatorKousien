@@ -235,6 +235,7 @@ public class GameManager : MonoBehaviour
         // 2. UI生成
         // ------------------------------------------------------------
         InitializeUI();
+        UpdateCardUI(); // カードUIを初期状態に更新
 
 
         // 3. フィールド生成
@@ -305,50 +306,31 @@ public class GameManager : MonoBehaviour
     {
         if (_mediator == null || _player == null) return;
 
-        var keyboard = UnityEngine.InputSystem.Keyboard.current;
-        if (keyboard == null) return;
+        var kb = UnityEngine.InputSystem.Keyboard.current;
+        var pad = UnityEngine.InputSystem.Gamepad.current;
 
-        if (keyboard.upArrowKey.wasPressedThisFrame)
-            _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Up));
+        // 複合入力チェック！ (WASD or 十字キー or パッドボタン/十字)
+        bool pressUp = (kb != null && (kb.upArrowKey.wasPressedThisFrame || kb.wKey.wasPressedThisFrame)) ||
+                       (pad != null && (pad.dpad.up.wasPressedThisFrame || pad.buttonNorth.wasPressedThisFrame));
 
-        if (keyboard.downArrowKey.wasPressedThisFrame)
-            _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Down));
+        bool pressDown = (kb != null && (kb.downArrowKey.wasPressedThisFrame || kb.sKey.wasPressedThisFrame)) ||
+                         (pad != null && (pad.dpad.down.wasPressedThisFrame || pad.buttonSouth.wasPressedThisFrame));
 
-        if (keyboard.leftArrowKey.wasPressedThisFrame)
-            _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Left));
+        bool pressLeft = (kb != null && (kb.leftArrowKey.wasPressedThisFrame || kb.aKey.wasPressedThisFrame)) ||
+                         (pad != null && (pad.dpad.left.wasPressedThisFrame || pad.buttonWest.wasPressedThisFrame));
 
-        if (keyboard.rightArrowKey.wasPressedThisFrame)
-            _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Right));
+        bool pressRight = (kb != null && (kb.rightArrowKey.wasPressedThisFrame || kb.dKey.wasPressedThisFrame)) ||
+                          (pad != null && (pad.dpad.right.wasPressedThisFrame || pad.buttonEast.wasPressedThisFrame));
 
+        // カード入力とUI更新
+        bool cardUsed = false;
+        if (pressUp) { _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Up)); cardUsed = true; }
+        if (pressDown) { _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Down)); cardUsed = true; }
+        if (pressLeft) { _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Left)); cardUsed = true; }
+        if (pressRight) { _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Right)); cardUsed = true; }
 
-        // ダメージテスト
-        if (keyboard.xKey.wasPressedThisFrame)
-        {
-            int damage = 30;
-            _player.ChangeHp(-damage);
-            _eventBus.PublishDamageTaken(PlayerID, damage);
-
-            if (_player.RuntimeData.CurrentHp <= 0)
-            {
-                _eventBus.PublishActorDeath(PlayerID);
-            }
-        }
-
-        if (keyboard.zKey.wasPressedThisFrame)
-        {
-            Vector2Int targetPos = _player.RuntimeData.Position + new Vector2Int(1, 0);
-            var targets = new List<Vector2Int> { targetPos };
-
-            ActionProperty attackProp = new ActionProperty
-            {
-                DamageMultiplier = 1.5f,
-                HitCount = 1
-            };
-
-            _mediator.SubmitPlayerAction(
-                new ActionRuntimeData(PlayerID, ActionType.FastAttack, attackProp, targets)
-            );
-        }
+        // カードを使ったら、即座にUIを更新して表裏の絵を切り替える！
+        if (cardUsed) UpdateCardUI();
     }
 
     void UpdateResultScene()
@@ -371,6 +353,32 @@ public class GameManager : MonoBehaviour
         {
             playerHpGauge.Initialize(_eventBus, PlayerID, _setupData.PlayerData.MaxHp);
         }
+    }
+
+
+
+    private void UpdateCardUI()
+    {
+        if (_uiManager == null || _handState == null) return;
+
+        var cardSlotView = _uiManager.GetView<CardSlotView>(ViewType.CardSlot);
+        if (cardSlotView == null) return;
+
+        List<UICardData> uiCardDataList = new List<UICardData>();
+        SlotPosition[] slots = { SlotPosition.Up, SlotPosition.Down, SlotPosition.Left, SlotPosition.Right };
+
+        foreach (var slot in slots)
+        {
+            var cardRuntime = _handState.GetCard(slot);
+            if (cardRuntime != null)
+            {
+                var currentEffect = cardRuntime.GetCurrentEffect();
+                var uiData = UICardConverter.ConvertToUICardData(cardRuntime.BaseData, currentEffect, cardRuntime.InstanceId.ToString());
+                uiCardDataList.Add(uiData);
+            }
+            else uiCardDataList.Add(null);
+        }
+        cardSlotView.SetCardDataList(uiCardDataList);
     }
 
 
@@ -500,12 +508,6 @@ public class GameManager : MonoBehaviour
             _fieldView.ShowAttackAreaWithAutoOff(targetCells, 0.3f);
         };
 
-        // Telegraph表示
-        _eventBus.OnTelegraphRequested += (targetCells, isWarning, sourceActorId) =>
-        {
-            _fieldView.ShowTelegraph(targetCells, isWarning);
-        };
-
         // 攻撃ヒット
         _eventBus.OnAttackHit += (targetActorId) =>
         {
@@ -516,6 +518,24 @@ public class GameManager : MonoBehaviour
         _eventBus.OnActionLogicCompleted += (actorId) =>
         {
             StartCoroutine(WaitAnimationAndProceed());
+        };
+
+        // 戻って来た通知を受け取って画面を動かす
+        _eventBus.OnTelegraphRequested += (targetCells, isWarning, stepOrder) =>
+        {
+            _fieldView.ShowTelegraph(targetCells, isWarning, stepOrder);
+        };
+
+        // 移動予告の通知を受け取って画面を動かす
+        _eventBus.OnMoveTelegraphRequested += (targetCell, isWarning, stepOrder) =>
+        {
+            _fieldView.ShowMoveTelegraph(targetCell, isWarning, stepOrder);
+        };
+
+        // 予告のクリアの通知を受け取って画面を動かす
+        _eventBus.OnClearAllTelegraphsRequested += () =>
+        {
+            _fieldView.ClearAllTelegraph();
         };
     }
 

@@ -1,4 +1,3 @@
-using UnityEditor.ShaderGraph;
 using UnityEngine;
 
 public static class UIUtility
@@ -7,7 +6,6 @@ public static class UIUtility
     {
         int minutes = Mathf.FloorToInt(timeInSeconds / 60f);
         int seconds = Mathf.FloorToInt(timeInSeconds % 60f);
-
         return $"{minutes:00}:{seconds:00}";
     }
 
