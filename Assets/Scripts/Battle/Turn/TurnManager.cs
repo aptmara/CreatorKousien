@@ -32,13 +32,13 @@ namespace CreatorKousien.Battle
         /// バトル開始時の初期化処理
         /// </summary>
         /// <param name="dispatcher"></param>
-        public void Initialize(CommandDispatcher dispatcher, GameEventBus eventBus)
+        public void Initialize(CommandDispatcher dispatcher, GameEventBus eventBus, HandState handState)
         {
             _dispatcher = dispatcher;
             _eventBus = eventBus;
             _phaseManager = new PhaseManager();
 
-            _commandPhase = new CommandPhaseState(this);
+            _commandPhase = new CommandPhaseState(this, handState);
             _actionPhase = new ActionPhaseState(this);
 
             // ステートを登録
@@ -90,6 +90,7 @@ namespace CreatorKousien.Battle
             {
                 // AttackUseCaseへ
                 case ActionType.FastAttack:
+                case ActionType.WideAttack:
                     _dispatcher.Dispatch(new Command.AttackCommand(
                         nextAction.ActorId,
                         nextAction.Property,
@@ -102,6 +103,12 @@ namespace CreatorKousien.Battle
                         nextAction.ActorId,
                         nextAction.MoveDirection,
                         1));    // 1マス移動
+                    break;
+
+                case ActionType.Guard:
+                    // TODO: 将来的にGuardCommandを発行
+                    Debug.Log($"[TurnManager] ActorID:{nextAction.ActorId} は防御(Guard)の構えをとった。");
+                    _eventBus.PublishActionLogicCompleted(nextAction.ActorId);
                     break;
 
                 default:

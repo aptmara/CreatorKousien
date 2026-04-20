@@ -222,7 +222,7 @@ public class GameManager : MonoBehaviour
 
         // TurnManagerの初期化
         _turnManager = gameObject.GetComponent<TurnManager>();
-        _turnManager.Initialize(dispatcher, _eventBus);
+        //_turnManager.Initialize(dispatcher, _eventBus);
 
         // Mediatorの初期化
         _mediator = new GameMediator();
