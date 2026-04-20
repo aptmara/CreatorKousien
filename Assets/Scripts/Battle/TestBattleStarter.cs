@@ -17,6 +17,7 @@ using CreatorKousien.Enemy;
 using CreatorKousien.Field;
 using CreatorKousien.Player;
 using CreatorKousien.UseCase;
+using CreatorKousien.View;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -118,6 +119,10 @@ public class TestBattleStarter : MonoBehaviour
         // 4 イベントの配線
         // ------------------------------------------------------------
         _eventBus = new GameEventBus();
+
+        GameObject feedbackObj = new GameObject("ActionFeedbackSystem");
+        var feedbackCoordinator = feedbackObj.AddComponent<CreatorKousien.View.Feedback.ActionFeedbackCoordinator>();
+        feedbackCoordinator.Initialize(_eventBus);
 
         // プレファブからタイマーを生成
         if (_timerPrefab != null)
