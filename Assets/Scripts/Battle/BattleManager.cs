@@ -7,6 +7,7 @@
 // ================================================================================
 
 using UnityEngine;
+using CreatorKousien.Data;
 
 namespace CreatorKousien.Battle
 {
@@ -18,7 +19,7 @@ namespace CreatorKousien.Battle
         /// <param name="attackerBaseAttack"></param>
         /// <param name="property"></param>
         /// <returns></returns>
-        public int CalculateDamage(int attackerBaseAttack, CreatorKousien.Data.AttackProperty property)
+        public int CalculateDamage(int attackerBaseAttack, ActionProperty property)
         {
             int finalDamage = UnityEngine.Mathf.RoundToInt(attackerBaseAttack * property.DamageMultiplier);
             return finalDamage;

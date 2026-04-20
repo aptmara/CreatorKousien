@@ -48,9 +48,9 @@ namespace CreatorKousien.EditorUI
             SerializedProperty weightProp = property.FindPropertyRelative("Weight");
 
             // 構造体の中身はドット繋ぎ
-            SerializedProperty attackTypeProp = property.FindPropertyRelative("AttackInfo.Type");
-            SerializedProperty damageProp = property.FindPropertyRelative("AttackInfo.DamageMultiplier");
-            SerializedProperty hitCountProp = property.FindPropertyRelative("AttackInfo.HitCount");
+            SerializedProperty typeProp = property.FindPropertyRelative("Type");
+            SerializedProperty damageProp = property.FindPropertyRelative("Property.DamageMultiplier");
+            SerializedProperty hitCountProp = property.FindPropertyRelative("Property.HitCount");
 
             SerializedProperty originProp = property.FindPropertyRelative("OriginRule");
             SerializedProperty targetRuleProp = property.FindPropertyRelative("TargetRule");
@@ -83,7 +83,7 @@ namespace CreatorKousien.EditorUI
             EditorGUI.LabelField(currentRect, "▼ 攻撃内容", EditorStyles.boldLabel);
             AdvanceRect(ref currentRect);
 
-            if (attackTypeProp != null) EditorGUI.PropertyField(currentRect, attackTypeProp, new GUIContent("攻撃種別"));
+            if (typeProp != null) EditorGUI.PropertyField(currentRect, typeProp, new GUIContent("攻撃種別"));
             AdvanceRect(ref currentRect);
 
             if (damageProp != null) EditorGUI.PropertyField(currentRect, damageProp, new GUIContent("威力倍率"));

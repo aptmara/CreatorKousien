@@ -19,21 +19,21 @@ namespace CreatorKousien.Enemy
     public class EnemyIntent
     {
         public int SourceActorId;
-        public ActionCategory Category;
-        public AttackProperty AttackInfo;
+        public ActionType Type;
+        public ActionProperty Property;
         public List<Vector2Int> RawTargetCells;
         public Vector2Int MoveDirection;
         public int ChargeTurns;
         public bool IsInterruptible;
 
         // 静的ファクトリ：攻撃
-        public static EnemyIntent CreateAttack(int id, AttackProperty info, List<Vector2Int> cells, int charge, bool interrupt)
+        public static EnemyIntent CreateAttack(int id, ActionType type, ActionProperty property, List<Vector2Int> cells, int charge, bool interrupt)
         {
             return new EnemyIntent
             {
                 SourceActorId = id,
-                Category = ActionCategory.Attack,
-                AttackInfo = info,
+                Type = type,
+                Property = property,
                 RawTargetCells = cells,
                 ChargeTurns = charge,
                 IsInterruptible = interrupt
@@ -46,7 +46,7 @@ namespace CreatorKousien.Enemy
             return new EnemyIntent
             {
                 SourceActorId = id,
-                Category = ActionCategory.Move,
+                Type = ActionType.Move,
                 MoveDirection = dir
             };
         }
@@ -57,7 +57,7 @@ namespace CreatorKousien.Enemy
             return new EnemyIntent
             {
                 SourceActorId = id,
-                Category = ActionCategory.Special // 待機は特殊カテゴリとする
+                Type = ActionType.Wait
             };
         }
     }

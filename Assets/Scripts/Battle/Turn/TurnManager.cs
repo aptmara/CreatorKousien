@@ -86,18 +86,18 @@ namespace CreatorKousien.Battle
             var nextAction = _actionQueue.Dequeue();
 
             // チケットのカテゴリに応じて、適切なCommandとしてDispatcherに投げる
-            switch (nextAction.Category)
+            switch (nextAction.Type)
             {
                 // AttackUseCaseへ
-                case ActionCategory.Attack:
+                case ActionType.FastAttack:
                     _dispatcher.Dispatch(new Command.AttackCommand(
                         nextAction.ActorId,
-                        nextAction.AttackInfo,
+                        nextAction.Property,
                         nextAction.TargetCells));
                     break;
 
                 // MoveUseCaseへ
-                case ActionCategory.Move:
+                case ActionType.Move:
                     _dispatcher.Dispatch(new Command.MoveCommand(
                         nextAction.ActorId,
                         nextAction.MoveDirection,
