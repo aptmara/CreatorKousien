@@ -15,6 +15,27 @@ namespace CreatorKousien.Battle
 {
     public class TurnManager : MonoBehaviour
     {
+        [Header("コマンドフェーズの設定")]
+        [SerializeField] private int _maxInputCount = 3;        // プレイヤーがコマンドフェーズで入力できる最大アクション数
+        [SerializeField] private float _commandTimeLimit = 3f;  // コマンドフェーズの時間制限（秒）
+
+        /// <summary>
+        /// 最大入力数
+        /// </summary>
+        public int MaxInputCount => _maxInputCount;
+
+        /// <summary>
+        /// コマンドフェーズの時間制限
+        /// </summary>
+        public float CommandTimeLimit => _commandTimeLimit;
+
+
+        /// <summary>
+        /// プレイヤーがカードを使ったことを通知するイベント
+        /// </summary>
+        public event System.Action OnPlayerActionSubmitted;
+
+
         private PhaseManager _phaseManager;
         private CommandDispatcher _dispatcher;
         private GameEventBus _eventBus;
@@ -142,6 +163,9 @@ namespace CreatorKousien.Battle
             if (_phaseManager.CurrentPhaseType == PhaseType.Command)
             {
                 _commandPhase.AddPlayerAction(action);
+
+                // プレイヤーのアクションが提出されたことを通知
+                OnPlayerActionSubmitted?.Invoke();
             }
         }
 

@@ -276,6 +276,8 @@ public class GameManager : MonoBehaviour
         // ------------------------------------------------------------
         _turnManager.Initialize(_dispatcher, _eventBus, _handState);
 
+        _turnManager.OnPlayerActionSubmitted += UpdateCardUI; // プレイヤーが行動を提出したらカードUIを更新する
+
 
         // 10. Mediator初期化
         // ------------------------------------------------------------
@@ -304,33 +306,6 @@ public class GameManager : MonoBehaviour
 
     void UpdateGameScene()
     {
-        if (_mediator == null || _player == null) return;
-
-        var kb = UnityEngine.InputSystem.Keyboard.current;
-        var pad = UnityEngine.InputSystem.Gamepad.current;
-
-        // 複合入力チェック！ (WASD or 十字キー or パッドボタン/十字)
-        bool pressUp = (kb != null && (kb.upArrowKey.wasPressedThisFrame || kb.wKey.wasPressedThisFrame)) ||
-                       (pad != null && (pad.dpad.up.wasPressedThisFrame || pad.buttonNorth.wasPressedThisFrame));
-
-        bool pressDown = (kb != null && (kb.downArrowKey.wasPressedThisFrame || kb.sKey.wasPressedThisFrame)) ||
-                         (pad != null && (pad.dpad.down.wasPressedThisFrame || pad.buttonSouth.wasPressedThisFrame));
-
-        bool pressLeft = (kb != null && (kb.leftArrowKey.wasPressedThisFrame || kb.aKey.wasPressedThisFrame)) ||
-                         (pad != null && (pad.dpad.left.wasPressedThisFrame || pad.buttonWest.wasPressedThisFrame));
-
-        bool pressRight = (kb != null && (kb.rightArrowKey.wasPressedThisFrame || kb.dKey.wasPressedThisFrame)) ||
-                          (pad != null && (pad.dpad.right.wasPressedThisFrame || pad.buttonEast.wasPressedThisFrame));
-
-        // カード入力とUI更新
-        bool cardUsed = false;
-        if (pressUp) { _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Up)); cardUsed = true; }
-        if (pressDown) { _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Down)); cardUsed = true; }
-        if (pressLeft) { _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Left)); cardUsed = true; }
-        if (pressRight) { _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Right)); cardUsed = true; }
-
-        // カードを使ったら、即座にUIを更新して表裏の絵を切り替える！
-        if (cardUsed) UpdateCardUI();
     }
 
     void UpdateResultScene()
