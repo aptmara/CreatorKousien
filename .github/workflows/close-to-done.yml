@@ -1,0 +1,160 @@
+name: Auto Update Status to Done
+
+on:
+  issues:
+    types:
+      - closed
+
+jobs:
+  update-status:
+    name: Update project status
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check token
+        id: check-token
+        run: |
+          if [ -n "${{ secrets.PROJECT_TOKEN }}" ]; then
+            echo "token_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "token_exists=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::PROJECT_TOKEN is not set. Skipping project automation."
+          fi
+
+      - name: Checkout repository
+        if: steps.check-token.outputs.token_exists == 'true'
+        uses: actions/checkout@v4
+
+      - name: Get Project Data
+        if: steps.check-token.outputs.token_exists == 'true'
+        uses: actions/github-script@v7
+        id: project-data
+        with:
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+          script: |
+            const issue = context.payload.issue;
+            const user = 'aptmara';
+            const projectNumber = 4;
+
+            const projectQuery = `
+              query($login: String!, $number: Int!) {
+                user(login: $login) {
+                  projectV2(number: $number) {
+                    id
+                    fields(first: 50) {
+                      nodes {
+                        ... on ProjectV2Field { id name dataType }
+                        ... on ProjectV2SingleSelectField { id name dataType options { id name } }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const itemQuery = `
+              query($login: String!, $number: Int!, $first: Int!, $after: String) {
+                user(login: $login) {
+                  projectV2(number: $number) {
+                    items(first: $first, after: $after) {
+                      nodes {
+                        id
+                        content {
+                          ... on Issue { id number }
+                        }
+                      }
+                      pageInfo {
+                        hasNextPage
+                        endCursor
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            async function findItemId() {
+              let after = null;
+
+              while (true) {
+                const response = await github.graphql(itemQuery, {
+                  login: user,
+                  number: projectNumber,
+                  first: 100,
+                  after,
+                });
+
+                const items = response.user.projectV2.items;
+                const hit = items.nodes.find((node) => node.content && node.content.number === issue.number);
+                if (hit) {
+                  return hit.id;
+                }
+
+                if (!items.pageInfo.hasNextPage) {
+                  return null;
+                }
+
+                after = items.pageInfo.endCursor;
+              }
+            }
+
+            const projectResponse = await github.graphql(projectQuery, {
+              login: user,
+              number: projectNumber,
+            });
+
+            const project = projectResponse.user.projectV2;
+            if (!project) {
+              core.setFailed(`Project ${projectNumber} was not found for user ${user}.`);
+              return;
+            }
+
+            const fields = {};
+            const fieldOptions = {};
+            for (const field of project.fields.nodes) {
+              fields[field.name] = field.id;
+              if (field.options) {
+                const options = {};
+                for (const option of field.options) {
+                  options[option.name] = option.id;
+                }
+                fieldOptions[field.name] = options;
+              }
+            }
+
+            const itemId = await findItemId();
+            if (!itemId) {
+              console.log('Project item for this issue was not found. Skip status update.');
+              core.setOutput('project_id', project.id);
+              core.setOutput('item_id', '');
+              core.setOutput('fields', JSON.stringify(fields));
+              core.setOutput('field_options', JSON.stringify(fieldOptions));
+              return;
+            }
+
+            core.setOutput('project_id', project.id);
+            core.setOutput('item_id', itemId);
+            core.setOutput('fields', JSON.stringify(fields));
+            core.setOutput('field_options', JSON.stringify(fieldOptions));
+
+      - name: Set Status to Done
+        if: steps.check-token.outputs.token_exists == 'true' && steps.project-data.outputs.project_id != '' && steps.project-data.outputs.item_id != ''
+        uses: actions/github-script@v7
+        env:
+          PROJECT_ID: ${{ steps.project-data.outputs.project_id }}
+          ITEM_ID: ${{ steps.project-data.outputs.item_id }}
+          FIELDS: ${{ steps.project-data.outputs.fields }}
+          FIELD_OPTIONS: ${{ steps.project-data.outputs.field_options }}
+          STATUS: Done
+        with:
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+          script: |
+            const path = require('path');
+            const fs = require('fs');
+            const scriptPath = path.join(process.env.GITHUB_WORKSPACE, '.github/workflows/scripts/set-project-fields.js');
+            if (!fs.existsSync(scriptPath)) {
+              core.setFailed(`Script not found: ${scriptPath}`);
+              return;
+            }
+
+            const run = require(scriptPath);
+            await run({ core, github, process });

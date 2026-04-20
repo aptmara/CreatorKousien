@@ -1,0 +1,250 @@
+name: Auto Add Issue to Project
+
+on:
+  issues:
+    types:
+      - opened
+      - edited
+      - reopened
+
+jobs:
+  add-to-project:
+    name: Add issue to project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check token
+        id: check-token
+        run: |
+          if [ -n "${{ secrets.PROJECT_TOKEN }}" ]; then
+            echo "token_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "token_exists=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::PROJECT_TOKEN is not set. Skipping project automation."
+          fi
+
+      - name: Checkout repository
+        if: steps.check-token.outputs.token_exists == 'true'
+        uses: actions/checkout@v4
+
+      - name: Add to Project
+        if: steps.check-token.outputs.token_exists == 'true' && github.event.action != 'edited'
+        id: add-project
+        uses: actions/add-to-project@v0.5.0
+        with:
+          project-url: https://github.com/users/aptmara/projects/4
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+
+      - name: Extract Issue Fields
+        if: steps.check-token.outputs.token_exists == 'true'
+        id: extract
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const raw = context.payload.issue.body || '';
+            const lines = raw.replace(/\r\n/g, '\n').split('\n');
+
+            const aliases = {
+              priority: ['優先度', 'priority'],
+              startDate: ['start date', '開始日', 'start_date'],
+              targetDate: ['target date', '期日', 'end date', 'due date', 'target_date'],
+            };
+
+            function normalizeLine(value) {
+              return (value || '').trim().toLowerCase().replace(/^#+\s*/, '');
+            }
+
+            function pickValue(keys) {
+              for (let i = 0; i < lines.length; i += 1) {
+                const line = normalizeLine(lines[i]);
+                const matched = keys.some((key) => line.startsWith(key));
+                if (!matched) {
+                  continue;
+                }
+
+                let cursor = i + 1;
+                while (cursor < lines.length && lines[cursor].trim().length === 0) {
+                  cursor += 1;
+                }
+
+                if (cursor < lines.length) {
+                  return lines[cursor].trim();
+                }
+
+                return '';
+              }
+
+              return '';
+            }
+
+            const priority = pickValue(aliases.priority);
+            const startDate = pickValue(aliases.startDate);
+            const targetDate = pickValue(aliases.targetDate);
+            const status = ['opened', 'reopened'].includes(context.payload.action) ? 'Ready' : '';
+            core.setOutput('priority', priority);
+            core.setOutput('start_date', startDate);
+            core.setOutput('target_date', targetDate);
+            core.setOutput('status', status);
+
+      - name: Get Project Data
+        if: steps.check-token.outputs.token_exists == 'true'
+        uses: actions/github-script@v7
+        id: project-data
+        env:
+          ITEM_ID_HINT: ${{ steps.add-project.outputs.itemId }}
+        with:
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+          script: |
+            const issue = context.payload.issue;
+            const user = 'aptmara';
+            const projectNumber = 4;
+            const itemIdHint = process.env.ITEM_ID_HINT;
+
+            const projectQuery = `
+              query($login: String!, $number: Int!) {
+                user(login: $login) {
+                  projectV2(number: $number) {
+                    id
+                    fields(first: 50) {
+                      nodes {
+                        ... on ProjectV2Field { id name dataType }
+                        ... on ProjectV2SingleSelectField { id name dataType options { id name } }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const itemQuery = `
+              query($login: String!, $number: Int!, $first: Int!, $after: String) {
+                user(login: $login) {
+                  projectV2(number: $number) {
+                    items(first: $first, after: $after) {
+                      nodes {
+                        id
+                        content {
+                          ... on Issue { id number }
+                        }
+                      }
+                      pageInfo {
+                        hasNextPage
+                        endCursor
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const addMutation = `
+              mutation($projectId: ID!, $contentId: ID!) {
+                addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
+                  item {
+                    id
+                  }
+                }
+              }
+            `;
+
+            async function findItemId() {
+              let after = null;
+
+              while (true) {
+                const response = await github.graphql(itemQuery, {
+                  login: user,
+                  number: projectNumber,
+                  first: 100,
+                  after,
+                });
+
+                const items = response.user.projectV2.items;
+                const hit = items.nodes.find((node) => node.content && node.content.number === issue.number);
+                if (hit) {
+                  return hit.id;
+                }
+
+                if (!items.pageInfo.hasNextPage) {
+                  return null;
+                }
+
+                after = items.pageInfo.endCursor;
+              }
+            }
+
+            const projectResponse = await github.graphql(projectQuery, {
+              login: user,
+              number: projectNumber,
+            });
+
+            const project = projectResponse.user.projectV2;
+            if (!project) {
+              core.setFailed(`Project ${projectNumber} was not found for user ${user}.`);
+              return;
+            }
+
+            let itemId = itemIdHint || null;
+            if (!itemId) {
+              itemId = await findItemId();
+            }
+
+            if (!itemId) {
+              try {
+                const addResponse = await github.graphql(addMutation, {
+                  projectId: project.id,
+                  contentId: issue.node_id,
+                });
+                itemId = addResponse.addProjectV2ItemById.item.id;
+              } catch (error) {
+                console.log(`Add item fallback failed: ${error.message}`);
+                itemId = await findItemId();
+              }
+            }
+
+            if (!itemId) {
+              core.setFailed('Project item could not be resolved.');
+              return;
+            }
+
+            const fields = {};
+            const fieldOptions = {};
+            for (const field of project.fields.nodes) {
+              fields[field.name] = field.id;
+              if (field.options) {
+                const options = {};
+                for (const option of field.options) {
+                  options[option.name] = option.id;
+                }
+                fieldOptions[field.name] = options;
+              }
+            }
+
+            core.setOutput('project_id', project.id);
+            core.setOutput('item_id', itemId);
+            core.setOutput('fields', JSON.stringify(fields));
+            core.setOutput('field_options', JSON.stringify(fieldOptions));
+
+      - name: Set Project Fields
+        if: steps.check-token.outputs.token_exists == 'true' && steps.project-data.outputs.project_id != ''
+        uses: actions/github-script@v7
+        env:
+          PROJECT_ID: ${{ steps.project-data.outputs.project_id }}
+          ITEM_ID: ${{ steps.project-data.outputs.item_id }}
+          FIELDS: ${{ steps.project-data.outputs.fields }}
+          FIELD_OPTIONS: ${{ steps.project-data.outputs.field_options }}
+          PRIORITY: ${{ steps.extract.outputs.priority }}
+          START_DATE: ${{ steps.extract.outputs.start_date }}
+          TARGET_DATE: ${{ steps.extract.outputs.target_date }}
+          STATUS: ${{ steps.extract.outputs.status }}
+        with:
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+          script: |
+            const path = require('path');
+            const fs = require('fs');
+            const scriptPath = path.join(process.env.GITHUB_WORKSPACE, '.github/workflows/scripts/set-project-fields.js');
+            if (!fs.existsSync(scriptPath)) {
+              core.setFailed(`Script not found: ${scriptPath}`);
+              return;
+            }
+
+            const run = require(scriptPath);
+            await run({ core, github, process });

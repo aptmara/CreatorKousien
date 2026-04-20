@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "\U0001F4D8 開発ドキュメント"
+    url: https://github.com/aptmara/CreatorKousien/tree/master/docs
+    about: 設計資料や命名規約を確認してから Issue を作成してください。
