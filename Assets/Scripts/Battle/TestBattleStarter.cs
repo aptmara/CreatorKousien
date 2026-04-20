@@ -320,15 +320,14 @@ public class TestBattleStarter : MonoBehaviour
             List<Vector2Int> targets = new List<Vector2Int> { targetPos };
 
             // 攻撃データを定義
-            AttackProperty attackProp = new AttackProperty
+            ActionProperty attackProp = new ActionProperty
             {
-                Type = AttackPatternType.Normal,
                 DamageMultiplier = 1.5f, // 威力1.5倍！
                 HitCount = 1
             };
 
             // 攻撃コマンドを送る
-            _mediator.SubmitPlayerAction(new ActionRuntimeData(pId, attackProp, targets));
+            _mediator.SubmitPlayerAction(new ActionRuntimeData(pId, ActionType.FastAttack, attackProp, targets));
         }
 
 
@@ -369,7 +368,7 @@ public class TestBattleStarter : MonoBehaviour
 
             foreach (var t in expiredTelegraphs)
             {
-                _mediator.SendCommand(new AttackCommand(t.SourceActorId, t.AttackInfo, t.TargetCells));
+                _mediator.SendCommand(new AttackCommand(t.SourceActorId, t.Property, t.TargetCells));
             }
         }
     }

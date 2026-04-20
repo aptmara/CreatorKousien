@@ -1,3 +1,4 @@
+using CreatorKousien.Battle;
 using CreatorKousien.Command;
 using CreatorKousien.Effect;
 using System.Collections.Generic;
@@ -41,11 +42,10 @@ public class EffectCommandFactory
         {
             case EffectValueType.Attack:
                 {
-                    CreatorKousien.Data.AttackProperty attackProperty = new CreatorKousien.Data.AttackProperty();
-                    attackProperty.Type = CreatorKousien.Data.AttackPatternType.Normal;
-                    attackProperty.DamageMultiplier = effectValue.Value;
-                    attackProperty.HitCount = 1;
-                    command = new AttackCommand(userActorID, attackProperty, targetCells);
+                    CreatorKousien.Data.ActionProperty Property = new CreatorKousien.Data.ActionProperty();
+                    Property.DamageMultiplier = effectValue.Value;
+                    Property.HitCount = 1;
+                    command = new AttackCommand(userActorID, Property, targetCells);
                 }
                 break;
 

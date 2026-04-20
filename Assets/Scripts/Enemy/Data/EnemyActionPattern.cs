@@ -9,6 +9,7 @@
 //                CustomTargetShapeを3x3のグリッドUIで操作できるように拡張する予定です。
 // ================================================================================
 
+using CreatorKousien.Battle;
 using UnityEngine;
 
 namespace CreatorKousien.Data
@@ -68,8 +69,11 @@ namespace CreatorKousien.Data
         [Min(0f)]
         public float Weight = 1.0f;
 
+        [Tooltip("アクションの種類")]
+        public ActionType Type = ActionType.FastAttack;
+
         [Tooltip("攻撃の性質(倍率やヒット数)")]
-        public AttackProperty AttackInfo;
+        public ActionProperty Property;
 
         [Tooltip("起点を中心に、どのように攻撃範囲を展開するか")]
         public TargetOrigin OriginRule;

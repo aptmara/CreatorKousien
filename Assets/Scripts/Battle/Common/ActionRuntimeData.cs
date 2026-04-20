@@ -19,10 +19,10 @@ namespace CreatorKousien.Battle
     public class ActionRuntimeData
     {
         public int ActorId { get; }
-        public ActionCategory Category { get; }
+        public ActionType Type { get; }
 
         // --- 攻撃用データ ---
-        public AttackProperty AttackInfo { get; }
+        public ActionProperty Property { get; }
         public List<Vector2Int> TargetCells { get; }
 
         // --- 移動用データ ---
@@ -34,11 +34,11 @@ namespace CreatorKousien.Battle
         /// <param name="actorId"></param>
         /// <param name="attackInfo"></param>
         /// <param name="targetCells"></param>
-        public ActionRuntimeData(int actorId, AttackProperty attackInfo, List<Vector2Int> targetCells)
+        public ActionRuntimeData(int actorId, ActionType type, ActionProperty property, List<Vector2Int> targetCells)
         {
             ActorId = actorId;
-            Category = ActionCategory.Attack;
-            AttackInfo = attackInfo;
+            Type = type;
+            Property = property;
             TargetCells = targetCells;
         }
 
@@ -50,8 +50,14 @@ namespace CreatorKousien.Battle
         public ActionRuntimeData(int actorId, GridDirection direction)
         {
             ActorId = actorId;
-            Category = ActionCategory.Move;
+            Type = ActionType.Move;
             MoveDirection = direction;
+        }
+
+        public ActionRuntimeData(int actorId)
+        {
+            ActorId = actorId;
+            Type = ActionType.Wait;
         }
     }
 }

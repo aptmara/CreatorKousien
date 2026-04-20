@@ -106,7 +106,7 @@ namespace CreatorKousien.Battle
             if (_playerSelectedActions.Count >= 3) return;
 
             _playerSelectedActions.Add(action);
-            Debug.Log($"[Command] プレイヤーのアクションを予約: {action.Category} ({_playerSelectedActions.Count}/3)");
+            Debug.Log($"[Command] プレイヤーのアクションを予約: {action.Type} ({_playerSelectedActions.Count}/3)");
 
             // 3手選んだら自動で実行フェーズへ
             if (_playerSelectedActions.Count == 3)
@@ -131,7 +131,8 @@ namespace CreatorKousien.Battle
             {
                 var waitAction = new ActionRuntimeData(
                     1,
-                    new AttackProperty { DamageMultiplier = 0 },
+                    ActionType.Wait,
+                    new ActionProperty { DamageMultiplier = 0 },
                     new List<Vector2Int>()
                 );
                 _playerSelectedActions.Add(waitAction);
@@ -168,7 +169,7 @@ namespace CreatorKousien.Battle
             if (_enemyPlannedActions.Count >= 3) return;
 
             _enemyPlannedActions.Add(action);
-            Debug.Log($"[Command] 敵のアクションを予約: {action.Category} ({_enemyPlannedActions.Count}/3)");
+            Debug.Log($"[Command] 敵のアクションを予約: {action.Type} ({_enemyPlannedActions.Count}/3)");
         }
     }
 }

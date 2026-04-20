@@ -22,7 +22,7 @@ namespace CreatorKousien.Battle
         public int SourceActorId;               // 誰が出した予告か
         public List<Vector2Int> TargetCells;    // 赤く光るマスの座標リスト
         public int RemainingTurn;               // 発動までの残りターン
-        public AttackProperty AttackInfo;       // 攻撃の種類
+        public ActionProperty Property;         // 攻撃の種類
         public bool IsInterruptible;            // プレイヤーの攻撃でキャンセル可能か
     }
 }
