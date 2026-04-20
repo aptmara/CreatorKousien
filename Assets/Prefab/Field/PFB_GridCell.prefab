@@ -82,3 +82,4 @@ MonoBehaviour:
   - {r: 0.4746089, g: 0, b: 1, a: 1}
   - {r: 0, g: 0.011921406, b: 1, a: 1}
   - {r: 0, g: 0.9556165, b: 1, a: 1}
+  _moveIntentMaterial: {fileID: 2100000, guid: 57759a30f489d324ab5762e780c7dad7, type: 2}

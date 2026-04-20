@@ -11,7 +11,6 @@
 using UnityEngine;
 using CreatorKousien.Field;
 using CreatorKousien.Data;
-using UnityEditor.ShaderGraph;
 
 namespace CreatorKousien.Field
 {
@@ -37,6 +36,11 @@ namespace CreatorKousien.Field
             new Color(0f, 0.8f, 1f), // 2手目: オレンジ
             new Color(1f, 0.0f, 0f)  // 3手目: 赤
         };
+
+
+        [Header("マテリアル設定")]
+        [Tooltip("マスのマテリアル。エミッションカラーを変更する")]
+        [SerializeField] private Material _moveIntentMaterial;
 
         private GameObject _moveIntentSphere;   // 移動予告用の仮Sphere
 
@@ -184,6 +188,11 @@ namespace CreatorKousien.Field
 
                     // コライダー削除
                     Destroy(_moveIntentSphere.GetComponent<Collider>());
+
+                    if (_moveIntentMaterial != null)
+                    {
+                        _moveIntentSphere.GetComponent<Renderer>().material = _moveIntentMaterial;
+                    }
                 }
 
                 _moveIntentSphere.SetActive(true);
