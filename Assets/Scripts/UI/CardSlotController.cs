@@ -1,147 +1,151 @@
 using UnityEngine;
 
-public class CardSlotController : MonoBehaviour
+
+namespace CreatorKousien.View.UI
 {
-    [SerializeField] private InputProvider inputProvider;
-    [SerializeField] private UIManager uiManager;
-    [SerializeField] private CardSlotView cardSlotView;
-    [SerializeField] private CardSelected cardSelected;
-
-    private UICardData currentHoveredCard;
-
-    private void Start()
+    public class CardSlotController : MonoBehaviour
     {
-        SubscribeEvents();
+        [SerializeField] private InputProvider inputProvider;
+        [SerializeField] private UIManager uiManager;
+        [SerializeField] private CardSlotView cardSlotView;
+        [SerializeField] private CardSelected cardSelected;
 
-        UpdateVisuals();
-    }
+        private UICardData currentHoveredCard;
 
-    private void OnDestroy()
-    {
-        UnsubscribeEvents();
-    }
+        private void Start()
+        {
+            SubscribeEvents();
 
-    private void Update()
-    {
-        if(!IsHandLocked() &&
-            inputProvider  != null &&
-            inputProvider.IsCancelPressed())
+            UpdateVisuals();
+        }
+
+        private void OnDestroy()
+        {
+            UnsubscribeEvents();
+        }
+
+        private void Update()
+        {
+            if(!IsHandLocked() &&
+                inputProvider  != null &&
+                inputProvider.IsCancelPressed())
+            {
+                if(cardSelected != null)
+                {
+                    cardSelected.ClearSelection();
+                }
+            }
+        }
+
+        public UICardData GetHoveredUICardData()
+        {
+            return currentHoveredCard;
+        }
+
+        public UICardData GetSelectedUICardData()
+        {
+            return cardSelected != null ? cardSelected.GetSelectedCardData() : null;
+        }
+
+        public bool IsCardHovered(UICardData data)
+        {
+            if(currentHoveredCard == null || data ==null)
+            {
+                return false;
+            }
+
+            return currentHoveredCard.InstanceId == data.InstanceId;
+        }
+
+        public bool IsHandLocked()
+        {
+            return uiManager == null || !uiManager.IsHandInputAllowed();
+        }
+
+        private void SubscribeEvents()
         {
             if(cardSelected != null)
             {
-                cardSelected.ClearSelection();
+                cardSelected.OnSelectionChanged += HandleSelectionChanged;
+            }
+
+            if(cardSlotView != null)
+            {
+                cardSlotView.OnCardHoverEntered += HandleCardHoverEntered;
+                cardSlotView.OnCardHoverExited += HandleCardHoverExited;
+                cardSlotView.OnCardClicked += HandleCardClicked;
             }
         }
-    }
 
-    public UICardData GetHoveredUICardData()
-    {
-        return currentHoveredCard;
-    }
-
-    public UICardData GetSelectedUICardData()
-    {
-        return cardSelected != null ? cardSelected.GetSelectedCardData() : null;
-    }
-
-    public bool IsCardHovered(UICardData data)
-    {
-        if(currentHoveredCard == null || data ==null)
+        private void UnsubscribeEvents()
         {
-            return false;
+            if (cardSelected != null)
+            {
+                cardSelected.OnSelectionChanged -= HandleSelectionChanged;
+            }
+
+            if (cardSlotView != null)
+            {
+                cardSlotView.OnCardHoverEntered -= HandleCardHoverEntered;
+                cardSlotView.OnCardHoverExited -= HandleCardHoverExited;
+                cardSlotView.OnCardClicked -= HandleCardClicked;
+            }
         }
 
-        return currentHoveredCard.InstanceId == data.InstanceId;
-    }
-
-    public bool IsHandLocked()
-    {
-        return uiManager == null || !uiManager.IsHandInputAllowed();
-    }
-
-    private void SubscribeEvents()
-    {
-        if(cardSelected != null)
+        private void HandleCardHoverEntered(UICardData data)
         {
-            cardSelected.OnSelectionChanged += HandleSelectionChanged;
-        }
+            if(IsHandLocked())
+            {
+                return;
+            }
 
-        if(cardSlotView != null)
-        {
-            cardSlotView.OnCardHoverEntered += HandleCardHoverEntered;
-            cardSlotView.OnCardHoverExited += HandleCardHoverExited;
-            cardSlotView.OnCardClicked += HandleCardClicked;
-        }
-    }
+            currentHoveredCard = data;
 
-    private void UnsubscribeEvents()
-    {
-        if (cardSelected != null)
-        {
-            cardSelected.OnSelectionChanged -= HandleSelectionChanged;
-        }
-
-        if (cardSlotView != null)
-        {
-            cardSlotView.OnCardHoverEntered -= HandleCardHoverEntered;
-            cardSlotView.OnCardHoverExited -= HandleCardHoverExited;
-            cardSlotView.OnCardClicked -= HandleCardClicked;
-        }
-    }
-
-    private void HandleCardHoverEntered(UICardData data)
-    {
-        if(IsHandLocked())
-        {
-            return;
-        }
-
-        currentHoveredCard = data;
-
-        UpdateVisuals();
-    }
-
-    private void HandleCardHoverExited(UICardData data)
-    {
-        if(data == null || currentHoveredCard == null)
-        {
-            return;
-        }
-        if(currentHoveredCard.InstanceId  == data.InstanceId)
-        {
-            currentHoveredCard = null;
             UpdateVisuals();
         }
-    }
 
-    private void HandleCardClicked(UICardData data)
-    {
-        if(IsHandLocked())
+        private void HandleCardHoverExited(UICardData data)
         {
-            return;
+            if(data == null || currentHoveredCard == null)
+            {
+                return;
+            }
+            if(currentHoveredCard.InstanceId  == data.InstanceId)
+            {
+                currentHoveredCard = null;
+                UpdateVisuals();
+            }
         }
 
-        if(cardSelected == null)
+        private void HandleCardClicked(UICardData data)
         {
-            return;
+            if(IsHandLocked())
+            {
+                return;
+            }
+
+            if(cardSelected == null)
+            {
+                return;
+            }
+
+            cardSelected.SetSelectedCard(data);
         }
 
-        cardSelected.SetSelectedCard(data);
-    }
-
-    private void HandleSelectionChanged(UICardData selected)
-    {
-        UpdateVisuals();
-    }
-
-    private void UpdateVisuals()
-    {
-        if(cardSlotView == null)
+        private void HandleSelectionChanged(UICardData selected)
         {
-            return;
+            UpdateVisuals();
         }
 
-        UICardData selected = cardSelected != null ? cardSelected.GetSelectedCardData() : null;
-        cardSlotView.RefreshSelectionVisual(currentHoveredCard, selected);
+        private void UpdateVisuals()
+        {
+            if(cardSlotView == null)
+            {
+                return;
+            }
+
+            UICardData selected = cardSelected != null ? cardSelected.GetSelectedCardData() : null;
+            cardSlotView.RefreshSelectionVisual(currentHoveredCard, selected);
+        }
     }
 }

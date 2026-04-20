@@ -2,56 +2,59 @@ using System;
 using System.Data;
 using UnityEngine;
 
-public class CardSelected : MonoBehaviour
+namespace CreatorKousien.View.UI
 {
-    private UICardData selectedCard;
-
-    public event Action<UICardData> OnSelectionChanged;
-
-    public void SetSelectedCard(UICardData data)
+    public class CardSelected : MonoBehaviour
     {
-        if(data == null)
+        private UICardData selectedCard;
+
+        public event Action<UICardData> OnSelectionChanged;
+
+        public void SetSelectedCard(UICardData data)
         {
-            ClearSelection();
-            return;
+            if (data == null)
+            {
+                ClearSelection();
+                return;
+            }
+            if (selectedCard != null && selectedCard.InstanceId == data.InstanceId)
+            {
+                return;
+            }
+
+            selectedCard = data;
+            OnSelectionChanged?.Invoke(selectedCard);
         }
-        if(selectedCard != null && selectedCard.InstanceId == data.InstanceId)
+        public void ClearSelection()
         {
-            return;
-        }
+            if (selectedCard == null)
+            {
+                return;
+            }
 
-        selectedCard = data;
-        OnSelectionChanged?.Invoke(selectedCard);
-    }
-    public void ClearSelection()
-    {
-        if(selectedCard == null)
-        {
-            return;
-        }
-
-        selectedCard = null;
-        OnSelectionChanged?.Invoke(null);
-    }
-
-    public UICardData GetSelectedCardData()
-    {
-        return selectedCard;
-    }
-
-    public bool HasSelection()
-    {
-        return selectedCard != null;
-    }
-
-    public bool IsCardSelected(UICardData data)
-    {
-        if(selectedCard == null || data ==null)
-        {
-            return false;
+            selectedCard = null;
+            OnSelectionChanged?.Invoke(null);
         }
 
+        public UICardData GetSelectedCardData()
+        {
+            return selectedCard;
+        }
 
-        return selectedCard.InstanceId == data.InstanceId;
+        public bool HasSelection()
+        {
+            return selectedCard != null;
+        }
+
+        public bool IsCardSelected(UICardData data)
+        {
+            if (selectedCard == null || data == null)
+            {
+                return false;
+            }
+
+
+            return selectedCard.InstanceId == data.InstanceId;
+        }
     }
 }

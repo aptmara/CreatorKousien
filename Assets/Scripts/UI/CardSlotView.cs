@@ -2,170 +2,176 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CardSlotView : MonoBehaviour
+namespace CreatorKousien.View.UI
 {
-    [SerializeField] private List<CardView> cardViews = new List<CardView>();
-
-    private CardSlotLayoutData layoutData;
-
-    public event Action<UICardData> OnCardHoverEntered;
-    public event Action<UICardData> OnCardHoverExited;
-    public event Action<UICardData> OnCardClicked;
-
-    private void Awake()
+    public class CardSlotView : MonoBehaviour
     {
-        SubscribeCardEvents();
-    }
+        [SerializeField] private List<CardView> cardViews = new List<CardView>();
 
-    private void OnDestroy()
-    {
-        UnsubscribeCardEvents();
-    }
+        private CardSlotLayoutData layoutData;
 
-    public void SetCardDataList(IReadOnlyList<UICardData> dataList)
-    {
-        if(dataList ==null)
+        public event Action<UICardData> OnCardHoverEntered;
+        public event Action<UICardData> OnCardHoverExited;
+        public event Action<UICardData> OnCardClicked;
+
+        private void Awake()
         {
-            for(int i =0;i < cardViews.Count;i++)
+            SubscribeCardEvents();
+        }
+
+        private void OnDestroy()
+        {
+            UnsubscribeCardEvents();
+        }
+
+        public void SetCardDataList(IReadOnlyList<UICardData> dataList)
+        {
+            if(dataList ==null)
             {
-                if (cardViews[i] != null)
+                for(int i =0;i < cardViews.Count;i++)
                 {
-                    cardViews[i].SetCardData(null);
+                    if (cardViews[i] != null)
+                    {
+                        cardViews[i].SetCardData(null);
+                    }
+                }
+
+                RefreshSelectionVisual(null, null);
+                return;
+            }
+
+            for(int i = 0; i < cardViews.Count;i++)
+            {
+                CardView view = cardViews[i];
+                if(view == null)
+                {
+                    continue;
+                }
+
+                if(i < dataList.Count)
+                {
+                    view.SetCardData(dataList[i]);
+                }
+                else
+                {
+                    view.SetCardData(null);
                 }
             }
 
             RefreshSelectionVisual(null, null);
-            return;
         }
 
-        for(int i = 0; i < cardViews.Count;i++)
+        public void RefreshSelectionVisual(UICardData hovered,UICardData selected)
         {
-            CardView view = cardViews[i];
-            if(view == null)
+            foreach(CardView view in cardViews)
             {
-                continue;
-            }
+                if (view == null || !view.gameObject.activeInHierarchy)
+                {
+                    continue;
+                }
 
-            if(i < dataList.Count)
-            {
-                view.SetCardData(dataList[i]);
-            }
-            else
-            {
-                view.SetCardData(null);
+                UICardData data = view.GetCardData();
+
+                bool isHovered =
+                    hovered != null &&
+                    data != null &&
+                    hovered.InstanceId == data.InstanceId;
+
+                bool isSelected =
+                    selected != null &&
+                    data != null &&
+                    selected.InstanceId == data.InstanceId;
+
+                view.SetHover(isHovered);
+                view.SetSelected(isSelected);
             }
         }
 
-        RefreshSelectionVisual(null, null);
-    }
-
-    public void RefreshSelectionVisual(UICardData hovered,UICardData selected)
-    {
-        foreach(CardView view in cardViews)
+        private void ApplyLayout()
         {
-            if (view == null || !view.gameObject.activeInHierarchy)
+            if(layoutData == null)
             {
-                continue;
+                return;
             }
 
-            UICardData data = view.GetCardData();
+            for (int i = 0; i < cardViews.Count; i++)
+            {
+                CardView view = cardViews[i];
 
-            bool isHovered =
-                hovered != null &&
-                data != null &&
-                hovered.InstanceId == data.InstanceId;
+                if(view == null)
+                {
+                    continue;
+                }
 
-            bool isSelected =
-                selected != null &&
-                data != null &&
-                selected.InstanceId == data.InstanceId;
+                RectTransform rect = view.RectTransform;
+                if(rect == null)
+                {
+                    continue;
+                }
 
-            view.SetHover(isHovered);
-            view.SetSelected(isSelected);
+                Vector2 finalPosition = layoutData.CenterPosition;
+                Vector2 finalSize = rect.sizeDelta;
+
+                if(layoutData.CardLayouts != null &&
+                    i < layoutData.CardLayouts.Count &&
+                    layoutData.CardLayouts[i] != null)
+                {
+                    CardLayoutData cardLayout = layoutData.CardLayouts[i];
+                    finalPosition += cardLayout.offset;
+                    finalSize = cardLayout.size;
+                }
+
+                rect.anchoredPosition = finalPosition;
+                rect.sizeDelta = finalSize;
+            }
         }
-    }
 
-    private void ApplyLayout()
-    {
-        if(layoutData == null)
+        private void SubscribeCardEvents()
         {
-            return;
+            foreach(CardView view in cardViews)
+            {
+                if(view == null)
+                {
+                    continue;
+                }
+
+                view.OnHoverEntered += HandleHoverEntered;
+                view.OnHoverExited += HandleHoverExited;
+                view.OnClicked += HandleClicked;
+            }
         }
 
-        for (int i = 0; i < cardViews.Count; i++)
+        private void UnsubscribeCardEvents()
         {
-            CardView view = cardViews[i];
-
-            if(view == null)
+            foreach (CardView view in cardViews)
             {
-                continue;
+                if (view == null)
+                {
+                    continue;
+                }
+
+                view.OnHoverEntered -= HandleHoverEntered;
+                view.OnHoverExited -= HandleHoverExited;
+                view.OnClicked -= HandleClicked;
             }
-
-            RectTransform rect = view.RectTransform;
-            if(rect == null)
-            {
-                continue;
-            }
-
-            Vector2 finalPosition = layoutData.CenterPosition;
-            Vector2 finalSize = rect.sizeDelta;
-
-            if(layoutData.CardLayouts != null &&
-                i < layoutData.CardLayouts.Count &&
-                layoutData.CardLayouts[i] != null)
-            {
-                CardLayoutData cardLayout = layoutData.CardLayouts[i];
-                finalPosition += cardLayout.offset;
-                finalSize = cardLayout.size;
-            }
-
-            rect.anchoredPosition = finalPosition;
-            rect.sizeDelta = finalSize;
         }
-    }
 
-    private void SubscribeCardEvents()
-    {
-        foreach(CardView view in cardViews)
+        private void HandleHoverEntered(UICardData data)
         {
-            if(view == null)
-            {
-                continue;
-            }
-
-            view.OnHoverEntered += HandleHoverEntered;
-            view.OnHoverExited += HandleHoverExited;
-            view.OnClicked += HandleClicked;
+            OnCardHoverEntered?.Invoke(data);
         }
-    }
 
-    private void UnsubscribeCardEvents()
-    {
-        foreach (CardView view in cardViews)
+        private void HandleHoverExited(UICardData data)
         {
-            if (view == null)
-            {
-                continue;
-            }
+            OnCardHoverExited?.Invoke(data);
+        }
 
-            view.OnHoverEntered -= HandleHoverEntered;
-            view.OnHoverExited -= HandleHoverExited;
-            view.OnClicked -= HandleClicked;
+        private void HandleClicked(UICardData data)
+        {
+            OnCardClicked?.Invoke(data);
         }
     }
 
-    private void HandleHoverEntered(UICardData data)
-    {
-        OnCardHoverEntered?.Invoke(data);
-    }
-
-    private void HandleHoverExited(UICardData data)
-    {
-        OnCardHoverExited?.Invoke(data);
-    }
-
-    private void HandleClicked(UICardData data)
-    {
-        OnCardClicked?.Invoke(data);
-    }
 }
+
+
