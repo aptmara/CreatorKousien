@@ -1,0 +1,78 @@
+name: "\U0001F4DD Task"
+description: 実装・調査・調整などの一般タスク
+title: "[TASK] "
+labels: ["task"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: この Issue で完了させたい内容を記載してください。
+      placeholder: 例: プレイヤー移動時の床効果発火処理を実装する
+    validations:
+      required: true
+
+  - type: textarea
+    id: background
+    attributes:
+      label: 背景・目的
+      description: この作業が必要な理由や前提を記載してください。
+      placeholder: 例: バトル開始前の盤面ギミック検証に必要
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 完了条件
+      description: 完了とみなす条件を箇条書きで記載してください。
+      placeholder: |
+        - [ ] 床効果が 1 回だけ発火する
+        - [ ] 既存の移動演出を壊さない
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 優先度
+      description: GitHub Project の Priority フィールドに同期されます。
+      options:
+        - P0
+        - P1
+        - P2
+        - P3
+        - P4
+        - P5
+        - P6
+        - P7
+        - P8
+        - P9
+    validations:
+      required: true
+
+  - type: input
+    id: start_date
+    attributes:
+      label: Start date
+      description: GitHub Project の Start date フィールドに同期されます。
+      placeholder: YYYY-MM-DD
+    validations:
+      required: false
+
+  - type: input
+    id: target_date
+    attributes:
+      label: Target date
+      description: GitHub Project の Target date フィールドに同期されます。
+      placeholder: YYYY-MM-DD
+    validations:
+      required: false
+
+  - type: input
+    id: ref_url
+    attributes:
+      label: 参考 URL
+      placeholder: https://github.com/...
+    validations:
+      required: false

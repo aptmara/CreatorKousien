@@ -1,0 +1,85 @@
+name: "\U0001F41B Bug"
+description: 不具合報告
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 事象概要
+      description: 何が起きているか、期待値と合わせて記載してください。
+      placeholder: 例: 手札を 0 枚にした直後、ターン終了で例外が発生する
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待する挙動
+      placeholder: 例: 手札が 0 枚でもターン終了処理が継続する
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      placeholder: |
+        1. チュートリアル戦闘を開始する
+        2. 手札をすべて使用する
+        3. ターン終了ボタンを押す
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: 環境
+      placeholder: Windows 11 / Unity 6000.3.7f1 / Editor
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 優先度
+      description: GitHub Project の Priority フィールドに同期されます。
+      options:
+        - P0
+        - P1
+        - P2
+        - P3
+        - P4
+        - P5
+        - P6
+        - P7
+        - P8
+        - P9
+    validations:
+      required: true
+
+  - type: input
+    id: start_date
+    attributes:
+      label: Start date
+      description: GitHub Project の Start date フィールドに同期されます。
+      placeholder: YYYY-MM-DD
+    validations:
+      required: false
+
+  - type: input
+    id: target_date
+    attributes:
+      label: Target date
+      description: GitHub Project の Target date フィールドに同期されます。
+      placeholder: YYYY-MM-DD
+    validations:
+      required: false
+
+  - type: input
+    id: ref_url
+    attributes:
+      label: 参考 URL
+      placeholder: https://github.com/...
+    validations:
+      required: false
