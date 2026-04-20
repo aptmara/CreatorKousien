@@ -37,6 +37,14 @@ function testMapPriority() {
   assert.equal(helpers.mapPriority('High'), 'HIGH');
 }
 
+function testMapDateNormalizesSingleDigitMonthAndDay() {
+  assert.equal(helpers.mapDate('2222-10-1'), '2222-10-01');
+  assert.equal(helpers.mapDate('2222-1-2'), '2222-01-02');
+  assert.equal(helpers.mapDate('2222-01-02'), '2222-01-02');
+  assert.equal(helpers.mapDate('2222/01/02'), null);
+  assert.equal(helpers.mapDate('2222-02-30'), null);
+}
+
 function testSafeParseFailure() {
   const { core } = createMocks();
 
@@ -111,6 +119,46 @@ async function testRunUpdatesAllFields() {
   );
 }
 
+async function testRunNormalizesSingleDigitDateBeforeUpdate() {
+  const { core, github, calls } = createMocks();
+  const env = {
+    PROJECT_ID: 'project-1',
+    ITEM_ID: 'item-1',
+    FIELDS: JSON.stringify({
+      'Start date': 'field-start',
+      'Target date': 'field-target',
+    }),
+    FIELD_OPTIONS: JSON.stringify({}),
+    START_DATE: '2222-10-1',
+    TARGET_DATE: '2222-10-2',
+  };
+
+  await run({
+    core,
+    github,
+    process: { env },
+  });
+
+  assert.equal(core.messages.length, 0);
+  assert.deepEqual(
+    calls.map((call) => call.variables),
+    [
+      {
+        projectId: 'project-1',
+        itemId: 'item-1',
+        fieldId: 'field-start',
+        date: '2222-10-01',
+      },
+      {
+        projectId: 'project-1',
+        itemId: 'item-1',
+        fieldId: 'field-target',
+        date: '2222-10-02',
+      },
+    ],
+  );
+}
+
 async function testRunFailsOnInvalidDate() {
   const { core, github, calls } = createMocks();
   const env = {
@@ -137,7 +185,7 @@ async function testRunFailsOnInvalidDate() {
 
   assert.equal(calls.length, 1);
   assert.equal(core.messages.length, 1);
-  assert.match(core.messages[0], /Start date は YYYY-MM-DD 形式で指定してください/);
+  assert.match(core.messages[0], /Start date は YYYY-MM-DD または YYYY-M-D 形式で指定してください/);
 }
 
 /**
@@ -146,8 +194,10 @@ async function testRunFailsOnInvalidDate() {
 async function main() {
   const tests = [
     ['mapPriority は数値を Project の優先度形式へ正規化する', testMapPriority],
+    ['mapDate は 1 桁の月日をゼロ埋めし不正日付を弾く', testMapDateNormalizesSingleDigitMonthAndDay],
     ['safeParse は不正な JSON で失敗を記録する', testSafeParseFailure],
     ['run は Status と Priority と日付フィールドを更新する', testRunUpdatesAllFields],
+    ['run は 1 桁日付を正規化して Project の日付フィールドを更新する', testRunNormalizesSingleDigitDateBeforeUpdate],
     ['run は不正な日付形式で失敗し後続更新を止める', testRunFailsOnInvalidDate],
   ];
 
