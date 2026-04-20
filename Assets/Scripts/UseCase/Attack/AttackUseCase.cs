@@ -56,19 +56,34 @@ namespace CreatorKousien.UseCase
             // ログ用: 誰の行動かを色分け
             string actorLabel = GetActorLabel(command.SourceActorId);
 
-            // ゴーストアクション防止
+            // 生存確認
             Vector2Int currentPos = _fieldService.GetActorPosition(command.SourceActorId);
             if (currentPos.x == -1)
             {
+                Debug.Log($"<color=gray>[ATTACK SKIP] {actorLabel} は既に倒れているためスキップ</color>");
                 _eventBus.PublishActionLogicCompleted(command.SourceActorId);
                 return;
             }
 
+            // 実行の瞬間に、最終的な攻撃マスを決定する
+            List<Vector2Int> finalTargetCells = command.TargetCells;
+
+            if (command.IsDynamicOrigin)
+            {
+                finalTargetCells = new List<Vector2Int>();
+                // 現在地 + 予約していた相対座標
+                foreach (var relPos in command.RelativeCells)
+                {
+                    finalTargetCells.Add(currentPos + relPos);
+                }
+                Debug.Log($"[DynamicAttack] {actorLabel} が現在地 {currentPos} を基準に攻撃！");
+            }
+
             // 攻撃が発動した瞬間に対象のマスをEventBusで通知 (4/19 追加)
-            _eventBus.OnAttackAreaExecuted?.Invoke(command.TargetCells);
+            _eventBus.OnAttackAreaExecuted?.Invoke(finalTargetCells);
 
             // 1. FieldServiceにマスにいるActorIDのリストをもらう
-            List<int> targetActorIds = _fieldService.GetActorsInCells(command.TargetCells);
+            List<int> targetActorIds = _fieldService.GetActorsInCells(finalTargetCells);
 
             // 2. もし誰もいなければ、空振りエフェクトを出して終了
             if (targetActorIds.Count == 0)

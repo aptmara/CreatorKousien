@@ -74,6 +74,13 @@ namespace CreatorKousien.Enemy
                 // 基準点を元に実際の攻撃範囲を計算
                 List<Vector2Int> rawCells = CalculateTargetCells(pattern, originPos, situation);
 
+                // 自己基準なら、相対座標も計算しておく
+                List<Vector2Int> relativeCells = new List<Vector2Int>();
+                if (pattern.OriginRule == TargetOrigin.SelfPosition)
+                {
+                    relativeCells = CalculateTargetCells(pattern, Vector2Int.zero, situation);
+                }
+
                 // 有効なターゲットますが1つも無ければスキップして次の行動を考える
                 if (rawCells.Count > 0)
                 {
@@ -86,7 +93,9 @@ namespace CreatorKousien.Enemy
                             pattern.Property,
                             rawCells,
                             pattern.ChargeTurns,
-                            pattern.IsInterruptible
+                            pattern.IsInterruptible,
+                            pattern,
+                            relativeCells
                         );
                     })));
                 }

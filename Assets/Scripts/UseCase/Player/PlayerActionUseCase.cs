@@ -13,7 +13,6 @@ using CreatorKousien.Player;
 using CreatorKousien.Field;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor.Build.Pipeline.Tasks;
 
 namespace CreatorKousien.UseCase
 {
@@ -55,11 +54,11 @@ namespace CreatorKousien.UseCase
             }
             else
             {
-                // 攻撃等の場合は、プレイヤーの現在地を基準にターゲットマスを計算
-                Vector2Int playerPos = _playerSystem.RuntimeData.Position;
-                List<Vector2Int> targetCells = CalculateTargetCells(playerPos, effect.AreaType);
+                // 自分中心の相対座標を取得
+                List<Vector2Int> relativeCells = CalculateRelativeCells(effect.AreaType);
 
-                actionData = new ActionRuntimeData(playerId, effect.Type, effect.Property, targetCells);
+                // TargetCellsには一旦空を渡し、動的フラグと相対座標をセットする
+                actionData = new ActionRuntimeData(playerId, effect.Type, effect.Property, new List<Vector2Int>(), true, relativeCells);
             }
 
             // 3. TurnManagerにアクションを提出
@@ -83,28 +82,33 @@ namespace CreatorKousien.UseCase
             }
         }
 
-
-        private List<Vector2Int> CalculateTargetCells(Vector2Int origin, TargetAreaType areaType)
+        /// <summary>
+        /// 原点を(0,0)とした相対座標を返す
+        /// </summary>
+        /// <param name="areaType"></param>
+        /// <returns></returns>
+        private List<Vector2Int> CalculateRelativeCells(TargetAreaType areaType)
         {
             var cells = new List<Vector2Int>();
 
             switch (areaType)
             {
                 case TargetAreaType.Front1:
-                    cells.Add(origin + new Vector2Int(1, 0));
+                    cells.Add(new Vector2Int(1, 0));
                     break;
+
                 case TargetAreaType.FrontPierce2:
-                    cells.Add(origin + new Vector2Int(1, 0));
-                    cells.Add(origin + new Vector2Int(2, 0));
+                    cells.Add(new Vector2Int(1, 0));
+                    cells.Add(new Vector2Int(2, 0));
                     break;
+
                 case TargetAreaType.Surround:
-                    cells.Add(origin + new Vector2Int(1, 0));
-                    cells.Add(origin + new Vector2Int(-1, 0));
-                    cells.Add(origin + new Vector2Int(0, 1));
-                    cells.Add(origin + new Vector2Int(0, -1));
+                    cells.Add(new Vector2Int(1, 0)); cells.Add(new Vector2Int(-1, 0));
+                    cells.Add(new Vector2Int(0, 1)); cells.Add(new Vector2Int(0, -1));
                     break;
+
                 case TargetAreaType.Self:
-                    cells.Add(origin);
+                    cells.Add(Vector2Int.zero);
                     break;
             }
 
