@@ -36,7 +36,8 @@ namespace CreatorKousien.Data
         [Tooltip("盤面の最後列(自陣奥)の中央を基準にする")] BackRowCenter,
         [Tooltip("盤面の左端の中央を基準にする")] LeftEdgeCenter,
         [Tooltip("盤面の右端の中央を基準にする")] RightEdgeCenter,
-        [Tooltip("ランダムな通行可能マスを基準にする")] RandomPassableCell
+        [Tooltip("ランダムな通行可能マスを基準にする")] RandomPassableCell,
+        [Tooltip("自分自身の現在地を動的に基準にする")] SelfPosition,
     }
 
     /// <summary>

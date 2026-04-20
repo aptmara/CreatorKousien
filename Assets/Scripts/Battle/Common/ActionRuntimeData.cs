@@ -28,18 +28,25 @@ namespace CreatorKousien.Battle
         // --- 移動用データ ---
         public GridDirection MoveDirection { get; }
 
+        // 動的計算するかどうか
+        public bool IsDynamicOrigin { get; }
+        // 相対座標
+        public List<Vector2Int> RelativeCells { get; }
+
         /// <summary>
         /// 攻撃用コンストラクタ
         /// </summary>
         /// <param name="actorId"></param>
         /// <param name="attackInfo"></param>
         /// <param name="targetCells"></param>
-        public ActionRuntimeData(int actorId, ActionType type, ActionProperty property, List<Vector2Int> targetCells)
+        public ActionRuntimeData(int actorId, ActionType type, ActionProperty property, List<Vector2Int> targetCells, bool isDynamic = false, List<Vector2Int> relativeCells = null)
         {
             ActorId = actorId;
             Type = type;
             Property = property;
             TargetCells = targetCells;
+            IsDynamicOrigin = isDynamic;
+            RelativeCells = relativeCells ?? new List<Vector2Int>();
         }
 
         /// <summary>

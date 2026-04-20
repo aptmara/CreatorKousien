@@ -23,11 +23,16 @@ namespace CreatorKousien.Command
         /// <summary>攻撃が着弾するマスのリスト</summary>
         public List<Vector2Int> TargetCells { get; }
 
-        public AttackCommand(int sourceActorId, ActionProperty property, List<Vector2Int> targetCells)
+        public bool IsDynamicOrigin { get; }
+        public List<Vector2Int> RelativeCells { get; }
+
+        public AttackCommand(int sourceActorId, ActionProperty property, List<Vector2Int> targetCells, bool isDynamic = false, List<Vector2Int> relativeCells = null)
         {
             SourceActorId = sourceActorId;
             Property = property;
             TargetCells = targetCells;
+            IsDynamicOrigin = isDynamic;
+            RelativeCells = relativeCells;
         }
     }
 }

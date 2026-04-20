@@ -22,12 +22,14 @@ namespace CreatorKousien.Enemy
         public ActionType Type;
         public ActionProperty Property;
         public List<Vector2Int> RawTargetCells;
+        public List<Vector2Int> RelativeCells;
         public Vector2Int MoveDirection;
         public int ChargeTurns;
         public bool IsInterruptible;
+        public EnemyActionPattern SourcePattern;
 
         // 静的ファクトリ：攻撃
-        public static EnemyIntent CreateAttack(int id, ActionType type, ActionProperty property, List<Vector2Int> cells, int charge, bool interrupt)
+        public static EnemyIntent CreateAttack(int id, ActionType type, ActionProperty property, List<Vector2Int> cells, int charge, bool interrupt, EnemyActionPattern pattern = null, List<Vector2Int> relativeCells = null)
         {
             return new EnemyIntent
             {
@@ -36,7 +38,9 @@ namespace CreatorKousien.Enemy
                 Property = property,
                 RawTargetCells = cells,
                 ChargeTurns = charge,
-                IsInterruptible = interrupt
+                IsInterruptible = interrupt,
+                SourcePattern = pattern,
+                RelativeCells = relativeCells ?? new List<Vector2Int>()
             };
         }
 

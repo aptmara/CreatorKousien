@@ -94,7 +94,10 @@ namespace CreatorKousien.Battle
                     _dispatcher.Dispatch(new Command.AttackCommand(
                         nextAction.ActorId,
                         nextAction.Property,
-                        nextAction.TargetCells));
+                        nextAction.TargetCells,
+                        nextAction.IsDynamicOrigin,
+                        nextAction.RelativeCells
+                    ));
                     break;
 
                 // MoveUseCaseへ

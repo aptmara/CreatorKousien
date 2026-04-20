@@ -93,20 +93,83 @@ namespace CreatorKousien.UseCase
                 // 現在の仮想座標を取得
                 Vector2Int currentVirtualPos = virtualPositions[actingEnemyId];
 
-                // 指名されたエネミーに思考させる
+                // 1. 指名されたエネミーに思考させる
                 EnemyIntent intent = ai.Think(situation, virtualPositions[actingEnemyId]);
-                var actionTicket = ConvertIntentToTicket(intent, step, currentVirtualPos);
 
-                plan.Add(actionTicket);
-
-                // 移動した場合は、そのエネミーの仮想座標だけを更新
+                // 2. 移動の場合は衝突チェックと代替ルートの検索を行う
                 if (intent.Type == ActionType.Move)
                 {
-                    virtualPositions[actingEnemyId] += intent.MoveDirection;
+                    Vector2Int targetPos = currentVirtualPos + intent.MoveDirection;
+
+                    if (!IsValidMove(targetPos, actingEnemyId, virtualPositions))
+                    {
+                        // ダメだった場合、4方向をランダムな順番で試す
+                        Vector2Int[] dirs = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+                        ShuffleArray(dirs);
+
+                        bool foundRoute = false;
+                        foreach (var dir in dirs)
+                        {
+                            Vector2Int alternativePos = currentVirtualPos + dir;
+                            if (IsValidMove(alternativePos, actingEnemyId, virtualPositions))
+                            {
+                                intent.MoveDirection = dir;
+                                foundRoute = true;
+                                break;
+                            }
+                        }
+
+                        // もし4方向すべて壁や味方に囲まれていたら待機
+                        if (!foundRoute)
+                        {
+                            intent.Type = ActionType.Wait;
+                        }
+                    }
                 }
+
+                // 3. 確定した意図をチケットに変換
+                var actionTicket = ConvertIntentToTicket(intent, step, currentVirtualPos, virtualPositions);
+                plan.Add(actionTicket);
             }
 
             return plan;
+        }
+
+        /// <summary>
+        /// 移動先が安全課を判定する
+        /// </summary>
+        /// <param name="targetPos"></param>
+        /// <param name="actorId"></param>
+        /// <param name="virtualPositions"></param>
+        /// <returns></returns>
+        private bool IsValidMove(Vector2Int targetPos, int actorId, Dictionary<int, Vector2Int> virtualPositions)
+        {
+            if (_fieldService.IsOutOfBounds(targetPos.x, targetPos.y)) return false;
+            if (_fieldService.IsObstacle(targetPos.x, targetPos.y)) return false;
+            if (targetPos.x < _fieldService.GetBorderX()) return false;
+
+            // 仮想空間の他の敵と重ならないかチェック
+            foreach (var kvp in virtualPositions)
+            {
+                if (kvp.Key != actorId && kvp.Value == targetPos) return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 配列をランダムに並び替える
+        /// </summary>
+        /// <param name="array"></param>
+        private void ShuffleArray(Vector2Int[] array)
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                Vector2Int temp = array[i];
+                int randomIndex = Random.Range(i, array.Length);
+                array[i] = array[randomIndex];
+                array[randomIndex] = temp;
+            }
         }
 
         private BattleSituation CreateSituation()
@@ -121,13 +184,16 @@ namespace CreatorKousien.UseCase
             };
         }
 
-        private ActionRuntimeData ConvertIntentToTicket(EnemyIntent intent, int step, Vector2Int currentVirtualPos)
+        private ActionRuntimeData ConvertIntentToTicket(EnemyIntent intent, int step, Vector2Int currentVirtualPos, Dictionary<int, Vector2Int> virtualPositions)
         {
             switch (intent.Type)
             {
                 case ActionType.FastAttack:
                 case ActionType.WideAttack:
                     // UseCase側でクリッピング（場外・障害物判定）を行う
+                    bool isDynamic = (intent.SourcePattern != null && intent.SourcePattern.OriginRule == TargetOrigin.SelfPosition);
+                    List<Vector2Int> relativeCells = intent.RelativeCells;
+
                     var validCells = intent.RawTargetCells.FindAll(p =>
                         !_fieldService.IsOutOfBounds(p.x, p.y) && !_fieldService.IsObstacle(p.x, p.y));
 
@@ -136,29 +202,20 @@ namespace CreatorKousien.UseCase
                     // Viewに攻撃予告の色変更を指示
                     _eventBus.PublishTelegraph(validCells, true, step);
 
-                    return new ActionRuntimeData(intent.SourceActorId, intent.Type, intent.Property, validCells);
+                    return new ActionRuntimeData(intent.SourceActorId, intent.Type, intent.Property, validCells, isDynamic, relativeCells);
 
                 case ActionType.Move:
                     GridDirection dir = ConvertToGridDirection(intent.MoveDirection);
 
                     Vector2Int targetPos = currentVirtualPos + intent.MoveDirection;
-                    
-                    // 盤面内かどうかに加え、敵陣内（x が BorderX 以上）かどうかもチェック
-                    int borderX = _fieldService.GetBorderX();
-                    bool isValidMove = !_fieldService.IsOutOfBounds(targetPos.x, targetPos.y)
-                                    && !_fieldService.IsObstacle(targetPos.x, targetPos.y)
-                                    && targetPos.x >= borderX;
 
-                    // Viewに移動予告のSphere表示を指示
-                    if (isValidMove)
-                    {
-                        _eventBus.PublishMoveTelegraph(targetPos, true, step);
-                    }
-                    else
-                    {
-                        // 無効ならその場に止まる
-                    }
+                    // 予告をViewに出す
+                    _eventBus.PublishMoveTelegraph(targetPos, true, step);
 
+                    // 仮想座標を更新する
+                    virtualPositions[intent.SourceActorId] = targetPos;
+
+                    // そのままチケットとして提出
                     return new ActionRuntimeData(intent.SourceActorId, dir);
 
                 case ActionType.Guard:
