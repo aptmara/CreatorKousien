@@ -119,6 +119,10 @@ MonoBehaviour:
     Prefab: {fileID: 692292571237562481, guid: de782ada96d4305468f6eca95d6a6c0a, type: 3}
   - viewType: 1
     Prefab: {fileID: 2146649968062362839, guid: 07b028f938edea24294e1530d2c319dd, type: 3}
+  - viewType: 3
+    Prefab: {fileID: 6683649512514885830, guid: 094f3a77de16e734eb15b51e4555fecc, type: 3}
+  - viewType: 6
+    Prefab: {fileID: 692292571237562481, guid: e29de9c5ccce7b048b628f5518d6c44b, type: 3}
   stateDefinitions:
   - state: 2
-    ActiveViews: 0200000001000000
+    ActiveViews: 02000000010000000300000006000000

@@ -328,6 +328,12 @@ public class GameManager : MonoBehaviour
         {
             playerHpGauge.Initialize(_eventBus, PlayerID, _setupData.PlayerData.MaxHp);
         }
+
+        var turnDisplay = _uiManager.GetView<TurnDisplayView>(ViewType.TurnDisplay);
+        if (turnDisplay != null)
+        {
+            turnDisplay.Initialize(_eventBus);
+        }
     }
 
 
@@ -396,7 +402,7 @@ public class GameManager : MonoBehaviour
         // Timer生成
         if (_timerPrefab != null)
         {
-            Vector3 timerPosition = new Vector3(4.375f, 3f, 0f);
+            Vector3 timerPosition = new Vector3(4.375f, 2.5f, 0f);
             var timerInstance = Instantiate(_timerPrefab, timerPosition, Quaternion.identity);
             timerInstance.Initialize(_eventBus);
         }
@@ -595,6 +601,11 @@ public class GameManager : MonoBehaviour
             EnemyView enemyView = enemyObj.GetComponent<EnemyView>();
             enemyView.Initialize(enemyInfo.ActorId, worldPos, _fieldView.GetCellView(enemyInfo.SpawnPosition));
 
+            var enemyHpGauge = _uiManager.GetView<HpGaugeView>(ViewType.EnemyHpGauge);
+            if (enemyHpGauge != null)
+            {
+                enemyHpGauge.Initialize(_eventBus,enemyInfo.ActorId, enemyInfo.EnemyData.MaxHp);
+            }
             // EnemySystemのEnemyRuntimeDataの位置をEnemyViewの位置に合わせて更新
             _enemyViews.Add(enemyInfo.ActorId, enemyView);
         }

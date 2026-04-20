@@ -63,6 +63,7 @@ namespace CreatorKousien.Battle
             var planCommand = new EnemyActionCommand((teamPlan) =>
             {
                 _enemyPlannedActions = teamPlan;
+                UpdateTimelineUI();
                 Debug.Log($"[Command Phase] 敵チーム全体の3手を受領しました！");
             });
 
@@ -170,6 +171,7 @@ namespace CreatorKousien.Battle
             if (_playerSelectedActions.Count >= 3) return;
 
             _playerSelectedActions.Add(action);
+            UpdateTimelineUI();
             Debug.Log($"[Command] プレイヤーのアクションを予約: {action.Type} ({_playerSelectedActions.Count}/3)");
 
             // 3手選んだら自動で実行フェーズへ
@@ -234,6 +236,27 @@ namespace CreatorKousien.Battle
 
             _enemyPlannedActions.Add(action);
             Debug.Log($"[Command] 敵のアクションを予約: {action.Type} ({_enemyPlannedActions.Count}/{_owner.MaxInputCount})");
+        }
+
+
+        /// <summary>
+        /// タイムラインUIを更新するためのメソッド。プレイヤーと敵のアクションをViewに通知します。
+        /// </summary>
+        private void UpdateTimelineUI()
+        {
+            var eTypes = new List<ActionType>();
+            foreach (var a in _enemyPlannedActions)
+            {
+                eTypes.Add(a.Type);
+            }
+
+            var pTypes = new List<ActionType>();
+            foreach (var a in _playerSelectedActions)
+            {
+                pTypes.Add(a.Type);
+            }
+
+            _owner.EventBus.PublishTimelineUpdated(eTypes, pTypes);
         }
     }
 }
