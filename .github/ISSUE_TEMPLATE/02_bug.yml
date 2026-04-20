@@ -8,7 +8,7 @@ body:
     attributes:
       label: 事象概要
       description: 何が起きているか、期待値と合わせて記載してください。
-      placeholder: 例: 手札を 0 枚にした直後、ターン終了で例外が発生する
+      placeholder: "例: 手札を 0 枚にした直後、ターン終了で例外が発生する"
     validations:
       required: true
 
@@ -16,7 +16,7 @@ body:
     id: expected
     attributes:
       label: 期待する挙動
-      placeholder: 例: 手札が 0 枚でもターン終了処理が継続する
+      placeholder: "例: 手札が 0 枚でもターン終了処理が継続する"
     validations:
       required: false
 
