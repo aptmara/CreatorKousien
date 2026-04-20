@@ -11,6 +11,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using CreatorKousien.Battle;
 
 namespace CreatorKousien.Core
 {
@@ -57,6 +58,11 @@ namespace CreatorKousien.Core
         /// 誰が、どれだけのダメージを受けたかを引数で渡す
         /// </summary>
         public event Action<int, int> OnDamageTaken;
+
+        /// <summary>
+        /// タイムラインが更新されたことを通知するイベント
+        /// </summary>
+        public event System.Action<List<ActionType>, List<ActionType>> OnTimelineUpdated;
 
 
         /// <summary>
@@ -220,6 +226,17 @@ namespace CreatorKousien.Core
         public void PublishCommandTimeUp()
         {
             OnCommandTimeUp?.Invoke();
+        }
+
+
+        /// <summary>
+        /// タイムライン更新イベントを発火するメソッド
+        /// </summary>
+        /// <param name="enemyActions">敵の行動リスト</param>
+        /// <param name="playerActions">プレイヤーの行動リスト</param>
+        public void PublishTimelineUpdated(List<ActionType> enemyActions, List<ActionType> playerActions)
+        {
+            OnTimelineUpdated?.Invoke(enemyActions, playerActions);
         }
     }
 }

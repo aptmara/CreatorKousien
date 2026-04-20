@@ -15,4 +15,4 @@ MonoBehaviour:
   CardId: 1
   CardName: 
   FrontEffect: {fileID: 11400000, guid: 3593ff84097facf469e832c8407bbe85, type: 2}
-  BackEffect: {fileID: 11400000, guid: 1a0a4040dc4451246b48988a9a03f31a, type: 2}
+  BackEffect: {fileID: 11400000, guid: 67fb5398e965c8042af55d54eaa65f42, type: 2}

@@ -33,7 +33,8 @@ namespace CreatorKousien.View.UI
         HpGauge,
         TurnDisplay,
         Result,
-        GridCell
+        GridCell,
+        EnemyHpGauge,
     }
 
     /// <summary>
