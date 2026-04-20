@@ -8,7 +8,7 @@ body:
     attributes:
       label: 概要
       description: この Issue で完了させたい内容を記載してください。
-      placeholder: 例: プレイヤー移動時の床効果発火処理を実装する
+      placeholder: "例: プレイヤー移動時の床効果発火処理を実装する"
     validations:
       required: true
 
@@ -17,7 +17,7 @@ body:
     attributes:
       label: 背景・目的
       description: この作業が必要な理由や前提を記載してください。
-      placeholder: 例: バトル開始前の盤面ギミック検証に必要
+      placeholder: "例: バトル開始前の盤面ギミック検証に必要"
     validations:
       required: false
 
