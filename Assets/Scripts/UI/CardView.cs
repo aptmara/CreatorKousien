@@ -1,3 +1,13 @@
+// ------------------------------------------------------------
+// File		: CardView.cs
+// Summary	: カードのUI表示を担当するクラス
+//
+// Author	: [浅野勇生]
+// Created	: 2026-04-20
+//
+// Notes	:
+// - カードのアイコン、名前、コスト、説明を表示するUIコンポーネント
+// ------------------------------------------------------------
 using System;
 using TMPro;
 using UnityEngine;
@@ -14,6 +24,12 @@ namespace CreatorKousien.View.UI
         [SerializeField] private TextMeshProUGUI descriptionText;
         [SerializeField] private GameObject hoverHighLight;
         [SerializeField] private GameObject selectHighLight;
+
+        [Header("方向アイコン設定")]
+        [Tooltip("矢印オブジェクトの本体")]
+        [SerializeField] private GameObject directionIconRoot;
+        [Tooltip("矢印の画像")]
+        [SerializeField] private RectTransform directionArrow;
 
         private UICardData currentData;
         private RectTransform rectTransform;
@@ -56,6 +72,38 @@ namespace CreatorKousien.View.UI
 
             SetHover(false);
             SetSelected(false);
+
+            // 方向アイコンの表示設定
+            if (directionIconRoot != null && directionArrow != null)
+            {
+                // 方向がNone以外なら矢印を表示
+                if (data.Direction != UIDirection.None)
+                {
+                    directionIconRoot.SetActive(true);
+                    float angle = 0f;
+
+                    switch (data.Direction)
+                    {
+                        case UIDirection.Up:
+                            angle = 0f;
+                            break;
+                        case UIDirection.Down:
+                            angle = 180f;
+                            break;
+                        case UIDirection.Left:
+                            angle = 90f;
+                            break;
+                        case UIDirection.Right:
+                            angle = -90f;
+                            break;
+                    }
+                    directionArrow.localRotation = Quaternion.Euler(0f, 0f, angle);
+                }
+                else
+                {
+                    directionIconRoot.SetActive(false);
+                }
+            }
         }
 
         public UICardData GetCardData()

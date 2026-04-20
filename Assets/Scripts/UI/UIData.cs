@@ -37,6 +37,19 @@ namespace CreatorKousien.View.UI
     }
 
     /// <summary>
+    /// UI用の方向
+    /// </summary>
+    public enum UIDirection
+    {
+        None,
+        Up,
+        Down,
+        Left,
+        Right
+    }
+
+
+    /// <summary>
     /// 一旦のカードデータ
     /// </summary>
     [System.Serializable]
@@ -47,6 +60,7 @@ namespace CreatorKousien.View.UI
         public string Name;
         public Sprite Icon;
         public string Description;
+        public UIDirection Direction = UIDirection.None;
     }
 
     [System.Serializable]
