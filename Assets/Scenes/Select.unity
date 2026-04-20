@@ -815,6 +815,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   _setupData: {fileID: 0}
   _fieldViewPrefab: {fileID: 5856990483480166941, guid: c26a5104deaaa1a468db69e250c977be, type: 3}
+  _uiManagerPrefab: {fileID: 8011523601526239762, guid: fe3c5a506c8771c4da070800e1f21bcc, type: 3}
   _timerPrefab: {fileID: 5766762249608327027, guid: 2611125c2e7c57140836b7571cdb3ac6, type: 3}
 --- !u!4 &811160246
 Transform:

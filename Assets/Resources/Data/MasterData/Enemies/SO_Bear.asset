@@ -26,8 +26,8 @@ MonoBehaviour:
     Weight: 1
     AttackInfo:
       Type: 0
-      DamageMultiplier: 0
-      HitCount: 0
+      DamageMultiplier: 1
+      HitCount: 1
     OriginRule: 6
     TargetRule: 2
     LocalTargetGrid: 00000000000000000000000001000000000000000000000000

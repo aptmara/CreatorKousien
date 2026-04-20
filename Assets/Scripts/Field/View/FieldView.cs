@@ -280,5 +280,35 @@ namespace CreatorKousien.Field
                 }
             }
         }
+
+
+
+        /// <summary>
+        /// アクションフェーズで攻撃が発動したマスを一斉に光らせ、自動で消す
+        /// </summary>
+        public void ShowAttackAreaWithAutoOff(List<Vector2Int> positions, float duration = 0.3f)
+        {
+            if (positions == null) return;
+
+            // 1. まず光らせる
+            foreach (var pos in positions)
+            {
+                var cell = GetCellView(pos);
+                if (cell != null) cell.SetAttackHighlight(true);
+            }
+
+            // 2. 指定時間後に消すコルーチンを自分で回す！
+            StartCoroutine(HideAttackAreaRoutine(positions, duration));
+        }
+
+        private System.Collections.IEnumerator HideAttackAreaRoutine(List<Vector2Int> positions, float duration)
+        {
+            yield return new WaitForSeconds(duration);
+            foreach (var pos in positions)
+            {
+                var cell = GetCellView(pos);
+                if (cell != null) cell.SetAttackHighlight(false);
+            }
+        }
     }
 }
