@@ -332,6 +332,9 @@ public class GameManager : MonoBehaviour
 
 
 
+    /// <summary>
+    /// カードUIの更新を行う関数
+    /// </summary>
     private void UpdateCardUI()
     {
         if (_uiManager == null || _handState == null) return;
@@ -347,8 +350,20 @@ public class GameManager : MonoBehaviour
             var cardRuntime = _handState.GetCard(slot);
             if (cardRuntime != null)
             {
-                var currentEffect = cardRuntime.GetCurrentEffect();
-                var uiData = UICardConverter.ConvertToUICardData(cardRuntime.BaseData, currentEffect, cardRuntime.InstanceId.ToString());
+                var currentEffect   = cardRuntime.GetCurrentEffect();
+                var uiData          = UICardConverter.ConvertToUICardData(cardRuntime.BaseData, currentEffect, cardRuntime.InstanceId.ToString());
+
+                if (currentEffect != null && currentEffect.Type.ToString().Contains("Move"))
+                {
+                    switch (slot)
+                    {
+                        case SlotPosition.Up: uiData.Direction = UIDirection.Up; break;
+                        case SlotPosition.Down: uiData.Direction = UIDirection.Down; break;
+                        case SlotPosition.Left: uiData.Direction = UIDirection.Left; break;
+                        case SlotPosition.Right: uiData.Direction = UIDirection.Right; break;
+                    }
+                }
+
                 uiCardDataList.Add(uiData);
             }
             else uiCardDataList.Add(null);
