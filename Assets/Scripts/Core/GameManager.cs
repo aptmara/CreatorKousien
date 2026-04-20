@@ -3,6 +3,10 @@
 // Author: Terada
 // Description: ゲーム全体のライフサイクル管理クラス
 // Created: 2026-04-13
+//
+// Note:
+// - 統合とテスト入力を作成し、動作確認を行いました (4/20 : 浅野)
+// - しょーごに作ってもらったカードをGameManagerに組み込みました！ (4/20 : 浅野)
 //=========================================================================
 using System.Collections.Generic;
 using UnityEngine;
@@ -50,32 +54,42 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private const int PlayerID = 1;
 
-    //==== Manager / Mediator ====
+    // ==== Manager / Mediator ====
     private GameMediator _mediator;                 /// ゲーム全体の調整役
     private BattleManager _battleManager;           /// 戦闘のルールやダメージ計算を管理
     private StageManager _stageManager;             /// ステージの情報を管理
     private TurnManager _turnManager;               /// ターンの進行を管理
 
-    //==== Event / Command ====
+    // ==== Event / Command ====
     private GameEventBus _eventBus;                 /// ゲーム全体のイベントを管理するEventBus
     private CommandDispatcher _dispatcher;          /// コマンドの実行を管理するDispatcher
 
-    //==== Field ====
+    // ==== Field ====
     private FieldView _fieldView;                   /// 盤面の状態を描画するViewクラス
     private FieldService _fieldService;             /// 盤面の状態を管理し、ルールに沿った操作を提供するサービスクラス
     private TileEffectSystem _tileEffect;           /// タイルエフェクトの管理クラス
 
-    //==== UI ====
+    // ==== UI ====
     private UIManager _uiManager;                   /// UI全般を管理するクラス
 
-    //==== Player ====
+    // ==== Player ====
     private PlayerSystem _player;                   /// プレイヤーの状態を管理するSystemクラス
     private PlayerView _playerView;                 /// プレイヤーの描画を管理するViewクラス
 
-    //==== Enemy ====
+    // ==== Enemy ====
     private EnemySystem _enemy;                     /// 敵の状態を管理するSystemクラス
     private readonly Dictionary<int, EnemyView> _enemyViews = new Dictionary<int, EnemyView>();     /// 敵の描画を管理するViewクラスの辞書（ActorIdをキーにして管理）
     private ActionTelegraphSystem _actiontelegraph;                                                 /// 敵の行動予告を管理するクラス
+
+    // ==== Card ====
+    [Header("カード設定")]
+    [SerializeField] private CardData _cardUp;
+    [SerializeField] private CardData _cardDown;
+    [SerializeField] private CardData _cardLeft;
+    [SerializeField] private CardData _cardRight;
+
+    private CardSystem _cardSystem;                 /// カードの状態を管理するSystemクラス
+    private HandState _handState;                   /// プレイヤーの手札の状態を管理するクラス
 
 
 
@@ -203,42 +217,73 @@ public class GameManager : MonoBehaviour
         }
 
         // 1. 基本システム生成
+        // ------------------------------------------------------------
         _eventBus = new GameEventBus();
         _battleManager = new BattleManager();
 
+        // カードシステムと手札の初期化
+        _handState = new HandState();
+        _cardSystem = new CardSystem(_handState);
+
+        // インスペクターでセットしたカードをスロットに配置（テスト用）
+        if (_cardUp) _cardSystem.SetCardToSlot(SlotPosition.Up, new CardRuntimeData(0, _cardUp));
+        if (_cardDown) _cardSystem.SetCardToSlot(SlotPosition.Down, new CardRuntimeData(1, _cardDown));
+        if (_cardLeft) _cardSystem.SetCardToSlot(SlotPosition.Left, new CardRuntimeData(2, _cardLeft));
+        if (_cardRight) _cardSystem.SetCardToSlot(SlotPosition.Right, new CardRuntimeData(3, _cardRight));
+
+
         // 2. UI生成
+        // ------------------------------------------------------------
         InitializeUI();
 
+
         // 3. フィールド生成
+        // ------------------------------------------------------------
         InitializeField();
 
-        // 4. キャラクター生成
+
+        // 4. キャラクター
+        // ------------------------------------------------------------
         InitializeCharacters();
 
+
         // 5. 演出系生成
+        // ------------------------------------------------------------
         _tileEffect = new TileEffectSystem(_fieldService.State);
         // _actiontelegraph = new ActionTelegraphSystem(); ← ここは InitializeCharacters で生成済みなら不要
 
+
         // 6. EventBus配線
+        // ------------------------------------------------------------
         InitEventBus();
 
-        // 7. コマンド登録
-        _dispatcher = SetupCommandDispatcher();
 
-        // 8. TurnManager初期化
+        // 7. TurnManager生成
+        // ------------------------------------------------------------
         _turnManager = GetComponent<TurnManager>();
         if (_turnManager == null)
         {
             _turnManager = gameObject.AddComponent<TurnManager>();
         }
 
-        _turnManager.Initialize(_dispatcher, _eventBus);
+        // 8. コマンドをセットアップしてTurnManagerに渡す
+        // ------------------------------------------------------------
+        _dispatcher = SetupCommandDispatcher();
 
-        // 9. Mediator初期化
+
+        // 9. TurnManager初期化
+        // ------------------------------------------------------------
+        _turnManager.Initialize(_dispatcher, _eventBus, _handState);
+
+
+        // 10. Mediator初期化
+        // ------------------------------------------------------------
         _mediator = new GameMediator();
         _mediator.Initialize(_dispatcher, _eventBus, _turnManager);
 
-        // 10. フィードバック演出
+
+        // 11. フィードバック演出
+        // ------------------------------------------------------------
         InitializeFeedbackSystems();
     }
 
@@ -258,30 +303,25 @@ public class GameManager : MonoBehaviour
 
     void UpdateGameScene()
     {
-        if (_turnManager == null || _player == null) return;
+        if (_mediator == null || _player == null) return;
 
         var keyboard = UnityEngine.InputSystem.Keyboard.current;
         if (keyboard == null) return;
 
-        // 移動の予約
-        if (keyboard.upArrowKey.wasPressedThisFrame) _turnManager.SubmitPlayerAction(new ActionRuntimeData(PlayerID, GridDirection.Up));
-        if (keyboard.downArrowKey.wasPressedThisFrame) _turnManager.SubmitPlayerAction(new ActionRuntimeData(PlayerID, GridDirection.Down));
-        if (keyboard.leftArrowKey.wasPressedThisFrame) _turnManager.SubmitPlayerAction(new ActionRuntimeData(PlayerID, GridDirection.Left));
-        if (keyboard.rightArrowKey.wasPressedThisFrame) _turnManager.SubmitPlayerAction(new ActionRuntimeData(PlayerID, GridDirection.Right));
+        if (keyboard.upArrowKey.wasPressedThisFrame)
+            _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Up));
 
-        // ターン強制終了
-        if (keyboard.spaceKey.wasPressedThisFrame) _turnManager.CompleteCurrentActionAnimation();
+        if (keyboard.downArrowKey.wasPressedThisFrame)
+            _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Down));
 
-        // 攻撃の予約 (Zキー)
-        if (keyboard.zKey.wasPressedThisFrame)
-        {
-            Vector2Int targetPos = _player.RuntimeData.Position + new Vector2Int(1, 0);
-            var targets = new List<Vector2Int> { targetPos };
-            var attackProp = new AttackProperty { Type = AttackPatternType.Normal, DamageMultiplier = 1.5f, HitCount = 1 };
-            _turnManager.SubmitPlayerAction(new ActionRuntimeData(PlayerID, attackProp, targets));
-        }
+        if (keyboard.leftArrowKey.wasPressedThisFrame)
+            _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Left));
 
-        // ダメージUI・演出テスト (Xキー)
+        if (keyboard.rightArrowKey.wasPressedThisFrame)
+            _mediator.SendCommand(new PlayerActionCommand(SlotPosition.Right));
+
+
+        // ダメージテスト
         if (keyboard.xKey.wasPressedThisFrame)
         {
             int damage = 30;
@@ -292,6 +332,22 @@ public class GameManager : MonoBehaviour
             {
                 _eventBus.PublishActorDeath(PlayerID);
             }
+        }
+
+        if (keyboard.zKey.wasPressedThisFrame)
+        {
+            Vector2Int targetPos = _player.RuntimeData.Position + new Vector2Int(1, 0);
+            var targets = new List<Vector2Int> { targetPos };
+
+            ActionProperty attackProp = new ActionProperty
+            {
+                DamageMultiplier = 1.5f,
+                HitCount = 1
+            };
+
+            _mediator.SubmitPlayerAction(
+                new ActionRuntimeData(PlayerID, ActionType.FastAttack, attackProp, targets)
+            );
         }
     }
 
@@ -461,64 +517,6 @@ public class GameManager : MonoBehaviour
         {
             StartCoroutine(WaitAnimationAndProceed());
         };
-
-        // コマンドフェーズ開始時の敵AI処理
-        _eventBus.OnCommandPhaseStarted += () =>
-        {
-            if (_enemy == null || _fieldService == null || _turnManager == null || _player == null) return;
-
-            Vector2Int fieldSize = _fieldService.GetFieldSize();
-            var situation = new BattleSituation
-            {
-                PlayerPos = _player.RuntimeData.Position,
-                MaxX = fieldSize.x - 1,
-                MaxY = fieldSize.y - 1,
-                BorderX = _fieldService.GetBorderX(),
-                IsValidCell = (x, y) => !_fieldService.IsOutOfBounds(x, y) && !_fieldService.IsObstacle(x, y)
-            };
-
-            // 全ての敵に対してAI処理を行い、行動をTurnManagerに提出する
-            var aliveEnemyIds = _enemy.GetAllAliveEnemyIds();
-            foreach (int enemyId in aliveEnemyIds)
-            {
-                var ai = _enemy.GetEnemyAI(enemyId);
-                var runtimeData = _enemy.GetEnemyData(enemyId);
-                if (ai == null || runtimeData == null) continue;
-
-                Vector2Int virtualPos = runtimeData.Position;
-
-                // 敵の行動は最大3回までとする（移動→攻撃→移動なども可能にするため）
-                for (int i = 0; i < 3; i++)
-                {
-                    EnemyIntent intent = ai.Think(situation, virtualPos);
-                    ActionRuntimeData actionData = null;
-
-                    if (intent.Category == ActionCategory.Attack)
-                    {
-                        actionData = new ActionRuntimeData(enemyId, intent.AttackInfo, intent.RawTargetCells);
-                    }
-                    else if (intent.Category == ActionCategory.Move)
-                    {
-                        GridDirection gDir = GridDirection.Up;
-                        if (intent.MoveDirection == Vector2Int.down) gDir = GridDirection.Down;
-                        if (intent.MoveDirection == Vector2Int.left) gDir = GridDirection.Left;
-                        if (intent.MoveDirection == Vector2Int.right) gDir = GridDirection.Right;
-
-                        actionData = new ActionRuntimeData(enemyId, gDir);
-                        virtualPos += intent.MoveDirection;
-                    }
-                    else if (intent.Category == ActionCategory.Special)
-                    {
-                        // actionData = new ActionRuntimeData(enemyId);
-                    }
-
-                    if (actionData != null)
-                    {
-                        _turnManager.SubmitEnemyAction(actionData);
-                    }
-                }
-            }
-        };
     }
 
 
@@ -531,14 +529,18 @@ public class GameManager : MonoBehaviour
     {
         // Dispatcher生成
         var dispatcher = new CommandDispatcher();
+
         // 各種UseCaseの生成
         MoveUseCase moveUseCase = new MoveUseCase(_fieldService, _tileEffect, _eventBus);
         AttackUseCase attackUseCase = new AttackUseCase(_battleManager, _fieldService, _player, _enemy, dispatcher, _eventBus);
         EnemyActionUseCase enemyUseCase = new EnemyActionUseCase(_enemy, _fieldService, _player, _actiontelegraph, dispatcher, _eventBus);
+        PlayerActionUseCase playerActionUseCase = new PlayerActionUseCase(_cardSystem, _turnManager, _player, _fieldService);
+
         // 各種Commandの登録
         dispatcher.Register<MoveCommand>(moveUseCase.Execute);
         dispatcher.Register<AttackCommand>(attackUseCase.Execute);
         dispatcher.Register<EnemyActionCommand>(enemyUseCase.Execute);
+        dispatcher.Register<PlayerActionCommand>(playerActionUseCase.Execute);
 
         return dispatcher;
     }
