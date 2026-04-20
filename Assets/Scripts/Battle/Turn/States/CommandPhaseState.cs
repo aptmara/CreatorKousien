@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CreatorKousien.Command;
 using CreatorKousien.Data;
+using UnityEngine.InputSystem;
 
 namespace CreatorKousien.Battle
 {
@@ -50,7 +51,7 @@ namespace CreatorKousien.Battle
             _enemyPlannedActions.Clear();
 
             // タイマーの初期化
-            _currentTime = _timeLimit;
+            _currentTime = _owner.CommandTimeLimit;
             _isTimeUp = false;
 
             _owner.EventBus.PublishCommandPhaseStarted();
@@ -89,6 +90,8 @@ namespace CreatorKousien.Battle
         public void Update()
         {
             // 時間ゲージのカウントダウンロジック、カード選択等
+            // タイムアップしているか、3手入力済みなら何もしない
+            if (_isTimeUp || _playerSelectedActions.Count >= _owner.MaxInputCount) return;
 
             // 既にタイムアップしているか、3手入力済みなら何もしない
             if (_isTimeUp || _playerSelectedActions.Count >= 3) return;
@@ -112,7 +115,43 @@ namespace CreatorKousien.Battle
                 FillRemainingActionsWithWait();
                 FinishPhase();
             }
+
+            HandleInput();
         }
+
+
+        /// <summary>
+        /// プレイヤーの入力を処理するメソッド。キーボードとゲームパッドの両方に対応しています。
+        /// </summary>
+        private void HandleInput()
+        {
+            // キーボードとゲームパッドの両方に対応した入力処理
+            var kb = Keyboard.current;
+            var pad = Gamepad.current;
+
+            bool pressUp = (kb != null && (kb.upArrowKey.wasPressedThisFrame || kb.wKey.wasPressedThisFrame)) ||
+                           (pad != null && (pad.dpad.up.wasPressedThisFrame || pad.buttonNorth.wasPressedThisFrame));
+            bool pressDown = (kb != null && (kb.downArrowKey.wasPressedThisFrame || kb.sKey.wasPressedThisFrame)) ||
+                             (pad != null && (pad.dpad.down.wasPressedThisFrame || pad.buttonSouth.wasPressedThisFrame));
+            bool pressLeft = (kb != null && (kb.leftArrowKey.wasPressedThisFrame || kb.aKey.wasPressedThisFrame)) ||
+                             (pad != null && (pad.dpad.left.wasPressedThisFrame || pad.buttonWest.wasPressedThisFrame));
+            bool pressRight = (kb != null && (kb.rightArrowKey.wasPressedThisFrame || kb.dKey.wasPressedThisFrame)) ||
+                              (pad != null && (pad.dpad.right.wasPressedThisFrame || pad.buttonEast.wasPressedThisFrame));
+
+            if (pressUp) _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Up));
+            if (pressDown) _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Down));
+            if (pressLeft) _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Left));
+            if (pressRight) _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Right));
+
+            if ((kb != null && kb.spaceKey.wasPressedThisFrame) || (pad != null && pad.rightShoulder.wasPressedThisFrame))
+            {
+                // 決定ボタンでフェーズを強制終了
+                Debug.Log("<color=yellow>[Command Phase] プレイヤーが決定ボタンを押しました。フェーズを終了します。</color>");
+                FillRemainingActionsWithWait();
+                FinishPhase();
+            }
+        }
+
 
         /// <summary>
         /// 時間切れ、またはプレイヤーの決定ボタンで呼ばれる
@@ -134,7 +173,7 @@ namespace CreatorKousien.Battle
             Debug.Log($"[Command] プレイヤーのアクションを予約: {action.Type} ({_playerSelectedActions.Count}/3)");
 
             // 3手選んだら自動で実行フェーズへ
-            if (_playerSelectedActions.Count == 3)
+            if (_playerSelectedActions.Count == _owner.MaxInputCount)
             {
                 FinishPhase();
             }
@@ -152,7 +191,7 @@ namespace CreatorKousien.Battle
         // 足りない手数を待機で埋めるメソッド
         private void FillRemainingActionsWithWait()
         {
-            while (_playerSelectedActions.Count < 3)
+            while (_playerSelectedActions.Count < _owner.MaxInputCount)
             {
                 var waitAction = new ActionRuntimeData(
                     1,
@@ -173,7 +212,7 @@ namespace CreatorKousien.Battle
         private List<ActionRuntimeData> InterleaveActions(List<ActionRuntimeData> pActions, List<ActionRuntimeData> eActions)
         {
             List<ActionRuntimeData> result = new List<ActionRuntimeData>();
-            int maxSteps = 3;
+            int maxSteps = _owner.MaxInputCount;
 
             for (int i = 0; i < maxSteps; i++)
             {
@@ -191,10 +230,10 @@ namespace CreatorKousien.Battle
         /// <param name="action"></param>
         public void AddEnemyAction(ActionRuntimeData action)
         {
-            if (_enemyPlannedActions.Count >= 3) return;
+            if (_enemyPlannedActions.Count >= _owner.MaxInputCount) return;
 
             _enemyPlannedActions.Add(action);
-            Debug.Log($"[Command] 敵のアクションを予約: {action.Type} ({_enemyPlannedActions.Count}/3)");
+            Debug.Log($"[Command] 敵のアクションを予約: {action.Type} ({_enemyPlannedActions.Count}/{_owner.MaxInputCount})");
         }
     }
 }
