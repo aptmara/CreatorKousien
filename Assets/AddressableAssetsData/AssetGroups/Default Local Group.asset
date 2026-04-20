@@ -20,26 +20,8 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 3d98fbf307fad104b8be3c6364724560
-    m_Address: Assets/Resources/Data/LevelData/BattleSetup_Stage1.asset
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - StageData
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7fbc9212f9f0fb0468c9aed0c9f1d3f3
     m_Address: Assets/Resources/Data/LevelData/Stage_02/Stage_02_Setup.asset
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - StageData
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: bab4b6a1a446c0e478ecf23701e374d3
-    m_Address: Assets/Resources/Data/LevelData/BattleSetup_Stage2.asset
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - StageData
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: f46b136bde9119d4482413646329857d
-    m_Address: Assets/Resources/Data/LevelData/BattleSetup_Stage3.asset
     m_ReadOnly: 0
     m_SerializedLabels:
     - StageData

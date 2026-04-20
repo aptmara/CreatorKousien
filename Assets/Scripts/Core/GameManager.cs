@@ -54,7 +54,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     FieldView _fieldViewPrefab;
     FieldView _fieldView;// フィールド描画情報
-    FieldService _fieldService;// 
+    FieldService _fieldService;//
 
     //==== EventBus ===
     GameEventBus _eventBus;
@@ -76,7 +76,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private TestTimerView _timerPrefab;
     TileEffectSystem _tileEffect;
-    
+
     //==== Enemy ====
     /// <summary>
     /// 敵システム
@@ -136,7 +136,7 @@ public class GameManager : MonoBehaviour
         // 読み込まれたシーンに応じて初期化を変更
         if (scene.name == "Title")
         {
-            Debug.Log("TitleSceneがロードされた");   
+            Debug.Log("TitleSceneがロードされた");
         }
         else if(scene.name == "Select")
         {
@@ -173,13 +173,13 @@ public class GameManager : MonoBehaviour
         }
         // Setup
         selectView.Setup(_stageManager, SceneChangeStart);
-        
+
     }
 
     void InitializeGameScene()
     {
         Debug.Log("[GameManager] GameSceneStart");
-        
+
         // BattleSetupDataの取得
         _setupData = _stageManager.GetSelectedBattleSetupData();
         if(_setupData == null)
@@ -193,7 +193,7 @@ public class GameManager : MonoBehaviour
 
         // FieldView初期化
         _fieldView = Instantiate(_fieldViewPrefab);
-        
+
         // FieldServiceの生成
         _fieldService = new FieldService();
         _fieldService.Initialize(_setupData.StageData);
@@ -326,9 +326,9 @@ public class GameManager : MonoBehaviour
 
 
         // 戻って来た通知を受け取って画面を動かす
-        _eventBus.OnTelegraphRequested += (targetCells, isWarning) =>
+        _eventBus.OnTelegraphRequested += (targetCells, isWarning, stepOrder) =>
         {
-            _fieldView.ShowTelegraph(targetCells, isWarning);
+            _fieldView.ShowTelegraph(targetCells, isWarning, stepOrder);
         };
         _eventBus.OnAttackHit += (targetActorId) =>
         {
@@ -366,7 +366,7 @@ public class GameManager : MonoBehaviour
         // 各種UseCaseの生成
         MoveUseCase moveUseCase = new MoveUseCase(_fieldService, _tileEffect, _eventBus);
         AttackUseCase attackUseCase = new AttackUseCase(_battleManager, _fieldService, _player, _enemy, dispatcher, _eventBus);
-        EnemyActionUseCase enemyUseCase = new EnemyActionUseCase(_enemy, _fieldService, _player, _actiontelegraph, dispatcher);
+        EnemyActionUseCase enemyUseCase = new EnemyActionUseCase(_enemy, _fieldService, _player, _actiontelegraph, dispatcher, _eventBus);
         // 各種Commandの登録
         dispatcher.Register<MoveCommand>(moveUseCase.Execute);
         dispatcher.Register<AttackCommand>(attackUseCase.Execute);
