@@ -29,6 +29,12 @@ namespace CreatorKousien.View.UI
 
         [Header("アクションがない場合のアイコン")]
         [SerializeField] private Sprite emptyIcon;              /// アクションがない場合のアイコン
+        [Header("実行中ハイライト設定")]
+        [SerializeField] private Color timelineSlotColor = Color.white;
+        [SerializeField] private Color activeTimelineSlotColor = new Color(1f, 0.85f, 0.2f, 1f);
+        [SerializeField] private Vector3 activeTimelineSlotScale = new Vector3(1.15f, 1.15f, 1f);
+
+        private int _activeTimelineIndex = -1;
 
         /// <summary>
         /// 初期化
@@ -36,6 +42,7 @@ namespace CreatorKousien.View.UI
         public void Initialize(GameEventBus eventBus)
         {
             eventBus.OnTimelineUpdated += UpdateDisplay;
+            eventBus.OnTimelineActionExecutionChanged += UpdateExecutionHighlight;
             ClearDisplay();
         }
 
@@ -52,7 +59,8 @@ namespace CreatorKousien.View.UI
                 {
                     slot.gameObject.SetActive(true);            // 常に表示しておく！
                     slot.sprite = emptyIcon;                    // デフォルトは「空の枠」
-                    slot.color = new Color(1f, 1f, 1f, 0.3f);   // 未入力感を持たせるため半透明(Alpha 0.3)にする
+                    slot.color = new Color(timelineSlotColor.r, timelineSlotColor.g, timelineSlotColor.b, 0.3f);   // 未入力感を持たせるため半透明(Alpha 0.3)にする
+                    slot.rectTransform.localScale = Vector3.one;
                 }
             }
         }
@@ -77,7 +85,7 @@ namespace CreatorKousien.View.UI
                     if (i < playerActions.Count)
                     {
                         timelineSlots[pSlotIndex].sprite = GetIcon(playerActions[i]);
-                        timelineSlots[pSlotIndex].color = Color.white;
+                        timelineSlots[pSlotIndex].color = timelineSlotColor;
                     }
                 }
 
@@ -88,10 +96,12 @@ namespace CreatorKousien.View.UI
                     if (i < enemyActions.Count)
                     {
                         timelineSlots[eSlotIndex].sprite = GetIcon(enemyActions[i]);
-                        timelineSlots[eSlotIndex].color = Color.white;
+                        timelineSlots[eSlotIndex].color = timelineSlotColor;
                     }
                 }
             }
+
+            ApplyExecutionHighlight();
         }
 
 
@@ -110,6 +120,44 @@ namespace CreatorKousien.View.UI
                 case ActionType.Wait:
                 case ActionType.Guard: return waitIcon;
                 default: return unknownIcon;
+            }
+        }
+
+        /// <summary>
+        /// 実行中のタイムライン枠を更新します。
+        /// </summary>
+        /// <param name="activeTimelineIndex">強調するタイムライン枠。強調解除時は-1</param>
+        private void UpdateExecutionHighlight(int activeTimelineIndex)
+        {
+            _activeTimelineIndex = activeTimelineIndex;
+            ApplyExecutionHighlight();
+        }
+
+        /// <summary>
+        /// 現在の実行インデックスに応じてタイムラインの見た目を調整します。
+        /// </summary>
+        private void ApplyExecutionHighlight()
+        {
+            if (timelineSlots == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < timelineSlots.Count; i++)
+            {
+                Image slot = timelineSlots[i];
+                if (slot == null)
+                {
+                    continue;
+                }
+
+                bool hasAction = slot.sprite != null && slot.sprite != emptyIcon;
+                bool isActive = hasAction && i == _activeTimelineIndex;
+
+                slot.color = hasAction
+                    ? (isActive ? activeTimelineSlotColor : timelineSlotColor)
+                    : new Color(timelineSlotColor.r, timelineSlotColor.g, timelineSlotColor.b, 0.3f);
+                slot.rectTransform.localScale = isActive ? activeTimelineSlotScale : Vector3.one;
             }
         }
     }

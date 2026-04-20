@@ -64,6 +64,11 @@ namespace CreatorKousien.Core
         /// </summary>
         public event System.Action<List<ActionType>, List<ActionType>> OnTimelineUpdated;
 
+        /// <summary>
+        /// 実行フェーズで現在消化中のタイムライン枠を通知するイベント
+        /// </summary>
+        public event Action<int> OnTimelineActionExecutionChanged;
+
 
         /// <summary>
         /// アクターの死亡を通知するイベント
@@ -237,6 +242,15 @@ namespace CreatorKousien.Core
         public void PublishTimelineUpdated(List<ActionType> enemyActions, List<ActionType> playerActions)
         {
             OnTimelineUpdated?.Invoke(enemyActions, playerActions);
+        }
+
+        /// <summary>
+        /// 実行中のタイムライン枠更新イベントを発火するメソッド
+        /// </summary>
+        /// <param name="timelineIndex">強調するタイムライン枠。強調解除時は-1</param>
+        public void PublishTimelineActionExecutionChanged(int timelineIndex)
+        {
+            OnTimelineActionExecutionChanged?.Invoke(timelineIndex);
         }
     }
 }

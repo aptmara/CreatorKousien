@@ -48,6 +48,7 @@ namespace CreatorKousien.Battle
 
         // 実行フェーズで1手ずつ取り出すためのアクション予約リスト
         private Queue<ActionRuntimeData> _actionQueue = new Queue<ActionRuntimeData>();
+        private int _currentTimelineActionIndex = -1;
 
         /// <summary>
         /// バトル開始時の初期化処理
@@ -58,6 +59,7 @@ namespace CreatorKousien.Battle
             _dispatcher = dispatcher;
             _eventBus = eventBus;
             _phaseManager = new PhaseManager();
+            _currentTimelineActionIndex = -1;
 
             _commandPhase = new CommandPhaseState(this, handState);
             _actionPhase = new ActionPhaseState(this);
@@ -84,6 +86,8 @@ namespace CreatorKousien.Battle
         public void SetActionQueue(List<ActionRuntimeData> actions)
         {
             _actionQueue.Clear();
+            _currentTimelineActionIndex = -1;
+            _eventBus?.PublishTimelineActionExecutionChanged(-1);
             foreach (var action in actions)
             {
                 _actionQueue.Enqueue(action);
@@ -99,12 +103,16 @@ namespace CreatorKousien.Battle
             if (_actionQueue.Count == 0)
             {
                 // 全ての手順が終了したらターン終了フェーズへ
+                _currentTimelineActionIndex = -1;
+                _eventBus?.PublishTimelineActionExecutionChanged(-1);
                 _phaseManager.TransitionTo(PhaseType.TurnEnd);
                 return;
             }
 
             // キューから1手取り出す
             var nextAction = _actionQueue.Dequeue();
+            _currentTimelineActionIndex++;
+            _eventBus?.PublishTimelineActionExecutionChanged(_currentTimelineActionIndex);
 
             // チケットのカテゴリに応じて、適切なCommandとしてDispatcherに投げる
             switch (nextAction.Type)
