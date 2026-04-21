@@ -34,6 +34,8 @@ namespace CreatorKousien.Battle
         private float _currentTime;
         private bool _isTimeUp;
 
+        private HashSet<SlotPosition> _usedSlots = new HashSet<SlotPosition>();
+
         public CommandPhaseState(TurnManager owner, HandState handState)
         {
             _owner = owner;
@@ -43,6 +45,9 @@ namespace CreatorKousien.Battle
         public void Enter()
         {
             Debug.Log("--- コマンドフェーズ開始 ---");
+
+            // フェーズ開始時に、前のターンの選択をリセット
+            _usedSlots.Clear();
 
             // デバッグログ: 現在のカード状況を報告
             ReportCurrentHand();
@@ -139,10 +144,31 @@ namespace CreatorKousien.Battle
             bool pressRight = (kb != null && (kb.rightArrowKey.wasPressedThisFrame || kb.dKey.wasPressedThisFrame)) ||
                               (pad != null && (pad.dpad.right.wasPressedThisFrame || pad.buttonEast.wasPressedThisFrame));
 
-            if (pressUp) _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Up));
-            if (pressDown) _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Down));
-            if (pressLeft) _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Left));
-            if (pressRight) _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Right));
+            var upCard = _handState.GetCard(SlotPosition.Up);
+            var downCard = _handState.GetCard(SlotPosition.Down);
+            var leftCard = _handState.GetCard(SlotPosition.Left);
+            var rightCard = _handState.GetCard(SlotPosition.Right);
+
+            if (pressUp && upCard != null && !_usedSlots.Contains(SlotPosition.Up))
+            {
+                _usedSlots.Add(SlotPosition.Up);
+                _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Up));
+            }
+            if (pressDown && downCard != null && !_usedSlots.Contains(SlotPosition.Down))
+            {
+                _usedSlots.Add(SlotPosition.Down);
+                _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Down));
+            }
+            if (pressLeft && leftCard != null && !_usedSlots.Contains(SlotPosition.Left))
+            {
+                _usedSlots.Add(SlotPosition.Left);
+                _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Left));
+            }
+            if (pressRight && rightCard != null && !_usedSlots.Contains(SlotPosition.Right))
+            {
+                _usedSlots.Add(SlotPosition.Right);
+                _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Right));
+            }
 
             if ((kb != null && kb.spaceKey.wasPressedThisFrame) || (pad != null && pad.rightShoulder.wasPressedThisFrame))
             {
@@ -257,6 +283,17 @@ namespace CreatorKousien.Battle
             }
 
             _owner.EventBus.PublishTimelineUpdated(eTypes, pTypes);
+        }
+
+
+        /// <summary>
+        /// このスロットはもう押した？と聞かれたときに答える機能
+        /// </summary>
+        /// <param name="slot"></param>
+        /// <returns></returns>
+        public bool IsSlotUsed(SlotPosition slot)
+        {
+            return _usedSlots.Contains(slot);
         }
     }
 }

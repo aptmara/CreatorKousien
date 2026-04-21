@@ -235,7 +235,6 @@ public class GameManager : MonoBehaviour
         // 2. UI生成
         // ------------------------------------------------------------
         InitializeUI();
-        UpdateCardUI(); // カードUIを初期状態に更新
 
 
         // 3. フィールド生成
@@ -278,6 +277,7 @@ public class GameManager : MonoBehaviour
 
         _turnManager.OnPlayerActionSubmitted += UpdateCardUI; // プレイヤーが行動を提出したらカードUIを更新する
 
+        UpdateCardUI(); // カードUIを初期状態に更新
 
         // 10. Mediator初期化
         // ------------------------------------------------------------
@@ -369,6 +369,8 @@ public class GameManager : MonoBehaviour
                         case SlotPosition.Right: uiData.Direction = UIDirection.Right; break;
                     }
                 }
+
+                uiData.IsUsed = _turnManager.IsSlotUsedThisTurn(slot); // 裏面なら使用済みとみなす
 
                 uiCardDataList.Add(uiData);
             }
