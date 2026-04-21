@@ -149,22 +149,22 @@ namespace CreatorKousien.Battle
             var leftCard = _handState.GetCard(SlotPosition.Left);
             var rightCard = _handState.GetCard(SlotPosition.Right);
 
-            if (pressUp && upCard != null && upCard.CurrentFace == CardFace.Front)
+            if (pressUp && upCard != null && !_usedSlots.Contains(SlotPosition.Up))
             {
                 _usedSlots.Add(SlotPosition.Up);
                 _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Up));
             }
-            if (pressDown && downCard != null && downCard.CurrentFace == CardFace.Front)
+            if (pressDown && downCard != null && !_usedSlots.Contains(SlotPosition.Down))
             {
                 _usedSlots.Add(SlotPosition.Down);
                 _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Down));
             }
-            if (pressLeft && leftCard != null && leftCard.CurrentFace == CardFace.Front)
+            if (pressLeft && leftCard != null && !_usedSlots.Contains(SlotPosition.Left))
             {
                 _usedSlots.Add(SlotPosition.Left);
                 _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Left));
             }
-            if (pressRight && rightCard != null && rightCard.CurrentFace == CardFace.Front)
+            if (pressRight && rightCard != null && !_usedSlots.Contains(SlotPosition.Right))
             {
                 _usedSlots.Add(SlotPosition.Right);
                 _owner.Dispatcher.Dispatch(new PlayerActionCommand(SlotPosition.Right));
