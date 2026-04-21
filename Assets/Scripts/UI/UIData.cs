@@ -62,6 +62,8 @@ namespace CreatorKousien.View.UI
         public Sprite Icon;
         public string Description;
         public UIDirection Direction = UIDirection.None;
+
+        public bool IsUsed = false;                         /// カードが使用されたかどうかのフラグ
     }
 
     [System.Serializable]

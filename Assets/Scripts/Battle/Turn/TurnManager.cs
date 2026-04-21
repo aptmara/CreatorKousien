@@ -10,6 +10,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using CreatorKousien.Core;
+using CreatorKousien.Data;
 
 namespace CreatorKousien.Battle
 {
@@ -202,5 +203,19 @@ namespace CreatorKousien.Battle
             }
         }
 
+
+        /// <summary>
+        /// 現在のターンでスロットが既に使用済みか判定する
+        /// </summary>
+        /// <param name="slot"></param>
+        /// <returns></returns>
+        public bool IsSlotUsedThisTurn(SlotPosition slot)
+        {
+            if (_phaseManager != null && _phaseManager.CurrentPhaseType == PhaseType.Command)
+            {
+                return _commandPhase.IsSlotUsed(slot);
+            }
+            return false;
+        }
     }
 }

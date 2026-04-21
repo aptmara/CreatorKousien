@@ -104,6 +104,47 @@ namespace CreatorKousien.View.UI
                     directionIconRoot.SetActive(false);
                 }
             }
+
+            if (data.IsUsed)
+            {
+                // 裏面なら全体を暗いグレーにする
+                if (iconImage != null)
+                {
+                    iconImage.color = new Color(0.4f, 0.4f, 0.4f, 1f);
+                }
+                if (nameText != null)
+                {
+                    nameText.color = new Color(0.6f, 0.6f, 0.6f, 1f);
+                }
+                if (costText != null)
+                {
+                    costText.color = new Color(0.6f, 0.6f, 0.6f, 1f);
+                }
+                if (descriptionText != null)
+                {
+                    descriptionText.color = new Color(0.6f, 0.6f, 0.6f, 1f);
+                }
+            }
+            else
+            {
+                // 表面なら通常の色にする
+                if (iconImage != null)
+                {
+                    iconImage.color = Color.white;
+                }
+                if (nameText != null)
+                {
+                    nameText.color = Color.white;
+                }
+                if (costText != null)
+                {
+                    costText.color = Color.white;
+                }
+                if (descriptionText != null)
+                {
+                    descriptionText.color = Color.white;
+                }
+            }
         }
 
         public UICardData GetCardData()
