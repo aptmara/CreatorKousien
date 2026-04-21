@@ -34,10 +34,14 @@ namespace CreatorKousien.Field
         [Header("カメラ設定")]
         [Tooltip("カメラの高さ")]
         [SerializeField] private float _cameraHeight = 4.5f;      // カメラの高さ
-        [Tooltip("カメラのZ方向の引き")]
+        [Tooltip("カメラのX方向のオフセット（左右のズレ）")]
+        [SerializeField] private float _cameraOffsetX = -5.0f;
+        [Tooltip("カメラのZ方向のオフセット（前後のズレ）")]
         [SerializeField] private float _cameraOffsetZ = -7f;    // カメラのZ方向の引き
         [Tooltip("カメラのX軸の回転角度")]
         [SerializeField] private float _cameraAngleX = 35f;   // カメラのX軸の回転角度
+        [Tooltip("カメラのY軸の回転角度（左右の首振り角度）")]
+        [SerializeField] private float _cameraAngleY = 60f;
 
 
         // 生成したセルのリスト
@@ -132,19 +136,20 @@ namespace CreatorKousien.Field
                 return;
             }
 
-            // 盤面の中心を計算
-            float centerX = (state.Width - 1) * stageData.CellSize / 2f;
-            if (stageData.BorderGap > 0f)
-            {
-                centerX += stageData.BorderGap / 2f;
-            }
+            // 盤面のZ軸（縦のライン）の中心を計算
             float centerZ = -(state.Height - 1) * stageData.CellSize / 2f;
 
-            // カメラの位置と角度をセット
-            mainCam.transform.position = new Vector3(centerX, _cameraHeight, centerZ + _cameraOffsetZ);
-            mainCam.transform.rotation = Quaternion.Euler(_cameraAngleX, 0, 0);
+            // インスペクターで設定した OffsetX と OffsetZ を直接足し引きする
+            float cameraX = _cameraOffsetX;
+            float cameraZ = centerZ + _cameraOffsetZ;
 
-            Debug.Log($"[FieldView] カメラの位置を調整しました。位置: {mainCam.transform.position}, 角度: {mainCam.transform.rotation.eulerAngles}");
+            // カメラの位置をセット
+            mainCam.transform.position = new Vector3(cameraX, _cameraHeight, cameraZ);
+
+            // カメラの角度をセット（AngleXで見下ろし、AngleYで首振り！）
+            mainCam.transform.rotation = Quaternion.Euler(_cameraAngleX, _cameraAngleY, 0f);
+
+            Debug.Log($"[FieldView] 斜めカメラをセットしました！位置: {mainCam.transform.position}, 角度: {mainCam.transform.rotation.eulerAngles}");
         }
 
 

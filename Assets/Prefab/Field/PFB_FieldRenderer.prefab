@@ -47,9 +47,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FieldView
   _gridParent: {fileID: 1574615716893404458}
   _cellPrefab: {fileID: 8499134434229793095, guid: e64bbbc86208b8a449675e5ddda5d1d8, type: 3}
-  _cameraHeight: 4.4
-  _cameraOffsetZ: -6
-  _cameraAngleX: 35
+  _cameraHeight: 2.34
+  _cameraOffsetX: -2.6
+  _cameraOffsetZ: -2.3
+  _cameraAngleX: 20
+  _cameraAngleY: 60
 --- !u!1 &2893705828180454246
 GameObject:
   m_ObjectHideFlags: 0

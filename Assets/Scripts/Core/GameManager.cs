@@ -405,7 +405,10 @@ public class GameManager : MonoBehaviour
         if (_timerPrefab != null)
         {
             Vector3 timerPosition = new Vector3(4.375f, 2.5f, 0f);
-            var timerInstance = Instantiate(_timerPrefab, timerPosition, Quaternion.identity);
+
+            Quaternion timerRotation = Camera.main != null ? Camera.main.transform.rotation : Quaternion.identity;
+
+            var timerInstance = Instantiate(_timerPrefab, timerPosition, timerRotation);
             timerInstance.Initialize(_eventBus);
         }
 
