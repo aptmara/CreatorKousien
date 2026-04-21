@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8b83289a05446744bea2aac39d3c1f6, type: 3}
   m_Name: Stage_02_Field
   m_EditorClassIdentifier: Assembly-CSharp::CreatorKousien.Data.StageData
-  _width: 6
+  _width: 2
   _height: 3
-  _borderX: 3
-  CellSize: 1.5
-  BorderGap: 1.5
+  _borderX: 1
+  CellSize: 2
+  BorderGap: 4.5
   BorderPrefab: {fileID: 6644790013973758042, guid: f6b436d072149b84ca00f28288876136, type: 3}
   ObstaclePositions: []
-  _playerStartPosition: {x: 1, y: 1}
+  _playerStartPosition: {x: 0, y: 0}
   PlayerDefaultTile: {fileID: 11400000, guid: 4f1d1c0c71057174f9279a40a873120f, type: 2}
   EnemyDefaultTile: {fileID: 11400000, guid: 55b9258eedc583e4fbe6afd686c8bd44, type: 2}
   PlayerSpecialTileRules: []
