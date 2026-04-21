@@ -100,11 +100,13 @@ namespace CreatorKousien.UseCase
                 case TargetAreaType.FrontPierce2:
                     cells.Add(new Vector2Int(1, 0));
                     cells.Add(new Vector2Int(2, 0));
+                    cells.Add(new Vector2Int(3, 0));
                     break;
 
                 case TargetAreaType.Surround:
-                    cells.Add(new Vector2Int(1, 0)); cells.Add(new Vector2Int(-1, 0));
-                    cells.Add(new Vector2Int(0, 1)); cells.Add(new Vector2Int(0, -1));
+                    cells.Add(new Vector2Int(1, -1));
+                    cells.Add(new Vector2Int(1, 0));
+                    cells.Add(new Vector2Int(1, 1));
                     break;
 
                 case TargetAreaType.Self:
