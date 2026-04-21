@@ -11,9 +11,25 @@ using System.Collections.Generic;
 using UnityEngine;
 using CreatorKousien.Core;
 using CreatorKousien.Data;
+using UnityEngine.Rendering;
 
 namespace CreatorKousien.Battle
 {
+    /// <summary>
+    /// 1手毎のプレイヤーと敵のアクションをまとめる箱
+    /// </summary>
+    public class BattleStep
+    {
+        public ActionRuntimeData PlayerAction {  get; set; }
+        public ActionRuntimeData EnemyAction { get; set; }
+
+        public BattleStep(ActionRuntimeData p, ActionRuntimeData e)
+        {
+            PlayerAction = p;
+            EnemyAction = e;
+        }
+    }
+
     public class TurnManager : MonoBehaviour
     {
         [Header("コマンドフェーズの設定")]
@@ -47,8 +63,14 @@ namespace CreatorKousien.Battle
         private CommandPhaseState _commandPhase;
         private ActionPhaseState  _actionPhase;
 
-        // 実行フェーズで1手ずつ取り出すためのアクション予約リスト
-        private Queue<ActionRuntimeData> _actionQueue = new Queue<ActionRuntimeData>();
+        // ステップ単位のキューと、そのステップ内で順番に処理するマイクロキュー
+        private Queue<BattleStep> _stepQueue = new Queue<BattleStep>();
+        private Queue<ActionRuntimeData> _microQueue = new Queue<ActionRuntimeData>();
+
+        // このステップでキャンセルされたアクターのIDのリスト
+        private HashSet<int> _cancelledActorsThisStep = new HashSet<int>();
+
+        private BattleStep _currentStep;
         private int _currentTimelineActionIndex = -1;
 
         /// <summary>
@@ -83,17 +105,19 @@ namespace CreatorKousien.Battle
         /// <summary>
         /// 外部から決定したアクションリストを受け取りキューに積める
         /// </summary>
-        /// <param name="actions"></param>
-        public void SetActionQueue(List<ActionRuntimeData> actions)
+        /// <param name="steps"></param>
+        public void SetActionQueue(List<BattleStep> steps)
         {
-            _actionQueue.Clear();
+            _stepQueue.Clear();
+            _microQueue.Clear();
             _currentTimelineActionIndex = -1;
             _eventBus?.PublishTimelineActionExecutionChanged(-1);
-            foreach (var action in actions)
+
+            foreach (var step in steps)
             {
-                _actionQueue.Enqueue(action);
+                _stepQueue.Enqueue(step);
             }
-            Debug.Log($"[TurnManager] アクションキューを構築しました。件数: {_actionQueue.Count}");
+            Debug.Log($"[TurnManager] {steps.Count}ステップ分の同時アクションキューを構築しました。");
         }
 
         /// <summary>
@@ -101,52 +125,120 @@ namespace CreatorKousien.Battle
         /// </summary>
         public void ExecuteNextAction()
         {
-            if (_actionQueue.Count == 0)
+            // 1. 現在のステップ内にまだ未実行のアクションがあればそれを実行
+            if (_microQueue.Count > 0)
             {
                 // 全ての手順が終了したらターン終了フェーズへ
-                _currentTimelineActionIndex = -1;
-                _eventBus?.PublishTimelineActionExecutionChanged(-1);
-                _phaseManager.TransitionTo(PhaseType.TurnEnd);
+                var microAction = _microQueue.Dequeue();
+
+                // 順番が回ってきた時に、すでにキャンセルされていたら待機にする
+                if (_cancelledActorsThisStep.Contains(microAction.ActorId))
+                {
+                    Debug.Log($"[TurnManager] ActorID:{microAction.ActorId} の行動はキャンセル(スタン)されているため不発！");
+                    microAction = new ActionRuntimeData(microAction.ActorId);
+                }
+
+                DispatchAction(microAction);
                 return;
             }
 
-            // キューから1手取り出す
-            var nextAction = _actionQueue.Dequeue();
-            _currentTimelineActionIndex++;
-            _eventBus?.PublishTimelineActionExecutionChanged(_currentTimelineActionIndex);
+            // 2. ステップが残っていれば、次のステップを取り出して【三すくみ判定】を行う
+            if (_stepQueue.Count > 0)
+            {
+                _cancelledActorsThisStep.Clear();
+                _currentStep = _stepQueue.Dequeue();
 
-            // チケットのカテゴリに応じて、適切なCommandとしてDispatcherに投げる
+                // 取り出した後に、UIへ通知を行う
+                _currentTimelineActionIndex++;
+                _eventBus?.PublishTimelineActionExecutionChanged(_currentTimelineActionIndex);
+
+                var pAction = _currentStep.PlayerAction;
+                var eAction = _currentStep.EnemyAction;
+
+                // 優先度で並び替えてマイクロキューに入れる
+                int pPriority = GetPriority(pAction.Type);
+                int ePriority = GetPriority(eAction.Type);
+
+                if (pPriority >= ePriority)
+                {
+                    _microQueue.Enqueue(pAction);
+                    _microQueue.Enqueue(eAction);
+                }
+                else
+                {
+                    _microQueue.Enqueue(eAction);
+                    _microQueue.Enqueue(pAction);
+                }
+
+                // キューに詰めたので、1つ目のアクションを実行へ回す
+                ExecuteNextAction();
+                return;
+            }
+
+            // 3. 全て終了したらターンエンド
+            _currentTimelineActionIndex = -1;
+            _eventBus?.PublishTimelineActionExecutionChanged(-1);
+            _phaseManager.TransitionTo(PhaseType.TurnEnd);
+        }
+
+        /// <summary>
+        /// アクションのシステム絶対優先度
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        private int GetPriority(ActionType type)
+        {
+            switch (type)
+            {
+                case ActionType.Guard:      return 40;  // ガードは最速
+                case ActionType.Move:       return 30;  // 移動で避けるのが次
+                case ActionType.FastAttack: return 20;  // 出の早い攻撃
+                case ActionType.WideAttack: return 10;  // 大振り
+                default:                    return 0;   // 待機
+            }
+        }
+
+        /// <summary>
+        /// コマンドの発行
+        /// </summary>
+        /// <param name="nextAction"></param>
+        private void DispatchAction(ActionRuntimeData nextAction)
+        {
+            // 相手が今何をしているかを取得
+            Dictionary<int, ActionType> stepActions = new Dictionary<int, ActionType>();
+            if (_currentStep != null)
+            {
+                stepActions[_currentStep.PlayerAction.ActorId] = _currentStep.PlayerAction.Type;
+                stepActions[_currentStep.EnemyAction.ActorId] = _currentStep.EnemyAction.Type;
+            }
+
             switch (nextAction.Type)
             {
-                // AttackUseCaseへ
                 case ActionType.FastAttack:
                 case ActionType.WideAttack:
                     _dispatcher.Dispatch(new Command.AttackCommand(
                         nextAction.ActorId,
+                        nextAction.Type,
                         nextAction.Property,
                         nextAction.TargetCells,
+                        stepActions,
                         nextAction.IsDynamicOrigin,
-                        nextAction.RelativeCells
+                        nextAction.RelativeCells,
+                        (targetId) => _cancelledActorsThisStep.Add(targetId)
                     ));
                     break;
 
-                // MoveUseCaseへ
                 case ActionType.Move:
-                    _dispatcher.Dispatch(new Command.MoveCommand(
-                        nextAction.ActorId,
-                        nextAction.MoveDirection,
-                        1));    // 1マス移動
+                    _dispatcher.Dispatch(new Command.MoveCommand(nextAction.ActorId, nextAction.MoveDirection, 1));
                     break;
 
                 case ActionType.Guard:
-                    // TODO: 将来的にGuardCommandを発行
-                    Debug.Log($"[TurnManager] ActorID:{nextAction.ActorId} は防御(Guard)の構えをとった。");
+                    Debug.Log($"[TurnManager] ActorID:{nextAction.ActorId} は防御の構えをとった。(Guard)");
                     _eventBus.PublishActionLogicCompleted(nextAction.ActorId);
                     break;
 
                 default:
-                    // 待機の場合
-                    Debug.Log($"[TurnManager] ActorID:{nextAction.ActorId} は待機、または行動をスキップした。");
+                    Debug.Log($"[TurnManager] ActorID:{nextAction.ActorId} は待機/スタンした。(Wait)");
                     _eventBus.PublishActionLogicCompleted(nextAction.ActorId);
                     break;
             }
