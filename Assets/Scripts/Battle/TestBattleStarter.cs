@@ -386,23 +386,6 @@ public class TestBattleStarter : MonoBehaviour
         {
             // _mediator.SendCommand(new EnemyActionCommand(2));
         }
-
-        // Vキー: ターン進行！
-        if (keyboard.vKey.wasPressedThisFrame)
-        {
-            Debug.Log("<color=orange>[TestBattleStarter] ターン進行！敵が行動します！</color>");
-
-            // 1. 予告のターンを減らす
-            telegraphSystem.TickAll();
-
-            // 2. 残りのターンが0以下になった予告を発動する
-            var expiredTelegraphs = telegraphSystem.ExtractExpiredTelegraph();
-
-            foreach (var t in expiredTelegraphs)
-            {
-                _mediator.SendCommand(new AttackCommand(t.SourceActorId, t.Property, t.TargetCells));
-            }
-        }
     }
 
     /// <summary>

@@ -76,7 +76,6 @@ namespace CreatorKousien.UseCase
                 {
                     finalTargetCells.Add(currentPos + relPos);
                 }
-                Debug.Log($"[DynamicAttack] {actorLabel} が現在地 {currentPos} を基準に攻撃！");
             }
 
             // 攻撃が発動した瞬間に対象のマスをEventBusで通知 (4/19 追加)
@@ -99,22 +98,53 @@ namespace CreatorKousien.UseCase
             // 3. 攻撃者の基礎攻撃力を取得
             int attackerAttack = GetBaseAttack(command.SourceActorId);
 
-            // 4. ダメージを計算
-            int finalDamage = _battleManager.CalculateDamage(attackerAttack, command.Property);
-
-            // 5. SystemにHPを減らすように指示する
+            // 4. 対象ごとの三竦み判定とダメージ適用を行う
             foreach (int targetId in targetActorIds)
             {
                 string targetLabel = GetActorLabel(targetId);
-                Debug.Log($"<b>[ATTACK]</b> {actorLabel} ⇒ {targetLabel} に <b><color=orange>{finalDamage}</color></b> ダメージ！");
 
-                ApplyDamageToSystem(targetId, finalDamage);
+                // 対象がこのStepで何を行おうとしているかを取得
+                ActionType defenderAction = ActionType.Wait;
+                if (command.StepActions != null && command.StepActions.TryGetValue(targetId, out ActionType act))
+                {
+                    defenderAction = act;
+                }
 
-                // ダメージを与えたことをイベントで通知 (4/18 追加)
-                _eventBus.PublishDamageTaken(targetId, finalDamage);
+                // 三竦み判定
+                ClashResult clash = _battleManager.EvaluateClash(command.AttackerType, defenderAction);
+
+                // ダメージ計算
+                int finalDamage = _battleManager.CalculateDamage(attackerAttack, command.Property, clash);
+
+                // 結果に応じたログとエフェクト処理
+                switch (clash)
+                {
+                    case ClashResult.CancelTarget:
+                        Debug.Log($"<color=yellow><b>[CLASH: CANCEL]</b></color> {actorLabel} の素早い攻撃が {targetLabel} の大振りを潰した！");
+                        command.OnCancelTarget?.Invoke(targetId);
+                        break;
+
+                    case ClashResult.GuardBreak:
+                        Debug.Log($"<color=red><b>[CLASH: BREAK]</b></color> {actorLabel} の範囲攻撃が {targetLabel} のガードを粉砕した！");
+                        break;
+
+                    case ClashResult.Blocked:
+                        Debug.Log($"<color=cyan><b>[CLASH: BLOCKED]</b></color> {actorLabel} の攻撃は {targetLabel} のガードに阻まれた！");
+                        break;
+
+                    default:
+                        Debug.Log($"<b>[ATTACK]</b> {actorLabel} ⇒ {targetLabel} に <b><color=orange>{finalDamage}</color></b> ダメージ！");
+                        break;
+                }
+
+                // ガードされていなければHPを減らす
+                if (finalDamage > 0)
+                {
+                    ApplyDamageToSystem(targetId, finalDamage);
+                    _eventBus.PublishDamageTaken(targetId, finalDamage);
+                }
             }
 
-            // ロジックが全て終わったので完了通知
             _eventBus.PublishActionLogicCompleted(command.SourceActorId);
         }
 
@@ -169,6 +199,12 @@ namespace CreatorKousien.UseCase
                     _eventBus.PublishActorDeath(targetId);
                 }
             }
+        }
+
+
+        private ActionType GetDefenderActionTypeStub(int actorId)
+        {
+            return actorId == 1 ? ActionType.Guard : ActionType.WideAttack;
         }
     }
 }

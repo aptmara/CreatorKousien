@@ -210,10 +210,33 @@ namespace CreatorKousien.Battle
         private void FinishPhase()
         {
             // プレイヤーと敵のアクションを交互に並べて、TurnManagerに渡す
-            List<ActionRuntimeData> mergedQueue = InterleaveActions(_playerSelectedActions, _enemyPlannedActions);
+            List<BattleStep> steps = CreateBattleSteps(_playerSelectedActions, _enemyPlannedActions);
 
-            _owner.SetActionQueue(mergedQueue);
+            _owner.SetActionQueue(steps);
             _owner.TransitionTo(PhaseType.Action);
+        }
+
+        /// <summary>
+        /// 同時実行用のペアを作るメソッド
+        /// </summary>
+        /// <param name="pActions"></param>
+        /// <param name="eActions"></param>
+        /// <returns></returns>
+        private List<BattleStep> CreateBattleSteps(List<ActionRuntimeData> pActions, List<ActionRuntimeData> eActions)
+        {
+            var steps = new List<BattleStep>();
+
+            int fallbackEnemyId = eActions.Count > 0 ? eActions[0].ActorId : 2;
+
+            for (int i = 0; i < _owner.MaxInputCount; i++)
+            {
+                var pAction = i < pActions.Count ? pActions[i] : new ActionRuntimeData(1);
+                var eAction = i < eActions.Count ? eActions[i] : new ActionRuntimeData(fallbackEnemyId);
+
+                steps.Add(new BattleStep(pAction, eAction));
+            }
+
+            return steps;
         }
 
         // 足りない手数を待機で埋めるメソッド
@@ -229,26 +252,6 @@ namespace CreatorKousien.Battle
                 );
                 _playerSelectedActions.Add(waitAction);
             }
-        }
-
-        /// <summary>
-        /// プレイヤーと敵のアクションを交互に並べるロジック
-        /// </summary>
-        /// <param name="pActions"></param>
-        /// <param name="eActions"></param>
-        /// <returns></returns>
-        private List<ActionRuntimeData> InterleaveActions(List<ActionRuntimeData> pActions, List<ActionRuntimeData> eActions)
-        {
-            List<ActionRuntimeData> result = new List<ActionRuntimeData>();
-            int maxSteps = _owner.MaxInputCount;
-
-            for (int i = 0; i < maxSteps; i++)
-            {
-                if (i < pActions.Count) result.Add(pActions[i]);
-                if (i < eActions.Count) result.Add(eActions[i]);
-            }
-
-            return result;
         }
 
 
