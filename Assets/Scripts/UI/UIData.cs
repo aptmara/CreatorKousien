@@ -1,7 +1,7 @@
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 // @file   UIData.cs
-// 
 // @author 山本郁也
+// @brief  UIDataをおいてるだけ。
 // @date   2026/04/15
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
@@ -41,8 +41,10 @@ public class UICardData
 {
     public string MasterId;
     public string InstanceId;
-    public string Name;
-    public Sprite Icon;
+    public string EffectId;
+    public string CardId;
+    public Sprite Icon; 
+    public string EffectName;
     public string Description;
 }
 
@@ -60,7 +62,10 @@ public class CardLayoutData
 public class CardSlotLayoutData
 {
     public Vector2 CenterPosition;
-    public List<CardLayoutData> CardLayouts = new List<CardLayoutData>();
+    public CardLayoutData Up;
+    public CardLayoutData Down;
+    public CardLayoutData Right;
+    public CardLayoutData Left;
 }
 
 /// <summary>

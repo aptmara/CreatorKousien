@@ -1,3 +1,9 @@
+//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+// @file   UICardConverter.cs
+// @brief  CardDataとEffectDataを統合したUICardDataに変換するＡＰＩがあるだけ
+// @author 山本郁也
+// @date   2026/04/15
+//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using UnityEngine;
 
 public static class UICardConverter
@@ -26,7 +32,7 @@ public static class UICardConverter
             InstanceId = instanceId,
 
             // EffectDataから表示情報を取得
-            Name = effect.EffectName,
+            EffectName = effect.EffectName,
             Icon = effect.EffectIcon,
             Description = effect.EffectInfo
         };

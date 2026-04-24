@@ -1,5 +1,10 @@
+//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+// @file   CardSelected.cs
+// @brief  選択中のカードを取得するとかどうとか...
+// @author 山本郁也
+// @date   2026/04/15
+//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using System;
-using System.Data;
 using UnityEngine;
 
 public class CardSelected : MonoBehaviour

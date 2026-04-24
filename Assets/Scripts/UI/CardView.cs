@@ -1,42 +1,60 @@
+//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+// @file   UIData.cs
+// @brief  カード一枚分の表示と、入力通知を行う
+// @author 山本郁也
+// @date   2026/04/15
+//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using System;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+/// <summary>
+/// カード1枚分の表示と入力通知を担当するView
+/// カードデータの保持や選択状態の管理は行わない
+/// </summary>
 public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     [SerializeField] private Image iconImage;
     [SerializeField] private TextMeshProUGUI nameText;
-    [SerializeField] private TextMeshProUGUI costText;
     [SerializeField] private TextMeshProUGUI descriptionText;
-    [SerializeField] private GameObject hoverHighLight;
-    [SerializeField] private GameObject selectHighLight;
+    [SerializeField] private GameObject hoverHighlight;
+    [SerializeField] private GameObject selectHighlight;
 
-    private UICardData currentData;
-    private RectTransform rectTransform;
+    /// <summary>
+    /// カードにカーソルが乗ったときに通知されるイベント
+    /// </summary>
+    public event Action OnHoverEntered;
 
-    public event Action<UICardData> OnHoverEntered;
-    public event Action<UICardData> OnHoverExited;
-    public event Action<UICardData> OnClicked;
+    /// <summary>
+    /// カードからカーソルが離れたときに通知されるイベント
+    /// </summary>
+    public event Action OnHoverExited;
 
-    public RectTransform RectTransform => rectTransform;
+    /// <summary>
+    /// カードがクリックされたときに通知されるイベント
+    /// </summary>
+    public event Action OnClicked;
 
-    private void Awake()
+    /// <summary>
+    /// カードデータを表示に反映する
+    /// nullが渡された場合はこのViewを非表示にする
+    /// </summary>
+    /// <param name="data">表示するカードデータ</param>
+    public void Apply(UICardData data)
     {
-        rectTransform = GetComponent<RectTransform>();
-    }
-
-    public void SetCardData(UICardData data)
-    {
-        currentData = data;
         if (data == null)
         {
             gameObject.SetActive(false);
+            SetHover(false);
+            SetSelected(false);
             return;
         }
 
         gameObject.SetActive(true);
+
         if (iconImage != null)
         {
             iconImage.sprite = data.Icon;
@@ -44,7 +62,7 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
         if (nameText != null)
         {
-            nameText.text = data.Name;
+            nameText.text = data.EffectName;
         }
 
         if (descriptionText != null)
@@ -56,58 +74,67 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         SetSelected(false);
     }
 
-    public UICardData GetCardData()
+    /// <summary>
+    /// ホバー表示を切り替える
+    /// </summary>
+    /// <param name="isHovered">ホバー表示を有効にするならtrue</param>
+    public void SetHover(bool isHovered)
     {
-        return currentData;
-    }
-
-    public void SetHover(bool isHoverd)
-    {
-        if (hoverHighLight != null)
+        if (hoverHighlight != null)
         {
-            hoverHighLight.SetActive(isHoverd);
+            hoverHighlight.SetActive(isHovered);
         }
     }
 
+    /// <summary>
+    /// 選択表示を切り替える
+    /// </summary>
+    /// <param name="isSelected">選択表示を有効にするならtrue</param>
     public void SetSelected(bool isSelected)
     {
-        if (selectHighLight != null)
+        if (selectHighlight != null)
         {
-            selectHighLight.SetActive(isSelected);
+            selectHighlight.SetActive(isSelected);
         }
     }
 
+    /// <summary>
+    /// カードのドロー演出を再生する
+    /// </summary>
+    public void PlayDrawAnimation()
+    {
+    }
+
+    /// <summary>
+    /// ポインターがカード上に入ったときに呼ばれる
+    /// </summary>
+    /// <param name="eventData">ポインターイベント情報</param>
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (currentData == null)
-        {
-            return;
-        }
-
-        OnHoverEntered?.Invoke(currentData);
+        OnHoverEntered?.Invoke();
     }
 
+    /// <summary>
+    /// ポインターがカード上から外れたときに呼ばれる
+    /// </summary>
+    /// <param name="eventData">ポインターイベント情報</param>
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (currentData == null)
-        {
-            return;
-        }
-
-        OnHoverExited?.Invoke(currentData);
+        OnHoverExited?.Invoke();
     }
 
+    /// <summary>
+    /// カードがクリックされたときに呼ばれる
+    /// 左クリック時のみ通知する
+    /// </summary>
+    /// <param name="eventData">ポインターイベント情報</param>
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (currentData != null)
-        {
-            return;
-        }
         if (eventData.button != PointerEventData.InputButton.Left)
         {
             return;
         }
 
-        OnClicked?.Invoke(currentData);
+        OnClicked?.Invoke();
     }
 }

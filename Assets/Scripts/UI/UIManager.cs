@@ -1,6 +1,10 @@
+//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+// @file   UIManager.cs
+// @brief  入力を取得。UI個別ではなく、共通操作の取得
+// @author 山本郁也
+// @date   2026/04/15
+//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor.Build.Content;
 using UnityEngine;
 
 public class UIManager : MonoBehaviour
@@ -26,6 +30,7 @@ public class UIManager : MonoBehaviour
     private readonly Dictionary<UIState, List<ViewType>> stateMap = new Dictionary<UIState, List<ViewType>>();
 
     private UIState currentState = UIState.None;
+    private bool isHandInputBlocked;
 
     private void Awake()
     {
@@ -33,17 +38,37 @@ public class UIManager : MonoBehaviour
         BuildStateMap();
     }
 
-    private void ChangeState(UIState newState)
+    /// <summary>
+    /// UI状態を変更し、対応するView表示に切り替える
+    /// </summary>
+    /// <param name="newState">遷移先のUI状態</param>
+    public void ChangeState(UIState newState)
     {
         currentState = newState;
         ApplyState(newState);
     }
 
+    /// <summary>
+    /// 現在のUI状態を取得する
+    /// </summary>
+    /// <returns>現在のUI状態</returns>
     public UIState GetCurrentState()
     {
         return currentState;
     }
 
+    /// <summary>
+    /// 手札入力のブロック状態を設定する
+    /// </summary>
+    /// <param name="blocked">入力を禁止するならtrue</param>
+    public void SetHandInputBlocked(bool blocked)
+    {
+        isHandInputBlocked = blocked;
+    }
+    /// <summary>
+    /// 指定したViewを個別に表示する
+    /// </summary>
+    /// <param name="type">表示対象のView種別</param>
     public void OpenView(ViewType type)
     {
         if(viewMap.TryGetValue(type,out GameObject obj) && obj != null)
@@ -52,6 +77,10 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 手札入力のブロック状態を設定する
+    /// </summary>
+    /// <param name="type">入力を禁止するならtrue</param>
     public void CloseView(ViewType type)
     {
         if (viewMap.TryGetValue(type, out GameObject obj) && obj != null)
@@ -60,6 +89,11 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 指定したViewが現在表示中か判定する
+    /// </summary>
+    /// <param name="type">判定対象のView種別</param>
+    /// <returns>表示中ならtrue</returns>
     public bool IsViewOpen(ViewType type)
     {
         if(viewMap.TryGetValue(type,out GameObject obj) && obj != null)
@@ -69,6 +103,10 @@ public class UIManager : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// 手札入力を許可している状態か判定する
+    /// </summary>
+    /// <returns>手札入力を受け付ける状態ならtrue</returns>
     public bool IsHandInputAllowed()
     {
         return currentState == UIState.InGame;
