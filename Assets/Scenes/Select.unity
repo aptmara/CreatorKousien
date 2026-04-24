@@ -801,8 +801,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf026e860459d0a4db54fa8235a0b621, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CreatorKousien.Battle.TurnManager
-  _maxInputCount: 3
-  _commandTimeLimit: 5
+  _maxInputCount: 1
+  _commandTimeLimit: 2
+  _visibleEnemyAction: 5
 --- !u!114 &811160245
 MonoBehaviour:
   m_ObjectHideFlags: 0

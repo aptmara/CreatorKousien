@@ -35,6 +35,7 @@ namespace CreatorKousien.Battle
         [Header("コマンドフェーズの設定")]
         [SerializeField] private int _maxInputCount = 3;        // プレイヤーがコマンドフェーズで入力できる最大アクション数
         [SerializeField] private float _commandTimeLimit = 3f;  // コマンドフェーズの時間制限（秒）
+        [SerializeField] private int _visibleEnemyAction = 5;   // コマンドフェーズで視認可能な敵の行動個数
 
         /// <summary>
         /// 最大入力数
@@ -46,6 +47,10 @@ namespace CreatorKousien.Battle
         /// </summary>
         public float CommandTimeLimit => _commandTimeLimit;
 
+        /// <summary>
+        /// 敵の最大行動視認可能数
+        /// </summary>
+        public int VisibleEnemyAction => _visibleEnemyAction;
 
         /// <summary>
         /// プレイヤーがカードを使ったことを通知するイベント
@@ -66,6 +71,10 @@ namespace CreatorKousien.Battle
         // ステップ単位のキューと、そのステップ内で順番に処理するマイクロキュー
         private Queue<BattleStep> _stepQueue = new Queue<BattleStep>();
         private Queue<ActionRuntimeData> _microQueue = new Queue<ActionRuntimeData>();
+        // 敵の行動のみをスタックするキュー
+        private Queue<ActionRuntimeData> _enemyActionQueue = new Queue<ActionRuntimeData>();
+
+        public List<ActionRuntimeData> _enemyTelegraphs = new List<ActionRuntimeData>();
 
         // このステップでキャンセルされたアクターのIDのリスト
         private HashSet<int> _cancelledActorsThisStep = new HashSet<int>();
@@ -282,7 +291,6 @@ namespace CreatorKousien.Battle
             }
         }
 
-
         /// <summary>
         /// 敵がアクションを決定した後、Commandフェーズから呼び出される想定のメソッド。（デバック用なので改変しても大丈夫）
         /// </summary>
@@ -308,6 +316,27 @@ namespace CreatorKousien.Battle
                 return _commandPhase.IsSlotUsed(slot);
             }
             return false;
+        }
+
+        /// <summary>
+        /// 敵の行動予告を格納する
+        /// </summary>
+        /// <param name="data"></param>
+        public void AddEnemyActionTelegraph(List<ActionRuntimeData> data)
+        {
+            foreach (var action in data)
+            {
+                _enemyActionQueue.Enqueue(action);
+            }
+        }
+
+        /// <summary>
+        /// 敵の行動予告を取得
+        /// </summary>
+        /// <returns></returns>
+        public ActionRuntimeData GetEnemyActionTelegraph()
+        {
+            return _enemyActionQueue.Dequeue();
         }
     }
 }
