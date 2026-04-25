@@ -12,6 +12,7 @@ using UnityEngine;
 using CreatorKousien.Core;
 using CreatorKousien.Data;
 using UnityEngine.Rendering;
+using System.Linq;
 
 namespace CreatorKousien.Battle
 {
@@ -72,7 +73,8 @@ namespace CreatorKousien.Battle
         private Queue<BattleStep> _stepQueue = new Queue<BattleStep>();
         private Queue<ActionRuntimeData> _microQueue = new Queue<ActionRuntimeData>();
         // 敵の行動のみをスタックするキュー
-        private Queue<ActionRuntimeData> _enemyActionQueue = new Queue<ActionRuntimeData>();
+        private List<ActionRuntimeData> _enemyActions = new List<ActionRuntimeData>();
+        public IReadOnlyList<ActionRuntimeData> EnemyActions =>_enemyActions;
 
         public List<ActionRuntimeData> _enemyTelegraphs = new List<ActionRuntimeData>();
 
@@ -326,7 +328,7 @@ namespace CreatorKousien.Battle
         {
             foreach (var action in data)
             {
-                _enemyActionQueue.Enqueue(action);
+                _enemyActions.Add(action);
             }
         }
 
@@ -336,7 +338,10 @@ namespace CreatorKousien.Battle
         /// <returns></returns>
         public ActionRuntimeData GetEnemyActionTelegraph()
         {
-            return _enemyActionQueue.Dequeue();
+            ActionRuntimeData action;
+            action = _enemyActions.FirstOrDefault();
+            _enemyActions.Remove(action);
+            return action;
         }
     }
 }

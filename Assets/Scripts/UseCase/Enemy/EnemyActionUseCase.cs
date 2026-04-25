@@ -54,8 +54,8 @@ namespace CreatorKousien.UseCase
         public void Execute(EnemyActionCommand command)
         {
             // 敵チーム全体の「合計3手」のプランを作成
-            List<ActionRuntimeData> teamPlan = PlanTeamActions();
-
+            List<ActionRuntimeData> teamPlan = PlanTeamActions(command.RollEnemyActTimes);
+            
             // コマンドの報告書に結果を書き込む
             command.OnPlanGenerated?.Invoke(teamPlan);
 
@@ -66,7 +66,7 @@ namespace CreatorKousien.UseCase
         /// 存在している全敵の中からステップごとに1体を指名し、チーム全体で3手のプランを作る
         /// </summary>
         /// <returns></returns>
-        private List<ActionRuntimeData> PlanTeamActions()
+        private List<ActionRuntimeData> PlanTeamActions(int rollEnemyActTimes)
         {
             var plan = new List<ActionRuntimeData>();
             var aliveEnemyIds = _enemySystem.GetAllAliveEnemyIds();
@@ -82,7 +82,7 @@ namespace CreatorKousien.UseCase
             }
 
             // チーム全体で3手分をループ
-            for (int step = 0; step < 3; step++)
+            for (int step = 0; step < rollEnemyActTimes; step++)
             {
                 // このステップで行動するエネミーを1体「ランダム」で指名する
                 int actingEnemyId = aliveEnemyIds[Random.Range(0, aliveEnemyIds.Count)];

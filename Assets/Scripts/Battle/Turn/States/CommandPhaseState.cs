@@ -64,13 +64,17 @@ namespace CreatorKousien.Battle
             // 新しい思考を始める前に、画面上の前回の予告を全て消す
             _owner.EventBus.PublishClearAllTelegraphs();
 
+            // 敵の最大予告数 - 今の保持してる手数
+            int rollEnemyActTimes = _owner.VisibleEnemyAction - _owner.EnemyActions.Count;
+
             // フェーズ開始と同時に、全てのエネミーの3手分を計算させる
             var planCommand = new EnemyActionCommand((teamPlan) =>
             {
-                _enemyPlannedActions = teamPlan;
+                _owner.AddEnemyActionTelegraph(teamPlan);
+                //_enemyPlannedActions = teamPlan;
                 UpdateTimelineUI();
                 Debug.Log($"[Command Phase] 敵チーム全体の3手を受領しました！");
-            });
+            },rollEnemyActTimes);
 
             _owner.Dispatcher.Dispatch(planCommand);
 
@@ -98,9 +102,6 @@ namespace CreatorKousien.Battle
             // 時間ゲージのカウントダウンロジック、カード選択等
             // タイムアップしているか、3手入力済みなら何もしない
             if (_isTimeUp || _playerSelectedActions.Count >= _owner.MaxInputCount) return;
-
-            // 既にタイムアップしているか、3手入力済みなら何もしない
-            if (_isTimeUp || _playerSelectedActions.Count >= 3) return;
 
             // タイマーを減算
             _currentTime -= Time.deltaTime;
@@ -194,11 +195,11 @@ namespace CreatorKousien.Battle
         /// <param name="action"></param>
         public void AddPlayerAction(ActionRuntimeData action)
         {
-            if (_playerSelectedActions.Count >= 3) return;
+            if (_playerSelectedActions.Count >= _owner.MaxInputCount) return;
 
             _playerSelectedActions.Add(action);
             UpdateTimelineUI();
-            Debug.Log($"[Command] プレイヤーのアクションを予約: {action.Type} ({_playerSelectedActions.Count}/3)");
+            Debug.Log($"[Command] プレイヤーのアクションを予約: {action.Type} ({_playerSelectedActions.Count}/{_owner.MaxInputCount})");
 
             // 3手選んだら自動で実行フェーズへ
             if (_playerSelectedActions.Count == _owner.MaxInputCount)
@@ -210,7 +211,10 @@ namespace CreatorKousien.Battle
         private void FinishPhase()
         {
             // プレイヤーと敵のアクションを交互に並べて、TurnManagerに渡す
-            List<BattleStep> steps = CreateBattleSteps(_playerSelectedActions, _enemyPlannedActions);
+            //List<BattleStep> steps = CreateBattleSteps(_playerSelectedActions, _enemyPlannedActions);
+
+            var steps = new List<BattleStep>();
+            steps.Add(new BattleStep(_playerSelectedActions[0], _owner.GetEnemyActionTelegraph()));
 
             _owner.SetActionQueue(steps);
             _owner.TransitionTo(PhaseType.Action);

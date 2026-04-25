@@ -20,9 +20,12 @@ namespace CreatorKousien.Command
         // 全てのエネミーのプランをActorIDとキーにして受けとる
         public Action<List<ActionRuntimeData>> OnPlanGenerated { get; }
 
-        public EnemyActionCommand(Action<List<ActionRuntimeData>> onPlanGenerated)
+        public int RollEnemyActTimes { get; }
+
+        public EnemyActionCommand(Action<List<ActionRuntimeData>> onPlanGenerated, int rollEnemyActTimes)
         {
             OnPlanGenerated = onPlanGenerated;
+            RollEnemyActTimes = rollEnemyActTimes;
         }
     }
 }
