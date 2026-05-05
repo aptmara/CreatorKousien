@@ -1,0 +1,156 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>実装順序 - ガバっと一掃！プロトタイプ設計</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrapper">
+  <aside class="sidebar">
+    <h1>ガバっと一掃！<br>プロトタイプ設計</h1>
+    <div class="sub">並列実装を前提にした、アーキテクチャ・シーン・ソース・実装順序の分割HTML資料。</div>
+    <nav class="nav">
+      <a class="" href="index.html">全体索引</a>
+<a class="" href="01_architecture.html">アーキテクチャ選定</a>
+<a class="" href="02_scene_structure.html">シーン構成</a>
+<a class="" href="03_source_design.html">ソース設計</a>
+<a class="" href="04_parallel_roles.html">実装人物粒度・並列作業</a>
+<a class="active" href="05_implementation_order.html">実装順序</a>
+<a class="" href="06_gameplay_specs.html">ゲームメカニクス仕様</a>
+<a class="" href="07_integration_contracts.html">統合契約・品質管理</a>
+    </nav>
+  </aside>
+  <main class="content">
+    <article class="paper">
+      
+<div class="kicker">05 Implementation Order</div>
+<h1>実装順序</h1>
+<p class="lead">実装順序は、個人プロト、統合、全体プロト調整の3段階に固定する。最初から全員で1つのシーンを触るのではなく、個人検証で手触りと仕様を固め、契約に沿って統合し、最後に体験として調整する。</p>
+
+<h2>全体スケジュール構造</h2>
+<div class="flow">
+  <div class="step">1. 個人プロト</div><div class="arrow">→</div>
+  <div class="step">2. 統合</div><div class="arrow">→</div>
+  <div class="step">3. 全体プロト調整</div>
+</div>
+
+<table>
+  <tr><th>フェーズ</th><th>目的</th><th>見るもの</th><th>見ないもの</th><th>完了判定</th></tr>
+  <tr><td>個人プロト</td><td>機能単体の成立確認。</td><td>操作感、処理の成立、調整可能性、契約API。</td><td>全体バランス、見た目の完成度、最終仕様。</td><td>各検証シーンが単体で動き、統合成果物がある。</td></tr>
+  <tr><td>統合</td><td>ゲームループの成立確認。</td><td>収集→解放→命中→敵ゲージ→ダウン→ナダレ。</td><td>細部演出、難易度の詰め、データ量。</td><td>Stage_Prototype_01で1分間遊べる。</td></tr>
+  <tr><td>全体プロト調整</td><td>体験として面白いかの確認。</td><td>爽快感、判断、テンポ、視認性、負荷。</td><td>製品版ボリューム、最終アート。</td><td>プレイ後に改善判断ができる動画/数値/所感が残る。</td></tr>
+</table>
+
+<h2>Phase 0: 着手前の共通準備</h2>
+<p>個人プロトに入る前に、統合担当が最低限の土台を作る。ここを飛ばすと、各担当が違う型・命名・Scene構成で進み、統合時に破綻する。</p>
+<table>
+  <tr><th>順</th><th>作業</th><th>担当</th><th>成果物</th><th>完了条件</th></tr>
+  <tr><td>0-1</td><td>Unityプロジェクト作成、フォルダ構成、asmdef作成。</td><td>H</td><td>Assets/_Project、asmdef。</td><td>全員がCloneして開ける。</td></tr>
+  <tr><td>0-2</td><td>Core契約定義の初版作成。</td><td>H + A/B/C</td><td>Payload、PayloadBatch、HitBatch、interface群。</td><td>A/B/CがMockでコンパイルできる。</td></tr>
+  <tr><td>0-3</td><td>Event型の初版作成。</td><td>H + G</td><td>CollectionChangedEventなど。</td><td>Gが仮HUDで購読できる。</td></tr>
+  <tr><td>0-4</td><td>個人検証シーンの空Scene作成。</td><td>H</td><td>Proto_A〜H scene。</td><td>各担当が自分のSceneだけ編集できる。</td></tr>
+  <tr><td>0-5</td><td>最低限のPlaceholder素材準備。</td><td>G/H</td><td>Cube、Sphere、EnemyDummy、UI font。</td><td>全員が同じ仮素材を使える。</td></tr>
+</table>
+
+<h2>Phase 1: 個人プロト</h2>
+<h3>目的</h3>
+<p>個人プロトでは、各カテゴリの「成立する/しない」を最短で確認する。コード品質は一定守るが、作り込みよりも、統合可能な形で動くことを優先する。</p>
+
+<h3>推奨順序</h3>
+<table>
+  <tr><th>日程区分</th><th>実装者A</th><th>実装者B</th><th>実装者C</th><th>実装者D</th><th>実装者E/F</th><th>実装者G/H</th></tr>
+  <tr><td>前半</td><td>移動・収集範囲</td><td>MockPayload解放</td><td>MockHitでゲージ減少</td><td>Collectable定義</td><td>傾き/重量の単体検証</td><td>HUD/Debug土台</td></tr>
+  <tr><td>中盤</td><td>CollectionBuffer</td><td>Projectile/HitBatch</td><td>ダウン/バリア</td><td>合体/形状変化</td><td>雪崩/ボスルール</td><td>Event接続/Pool</td></tr>
+  <tr><td>後半</td><td>保持Visual</td><td>DropZone接続</td><td>敵Prefab化</td><td>ScriptableObject化</td><td>Prefab化</td><td>統合受け入れ準備</td></tr>
+</table>
+
+<h3>個人プロトの完了ゲート</h3>
+<table>
+  <tr><th>ゲート</th><th>確認内容</th><th>失敗時の処理</th></tr>
+  <tr><td>G1: 単体起動</td><td>担当SceneがエラーなしでPlayできる。</td><td>統合禁止。コンパイルエラーを先に直す。</td></tr>
+  <tr><td>G2: Mock接続</td><td>依存先が未完成でもMockで動く。</td><td>依存を直接参照している箇所をinterfaceへ戻す。</td></tr>
+  <tr><td>G3: Inspector調整</td><td>主要値をコード変更なしで調整できる。</td><td>SerializeFieldまたはScriptableObjectへ出す。</td></tr>
+  <tr><td>G4: 成果物明示</td><td>統合に渡すPrefab/Script/ScriptableObjectが分かる。</td><td>READMEを更新する。</td></tr>
+  <tr><td>G5: 破綻条件メモ</td><td>大量数、連続操作、Scene再生停止時の既知問題が記録されている。</td><td>統合時のリスクとして登録する。</td></tr>
+</table>
+
+<h2>Phase 2: 統合</h2>
+<h3>統合の原則</h3>
+<ul>
+  <li>統合はH担当が主導し、共有シーンの直接編集者を絞る。</li>
+  <li>最初に見た目を合わせるのではなく、データの流れを合わせる。</li>
+  <li>接続に失敗した場合、担当モジュールの内部を統合担当が勝手に改修しない。契約のズレを修正する。</li>
+  <li>一度に全機能を入れない。収集→解放→敵ゲージ→ダウンの順に通す。</li>
+</ul>
+
+<h3>統合順序</h3>
+<table>
+  <tr><th>順</th><th>統合作業</th><th>接続する担当</th><th>確認内容</th><th>完了条件</th></tr>
+  <tr><td>2-1</td><td>GameplayShell起動</td><td>H</td><td>BootからGameplayShell、Stage、HUDがロードされる。</td><td>空ステージでPlayできる。</td></tr>
+  <tr><td>2-2</td><td>Player配置</td><td>A/H</td><td>PlayerがSpawnPointに出て移動する。</td><td>Stage上を移動できる。</td></tr>
+  <tr><td>2-3</td><td>Collectable配置</td><td>D/H</td><td>SpawnZoneから物が出る。</td><td>物が一定数維持される。</td></tr>
+  <tr><td>2-4</td><td>収集接続</td><td>A/D/G</td><td>物を拾い、BufferとHUDへ反映される。</td><td>保持数が見える。</td></tr>
+  <tr><td>2-5</td><td>解放接続</td><td>A/B/G</td><td>保持物を落とし、Projectileが出る。</td><td>保持数が減り、落下演出が出る。</td></tr>
+  <tr><td>2-6</td><td>敵接続</td><td>B/C/G</td><td>Projectileが敵に当たり、ゲージが減る。</td><td>ゲージ0で敵がダウンする。</td></tr>
+  <tr><td>2-7</td><td>本体ダメージ</td><td>B/C/G</td><td>ダウン中にHPが減る。</td><td>敵を倒せる。</td></tr>
+  <tr><td>2-8</td><td>崩落接続</td><td>C/E/G</td><td>敵撃破でFieldが傾き、雪崩が起きる。</td><td>近くの敵に巻き添えが入る。</td></tr>
+  <tr><td>2-9</td><td>ナダレタイム接続</td><td>B/C/D/G</td><td>短時間大量ヒットでSuperAvalancheが始まる。</td><td>通常時より物量が増える。</td></tr>
+  <tr><td>2-10</td><td>クリア/失敗接続</td><td>C/F/H/G</td><td>ボス/体力/時間条件で結果が出る。</td><td>1プレイが終わる。</td></tr>
+</table>
+
+<h3>統合時に削ってよいもの</h3>
+<table>
+  <tr><th>削る候補</th><th>削る条件</th><th>残す代替</th></tr>
+  <tr><td>形状変化</td><td>収集→解放のテンポを邪魔する場合。</td><td>合体だけ残す、またはPayload性能変化だけ残す。</td></tr>
+  <tr><td>属性床</td><td>配置調整が間に合わない場合。</td><td>特定Collectableの属性だけ残す。</td></tr>
+  <tr><td>ボス重量床</td><td>通常ループが未完成の場合。</td><td>通常ステージの強敵として扱う。</td></tr>
+  <tr><td>複数バリア</td><td>分かりづらい場合。</td><td>1種類の無効範囲だけ残す。</td></tr>
+  <tr><td>複雑な腕操作</td><td>操作慣れに時間がかかる場合。</td><td>移動のみ + 自動収集範囲に戻す。</td></tr>
+</table>
+
+<h2>Phase 3: 全体プロト調整</h2>
+<h3>調整の優先順位</h3>
+<table>
+  <tr><th>優先</th><th>項目</th><th>調整対象</th><th>見る指標</th></tr>
+  <tr><td>1</td><td>収集の気持ちよさ</td><td>収集範囲、吸い込み速度、保持Visual、SE。</td><td>拾った瞬間の手応えがあるか。</td></tr>
+  <tr><td>2</td><td>解放の結果感</td><td>落下数、ヒット間隔、ダメージ表示、カメラ揺れ。</td><td>大量に落とした差が分かるか。</td></tr>
+  <tr><td>3</td><td>敵ゲージの読みやすさ</td><td>ゲージ速度、無効範囲、ダウン表示。</td><td>いつ攻撃すべきか理解できるか。</td></tr>
+  <tr><td>4</td><td>スーパーナダレタイム</td><td>発動条件、時間、物量倍率、演出。</td><td>狙って発動したくなるか。</td></tr>
+  <tr><td>5</td><td>判断の発生</td><td>バリア、属性、合体、DropZone配置。</td><td>ただ全回収するだけになっていないか。</td></tr>
+  <tr><td>6</td><td>負荷</td><td>Projectile数、Pool数、VFX数、UI更新頻度。</td><td>処理落ちで爽快感を損なわないか。</td></tr>
+</table>
+
+<h3>プレイテスト観点</h3>
+<table>
+  <tr><th>質問</th><th>確認したいこと</th><th>改善方向</th></tr>
+  <tr><td>何をすればいいか分かったか</td><td>収集→落とすの理解。</td><td>導線、UI、最初の敵配置を修正。</td></tr>
+  <tr><td>集める時間は退屈ではないか</td><td>収集中の変化や判断。</td><td>合体候補、属性床、敵ゲージ圧を強める。</td></tr>
+  <tr><td>落とした結果は気持ちいいか</td><td>蓄積×解放の成立。</td><td>ヒット演出、数値、SE、敵リアクションを強める。</td></tr>
+  <tr><td>何を上手くなればよいか分かるか</td><td>攻略性。</td><td>バリア条件、ゲージ無効範囲、DropZoneを明確化。</td></tr>
+  <tr><td>もう一度遊ぶ理由があるか</td><td>拡張余地。</td><td>ステージ変化、物の組み合わせ、敵配置を増やす。</td></tr>
+</table>
+
+<h2>プロトタイプ完成判定</h2>
+<div class="done">
+  <strong>完成判定。</strong> 60〜90秒の1プレイで、プレイヤーが物を集め、敵ゲージを見ながら大量に落とし、敵をダウンさせ、スーパーナダレまたは崩落で大きな結果を出せる状態を完成とする。見た目の完成度ではなく、企画の核である「蓄積×解放」が体験として成立していることを基準にする。
+</div>
+
+<h2>最終提出物</h2>
+<ul>
+  <li>Unityプロジェクト。</li>
+  <li>Stage_Prototype_01で起動する統合プロトタイプ。</li>
+  <li>各担当の個人検証シーン。</li>
+  <li>主要ScriptableObjectデータ。</li>
+  <li>操作説明とデバッグキー一覧。</li>
+  <li>プレイ動画1本。</li>
+  <li>既知の問題、削った要素、次に検証すべき要素のメモ。</li>
+</ul>
+
+      <div class="footer">設計・執筆：山内陽</div>
+    </article>
+  </main>
+</div>
+</body>
+</html>
