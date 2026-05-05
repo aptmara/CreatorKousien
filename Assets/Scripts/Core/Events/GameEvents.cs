@@ -80,4 +80,75 @@ namespace Game.Core.Events
             TiltDirection = tiltDirection;
         }
     }
+
+    /// <summary>
+    /// 敵の攻撃ゲージ量変化通知。
+    /// EnemyAttackGaugeが増減のたびに発行する。
+    /// UIはRatioのみ使用することもでき、将来的な詳細表示にはCurrentGauge/MaxGaugeを利用する。
+    /// </summary>
+    public readonly struct EnemyGaugeChangedEvent
+    {
+        public readonly string EnemyId;
+        public readonly float CurrentGauge;
+        public readonly float MaxGauge;
+        /// <summary>0.0〜1.0 の正規化ゲージ量（UI用）</summary>
+        public readonly float Ratio;
+
+        public EnemyGaugeChangedEvent(string enemyId, float currentGauge, float maxGauge)
+        {
+            EnemyId = enemyId;
+            CurrentGauge = currentGauge;
+            MaxGauge = maxGauge;
+            Ratio = maxGauge > 0f ? currentGauge / maxGauge : 0f;
+        }
+    }
+
+    /// <summary>
+    /// 敵の本体HP変化通知。
+    /// EnemyHealthが変化するたびに発行する。
+    /// </summary>
+    public readonly struct EnemyHealthChangedEvent
+    {
+        public readonly string EnemyId;
+        public readonly float CurrentHp;
+        public readonly float MaxHp;
+        /// <summary>0.0〜1.0 の正規化HP（UI用）</summary>
+        public readonly float Ratio;
+
+        public EnemyHealthChangedEvent(string enemyId, float currentHp, float maxHp)
+        {
+            EnemyId = enemyId;
+            CurrentHp = currentHp;
+            MaxHp = maxHp;
+            Ratio = maxHp > 0f ? currentHp / maxHp : 0f;
+        }
+    }
+
+    /// <summary>
+    /// 敵撃破通知。HP0到達時にEnemyHealthが発行する。
+    /// </summary>
+    public readonly struct EnemyDefeatedEvent
+    {
+        public readonly string EnemyId;
+
+        public EnemyDefeatedEvent(string enemyId)
+        {
+            EnemyId = enemyId;
+        }
+    }
+
+    /// <summary>
+    /// 敵のゲージMAX到達による攻撃発動通知。
+    /// Phase2以降でプレイヤーへのダメージ処理を受け取るために用意する。
+    /// </summary>
+    public readonly struct EnemyAttackFiredEvent
+    {
+        public readonly string EnemyId;
+
+        public EnemyAttackFiredEvent(string enemyId)
+        {
+            EnemyId = enemyId;
+            }
+    }
 }
+

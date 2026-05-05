@@ -1,11 +1,13 @@
 // 制作者: 山内陽
 using UnityEngine;
 using Game.Core.Events;
+using Game.Core.Enemy;
 
 namespace Game.DebugTools
 {
     /// <summary>
     /// UIの単体検証を行うため、Inspectorから各種イベントを手動発行するデバッグ用スクリプト。
+    /// EnemyControllerへの参照を持てる場合は直接操作も可能。
     /// </summary>
     public class DebugEventEmitter : MonoBehaviour
     {
@@ -64,5 +66,43 @@ namespace Game.DebugTools
             EventBus.Publish(new StageTiltStartedEvent(Vector3.right));
             Debug.Log("[Debug] Fire StageTiltStartedEvent");
         }
+
+        [ContextMenu("Fire Enemy Defeated Event")]
+        public void FireEnemyDefeated()
+        {
+            EventBus.Publish(new EnemyDefeatedEvent(enemyId));
+            Debug.Log("[Debug] Fire EnemyDefeatedEvent");
+        }
+
+        [ContextMenu("Fire Enemy Attack Fired Event")]
+        public void FireEnemyAttackFired()
+        {
+            EventBus.Publish(new EnemyAttackFiredEvent(enemyId));
+            Debug.Log("[Debug] Fire EnemyAttackFiredEvent");
+        }
+
+        /// <summary>
+        /// EnemyHitBatchEventを大量のゲージダメージ（999）で発行し、
+        /// EnemyControllerのゲージを即破壊してダウン遷移を強制する。
+        /// EnemyControllerが存在するシーンでのみ有効。
+        /// </summary>
+        [ContextMenu("DEBUG: Force Enemy Down (Large Gauge Damage)")]
+        public void ForceEnemyDown()
+        {
+            EventBus.Publish(new EnemyHitBatchEvent(enemyId, 1, 999f, 0f, transform.position));
+            Debug.Log("[Debug] Force Enemy Down: EnemyHitBatchEvent with GaugeDamage=999");
+        }
+
+        /// <summary>
+        /// EnemyHitBatchEventを大量の本体ダメージ（999）で発行し、
+        /// ダウン中の敵を即撃破する。ダウン状態でのみ有効。
+        /// </summary>
+        [ContextMenu("DEBUG: Force Enemy Defeat (Large Body Damage)")]
+        public void ForceEnemyDefeat()
+        {
+            EventBus.Publish(new EnemyHitBatchEvent(enemyId, 1, 0f, 999f, transform.position));
+            Debug.Log("[Debug] Force Enemy Defeat: EnemyHitBatchEvent with BodyDamage=999");
+        }
     }
 }
+
