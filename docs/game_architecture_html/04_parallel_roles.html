@@ -1,0 +1,165 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>実装人物粒度・並列作業 - ガバっと一掃！プロトタイプ設計</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrapper">
+  <aside class="sidebar">
+    <h1>ガバっと一掃！<br>プロトタイプ設計</h1>
+    <div class="sub">並列実装を前提にした、アーキテクチャ・シーン・ソース・実装順序の分割HTML資料。</div>
+    <nav class="nav">
+      <a class="" href="index.html">全体索引</a>
+<a class="" href="01_architecture.html">アーキテクチャ選定</a>
+<a class="" href="02_scene_structure.html">シーン構成</a>
+<a class="" href="03_source_design.html">ソース設計</a>
+<a class="active" href="04_parallel_roles.html">実装人物粒度・並列作業</a>
+<a class="" href="05_implementation_order.html">実装順序</a>
+<a class="" href="06_gameplay_specs.html">ゲームメカニクス仕様</a>
+<a class="" href="07_integration_contracts.html">統合契約・品質管理</a>
+    </nav>
+  </aside>
+  <main class="content">
+    <article class="paper">
+      
+<div class="kicker">04 Parallel Implementation</div>
+<h1>実装人物粒度・並列作業設計</h1>
+<p class="lead">個人プロトの段階では、各担当が独立して検証を進める。統合時の破綻を防ぐため、各担当の成果物、編集範囲、完了条件、依存先、渡すデータを細かく定義する。</p>
+
+<h2>担当分割の全体像</h2>
+<table>
+  <tr><th>担当</th><th>カテゴリ</th><th>目的</th><th>主な成果物</th><th>統合時の接続先</th></tr>
+  <tr><td>実装者A</td><td>プレイヤー操作・収集</td><td>「動いて集める」手触りを作る。</td><td>PlayerPrototype、CollectionBuffer、ArmSweepController。</td><td>ReleaseController、HUD。</td></tr>
+  <tr><td>実装者B</td><td>解放・落下攻撃・ヒット</td><td>「集めた物を落として当てる」結果を作る。</td><td>ReleaseEmitter、DropTrajectoryResolver、HitBatchAccumulator。</td><td>CollectionBuffer、EnemyController。</td></tr>
+  <tr><td>実装者C</td><td>敵・攻撃ゲージ・バリア</td><td>敵の攻撃予兆、ダウン、本体ダメージを作る。</td><td>EnemyPrototype、EnemyAttackGauge、BarrierController。</td><td>HitBatch、StageTiltController。</td></tr>
+  <tr><td>実装者D</td><td>収集物・合体・形状変化</td><td>「どう集めるか」に意味を持たせる。</td><td>CollectableDefinition、FusionRecipe、PayloadMutationSystem。</td><td>CollectionBuffer、DamageResolver。</td></tr>
+  <tr><td>実装者E</td><td>ステージ崩落・雪崩</td><td>敵撃破が次の大量ダメージへ連鎖する構造を作る。</td><td>StageTiltController、AvalancheFlow。</td><td>EnemyDefeatedEvent、HitBatch。</td></tr>
+  <tr><td>実装者F</td><td>ボスステージギミック</td><td>通常ステージと違う最終局面を作る。</td><td>BossStageGimmick、FieldWeightSystem、BossTimerRule。</td><td>StageController、RunRuleController。</td></tr>
+  <tr><td>実装者G</td><td>UI・演出・フィードバック</td><td>収集量、解放結果、敵状態を分かりやすく見せる。</td><td>HUD、GaugeView、HitPopup、CameraFeedback。</td><td>EventBus。</td></tr>
+  <tr><td>実装者H</td><td>統合基盤・デバッグ・ビルド</td><td>全員の成果物を接続できる器を用意する。</td><td>Boot、GameplayShell、PoolService、DebugOverlay、チェックリスト。</td><td>全モジュール。</td></tr>
+</table>
+
+<h2>実装者A: プレイヤー操作・収集</h2>
+<div class="card">
+  <h3>目的</h3>
+  <p>プレイヤーがステージ上を移動し、周囲の物をガバっと巻き込む感覚を作る。ここが弱いとゲーム全体の印象が薄くなるため、数値よりも操作感と視覚変化を優先して検証する。</p>
+</div>
+<table>
+  <tr><th>作業単位</th><th>内容</th><th>成果物</th><th>完了条件</th></tr>
+  <tr><td>A-01 入力読み取り</td><td>左スティック移動、任意で右スティック解放方向を取得する。</td><td>PlayerInputReader.cs</td><td>Debug表示で入力ベクトルが確認できる。</td></tr>
+  <tr><td>A-02 移動</td><td>見下ろし視点での移動、加速、減速、回転を実装する。</td><td>PlayerMotor.cs</td><td>狙った方向へ違和感なく移動できる。</td></tr>
+  <tr><td>A-03 腕スイープ範囲</td><td>左右または前方の収集範囲をColliderで表現する。</td><td>ArmSweepController.cs</td><td>Gizmoで収集範囲が見える。</td></tr>
+  <tr><td>A-04 収集判定</td><td>範囲内のCollectableEntityをCollectionBufferへ入れる。</td><td>PlayerCollector.cs</td><td>物を拾うとField上から消え、保持数が増える。</td></tr>
+  <tr><td>A-05 保持Visual</td><td>保持数に応じてプレイヤー周囲に物のVisualを表示する。</td><td>CollectedPayloadVisual.cs</td><td>保持量の増加が見た目で分かる。</td></tr>
+  <tr><td>A-06 容量・重さ影響</td><td>保持数、重量、速度低下を仮実装する。</td><td>CollectionCapacity.cs</td><td>大量保持時のメリット/デメリットを調整できる。</td></tr>
+</table>
+<div class="note"><strong>A担当の統合契約。</strong> 外部へ公開するのは <span class="inline-code">IReleasablePayloadSource</span> と <span class="inline-code">CollectionChangedEvent</span>。Release側はCollectionBuffer内部を直接触らない。</div>
+
+<h2>実装者B: 解放・落下攻撃・ヒット</h2>
+<table>
+  <tr><th>作業単位</th><th>内容</th><th>成果物</th><th>完了条件</th></tr>
+  <tr><td>B-01 解放入力</td><td>ReleaseRequestを作成し、CollectionBufferからPayloadBatchを取得する。</td><td>ReleaseController.cs</td><td>ボタン入力で保持物が減る。</td></tr>
+  <tr><td>B-02 DropZone判定</td><td>解放方向・プレイヤー位置から落下先を決める。</td><td>DropZoneResolver.cs</td><td>左右/前方の敵に狙って落とせる。</td></tr>
+  <tr><td>B-03 落下演出生成</td><td>PayloadBatchから演出用ProjectileをPool生成する。</td><td>ReleaseEmitter.cs</td><td>1個/10個/50個で見た目の密度が変わる。</td></tr>
+  <tr><td>B-04 命中判定</td><td>ReleasedPayloadProjectileが敵のHitAreaへ当たる。</td><td>ReleasedPayloadProjectile.cs</td><td>敵へHitResultが送られる。</td></tr>
+  <tr><td>B-05 HitBatch集計</td><td>短時間に当たったヒットを束ねる。</td><td>HitBatchAccumulator.cs</td><td>大量ヒット時に1つのBatchとして扱える。</td></tr>
+  <tr><td>B-06 ダメージ計算</td><td>Payload属性、量、速度、敵状態からダメージを出す。</td><td>DamageResolver.cs</td><td>少量/大量/属性ありで結果差が出る。</td></tr>
+</table>
+<div class="note"><strong>B担当の統合契約。</strong> 入力は <span class="inline-code">PayloadBatch</span>、出力は <span class="inline-code">HitBatch</span>。Enemyの内部ゲージ値を直接操作しない。</div>
+
+<h2>実装者C: 敵・攻撃ゲージ・バリア</h2>
+<table>
+  <tr><th>作業単位</th><th>内容</th><th>成果物</th><th>完了条件</th></tr>
+  <tr><td>C-01 EnemyFacade</td><td>敵全体の窓口を作る。</td><td>EnemyController.cs</td><td>ApplyHitBatchで外部から攻撃できる。</td></tr>
+  <tr><td>C-02 攻撃ゲージ</td><td>時間で増加し、HitBatchで減少し、満タンで攻撃する。</td><td>EnemyAttackGauge.cs</td><td>ゲージの増減がDebug表示される。</td></tr>
+  <tr><td>C-03 ダウン</td><td>ゲージ0でダウンし、一定時間本体へダメージ可能にする。</td><td>EnemyDownState.cs</td><td>ダウン中だけHPが減る。</td></tr>
+  <tr><td>C-04 バリア</td><td>ダメージ無効範囲、属性無効、特定Payloadで解除を実装する。</td><td>BarrierController.cs</td><td>無効/有効の差が見える。</td></tr>
+  <tr><td>C-05 敵攻撃</td><td>ゲージ満タンでプレイヤーへダメージ。</td><td>EnemyAttackExecutor.cs</td><td>放置するとプレイヤーが負ける。</td></tr>
+  <tr><td>C-06 撃破通知</td><td>HP0でEnemyDefeatedEventを発行する。</td><td>EnemyDefeatHandler.cs</td><td>Stage側が撃破を検知できる。</td></tr>
+</table>
+<div class="note"><strong>C担当の統合契約。</strong> 敵は <span class="inline-code">IDamageableByPayload</span> を実装する。Stage側はEnemyControllerを生成・登録するが、Gauge内部は触らない。</div>
+
+<h2>実装者D: 収集物・合体・形状変化</h2>
+<table>
+  <tr><th>作業単位</th><th>内容</th><th>成果物</th><th>完了条件</th></tr>
+  <tr><td>D-01 収集物定義</td><td>CollectableDefinitionを作る。</td><td>SO_Collectable_*群</td><td>3種類以上の物を作成できる。</td></tr>
+  <tr><td>D-02 スポーン</td><td>SpawnZoneから物を出す。</td><td>CollectableSpawnSystem.cs</td><td>一定数まで自動補充される。</td></tr>
+  <tr><td>D-03 Payload化</td><td>拾われた物をPayloadへ変換する。</td><td>PayloadFactory.cs</td><td>FieldPrefabとPayloadの対応が取れる。</td></tr>
+  <tr><td>D-04 合体判定</td><td>特定組み合わせで新Payloadへ変換する。</td><td>FusionResolver.cs</td><td>レシピを追加すると合体が増える。</td></tr>
+  <tr><td>D-05 形状変化</td><td>転がし距離や保持時間でShapeを変える。</td><td>ShapeMorphTracker.cs</td><td>形状変化で性能が変わる。</td></tr>
+  <tr><td>D-06 属性床</td><td>床エリア通過でPayloadに属性を付ける。</td><td>FlavorFieldApplicator.cs</td><td>一度使うと消える属性床が動く。</td></tr>
+</table>
+<div class="note"><strong>D担当の統合契約。</strong> CollectionBufferは <span class="inline-code">PayloadMutationSystem</span> を呼ぶだけ。合体・形状変化の具体ルールはD担当モジュールに閉じる。</div>
+
+<h2>実装者E: ステージ崩落・雪崩</h2>
+<table>
+  <tr><th>作業単位</th><th>内容</th><th>成果物</th><th>完了条件</th></tr>
+  <tr><td>E-01 傾き制御</td><td>敵撃破方向へFieldRootを一瞬傾ける。</td><td>StageTiltController.cs</td><td>左右どちらにも傾けられる。</td></tr>
+  <tr><td>E-02 雪崩フロー</td><td>傾き方向へ物が流れる演出を出す。</td><td>AvalancheFlow.cs</td><td>物量が流れているように見える。</td></tr>
+  <tr><td>E-03 巻き添え判定</td><td>雪崩範囲内の敵へ追加HitBatchを送る。</td><td>AvalancheDamageZone.cs</td><td>近くの敵が巻き添えを受ける。</td></tr>
+  <tr><td>E-04 落下判定</td><td>物が場外へ出たとき回収/消去する。</td><td>FallDetector.cs</td><td>場外に残骸が溜まらない。</td></tr>
+  <tr><td>E-05 復帰処理</td><td>傾いたFieldを元に戻す。</td><td>StageTiltResetter.cs</td><td>連続使用しても破綻しない。</td></tr>
+</table>
+
+<h2>実装者F: ボスステージギミック</h2>
+<table>
+  <tr><th>作業単位</th><th>内容</th><th>成果物</th><th>完了条件</th></tr>
+  <tr><td>F-01 ボスルール</td><td>制限時間、ボスHP、クリア/失敗条件を作る。</td><td>BossTimerRule.cs</td><td>時間終了時に結果が出る。</td></tr>
+  <tr><td>F-02 重量床</td><td>フィールド上の物量で床が沈む。</td><td>FieldWeightSystem.cs</td><td>物が多いと危険になる。</td></tr>
+  <tr><td>F-03 お宝保護</td><td>落としてはいけない物を管理する。</td><td>TreasureKeepRule.cs</td><td>お宝落下でペナルティが出る。</td></tr>
+  <tr><td>F-04 ボス攻撃</td><td>傾き、落下、重みを絡めた簡易攻撃を作る。</td><td>BossGimmickController.cs</td><td>通常敵と違うプレイになる。</td></tr>
+</table>
+
+<h2>実装者G: UI・演出・フィードバック</h2>
+<table>
+  <tr><th>作業単位</th><th>内容</th><th>成果物</th><th>完了条件</th></tr>
+  <tr><td>G-01 HUD</td><td>体力、保持数、容量、ゲージを表示。</td><td>HudPresenter.cs / UI_HUD</td><td>主要状態が常に見える。</td></tr>
+  <tr><td>G-02 敵ゲージ表示</td><td>攻撃ゲージ、無効範囲、ダウン状態を表示。</td><td>EnemyGaugeView.cs</td><td>攻撃タイミングが読める。</td></tr>
+  <tr><td>G-03 ヒット表示</td><td>Hit数、ダメージ、倍率を表示。</td><td>HitPopupPresenter.cs</td><td>大量ヒットの結果が気持ちよく見える。</td></tr>
+  <tr><td>G-04 カメラ演出</td><td>大量解放、ダウン、崩落時に揺れ/ズーム。</td><td>CameraFeedbackController.cs</td><td>演出強度をInspectorで調整できる。</td></tr>
+  <tr><td>G-05 SE/VFX</td><td>収集、合体、解放、命中、ナダレ開始の仮演出。</td><td>FeedbackEventListener.cs</td><td>イベントに応じて反応する。</td></tr>
+</table>
+
+<h2>実装者H: 統合基盤・デバッグ・ビルド</h2>
+<table>
+  <tr><th>作業単位</th><th>内容</th><th>成果物</th><th>完了条件</th></tr>
+  <tr><td>H-01 Project Skeleton</td><td>フォルダ、asmdef、基本namespace、空Sceneを作る。</td><td>Assets/_Project構成</td><td>全員が同じ構成で作業開始できる。</td></tr>
+  <tr><td>H-02 EventBus</td><td>EventChannelまたは軽量EventBusを用意。</td><td>EventBus.cs</td><td>全担当が共通イベントを発行/購読できる。</td></tr>
+  <tr><td>H-03 PoolService</td><td>Collectable/Projectile用プールを作る。</td><td>PoolService.cs</td><td>大量生成してもGCが増えにくい。</td></tr>
+  <tr><td>H-04 GameplayShell</td><td>各SceneとPrefabを接続する。</td><td>GameplayShell.unity</td><td>統合用Sceneが起動する。</td></tr>
+  <tr><td>H-05 DebugOverlay</td><td>スポーン、強制ダウン、ナダレ開始、メトリクス表示。</td><td>DebugOverlay.unity</td><td>検証が速くなる。</td></tr>
+  <tr><td>H-06 SmokeTest</td><td>起動、収集、解放、敵ダウンの確認手順を作る。</td><td>PrototypeSmokeTest.md</td><td>統合後に最低限壊れていないと判断できる。</td></tr>
+</table>
+
+<h2>担当間の依存関係</h2>
+<table>
+  <tr><th>依存元</th><th>依存先</th><th>接続方法</th><th>統合前の代替</th></tr>
+  <tr><td>B 解放</td><td>A CollectionBuffer</td><td>IReleasablePayloadSource</td><td>MockPayloadSource。</td></tr>
+  <tr><td>B ヒット</td><td>C Enemy</td><td>IDamageableByPayload</td><td>MockDamageableEnemy。</td></tr>
+  <tr><td>C 敵</td><td>G UI</td><td>EnemyGaugeChangedEvent</td><td>DebugTextGauge。</td></tr>
+  <tr><td>D 合体</td><td>A Buffer</td><td>PayloadMutationSystem</td><td>StandaloneBufferTest。</td></tr>
+  <tr><td>E 崩落</td><td>C 撃破</td><td>EnemyDefeatedEvent</td><td>DebugButton_ForceDefeat。</td></tr>
+  <tr><td>F ボス</td><td>E Field</td><td>IStageGimmick</td><td>MockTiltField。</td></tr>
+  <tr><td>G 演出</td><td>全Gameplay</td><td>EventBus購読</td><td>DebugEventEmitter。</td></tr>
+</table>
+
+<h2>個人プロトの提出条件</h2>
+<ul>
+  <li>個人検証シーンが単体で再生できる。</li>
+  <li>READMEまたはScene内Textに操作方法が書かれている。</li>
+  <li>統合に使うPrefabが1つ以上ある。</li>
+  <li>Inspectorで主要パラメータを調整できる。</li>
+  <li>Debug表示で内部値を確認できる。</li>
+  <li>他担当の未完成機能に依存する場合、Mockで代替している。</li>
+  <li>統合担当に渡す公開API、Event、Prefab名を明記している。</li>
+</ul>
+
+      <div class="footer">設計・執筆：山内陽</div>
+    </article>
+  </main>
+</div>
+</body>
+</html>
