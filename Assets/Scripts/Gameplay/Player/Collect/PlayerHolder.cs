@@ -11,12 +11,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using Game.Core.Contracts;
+using Game.Gameplay.Collectibles;
 
 namespace Game.Gameplay.Player
 {
     /// <summary>
-    /// プレイヤーが収集したアイテムを保持・管理するクラス
+    /// HeldItemリスト保持、最大保持容量判定を行うクラス
     /// </summary>
     public class PlayerHolder : MonoBehaviour
     {
@@ -26,45 +26,60 @@ namespace Game.Gameplay.Player
         [Tooltip("最大保持容量")]
         [SerializeField] private int _maxCapacity = 100;
 
-        // TODO: 本来はD担当のしょーご、たきせふの作成するHeldItemデータクラスに置き換える
-        //       今回はobject型で代用します～
-        private readonly List<object> _heldItems = new List<object>();      ///< 保持しているアイテムのリスト
+        private readonly List<HeldItem> _heldItems = new List<HeldItem>();      ///< 保持しているアイテムのリスト
 
         [Header("イベント設定")]
         [Tooltip("アイテムの保持数が変化したときのイベント")]
-        public UnityEvent OnHolderChanged;                                  ///< アイテムの保持数が変化したときのイベント
+        public UnityEvent OnHolderChanged;                                      ///< アイテムの保持数が変化したときのイベント
 
+        /// <summary>
+        /// 現在の保持数を取得
+        /// </summary>
+        public int CurrentCount => _heldItems.Count;
+
+        /// <summary>
+        /// 外部から保持しているアイテムのリストを読み取り専用で取得するプロパティ
+        /// </summary>
+        public IReadOnlyList<HeldItem> HeldItems => _heldItems;                 ///< 保持しているアイテムのリスト（読み取り専用）
 
 
         // 関数処理
         // ------------------------------------------------------------
         /// <summary>
+        /// アイテムを追加できるかどうかを判定する
+        /// </summary>
+        /// <returns>追加可能な場合はtrue、そうでない場合はfalse</returns>
+        public bool CanAdd()
+        {
+            return _heldItems.Count < _maxCapacity;
+        }
+
+
+        /// <summary>
         /// アイテムを保持リストに追加する
         /// </summary>
-        public void Add(ICollectible collectible)
+        /// <@param name="item">追加するアイテム</param>
+        public void Add(HeldItem item)
         {
-            if (_heldItems.Count >= _maxCapacity)
-            {
-                return; // 最大容量を超える場合は追加しない
-            }
-
-            // TODO: D担当のPayloadFactoryで collectible を HeldItem(Data) に変換して追加する!!
-            //       今回はとりあえず new object() で代用します～
-            _heldItems.Add(new object());
-
+            _heldItems.Add(item);
             OnHolderChanged?.Invoke(); // 保持数が変化したことを通知
+
+            // TODO: 将来的にD担当の ShapeChangeへのイベント発行もここで行う予定
         }
 
         /// <summary>
         /// 保持している全アイテムを解放する関数
         /// B担当向けに用意しときます。
         /// </summary>
-        public void ReleaseAll()
+        /// <returns>解放されたアイテムの配列</returns>
+        public HeldItem[] ReleaseAll()
         {
+            HeldItem[] releasedItems = _heldItems.ToArray();
             _heldItems.Clear();
-            OnHolderChanged?.Invoke(); // 保持数が変化したことを通知
+            OnHolderChanged?.Invoke();
 
-            // TODO: HeldItemsRelease イベントの発行予定
+            // TODO: HeldItemsReleased イベントの発行
+            return releasedItems;
         }
     }
 }
