@@ -84,11 +84,11 @@ namespace Game.DebugTools
         {
             yield return new WaitForSecondsRealtime(_initialDelay);
             SetEventText("Hit batch: gauge damage");
-            EventBus.Publish(new EnemyHitBatchEvent(_enemyId, _hitCount, _forceDownGaugeDamage, 0f, transform.position));
+            EventBus.Publish(new EnemyHitBatchEvent(_enemyId, _hitCount, _forceDownGaugeDamage, 0f, transform.position, transform));
 
             yield return new WaitForSecondsRealtime(_downDelay);
             SetEventText("Down: body damage enabled");
-            EventBus.Publish(new EnemyHitBatchEvent(_enemyId, _hitCount, 0f, _forceDefeatBodyDamage, transform.position));
+            EventBus.Publish(new EnemyHitBatchEvent(_enemyId, _hitCount, 0f, _forceDefeatBodyDamage, transform.position, transform));
 
             yield return new WaitForSecondsRealtime(_defeatDelay);
             SetEventText("Demo complete: enemy defeated");

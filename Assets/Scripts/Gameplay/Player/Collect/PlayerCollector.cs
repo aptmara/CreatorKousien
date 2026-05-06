@@ -42,6 +42,11 @@ namespace Game.Gameplay.Player
 
             if (collectible != null)
             {
+                if (!collectible.CanBeCollectedByPlayer)
+                {
+                    return;
+                }
+
                 // 容量チェックなど、拾えるかどうかの判定をHolderに任せる
                 if (_holder.CanAdd())
                 {

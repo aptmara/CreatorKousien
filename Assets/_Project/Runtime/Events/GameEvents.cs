@@ -38,14 +38,16 @@ namespace Game.Core.Events
         public readonly float GaugeDamage;
         public readonly float BodyDamage;
         public readonly Vector3 HitPosition;
+        public readonly Transform EnemyTransform;
 
-        public EnemyHitBatchEvent(string enemyId, int hitCount, float gaugeDamage, float bodyDamage, Vector3 pos)
+        public EnemyHitBatchEvent(string enemyId, int hitCount, float gaugeDamage, float bodyDamage, Vector3 pos, Transform enemyTransform)
         {
             EnemyId = enemyId;
             HitCount = hitCount;
             GaugeDamage = gaugeDamage;
             BodyDamage = bodyDamage;
             HitPosition = pos;
+            EnemyTransform = enemyTransform;
         }
     }
 

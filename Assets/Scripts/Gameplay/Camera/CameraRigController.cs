@@ -9,6 +9,7 @@
 // - 5/6: ベース作成
 // ------------------------------------------------------------
 using UnityEngine;
+using Game.Core.Events;
 
 namespace Game.Gameplay.Cameras
 {
@@ -60,7 +61,19 @@ namespace Game.Gameplay.Cameras
         [Tooltip("カメラが目標回転に変化する滑らかさ (秒)")]
         [SerializeField] private float _rotationSmoothTime = 0.3f;
 
+        [Header("フォーカス設定")]
+        [Tooltip("フォーカス時の回転の滑らかさ")]
+        [SerializeField] private float _focusRotationSmoothTime = 0.1f;
+
+        [Tooltip("フォーカスを開始する敵との距離")]
+        [SerializeField] private float _focusTriggerDistance = 15f;
+
+        [Tooltip("ヒット時のフォーカス持続時間")]
+        [SerializeField] private float _hitFocusDuration = 0.5f;
+
         private Vector3 _currentVelocity;
+        private Transform _focusTarget;
+        private float _focusTimer;
 
 
 
@@ -105,18 +118,75 @@ namespace Game.Gameplay.Cameras
             Vector3 finalTargetPos = Vector3.Lerp(dropTargetPos, collectTargetPos, phaseRatio);
             Quaternion finalTargetRot = Quaternion.Euler(Vector3.Lerp(_dropEulerAngles, _collectEulerAngles, phaseRatio));
 
-            // 5. カメラ自身を滑らかに移動・回転させる
+            // 5. フォーカス対象があれば位置と回転を調整（プレイヤーとターゲットの両方を収める）
+            if (_focusTimer > 0 && _focusTarget != null)
+            {
+                _focusTimer -= Time.deltaTime;
+
+                // ターゲットとの中間地点を目標にする
+                Vector3 playerPos = _targetTransform.position;
+                Vector3 enemyPos = _focusTarget.position;
+                Vector3 midPoint = (playerPos + enemyPos) * 0.5f;
+
+                // ターゲットとの距離に応じてカメラを引き、両方を画角に入れる
+                float distance = Vector3.Distance(playerPos, enemyPos);
+                
+                // 距離に基づいた高さのオフセット計算（簡易版: 距離の半分 + 基本オフセット）
+                float heightOffset = Mathf.Max(_collectOffset.y, distance * 0.8f);
+                float zOffset = Mathf.Min(_collectOffset.z, -distance * 0.5f);
+
+                // 目標位置を中間地点基準で再計算
+                Vector3 focusTargetPos = new Vector3(_fixedX, midPoint.y + heightOffset, midPoint.z + zOffset);
+                finalTargetPos = focusTargetPos;
+
+                // 中間地点を向く
+                Vector3 lookDir = (midPoint - transform.position).normalized;
+                if (lookDir != Vector3.zero)
+                {
+                    finalTargetRot = Quaternion.LookRotation(lookDir);
+                }
+            }
+            else
+            {
+                _focusTarget = null;
+                _focusTimer = 0;
+            }
+
+            // 6. カメラ自身を滑らかに移動・回転させる
             transform.position = Vector3.SmoothDamp(transform.position, finalTargetPos, ref _currentVelocity, _positionSmoothTime);
-            transform.rotation = Quaternion.Slerp(transform.rotation, finalTargetRot, Time.deltaTime / _rotationSmoothTime);
+
+            float rotSmooth = (_focusTarget != null) ? _focusRotationSmoothTime : _rotationSmoothTime;
+            transform.rotation = Quaternion.Slerp(transform.rotation, finalTargetRot, Time.deltaTime / rotSmooth);
         }
 
+
+        /// <summary>
+        /// 統合シーン側から追従対象を差し替える。
+        /// </summary>
+        /// <param name="targetTransform">追従する対象Transform</param>
+        public void SetTarget(Transform targetTransform)
+        {
+            _targetTransform = targetTransform;
+            UpdateCameraTransformInstant();
+        }
+
+        /// <summary>
+        /// 敵などに一定時間フォーカスを合わせる
+        /// </summary>
+        /// <param name="target">フォーカス対象</param>
+        /// <param name="duration">時間</param>
+        public void SetFocusTarget(Transform target, float duration)
+        {
+            _focusTarget = target;
+            _focusTimer = duration;
+        }
 
         /// <summary>
         /// 開始時に現在の位置に応じた設定を即座に反映させるための関数
         /// </summary>
         private void UpdateCameraTransformInstant()
         {
-            if (_targetTransform == null || _cameraTransform == null)
+            if (_targetTransform == null)
             {
                 return;
             }
@@ -131,8 +201,30 @@ namespace Game.Gameplay.Cameras
             Vector3 finalTargetPos = Vector3.Lerp(dropTargetPos, collectTargetPos, phaseRatio);
             Vector3 finalTargetEuler = Vector3.Lerp(_dropEulerAngles, _collectEulerAngles, phaseRatio);
 
-            _cameraTransform.position = finalTargetPos;
-            _cameraTransform.rotation = Quaternion.Euler(finalTargetEuler);
+            transform.position = finalTargetPos;
+            transform.rotation = Quaternion.Euler(finalTargetEuler);
+        }
+
+        private void OnEnable()
+        {
+            EventBus.Subscribe<EnemyHitBatchEvent>(OnHitBatch);
+        }
+
+        private void OnDisable()
+        {
+            EventBus.Unsubscribe<EnemyHitBatchEvent>(OnHitBatch);
+        }
+
+        private void OnHitBatch(EnemyHitBatchEvent ev)
+        {
+            if (ev.EnemyTransform == null || _targetTransform == null) return;
+
+            // プレイヤーと敵が近い場合のみツーショット・フォーカスをかける
+            float dist = Vector3.Distance(_targetTransform.position, ev.EnemyTransform.position);
+            if (dist <= _focusTriggerDistance)
+            {
+                SetFocusTarget(ev.EnemyTransform, _hitFocusDuration);
+            }
         }
     }
 }

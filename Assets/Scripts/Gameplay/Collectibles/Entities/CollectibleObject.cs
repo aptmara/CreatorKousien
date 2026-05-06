@@ -31,6 +31,10 @@ namespace Game.Gameplay.Collectibles
 
         public string Id => _data != null ? _data.Id : string.Empty;
 
+        public float DamageAmount => _data != null ? _data.DamageAmount : 0f;
+
+        public bool CanBeCollectedByPlayer { get; private set; } = true;
+
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
@@ -41,9 +45,37 @@ namespace Game.Gameplay.Collectibles
         /// </summary>
         public void Initialize(CollectibleData data, Action<CollectibleObject> returnAction)
         {
+            Initialize(data, returnAction, true);
+        }
+
+        /// <summary>
+        /// Poolから取得した際の初期化処理
+        /// </summary>
+        /// <param name="data">収集物データ</param>
+        /// <param name="returnAction">Pool返却処理</param>
+        /// <param name="canBeCollectedByPlayer">プレイヤー収集を許可するか</param>
+        public void Initialize(CollectibleData data, Action<CollectibleObject> returnAction, bool canBeCollectedByPlayer)
+        {
             _data = data;
             _returnAction = returnAction;
+            CanBeCollectedByPlayer = canBeCollectedByPlayer;
             UpdateVisual();
+        }
+
+        /// <summary>
+        /// 外部システムから物理挙動を初期化する。
+        /// </summary>
+        /// <param name="velocity">初期速度</param>
+        /// <param name="angularVelocity">初期角速度</param>
+        public void SetInitialMotion(Vector3 velocity, Vector3 angularVelocity)
+        {
+            if (_rigidbody == null)
+            {
+                _rigidbody = GetComponent<Rigidbody>();
+            }
+
+            _rigidbody.linearVelocity = velocity;
+            _rigidbody.angularVelocity = angularVelocity;
         }
 
         private void UpdateVisual()
@@ -83,7 +115,10 @@ namespace Game.Gameplay.Collectibles
         /// <returns>軽量データ化された HeldItem</returns>
         public HeldItem OnCollected()
         {
-            if (_data == null) return null;
+            if (_data == null || !CanBeCollectedByPlayer)
+            {
+                return null;
+            }
 
             // 物理オブジェクトを保持せず、軽量データへ変換
             HeldItem heldItem = new HeldItem(_data);
@@ -99,6 +134,12 @@ namespace Game.Gameplay.Collectibles
         /// </summary>
         public void ResetState()
         {
+            if (_rigidbody == null)
+            {
+                _rigidbody = GetComponent<Rigidbody>();
+            }
+
+            CanBeCollectedByPlayer = true;
             _rigidbody.linearVelocity = Vector3.zero;
             _rigidbody.angularVelocity = Vector3.zero;
 
@@ -110,6 +151,20 @@ namespace Game.Gameplay.Collectibles
             }
 
             gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// 収集以外の理由でPoolへ返却する。
+        /// </summary>
+        public void Despawn()
+        {
+            if (_returnAction != null)
+            {
+                _returnAction.Invoke(this);
+                return;
+            }
+
+            ResetState();
         }
 
         /// <summary>

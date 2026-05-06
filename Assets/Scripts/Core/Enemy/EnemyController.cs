@@ -21,6 +21,11 @@ namespace Game.Core.Enemy
         [Tooltip("この敵に適用するEnemyDefinition。実行時にInitialize(def)で差し替えも可能。")]
         private EnemyDefinition _definition;
 
+        /// <summary>
+        /// 実行時に割り当てられる一意の敵ID。複数敵がいる場合のイベントのルーティングに使用する。
+        /// </summary>
+        public string InstanceEnemyId { get; private set; }
+
         private EnemyAttackGauge _attackGauge;
         private EnemyHealth _health;
         private EnemyStateManager _stateManager;
@@ -47,6 +52,7 @@ namespace Game.Core.Enemy
         public void Initialize(EnemyDefinition def)
         {
             _definition = def;
+            InstanceEnemyId = $"{def.EnemyId}_{GetInstanceID()}";
 
             // バリア初期化
             _barrier.Initialize(def.HasBarrier, def.BarrierDamageReduction);
@@ -56,23 +62,23 @@ namespace Game.Core.Enemy
 
             // HP管理初期化
             _health = new EnemyHealth();
-            _health.Initialize(def.EnemyId, def.MaxHp);
+            _health.Initialize(InstanceEnemyId, def.MaxHp);
             _health.OnHealthChanged = (current, max) =>
-                EventBus.Publish(new EnemyHealthChangedEvent(def.EnemyId, current, max));
+                EventBus.Publish(new EnemyHealthChangedEvent(InstanceEnemyId, current, max));
             _health.OnDefeated = HandleDefeated;
 
             // ゲージ管理初期化
-            _attackGauge.Initialize(def.EnemyId, def.MaxGauge, def.GaugeIncreaseRate, _barrier);
+            _attackGauge.Initialize(InstanceEnemyId, def.MaxGauge, def.GaugeIncreaseRate, _barrier);
             _attackGauge.OnGaugeChanged = (current, max) =>
-                EventBus.Publish(new EnemyGaugeChangedEvent(def.EnemyId, current, max));
+                EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max));
             _attackGauge.OnGaugeMaxReached = HandleGaugeMaxReached;
             _attackGauge.OnGaugeBroken = HandleGaugeBroken;
 
             // 初期HP・ゲージをUIに通知
-            EventBus.Publish(new EnemyHealthChangedEvent(def.EnemyId, def.MaxHp, def.MaxHp));
-            EventBus.Publish(new EnemyGaugeChangedEvent(def.EnemyId, 0f, def.MaxGauge));
+            EventBus.Publish(new EnemyHealthChangedEvent(InstanceEnemyId, def.MaxHp, def.MaxHp));
+            EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, 0f, def.MaxGauge));
 
-            Debug.Log($"[EnemyController] {def.EnemyId} 初期化完了。HP={def.MaxHp}, MaxGauge={def.MaxGauge}, BarrierActive={def.HasBarrier}");
+            Debug.Log($"[EnemyController] {InstanceEnemyId} 初期化完了。HP={def.MaxHp}, MaxGauge={def.MaxGauge}, BarrierActive={def.HasBarrier}");
         }
 
         private void OnEnable()
@@ -97,7 +103,7 @@ namespace Game.Core.Enemy
         /// </summary>
         private void OnHitBatch(EnemyHitBatchEvent ev)
         {
-            if (_definition == null || ev.EnemyId != _definition.EnemyId) return;
+            if (_definition == null || ev.EnemyId != InstanceEnemyId) return;
 
             switch (_stateManager.CurrentState)
             {
@@ -125,7 +131,7 @@ namespace Game.Core.Enemy
         /// </summary>
         private void HandleGaugeBroken()
         {
-            EventBus.Publish(new EnemyGaugeBrokenEvent(_definition.EnemyId));
+            EventBus.Publish(new EnemyGaugeBrokenEvent(InstanceEnemyId));
             TransitionToDown();
         }
 
@@ -136,8 +142,8 @@ namespace Game.Core.Enemy
         /// </summary>
         private void HandleGaugeMaxReached()
         {
-            Debug.Log($"[EnemyController] {_definition.EnemyId} が攻撃した！（Phase2以降でプレイヤーダメージ実装）");
-            EventBus.Publish(new EnemyAttackFiredEvent(_definition.EnemyId));
+            Debug.Log($"[EnemyController] {InstanceEnemyId} が攻撃した！（Phase2以降でプレイヤーダメージ実装）");
+            EventBus.Publish(new EnemyAttackFiredEvent(InstanceEnemyId));
 
             // ゲージをリセットして自然増加を再開
             _attackGauge.ResetGauge();
@@ -159,8 +165,8 @@ namespace Game.Core.Enemy
             _attackGauge.SetActive(false);
             _barrier.SetActive(false);
 
-            EventBus.Publish(new EnemyDefeatedEvent(_definition.EnemyId));
-            Debug.Log($"[EnemyController] {_definition.EnemyId} 撃破！");
+            EventBus.Publish(new EnemyDefeatedEvent(InstanceEnemyId));
+            Debug.Log($"[EnemyController] {InstanceEnemyId} 撃破！");
         }
 
         // ─────────────────────────────────────────
@@ -176,7 +182,7 @@ namespace Game.Core.Enemy
             _attackGauge.SetActive(false);
             _barrier.SetActive(false);
 
-            EventBus.Publish(new EnemyDownStartedEvent(_definition.EnemyId, _definition.DownDuration));
+            EventBus.Publish(new EnemyDownStartedEvent(InstanceEnemyId, _definition.DownDuration));
 
             // 既存タイマーがあれば停止してから再スタート
             if (_downTimerCoroutine != null) StopCoroutine(_downTimerCoroutine);
@@ -198,7 +204,7 @@ namespace Game.Core.Enemy
                 _attackGauge.SetActive(true);
                 _barrier.SetActive(_definition.HasBarrier);
 
-                Debug.Log($"[EnemyController] {_definition.EnemyId} ダウン復帰。ゲージリセット。");
+                Debug.Log($"[EnemyController] {InstanceEnemyId} ダウン復帰。ゲージリセット。");
             }
 
             _downTimerCoroutine = null;
