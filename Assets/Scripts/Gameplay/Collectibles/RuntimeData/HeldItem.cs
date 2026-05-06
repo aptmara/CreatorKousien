@@ -24,6 +24,8 @@ namespace Game.Gameplay.Collectibles
         public string Shape { get; set; }
         public int CapacityCost { get; set; }
 
+        public GameObject VisualPrefab { get; private set; }
+
         [Tooltip("ShapeChangeSystemで評価される転がし距離")]
         public float RollingDistance { get; set; }
 
@@ -40,6 +42,7 @@ namespace Game.Gameplay.Collectibles
             Attribute = data.Attribute;
             Shape = data.Shape;
             CapacityCost = data.CapacityCost;
+            VisualPrefab = data.ViewPrefab;
             RollingDistance = 0f;
         }
     }
