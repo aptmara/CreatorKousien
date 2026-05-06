@@ -9,13 +9,14 @@
 // - 5/6: ベース作成
 // ------------------------------------------------------------
 using UnityEngine;
-using Game.Core.Contracts;
+using Game.Gameplay.Collectibles;
+using UnityEngine.Rendering;
 
 
 namespace Game.Gameplay.Player
 {
     /// <summary>
-    /// ICollectible検出、PlayerHolderへAdd依頼を行うクラス
+    /// CollectibleObjectを検出し、データ(HeldItem)に変換してPlayerHolderへ渡すクラス
     /// </summary>
     [RequireComponent(typeof(Collider))]
     public class PlayerCollector : MonoBehaviour
@@ -36,15 +37,23 @@ namespace Game.Gameplay.Player
         /// <param name="other">侵入したCollider</param>
         private void OnTriggerEnter(Collider other)
         {
-            ICollectible collectible = other.GetComponent<ICollectible>();
+            // 侵入したオブジェクトがCollectibleObjectかどうかをチェック
+            CollectibleObject collectible = other.GetComponent<CollectibleObject>();
 
-            if (collectible != null && collectible.CanCollect())
+            if (collectible != null)
             {
-                // アイテムをホルダーに追加
-                _holder.Add(collectible);
+                // 容量チェックなど、拾えるかどうかの判定をHolderに任せる
+                if (_holder.CanAdd())
+                {
+                    // アイテム側から軽量データを抽出し、実体はPoolへ返却させる
+                    HeldItem itemData = collectible.OnCollected();
 
-                // アイテムの収集処理を呼び出す
-                collectible.OnCollected();
+                    // 抽出したデータをHolderのリストに追加
+                    if (itemData != null)
+                    {
+                        _holder.Add(itemData);
+                    }
+                }
             }
         }
     }

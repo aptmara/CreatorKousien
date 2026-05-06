@@ -844,6 +844,7 @@ GameObject:
   - component: {fileID: 9115182017574714161}
   - component: {fileID: 96972539515256430}
   - component: {fileID: 2483846165279528381}
+  - component: {fileID: 5232212859440975684}
   m_Layer: 0
   m_Name: PFB_Player
   m_TagString: Untagged
@@ -1037,6 +1038,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.PlayerAttachmentController
   _attachmentPrefab: {fileID: 6032332870982919000, guid: 2ed8d690fdd51de4c9df47a2053aaf7d, type: 3}
   _attachmentMountPoint: {fileID: 1983259960502521287}
+--- !u!114 &5232212859440975684
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5658249862219205856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3539efb17c32ae4f93588baccf80f70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.HeldItemViewController
+  _holder: {fileID: 233453283009943828}
+  _dummyVisualPrefab: {fileID: 1091366204326814389, guid: 664132476d3b16c4fa78b888e8cab3ce, type: 3}
+  _maxVisuals: 50
+  _startOffsetZ: 1
+  _startY: 0.5
+  _areaWidth: 4
+  _depthRows: 4
+  _spacing: 0.8
+  _randomJitter: 0.2
 --- !u!1 &5870560623095878439
 GameObject:
   m_ObjectHideFlags: 0
