@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using Game.Gameplay.Collectibles;
+using Game.Core.Events;
 
 namespace Game.Gameplay.Player
 {
@@ -38,6 +39,11 @@ namespace Game.Gameplay.Player
         public int CurrentCount => _heldItems.Count;
 
         /// <summary>
+        /// 最大保持容量を取得
+        /// </summary>
+        public int MaxCapacity => _maxCapacity;
+
+        /// <summary>
         /// 外部から保持しているアイテムのリストを読み取り専用で取得するプロパティ
         /// </summary>
         public IReadOnlyList<HeldItem> HeldItems => _heldItems;                 ///< 保持しているアイテムのリスト（読み取り専用）
@@ -61,8 +67,14 @@ namespace Game.Gameplay.Player
         /// <@param name="item">追加するアイテム</param>
         public void Add(HeldItem item)
         {
+            if (item == null)
+            {
+                Debug.LogWarning("[PlayerHolder] nullのHeldItemは追加できません。");
+                return;
+            }
+
             _heldItems.Add(item);
-            OnHolderChanged?.Invoke(); // 保持数が変化したことを通知
+            NotifyHolderChanged(); // 保持数が変化したことを通知
 
             // TODO: 将来的にD担当の ShapeChangeへのイベント発行もここで行う予定
         }
@@ -76,10 +88,19 @@ namespace Game.Gameplay.Player
         {
             HeldItem[] releasedItems = _heldItems.ToArray();
             _heldItems.Clear();
-            OnHolderChanged?.Invoke();
+            NotifyHolderChanged();
 
             // TODO: HeldItemsReleased イベントの発行
             return releasedItems;
+        }
+
+        /// <summary>
+        /// 保持数変更をUnityEventと統合EventBusへ通知する。
+        /// </summary>
+        private void NotifyHolderChanged()
+        {
+            OnHolderChanged?.Invoke();
+            EventBus.Publish(new CollectionChangedEvent(CurrentCount, MaxCapacity));
         }
     }
 }

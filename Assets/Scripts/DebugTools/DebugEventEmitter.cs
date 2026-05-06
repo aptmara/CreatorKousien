@@ -35,7 +35,7 @@ namespace Game.DebugTools
         [ContextMenu("Fire Enemy Hit Batch Event")]
         public void FireEnemyHitBatch()
         {
-            EventBus.Publish(new EnemyHitBatchEvent(enemyId, hitCount, gaugeDamage, bodyDamage, transform.position));
+            EventBus.Publish(new EnemyHitBatchEvent(enemyId, hitCount, gaugeDamage, bodyDamage, transform.position, transform));
             Debug.Log("[Debug] Fire EnemyHitBatchEvent");
         }
 
@@ -89,7 +89,7 @@ namespace Game.DebugTools
         [ContextMenu("DEBUG: Force Enemy Down (Large Gauge Damage)")]
         public void ForceEnemyDown()
         {
-            EventBus.Publish(new EnemyHitBatchEvent(enemyId, 1, 999f, 0f, transform.position));
+            EventBus.Publish(new EnemyHitBatchEvent(enemyId, 1, 999f, 0f, transform.position, transform));
             Debug.Log("[Debug] Force Enemy Down: EnemyHitBatchEvent with GaugeDamage=999");
         }
 
@@ -100,7 +100,7 @@ namespace Game.DebugTools
         [ContextMenu("DEBUG: Force Enemy Defeat (Large Body Damage)")]
         public void ForceEnemyDefeat()
         {
-            EventBus.Publish(new EnemyHitBatchEvent(enemyId, 1, 0f, 999f, transform.position));
+            EventBus.Publish(new EnemyHitBatchEvent(enemyId, 1, 0f, 999f, transform.position, transform));
             Debug.Log("[Debug] Force Enemy Defeat: EnemyHitBatchEvent with BodyDamage=999");
         }
     }

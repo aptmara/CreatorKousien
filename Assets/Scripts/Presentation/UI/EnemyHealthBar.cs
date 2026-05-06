@@ -12,9 +12,17 @@ namespace Game.Presentation.UI
     /// </summary>
     public class EnemyHealthBar : MonoBehaviour
     {
-        [SerializeField]
-        [Tooltip("表示対象の敵のEnemyId。EnemyDefinition.EnemyIdと一致させる。")]
+        [Tooltip("表示対象の敵のEnemyId。実行時に親のEnemyControllerから自動取得されるユニークなID。")]
         private string _targetEnemyId;
+
+        private void Start()
+        {
+            var controller = GetComponentInParent<Game.Core.Enemy.EnemyController>();
+            if (controller != null && !string.IsNullOrEmpty(controller.InstanceEnemyId))
+            {
+                _targetEnemyId = controller.InstanceEnemyId;
+            }
+        }
 
         [SerializeField] private Slider _hpSlider;
         [SerializeField] private Image _hpFillImage;
