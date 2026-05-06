@@ -1,3 +1,4 @@
+using Game.Gameplay.Collectibles;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,7 +20,7 @@ public class StageData : ScriptableObject
 
     public int height => _height;
 
-    public List<SpawnZoneData> spawns;
+    public GameObject collectibleSpawner;
 }
 
 
@@ -29,7 +30,7 @@ public class SpawnZoneData
     [Header("収集物のスポナー設定")]
     [Tooltip("スポナーのプレハブ")]
     [SerializeField]
-    public GameObject SpawnerPrefab;
+    public GameObject collectibleData;
     [Tooltip("座標")]
     [SerializeField]
     public Vector3 position;
