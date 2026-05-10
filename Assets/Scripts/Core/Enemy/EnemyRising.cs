@@ -27,7 +27,7 @@ namespace Game.Core.Enemy
         /// 指定した目標地点へ敵を上昇させる。
         /// </summary>
         /// <param name="targetPos">上昇後に到達する目標座標。</param>
-        /// <param name="startYOffset">開始時に目標位置より下へ下げる距離（正値を想定）。</param>
+        /// <param name="startYOffset">開始時に目標位置から下方向へ下げる距離（正値を想定）。</param>
         public void StartRise(Vector3 targetPos, float startYOffset)
         {
             _targetPosition = targetPos;

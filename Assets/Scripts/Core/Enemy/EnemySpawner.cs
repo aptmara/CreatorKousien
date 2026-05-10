@@ -82,8 +82,10 @@ namespace Game.Core.Enemy
                 Destroy(enemyGo);
                 return;
             }
-            var rising = enemyGo.GetComponent<EnemyRising>(); // 上昇
-            if (rising == null) rising = enemyGo.AddComponent<EnemyRising>();
+            if (!enemyGo.TryGetComponent(out EnemyRising rising))
+            {
+                rising = enemyGo.AddComponent<EnemyRising>();
+            }
             controller.Initialize(_definition);
             // 上昇処理の開始
             rising.StartRise(targetPos, _undergroundOffset);
