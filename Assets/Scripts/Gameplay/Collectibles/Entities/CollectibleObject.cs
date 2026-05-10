@@ -121,13 +121,35 @@ namespace Game.Gameplay.Collectibles
             }
 
             // 物理オブジェクトを保持せず、軽量データへ変換
-            HeldItem heldItem = new HeldItem(_data);
+            HeldItem heldItem = new HeldItem(_data, this);
 
             // 自身をPoolへ返却する
             _returnAction?.Invoke(this);
 
             return heldItem;
         }
+
+
+        /// <summary>
+        /// プレイヤーが物理的に拾い上げる際の処理。
+        /// </summary>
+        /// <returns>Itemの軽量データ</returns>
+        public HeldItem TakeOwnership()
+        {
+            if (_data == null || !CanBeCollectedByPlayer)
+            {
+                return null;
+            }
+
+            // 物理演算と当たり判定を無効化（ブレード内での大爆発を防ぐため）
+            if (_rigidbody != null) _rigidbody.isKinematic = true;
+            Collider col = GetComponent<Collider>();
+            if (col != null) col.enabled = false;
+
+            // 自分自身（this）を渡しつつデータ化
+            return new HeldItem(_data, this);
+        }
+
 
         /// <summary>
         /// Pool返却時に状態をリセットします
