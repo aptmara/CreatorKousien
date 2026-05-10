@@ -78,6 +78,7 @@ namespace Game.Core.Enemy
             // 敵の初期化
             if (!enemyGo.TryGetComponent(out EnemyController controller))
             {
+                Debug.LogWarning("[EnemySpawner] EnemyController が付与されていないため生成を中止します。", enemyGo);
                 Destroy(enemyGo);
                 return;
             }
