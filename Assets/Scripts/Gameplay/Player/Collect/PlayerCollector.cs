@@ -40,6 +40,7 @@ namespace Game.Gameplay.Player
             // 侵入したオブジェクトがCollectibleObjectか確認
             CollectibleObject collectible = other.GetComponent<CollectibleObject>();
 
+
             if (collectible != null)
             {
                 if (!collectible.CanBeCollectedByPlayer)
@@ -51,6 +52,7 @@ namespace Game.Gameplay.Player
                 {
                     // 変更: Poolに返さず、実体をそのまま所有権ごと頂く！
                     HeldItem itemData = collectible.TakeOwnership();
+
 
                     if (itemData != null)
                     {
