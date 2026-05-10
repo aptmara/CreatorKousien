@@ -37,7 +37,7 @@ namespace Game.Gameplay.Player
         /// <param name="other">侵入したCollider</param>
         private void OnTriggerEnter(Collider other)
         {
-            // 侵入したオブジェクトがCollectibleObjectかどうかをチェック
+            // 侵入したオブジェクトがCollectibleObjectか確認
             CollectibleObject collectible = other.GetComponent<CollectibleObject>();
 
             if (collectible != null)
@@ -47,13 +47,11 @@ namespace Game.Gameplay.Player
                     return;
                 }
 
-                // 容量チェックなど、拾えるかどうかの判定をHolderに任せる
                 if (_holder.CanAdd())
                 {
-                    // アイテム側から軽量データを抽出し、実体はPoolへ返却させる
-                    HeldItem itemData = collectible.OnCollected();
+                    // 変更: Poolに返さず、実体をそのまま所有権ごと頂く！
+                    HeldItem itemData = collectible.TakeOwnership();
 
-                    // 抽出したデータをHolderのリストに追加
                     if (itemData != null)
                     {
                         _holder.Add(itemData);

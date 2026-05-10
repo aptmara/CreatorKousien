@@ -26,13 +26,15 @@ namespace Game.Gameplay.Collectibles
 
         public GameObject VisualPrefab { get; private set; }
 
+        public CollectibleObject OriginalInstance { get; private set; }
+
         [Tooltip("ShapeChangeSystemで評価される転がし距離")]
         public float RollingDistance { get; set; }
 
         /// <summary>
         /// マスターデータから保持用データを生成します。
         /// </summary>
-        public HeldItem(CollectibleData data)
+        public HeldItem(CollectibleData data, CollectibleObject instance)
         {
             if (data == null) return;
 
@@ -44,6 +46,8 @@ namespace Game.Gameplay.Collectibles
             CapacityCost = data.CapacityCost;
             VisualPrefab = data.ViewPrefab;
             RollingDistance = 0f;
+
+            OriginalInstance = instance;
         }
     }
 }

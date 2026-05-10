@@ -25,13 +25,6 @@ namespace Game.Gameplay.Player
         [Tooltip("データを保持しているホルダー")]
         [SerializeField] private PlayerHolder _holder;
 
-        [Tooltip("アイテムのビジュアルを表示するためのプレハブ")]
-        [SerializeField] private GameObject _dummyVisualPrefab;
-
-        [Header("表示設定")]
-        [Tooltip("最大でいくつまで画面に描画するか")]
-        [SerializeField] private int _maxVisuals = 50;
-
         [Header("配置設定")]
         [Tooltip("配置を開始するプレイヤーの前方オフセット")]
         [SerializeField] private float _startOffsetZ = 1f;
@@ -50,8 +43,6 @@ namespace Game.Gameplay.Player
 
         [Tooltip("きっちり並ばないようにするためのランキングなずれ幅")]
         [SerializeField] private float _randomJitter = 0.2f;
-
-        private readonly List<GameObject> _visuals = new List<GameObject>();            ///< 現在表示しているビジュアルのリスト
 
 
 
@@ -79,52 +70,34 @@ namespace Game.Gameplay.Player
             }
         }
 
+        /// <summary>
+        /// PlayerHolderのデータをもとに、保持しているアイテムのビジュアルを更新する関数
+        /// </summary>
         private void UpdateVisuals()
         {
-            if (_dummyVisualPrefab == null)
+            if (_holder == null) return;
+
+            // 保持しているすべてのアイテムの定位置を計算する
+            for (int i = 0; i < _holder.CurrentCount; i++)
             {
-                return;
-            }
+                HeldItem currentItem = _holder.HeldItems[i];
 
-            // 保持データの数
-            int targetCount = Mathf.Min(_holder.CurrentCount, _maxVisuals);
+                // D担当側に持たせた OriginalInstance（元の実体）を取得
+                CollectibleObject instance = currentItem.OriginalInstance;
 
-            // 足りなければ生成
-            while (_visuals.Count < targetCount)
-            {
-                HeldItem currentItemData = _holder.HeldItems[_visuals.Count];
-                GameObject prefabToSpawn = currentItemData.VisualPrefab != null ? currentItemData.VisualPrefab : _dummyVisualPrefab;
+                if (instance == null) continue;
 
-                GameObject visual = Instantiate(prefabToSpawn, transform);
-
-                // 物理演算は一切不要なのでColliderがあれば削除
-                Collider col = visual.GetComponent<Collider>();
-                if (col != null)
+                // プレイヤー（このスクリプトがついているオブジェクト）の子にする
+                if (instance.transform.parent != transform)
                 {
-                    Destroy(col);
+                    instance.transform.SetParent(transform);
                 }
 
-                _visuals.Add(visual);
-            }
+                // --- 配置位置の計算 ---
+                Random.InitState(i);
+                int itemsPerRow = Mathf.Max(1, Mathf.FloorToInt(_areaWidth / _spacing));
+                int itemsPerLayer = itemsPerRow * _depthRows;
 
-            // 多すぎれば削除
-            while (_visuals.Count > targetCount)
-            {
-                GameObject toRemove = _visuals[_visuals.Count - 1];
-                _visuals.RemoveAt(_visuals.Count - 1);
-                Destroy(toRemove);
-            }
-
-            // プレイヤーの前方にアイテムを配置
-            for (int i = 0; i < _visuals.Count; i++)
-            {
-                Random.InitState(i); // アイテムごとにランダムのシードを固定して、見た目が安定するようにする
-
-                // 1段あたりのアイテム数を計算
-                int itemsPerRow     = Mathf.Max(1, Mathf.FloorToInt(_areaWidth / _spacing));
-                int itemsPerLayer   = itemsPerRow * _depthRows;
-
-                // 現在のアイテムが何段目の、どこにいるか
                 int layer = i / itemsPerLayer;
                 int indexInLayer = i % itemsPerLayer;
 
@@ -133,15 +106,18 @@ namespace Game.Gameplay.Player
 
                 float startX = -(_areaWidth / 2f) + (_spacing / 2f);
 
-                // 基本座標にランダムなずれを加える
                 float x = startX + col * _spacing + Random.Range(-_randomJitter, _randomJitter);
                 float z = _startOffsetZ + row * _spacing + Random.Range(-_randomJitter, _randomJitter);
                 float y = _startY + layer * _spacing + Random.Range(-_randomJitter, _randomJitter);
 
-                _visuals[i].transform.localPosition = new Vector3(x, y, z);
+                Vector3 targetPos = new Vector3(x, y, z);
+                Quaternion targetRot = Random.rotation;
 
-                // アイテムの見た目をランダムに回転させる
-                _visuals[i].transform.localRotation = Random.rotation;
+                // TODO: ここに HeldVisualMover をアタッチして targetPos, targetRot に滑らかに吸い込ませる処理を入れる
+
+                // 現状は未実装なので、一瞬で定位置へワープさせる
+                instance.transform.localPosition = targetPos;
+                instance.transform.localRotation = targetRot;
             }
         }
     }
