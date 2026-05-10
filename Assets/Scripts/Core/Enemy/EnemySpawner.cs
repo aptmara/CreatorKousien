@@ -4,10 +4,8 @@
  * 内容：敵を生成する(現在はデバッグキー込み)
  * 
  */
-using Game.Core.Enemy;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Editor;
 
 
 namespace Game.Core.Enemy
@@ -39,6 +37,7 @@ namespace Game.Core.Enemy
         private void OnEnable()
         {
             // デバッグインプットを行うための登録
+            if (_spawnAction == null) return;
             _spawnAction.Enable();
             _spawnAction.performed += OnSpawnPerformed;
         }
@@ -46,6 +45,7 @@ namespace Game.Core.Enemy
         private void OnDisable()
         {
             // デバッグインプットの登録解除
+            if (_spawnAction == null) return;
             _spawnAction.performed -= OnSpawnPerformed;
             _spawnAction.Disable();
         }
@@ -64,29 +64,33 @@ namespace Game.Core.Enemy
         /// </summary>
         private void SpawnEnemy()
         {
-            if (_enemyPrefab == null) return;
+            if (_enemyPrefab == null || _definition == null) return;
 
             // 目標位置計算
-            Vector3 spawnPos = _spawnBasePoint.position;
+            Vector3 spawnPos = _spawnBasePoint != null ? _spawnBasePoint.position : transform.position;
             float randomX = Random.Range(spawnPos.x - _rangeSize.x / 2f, spawnPos.x + _rangeSize.x / 2f);
             float randomZ = Random.Range(spawnPos.z - _rangeSize.y / 2f, spawnPos.z + _rangeSize.y / 2f);
-            Vector3 TargetPos = new Vector3(randomX,spawnPos.y,randomZ);
+            Vector3 targetPos = new Vector3(randomX, spawnPos.y, randomZ);
 
             // プレハブから敵生成
             GameObject enemyGo = Instantiate(_enemyPrefab);
 
             // 敵の初期化
-            var controller = enemyGo.GetComponent<EnemyController>();
-            var rising = enemyGo.GetComponent<EnemyRising>();// 上昇
-            if (rising != null) rising = enemyGo.AddComponent<EnemyRising>();
-
+            if (!enemyGo.TryGetComponent(out EnemyController controller))
+            {
+                Destroy(enemyGo);
+                return;
+            }
+            var rising = enemyGo.GetComponent<EnemyRising>(); // 上昇
+            if (rising == null) rising = enemyGo.AddComponent<EnemyRising>();
             controller.Initialize(_definition);
             // 上昇処理の開始
-            rising.StartRise(controller, TargetPos, _undergroundOffset);
+            rising.StartRise(targetPos, _undergroundOffset);
         }
 
         private void OnDrawGizmosSelected()
         {
+            if (_spawnBasePoint == null) return;
             // 生成位置と開始位置の可視化
             Gizmos.color = Color.cyan;
             Vector3 size = new Vector3(_rangeSize.x, 0.1f, _rangeSize.y);

@@ -5,7 +5,6 @@
  * 
  * 
  */
-using Game.Core.Enemy;
 using System.Collections;
 using UnityEngine;
 
@@ -16,7 +15,6 @@ namespace Game.Core.Enemy
     /// </summary>
     public class EnemyRising : MonoBehaviour
     {
-        private EnemyController _controller;
         //　敵の目標地点
         private Vector3 _targetPosition;
 
@@ -25,10 +23,8 @@ namespace Game.Core.Enemy
         [Tooltip("上昇の際の動き(調整中)")]
         [SerializeField] private AnimationCurve _riseCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
-        public void StartRise(EnemyController controller,Vector3 targetPos,float startYOffset)
+        public void StartRise(Vector3 targetPos, float startYOffset)
         {
-            // コントローラーと上昇目標の設定
-            _controller = controller;
             _targetPosition = targetPos;
             // 上昇目標と目標までの距離から初期位置設定
             transform.position = _targetPosition + Vector3.down * startYOffset;
@@ -43,8 +39,6 @@ namespace Game.Core.Enemy
             // カーブも考慮した目標地点までの滑らかな動き
             while (elapsed < _riseDuration)
             {
-                // 以下なぜかインスペクターの値が反映されない
-                //-カーブの値を取得し、割合を計算
                 elapsed += Time.deltaTime;
                 float t = elapsed / _riseDuration;
                 float curveT = _riseCurve.Evaluate(t);
@@ -54,8 +48,6 @@ namespace Game.Core.Enemy
             }
             //-イージング処理完了後目標地点に位置を補正
             transform.position = _targetPosition;
-
-            Debug.Log("[Rising] 到着");
         }
 }
 
