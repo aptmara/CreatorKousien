@@ -23,6 +23,11 @@ namespace Game.Core.Enemy
         [Tooltip("上昇の際の動き(調整中)")]
         [SerializeField] private AnimationCurve _riseCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
+        /// <summary>
+        /// 指定した目標地点へ敵を上昇させる。
+        /// </summary>
+        /// <param name="targetPos">上昇後に到達する目標座標。</param>
+        /// <param name="startYOffset">開始時に目標位置から下げるオフセット量。</param>
         public void StartRise(Vector3 targetPos, float startYOffset)
         {
             _targetPosition = targetPos;
