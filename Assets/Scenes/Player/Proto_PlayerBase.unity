@@ -1182,6 +1182,9 @@ MonoBehaviour:
   _collectEulerAngles: {x: 35, y: 0, z: 0}
   _positionSmoothTime: 0.25
   _rotationSmoothTime: 0.3
+  _focusRotationSmoothTime: 0.1
+  _focusTriggerDistance: 15
+  _hitFocusDuration: 0.5
 --- !u!1 &1480375641
 GameObject:
   m_ObjectHideFlags: 0
@@ -1524,6 +1527,14 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 94e9ae19b8865d2489f8111fcf489a3e, type: 2}
   - {fileID: 11400000, guid: c5bea3e5375a6f54486a91623f955ecb, type: 2}
   - {fileID: 11400000, guid: c98775c619051ab4bb85497465249d77, type: 2}
+  _maintainActiveCount: 1
+  _targetActiveCount: 80
+  _spawnBatchSize: 12
+  _spawnInterval: 1
+  _minInitialSpeed: 1.5
+  _maxInitialSpeed: 4
+  _initialUpwardSpeed: 0.5
+  _canBeCollectedByPlayer: 0
 --- !u!114 &1828165560
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1745,6 +1756,17 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &2066175290 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 233453283009943828, guid: 7f25be6a14929874b8ccd34969d8013d, type: 3}
+  m_PrefabInstance: {fileID: 4730880590920070093}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a169919101b74e409a6988ca63da87b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.PlayerHolder
 --- !u!1 &2102619004
 GameObject:
   m_ObjectHideFlags: 0
@@ -1951,6 +1973,10 @@ PrefabInstance:
       propertyPath: m_Constraints
       value: 116
       objectReference: {fileID: 0}
+    - target: {fileID: 9115182017574714161, guid: 7f25be6a14929874b8ccd34969d8013d, type: 3}
+      propertyPath: _holder
+      value: 
+      objectReference: {fileID: 2066175290}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
