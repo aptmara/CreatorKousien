@@ -440,7 +440,7 @@ GameObject:
   - component: {fileID: 913601632}
   - component: {fileID: 913601631}
   - component: {fileID: 913601630}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Field
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -475,7 +475,7 @@ BoxCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 0
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
@@ -1756,6 +1756,17 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &2066175290 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 233453283009943828, guid: 7f25be6a14929874b8ccd34969d8013d, type: 3}
+  m_PrefabInstance: {fileID: 4730880590920070093}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a169919101b74e409a6988ca63da87b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.PlayerHolder
 --- !u!1 &2102619004
 GameObject:
   m_ObjectHideFlags: 0
@@ -1946,14 +1957,30 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3143861578243248535, guid: 7f25be6a14929874b8ccd34969d8013d, type: 3}
+      propertyPath: _rotationSpeed
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 5658249862219205856, guid: 7f25be6a14929874b8ccd34969d8013d, type: 3}
       propertyPath: m_Name
       value: PFB_Player
       objectReference: {fileID: 0}
     - target: {fileID: 5982360361060454720, guid: 7f25be6a14929874b8ccd34969d8013d, type: 3}
       propertyPath: m_Mass
-      value: 1000
+      value: 600
       objectReference: {fileID: 0}
+    - target: {fileID: 5982360361060454720, guid: 7f25be6a14929874b8ccd34969d8013d, type: 3}
+      propertyPath: m_UseGravity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5982360361060454720, guid: 7f25be6a14929874b8ccd34969d8013d, type: 3}
+      propertyPath: m_Constraints
+      value: 116
+      objectReference: {fileID: 0}
+    - target: {fileID: 9115182017574714161, guid: 7f25be6a14929874b8ccd34969d8013d, type: 3}
+      propertyPath: _holder
+      value: 
+      objectReference: {fileID: 2066175290}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

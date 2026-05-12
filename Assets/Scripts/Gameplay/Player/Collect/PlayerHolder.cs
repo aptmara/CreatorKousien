@@ -25,7 +25,7 @@ namespace Game.Gameplay.Player
         // ------------------------------------------------------------
         [Header("保持設定")]
         [Tooltip("最大保持容量")]
-        [SerializeField] private int _maxCapacity = 100;
+        [SerializeField] private int _maxCapacity = 10;
 
         private readonly List<HeldItem> _heldItems = new List<HeldItem>();      ///< 保持しているアイテムのリスト
 

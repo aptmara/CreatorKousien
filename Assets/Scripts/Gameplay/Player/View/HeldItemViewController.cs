@@ -116,8 +116,8 @@ namespace Game.Gameplay.Player
                 // TODO: ここに HeldVisualMover をアタッチして targetPos, targetRot に滑らかに吸い込ませる処理を入れる
 
                 // 現状は未実装なので、一瞬で定位置へワープさせる
-                instance.transform.localPosition = targetPos;
-                instance.transform.localRotation = targetRot;
+//                instance.transform.localPosition = targetPos;
+  //              instance.transform.localRotation = targetRot;
             }
         }
     }

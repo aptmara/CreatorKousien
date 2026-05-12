@@ -7,6 +7,7 @@
 //
 // Notes	:
 // - 5/6 ベース作成
+// - 5/12 回転量の大元作成 - 滝谷
 // ------------------------------------------------------------
 using UnityEngine;
 
@@ -27,11 +28,17 @@ namespace Game.Gameplay.Player
         [Tooltip("プレイヤーの回転速度")]
         [SerializeField] private float _rotationSpeed = 15.0f;
 
+        [Tooltip("プレイヤーの回転設定")]
+        [SerializeField] private float _turnSpeed = 300.0f;
+
+
         [Header("その他の設定")]
         [Tooltip("移動の基準となるカメラ(未設定時は自動取得)")]
         [SerializeField] private Camera _mainCamera;
 
         private Rigidbody _rigidbody;       ///< プレイヤーのRigidbodyコンポーネント
+
+        private float _targetYaw;
 
         /// <summary>
         /// 現在の移動速度を取得するプロパティ
@@ -56,11 +63,15 @@ namespace Game.Gameplay.Player
             // 物理挙動を滑らかに制御する設定
             _rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
 
+            _rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+
             // カメラが未設定の場合はシーン内のメインカメラを自動取得する
             if (_mainCamera == null)
             {
                 _mainCamera = Camera.main;
             }
+
+            _targetYaw = transform.eulerAngles.y;
         }
 
 
@@ -93,10 +104,26 @@ namespace Game.Gameplay.Player
             Vector3 targetVelocity = targetDirection * _moveSpeed;
             targetVelocity.y = _rigidbody.linearVelocity.y;         // 落下速度は維持する
             _rigidbody.linearVelocity = targetVelocity;
+        }
 
-            // 回転の適用
-            Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
-            _rigidbody.MoveRotation(Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.fixedDeltaTime));
+
+        public void Rotate(Vector2 lookInput)
+        {
+
+            if(lookInput.sqrMagnitude < 0.01f)
+            {
+                return;
+            }
+
+            if(lookInput.sqrMagnitude >= 0.01f)
+            {
+                _targetYaw += lookInput.x * _turnSpeed * Time.fixedDeltaTime;   
+            }
+
+
+            Quaternion deltaRotation = Quaternion.Euler(0.0f, _targetYaw, 0.0f);
+            _rigidbody.MoveRotation(Quaternion.Slerp(_rigidbody.rotation, deltaRotation, _rotationSpeed * Time.fixedDeltaTime));
+
         }
     }
 }

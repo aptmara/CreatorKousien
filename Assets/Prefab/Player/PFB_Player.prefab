@@ -845,7 +845,7 @@ GameObject:
   - component: {fileID: 96972539515256430}
   - component: {fileID: 2483846165279528381}
   - component: {fileID: 5232212859440975684}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: PFB_Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -884,7 +884,7 @@ CapsuleCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
@@ -902,7 +902,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5658249862219205856}
   serializedVersion: 5
-  m_Mass: 200
+  m_Mass: 600
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -919,7 +919,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 80
+  m_Constraints: 116
   m_CollisionDetection: 0
 --- !u!114 &8157789754490040092
 MonoBehaviour:
@@ -962,6 +962,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 9c7e28f0-0204-4d43-bfbe-3fc58093220e
     m_ActionName: 'Gameplay/Move[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1265893493383323021}
+        m_TargetAssemblyTypeName: Game.Gameplay.Player.PlayerInputReader, Assembly-CSharp
+        m_MethodName: OnRotate
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 42f4cc91-f2d5-45c7-a6e5-9912bc1c9a4e
+    m_ActionName: 'Gameplay/Rotate[/Mouse/delta]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Gameplay
@@ -981,6 +997,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.PlayerMotor
   _moveSpeed: 6
   _rotationSpeed: 15
+  _turnSpeed: 150
   _mainCamera: {fileID: 0}
 --- !u!114 &1265893493383323021
 MonoBehaviour:
@@ -1051,8 +1068,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.HeldItemViewController
   _holder: {fileID: 233453283009943828}
-  _dummyVisualPrefab: {fileID: 1091366204326814389, guid: 664132476d3b16c4fa78b888e8cab3ce, type: 3}
-  _maxVisuals: 50
   _startOffsetZ: 1
   _startY: 0.5
   _areaWidth: 4

@@ -142,9 +142,9 @@ namespace Game.Gameplay.Collectibles
             }
 
             // 物理演算と当たり判定を無効化（ブレード内での大爆発を防ぐため）
-            if (_rigidbody != null) _rigidbody.isKinematic = true;
-            Collider col = GetComponent<Collider>();
-            if (col != null) col.enabled = false;
+//            if (_rigidbody != null) _rigidbody.isKinematic = true;
+//            Collider col = GetComponent<Collider>();
+//            if (col != null) col.enabled = false;
 
             // 自分自身（this）を渡しつつデータ化
             return new HeldItem(_data, this);
