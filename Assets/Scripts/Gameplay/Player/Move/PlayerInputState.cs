@@ -21,5 +21,10 @@ namespace Game.Gameplay.Player
         /// 移動入力ベクトル
         /// </summary>
         public Vector2 MoveDirection;
+
+        /// <summary>
+        /// 回転方向入力ベクトル
+        /// </summary>
+        public Vector2 LookDirection;
     }
 }

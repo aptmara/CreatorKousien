@@ -33,6 +33,11 @@ namespace Game.Gameplay.Player
         // 関数処理
         // ------------------------------------------------------------
 
+        private void Start()
+        {
+            SetCursorLock(true);
+        }
+
         ///<summary>
         /// 物理演算の更新処理
         /// </summary>
@@ -46,6 +51,8 @@ namespace Game.Gameplay.Player
             // Facadeとして入力を取得し、Motorに移動処理を渡す
             PlayerInputState input = _inputReader.CurrentInput;
             _motor.Move(input.MoveDirection);
+            _motor.Rotate(input.LookDirection);
+
         }
 
         /// <summary>
@@ -60,6 +67,21 @@ namespace Game.Gameplay.Player
             {
                 _motor.Move(Vector2.zero); // 移動を停止させる
             }
+        }
+
+        private void SetCursorLock(bool enable)
+        {
+            if (enable)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+
         }
     }
 }

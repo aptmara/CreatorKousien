@@ -36,5 +36,15 @@ namespace Game.Gameplay.Player
         {
             _currentInput.MoveDirection = context.ReadValue<Vector2>();
         }
+
+        /// <summary>
+        /// 回転更新時のコールバック
+        /// </summary>
+        /// <param name="context">回転コンテキスト</param>
+        public void OnRotate(InputAction.CallbackContext context)
+        {
+            _currentInput.LookDirection = context.ReadValue<Vector2>();
+        }
+
     }
 }
