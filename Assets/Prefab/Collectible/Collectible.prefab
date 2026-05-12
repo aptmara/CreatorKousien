@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 536398579297135041}
   - component: {fileID: 501364914817027249}
   - component: {fileID: 6387654242037428932}
+  - component: {fileID: 2139515936200401590}
   m_Layer: 0
   m_Name: Collectible
   m_TagString: Untagged
@@ -30,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0, z: 0}
-  m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
+  m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -113,9 +114,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 545967179075052199}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 30
   m_LinearDamping: 0
-  m_AngularDamping: 0.05
+  m_AngularDamping: 5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -145,3 +146,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Collectibles.CollectibleObject
   _data: {fileID: 0}
+--- !u!114 &2139515936200401590
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 545967179075052199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79c9d5b1ecf89cc4f965f77a26cd620f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemPhysicsStabilizer
+  _maxDepenetration: 1
+  _maxSpeed: 10
