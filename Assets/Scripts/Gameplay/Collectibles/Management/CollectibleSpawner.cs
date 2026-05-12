@@ -4,11 +4,11 @@
 //
 // Description  : 収集物の生成と初期化を制御する司令塔。
 // Created      : 2026-05-06
+// Updated      : 2026-05-12 (維持管理機能をFieldMonitorへ分離)
 // ================================================================================
 
 using UnityEngine;
 using Game.Data.Collectibles;
-using System.Collections;
 
 namespace Game.Gameplay.Collectibles
 {
@@ -26,18 +26,6 @@ namespace Game.Gameplay.Collectibles
         [Tooltip("出現させるアイテムのデータリスト")]
         [SerializeField] private CollectibleData[] _spawnableData;
 
-        [Tooltip("ステージ上のアイテム数を自動で維持するか")]
-        [SerializeField] private bool _maintainActiveCount = true;
-
-        [Tooltip("ステージ上に維持するアイテム数")]
-        [SerializeField] private int _targetActiveCount = 80;
-
-        [Tooltip("1回の補充で生成する最大数")]
-        [SerializeField] private int _spawnBatchSize = 12;
-
-        [Tooltip("補充判定の間隔")]
-        [SerializeField] private float _spawnInterval = 1.0f;
-
         [Header("Free Motion")]
         [Tooltip("生成時に水平方向へ与える速度の最小値")]
         [SerializeField] private float _minInitialSpeed = 1.5f;
@@ -51,38 +39,12 @@ namespace Game.Gameplay.Collectibles
         [Tooltip("プレイヤーが触れた時に保持/回収できるか")]
         [SerializeField] private bool _canBeCollectedByPlayer = false;
 
-        private Coroutine _maintainCoroutine;
-
-        private void OnEnable()
-        {
-            if (_maintainActiveCount)
-            {
-                _maintainCoroutine = StartCoroutine(MaintainSpawnRoutine());
-            }
-        }
-
-        private void OnDisable()
-        {
-            if (_maintainCoroutine != null)
-            {
-                StopCoroutine(_maintainCoroutine);
-                _maintainCoroutine = null;
-            }
-        }
-
-        /// <summary>
-        /// テスト用: コンテキストメニューから実行可能
-        /// </summary>
+        // テスト用: Context Menuから実行可能
         [ContextMenu("Spawn Test Items (10)")]
-        public void SpawnTestItems10()
-        {
-            SpawnCollectibles(10);
-        }
+        public void SpawnTestItems10() => SpawnCollectibles(10);
+
         [ContextMenu("Spawn Test Items (100)")]
-        public void SpawnTestItems100()
-        {
-            SpawnCollectibles(100);
-        }
+        public void SpawnTestItems100() => SpawnCollectibles(100);
 
         /// <summary>
         /// 指定された数のアイテムを生成して配置します。
@@ -95,35 +57,9 @@ namespace Game.Gameplay.Collectibles
             }
 
             int spawnCount = Mathf.Max(0, count);
-            if (_maintainActiveCount)
-            {
-                int shortage = Mathf.Max(0, _targetActiveCount - _registry.ActiveCount);
-                spawnCount = Mathf.Min(spawnCount, shortage);
-            }
-
             for (int i = 0; i < spawnCount; i++)
             {
                 SpawnOne();
-            }
-        }
-
-        /// <summary>
-        /// 不足分を定期補充し、ステージ上のアイテム密度を保つ。
-        /// </summary>
-        private IEnumerator MaintainSpawnRoutine()
-        {
-            WaitForSeconds wait = new WaitForSeconds(Mathf.Max(0.1f, _spawnInterval));
-
-            while (isActiveAndEnabled)
-            {
-                if (CanSpawn())
-                {
-                    int shortage = Mathf.Max(0, _targetActiveCount - _registry.ActiveCount);
-                    int spawnCount = Mathf.Min(shortage, Mathf.Max(1, _spawnBatchSize));
-                    SpawnCollectibles(spawnCount);
-                }
-
-                yield return wait;
             }
         }
 
