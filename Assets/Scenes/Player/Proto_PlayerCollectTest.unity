@@ -440,7 +440,7 @@ GameObject:
   - component: {fileID: 913601632}
   - component: {fileID: 913601631}
   - component: {fileID: 913601630}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Field
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1527,10 +1527,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 94e9ae19b8865d2489f8111fcf489a3e, type: 2}
   - {fileID: 11400000, guid: c5bea3e5375a6f54486a91623f955ecb, type: 2}
   - {fileID: 11400000, guid: c98775c619051ab4bb85497465249d77, type: 2}
-  _maintainActiveCount: 1
-  _targetActiveCount: 80
-  _spawnBatchSize: 12
-  _spawnInterval: 1
   _minInitialSpeed: 1.5
   _maxInitialSpeed: 4
   _initialUpwardSpeed: 0.5
@@ -1959,7 +1955,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3143861578243248535, guid: 7f25be6a14929874b8ccd34969d8013d, type: 3}
       propertyPath: _rotationSpeed
-      value: 4
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 5658249862219205856, guid: 7f25be6a14929874b8ccd34969d8013d, type: 3}
       propertyPath: m_Name
@@ -1976,6 +1972,10 @@ PrefabInstance:
     - target: {fileID: 5982360361060454720, guid: 7f25be6a14929874b8ccd34969d8013d, type: 3}
       propertyPath: m_Constraints
       value: 116
+      objectReference: {fileID: 0}
+    - target: {fileID: 5982360361060454720, guid: 7f25be6a14929874b8ccd34969d8013d, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 8605575144846080894, guid: 7f25be6a14929874b8ccd34969d8013d, type: 3}
       propertyPath: m_Material
