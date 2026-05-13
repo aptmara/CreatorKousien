@@ -26,17 +26,15 @@ namespace Game.Core.Enemy
         /// </summary>
         public string InstanceEnemyId { get; private set; }
 
-        private EnemyAttackGauge _attackGauge;
         private EnemyHealth _health;
         private EnemyStateManager _stateManager;
-        private BarrierController _barrier;
+        private EnemyBarrierGauge _barrierGauge;
         private Coroutine _downTimerCoroutine;
 
         private void Awake()
         {
             // RequireComponentで必ず存在するためnullチェック不要
-            _attackGauge = GetComponent<EnemyAttackGauge>();
-            _barrier = GetComponent<BarrierController>();
+            _barrierGauge = GetComponent<EnemyBarrierGauge>();
 
             if (_definition != null)
             {
@@ -53,10 +51,7 @@ namespace Game.Core.Enemy
         {
             _definition = def;
             InstanceEnemyId = $"{def.EnemyId}_{GetInstanceID()}";
-
-            // バリア初期化
-            _barrier.Initialize(def.HasBarrier, def.BarrierDamageReduction);
-
+            
             // 状態管理初期化
             _stateManager = new EnemyStateManager();
 
@@ -68,11 +63,11 @@ namespace Game.Core.Enemy
             _health.OnDefeated = HandleDefeated;
 
             // ゲージ管理初期化
-            _attackGauge.Initialize(InstanceEnemyId, def.MaxGauge, def.GaugeIncreaseRate, _barrier);
-            _attackGauge.OnGaugeChanged = (current, max) =>
+            // TODO越智 EnemyDefinitionを現在の形に改変
+            _barrierGauge.Initialize(InstanceEnemyId, def.MaxGauge);
+            _barrierGauge.OnGaugeChanged = (current, max) =>
                 EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max));
-            _attackGauge.OnGaugeMaxReached = HandleGaugeMaxReached;
-            _attackGauge.OnGaugeBroken = HandleGaugeBroken;
+            _barrierGauge.OnGaugeBroken = HandleGaugeBroken;
 
             // 初期HP・ゲージをUIに通知
             EventBus.Publish(new EnemyHealthChangedEvent(InstanceEnemyId, def.MaxHp, def.MaxHp));
@@ -83,12 +78,14 @@ namespace Game.Core.Enemy
 
         private void OnEnable()
         {
-            EventBus.Subscribe<EnemyHitBatchEvent>(OnHitBatch);
+            EventBus.Subscribe<EnemyHitBatchEvent>(OnEnemyHitBatch);
+            EventBus.Subscribe<BarrierHitBatchEvent>(OnBarrierHitBatch);
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<EnemyHitBatchEvent>(OnHitBatch);
+            EventBus.Unsubscribe<EnemyHitBatchEvent>(OnEnemyHitBatch);
+            EventBus.Unsubscribe<BarrierHitBatchEvent>(OnBarrierHitBatch);
         }
 
         // ─────────────────────────────────────────
@@ -101,24 +98,25 @@ namespace Game.Core.Enemy
         /// Down時: 本体ダメージを適用。
         /// Defeated時: 無視。
         /// </summary>
-        private void OnHitBatch(EnemyHitBatchEvent ev)
+        private void OnEnemyHitBatch(EnemyHitBatchEvent ev)
         {
             if (_definition == null || ev.EnemyId != InstanceEnemyId) return;
 
-            switch (_stateManager.CurrentState)
-            {
-                case EnemyState.Normal:
-                    _attackGauge.ApplyGaugeDamage(ev.GaugeDamage);
-                    break;
+            _health.ApplyBodyDamage(ev.BodyDamage);
+            
+        }
 
-                case EnemyState.Down:
-                    _health.ApplyBodyDamage(ev.BodyDamage);
-                    break;
+        /// <summary>
+        /// BarrierHitBatchEventを受信し、現在の状態に応じてダメージをルーティングする。
+        /// Normal時: ゲージダメージを適用。
+        /// Down時: 本体ダメージを適用。
+        /// Defeated時: 無視。
+        /// </summary>
+        private void OnBarrierHitBatch(BarrierHitBatchEvent ev)
+        {
+            if (_definition == null || ev.EnemyId != InstanceEnemyId) return;
 
-                case EnemyState.Defeated:
-                    // 撃破済みは何もしない
-                    break;
-            }
+            _barrierGauge.ApplyGaugeDamage(ev.GaugeDamage);
         }
 
         // ─────────────────────────────────────────
@@ -136,21 +134,6 @@ namespace Game.Core.Enemy
         }
 
         /// <summary>
-        /// ゲージがMAXに到達した（敵が攻撃した）場合の処理。
-        /// プロト: EnemyAttackFiredEventを発行してログ出力のみ。
-        /// Phase2以降でプレイヤーへのダメージを購読側で実装する。
-        /// </summary>
-        private void HandleGaugeMaxReached()
-        {
-            Debug.Log($"[EnemyController] {InstanceEnemyId} が攻撃した！（Phase2以降でプレイヤーダメージ実装）");
-            EventBus.Publish(new EnemyAttackFiredEvent(InstanceEnemyId));
-
-            // ゲージをリセットして自然増加を再開
-            _attackGauge.ResetGauge();
-            _attackGauge.SetActive(true);
-        }
-
-        /// <summary>
         /// HP0到達時の処理。撃破状態へ遷移し、EnemyDefeatedEventを発行する。
         /// </summary>
         private void HandleDefeated()
@@ -162,8 +145,7 @@ namespace Game.Core.Enemy
             }
 
             _stateManager.TransitionTo(EnemyState.Defeated);
-            _attackGauge.SetActive(false);
-            _barrier.SetActive(false);
+            _barrierGauge.SetActive(false);
 
             EventBus.Publish(new EnemyDefeatedEvent(InstanceEnemyId));
             Debug.Log($"[EnemyController] {InstanceEnemyId} 撃破！");
@@ -179,8 +161,7 @@ namespace Game.Core.Enemy
         private void TransitionToDown()
         {
             _stateManager.TransitionTo(EnemyState.Down);
-            _attackGauge.SetActive(false);
-            _barrier.SetActive(false);
+            _barrierGauge.SetActive(false);
 
             EventBus.Publish(new EnemyDownStartedEvent(InstanceEnemyId, _definition.DownDuration));
 
@@ -200,9 +181,9 @@ namespace Game.Core.Enemy
             if (_stateManager.CurrentState == EnemyState.Down)
             {
                 _stateManager.TransitionTo(EnemyState.Normal);
-                _attackGauge.ResetGauge();
-                _attackGauge.SetActive(true);
-                _barrier.SetActive(_definition.HasBarrier);
+                _barrierGauge.ResetGauge();
+                _barrierGauge.SetActive(true);
+                _barrierGauge.SetActive(_definition.HasBarrier);
 
                 Debug.Log($"[EnemyController] {InstanceEnemyId} ダウン復帰。ゲージリセット。");
             }

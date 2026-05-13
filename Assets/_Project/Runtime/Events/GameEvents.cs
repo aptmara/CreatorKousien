@@ -35,19 +35,36 @@ namespace Game.Core.Events
     {
         public readonly string EnemyId;
         public readonly int HitCount;
-        public readonly float GaugeDamage;
         public readonly float BodyDamage;
         public readonly Vector3 HitPosition;
         public readonly Transform EnemyTransform;
 
-        public EnemyHitBatchEvent(string enemyId, int hitCount, float gaugeDamage, float bodyDamage, Vector3 pos, Transform enemyTransform)
+        public EnemyHitBatchEvent(string enemyId, int hitCount, float bodyDamage, Vector3 pos, Transform enemyTransform)
+        {
+            EnemyId = enemyId;
+            HitCount = hitCount;
+            BodyDamage = bodyDamage;
+            HitPosition = pos;
+            EnemyTransform = enemyTransform;
+        }
+    }
+
+    public readonly struct BarrierHitBatchEvent
+    {
+        // バリアはあくまでもEnemyの一部でEnemyが管理するためEnemyIDを保持
+        public readonly string EnemyId;
+        public readonly int HitCount;
+        public readonly float GaugeDamage;
+        public readonly Vector3 HitPosition;
+        public readonly Transform BarrierTransform;
+
+        public BarrierHitBatchEvent(string enemyId, int hitCount, float gaugeDamage, Vector3 pos, Transform barrierTransform)
         {
             EnemyId = enemyId;
             HitCount = hitCount;
             GaugeDamage = gaugeDamage;
-            BodyDamage = bodyDamage;
             HitPosition = pos;
-            EnemyTransform = enemyTransform;
+            BarrierTransform = barrierTransform;
         }
     }
 

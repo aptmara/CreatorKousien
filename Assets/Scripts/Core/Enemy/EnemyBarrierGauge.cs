@@ -1,4 +1,4 @@
-// 制作者: 山内陽
+// 制作者: 越智晴彦 ※山内陽のプログラムを改変したもの
 using System;
 using UnityEngine;
 using Game.Core.Events;
@@ -6,20 +6,20 @@ using Game.Core.Events;
 namespace Game.Core.Enemy
 {
     /// <summary>
-    /// 敵の攻撃ゲージ管理（MonoBehaviour）。
+    /// 敵のバリア管理（MonoBehaviour）。
     /// UpdateループでゲージをTime.deltaTime分増加させ、
     /// ApplyGaugeDamageで減算する。
     /// EventBusへは直接発行せず、コールバック経由でEnemyControllerに委ねる。
-    /// これによりEnemyAttackGauge自体はEventBusに非依存になり、単体テストが書きやすくなる。
+    /// これによりEnemyBarrierGauge自体はEventBusに非依存になり、単体テストが書きやすくなる。
     /// </summary>
-    public class EnemyAttackGauge : MonoBehaviour
+    public class EnemyBarrierGauge : MonoBehaviour
     {
         private string _enemyId;
         private float _maxGauge;
-        private float _gaugeIncreaseRate;
         private float _currentGauge;
         private bool _isActive;
-        private IBarrier _oldBarrier;
+        [SerializeField]
+        private GameObject _barrierObject = null;
 
         /// <summary>0.0〜1.0 の正規化ゲージ量（UI用）</summary>
         public float Ratio => _maxGauge > 0f ? _currentGauge / _maxGauge : 0f;
@@ -29,12 +29,6 @@ namespace Game.Core.Enemy
 
         /// <summary>最大ゲージ量（生値）</summary>
         public float MaxGauge => _maxGauge;
-
-        /// <summary>
-        /// ゲージがMAX（_maxGauge）に到達した際に発火するコールバック。
-        /// EnemyControllerが攻撃行動＆リセット処理を行う。
-        /// </summary>
-        public Action OnGaugeMaxReached;
 
         /// <summary>
         /// ApplyGaugeDamageによりゲージが0以下になった際に発火するコールバック。
@@ -53,59 +47,36 @@ namespace Game.Core.Enemy
         /// </summary>
         /// <param name="enemyId">識別ID</param>
         /// <param name="maxGauge">最大ゲージ量</param>
-        /// <param name="gaugeIncreaseRate">毎秒の自然増加量</param>
-        /// <param name="barrier">適用するバリア実装（nullなら軽減なし）</param>
-        public void Initialize(string enemyId, float maxGauge, float gaugeIncreaseRate, IBarrier barrier = null)
+        public void Initialize(string enemyId, float maxGauge)
         {
+            // 越智TODO バリアオブジェクトもInit出来るようにする
+
+            bool hasBarrier = _barrierObject != null;
+
             _enemyId = enemyId;
             _maxGauge = maxGauge;
-            _gaugeIncreaseRate = gaugeIncreaseRate;
-            _currentGauge = 0f;
-            _oldBarrier = barrier;
-            _isActive = true;
+            _currentGauge = hasBarrier ? maxGauge : 0.0f;
+            _isActive = hasBarrier;
         }
 
         /// <summary>
-        /// ゲージの増加・MAXチェックを一時停止/再開する。
+        /// MAXチェックを一時停止/再開する。
         /// ダウン中は停止、復帰後に再開する。
         /// </summary>
         /// <param name="active">true: 動作中, false: 停止</param>
         public void SetActive(bool active) => _isActive = active;
 
-        private void Update()
-        {
-            if (!_isActive) return;
-
-            _currentGauge += _gaugeIncreaseRate * Time.deltaTime;
-
-            if (_currentGauge >= _maxGauge)
-            {
-                _currentGauge = _maxGauge;
-                // MAX到達はコールバック経由でControllerへ通知。Update内で複数回発火しないようにSetActive(false)をControllerが行う。
-                _isActive = false;
-                OnGaugeChanged?.Invoke(_currentGauge, _maxGauge);
-                OnGaugeMaxReached?.Invoke();
-                return;
-            }
-
-            OnGaugeChanged?.Invoke(_currentGauge, _maxGauge);
-        }
-
         /// <summary>
-        /// ゲージダメージを適用する。バリアが有効なら軽減後の値を使う。
+        /// ゲージダメージを適用する。
         /// ゲージが0以下になった場合はOnGaugeBrokenを発火する。
         /// </summary>
         /// <param name="rawDamage">加工前のゲージダメージ量</param>
         public void ApplyGaugeDamage(float rawDamage)
         {
-            if (!_isActive) return;
+            if (!_isActive && !_barrierObject) return;
 
-            // バリアが有効ならProcessGaugeDamageで軽減後の値を取得
-            float actualDamage = (_oldBarrier != null && _oldBarrier.IsActive)
-                ? _oldBarrier.ProcessGaugeDamage(rawDamage)
-                : rawDamage;
-
-            _currentGauge -= actualDamage;
+            // バリアにダメージを与える
+            _currentGauge -= rawDamage;
             _currentGauge = Mathf.Max(0f, _currentGauge);
 
             OnGaugeChanged?.Invoke(_currentGauge, _maxGauge);
@@ -114,6 +85,7 @@ namespace Game.Core.Enemy
             {
                 _isActive = false;
                 OnGaugeBroken?.Invoke();
+                _barrierObject?.SetActive(false);
             }
         }
 
@@ -122,8 +94,11 @@ namespace Game.Core.Enemy
         /// </summary>
         public void ResetGauge()
         {
-            _currentGauge = 0f;
+            if (!_barrierObject) return;
+
+            _currentGauge = _maxGauge;
             OnGaugeChanged?.Invoke(_currentGauge, _maxGauge);
+            _barrierObject.SetActive(true);
         }
     }
 }

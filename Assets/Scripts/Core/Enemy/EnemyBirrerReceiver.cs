@@ -1,4 +1,4 @@
-// 制作者: 山内陽
+// 制作者: 越智晴彦
 using System.Collections.Generic;
 using Game.Core.Events;
 using Game.Gameplay.Collectibles;
@@ -9,7 +9,7 @@ namespace Game.Core.Enemy
     /// <summary>
     /// 自由移動アイテムの衝突を敵へのHitBatchEventへ変換する受け口。
     /// </summary>
-    public sealed class EnemyHitReceiver : MonoBehaviour
+    public sealed class EnemyBirrerReceiver : MonoBehaviour
     {
         [Tooltip("実行時に親のEnemyControllerから自動取得されるユニークなID。")]
         private string _enemyId;
@@ -28,8 +28,8 @@ namespace Game.Core.Enemy
         private float _minimumHitSpeed = 0.75f;
 
         [SerializeField]
-        [Tooltip("CollectibleData.DamageAmountと衝突速度に掛ける本体ダメージ倍率。")]
-        private float _bodyDamageMultiplier = 2.5f;
+        [Tooltip("CollectibleData.DamageAmountと衝突速度に掛けるゲージダメージ倍率。")]
+        private float _gaugeDamageMultiplier = 8.0f;
 
         [SerializeField]
         [Tooltip("同じアイテムから連続ヒットを受け付けない秒数。")]
@@ -37,7 +37,13 @@ namespace Game.Core.Enemy
 
         [SerializeField]
         [Tooltip("命中したアイテムをPoolへ戻すか。")]
-        private bool _despawnItemOnHit = false;
+        private bool _despawnItemOnHit = true;
+
+        [SerializeField]
+        [Tooltip("バリアがダメージを受けた際の加速補正")]
+        private float _onHitAcceleration = 3.0f;
+
+
 
         private readonly Dictionary<int, float> _nextHitTimes = new Dictionary<int, float>();
 
@@ -89,13 +95,19 @@ namespace Game.Core.Enemy
 
             float baseDamage = Mathf.Max(1f, collectible.DamageAmount);
             float speedFactor = Mathf.Max(1f, hitSpeed);
-            float bodyDamage = baseDamage * speedFactor * _bodyDamageMultiplier;
+            float gaugeDamage = baseDamage * speedFactor * _gaugeDamageMultiplier;
 
-            EventBus.Publish(new EnemyHitBatchEvent(_enemyId, 1, bodyDamage, hitPosition, transform));
+            EventBus.Publish(new BarrierHitBatchEvent(_enemyId, 1, gaugeDamage, hitPosition, transform));
 
             if (_despawnItemOnHit)
             {
-                collectible.Despawn();
+               collectible.Despawn();
+            }
+            else
+            {
+                Rigidbody rb = collectible.GetComponent<Rigidbody>();
+                Vector3 newVel = rb.linearVelocity * _onHitAcceleration;
+                rb.linearVelocity = newVel;
             }
 
             return true;
