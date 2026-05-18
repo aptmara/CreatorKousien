@@ -1053,8 +1053,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4777c775788bdc4080aa254a47bb13b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.PlayerAttachmentController
-  _attachmentPrefab: {fileID: 6032332870982919000, guid: 2ed8d690fdd51de4c9df47a2053aaf7d, type: 3}
-  _attachmentMountPoint: {fileID: 1983259960502521287}
+  _attachmentPrefab: {fileID: 2866212151138946041, guid: 2ed8d690fdd51de4c9df47a2053aaf7d, type: 3}
+  _attachmentSocket: {fileID: 1983259960502521287}
 --- !u!114 &5232212859440975684
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1084,7 +1084,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1983259960502521287}
   m_Layer: 0
-  m_Name: MousePoint
+  m_Name: AttachmentSocket
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1099,7 +1099,7 @@ Transform:
   m_GameObject: {fileID: 5870560623095878439}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: -0.289, z: 0.487}
+  m_LocalPosition: {x: 0, y: -0.352, z: 0.487}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

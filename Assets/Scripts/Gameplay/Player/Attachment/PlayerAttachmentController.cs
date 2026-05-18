@@ -21,12 +21,12 @@ namespace Game.Gameplay.Player
         // ------------------------------------------------------------
         [Header("アタッチメント設定")]
         [Tooltip("装備するアタッチメントのプレハブ")]
-        [SerializeField] private GameObject _attachmentPrefab;
+        [SerializeField] private PhysicalAttachment _attachmentPrefab;
 
         [Tooltip("アタッチメントの装着ポイント")]
-        [SerializeField] private Transform _attachmentMountPoint;
+        [SerializeField] private Transform _attachmentSocket;
 
-        private GameObject _currentAttachment;  ///< 現在装備しているアタッチメント
+        private PhysicalAttachment _currentAttachment;  ///< 現在装備しているアタッチメント
 
 
 
@@ -38,28 +38,43 @@ namespace Game.Gameplay.Player
         private void Start()
         {
             // 初期化処理
-            EquipAttachment(_attachmentPrefab);
+            SpawnAttachment();
         }
 
+
+
         /// <summary>
-        /// 指定されたアタッチメントを生成して装備する関数
+        /// アタッチメントを生成してセットアップする
         /// </summary>
-        /// <param name="prefab">生成するプレハブ</param>
-        public void EquipAttachment(GameObject prefab)
+        public void SpawnAttachment()
         {
-            if (prefab == null || _attachmentMountPoint == null)
+            if (_attachmentPrefab == null || _attachmentSocket == null)
             {
+                Debug.LogWarning("[PlayerAttachmentController] PrefabまたはSocketが設定されていません！");
                 return;
             }
 
-            // 既存のものがあれば破棄
+            // 1. Prefabを生成する（この時点ではプレイヤーの子にはせず、独立したオブジェクトとして生成）
+            _currentAttachment = Instantiate(_attachmentPrefab, _attachmentSocket.position, _attachmentSocket.rotation);
+
+            // 2. 生成したアタッチメントに、追従先となるソケット（目印）を教える
+            _currentAttachment.Initialize(_attachmentSocket);
+
+            Debug.Log("[PlayerAttachmentController] アタッチメントの生成と紐付けが完了しました。");
+        }
+
+
+
+
+        /// <summary>
+        /// プレイヤーが破棄されるとき、独立しているアタッチメントも一緒に破棄する
+        /// </summary>
+        private void OnDestroy()
+        {
             if (_currentAttachment != null)
             {
-                Destroy(_currentAttachment);
+                Destroy(_currentAttachment.gameObject);
             }
-
-            // アタッチメントを作成し、マウントポイントの子オブジェクト
-            _currentAttachment = Instantiate(prefab, _attachmentMountPoint.position, _attachmentMountPoint.rotation, _attachmentMountPoint);
         }
     }
 }
