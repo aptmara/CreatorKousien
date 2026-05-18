@@ -49,7 +49,6 @@ namespace Game.Core.Enemy
         /// <param name="maxGauge">最大ゲージ量</param>
         public void Initialize(string enemyId, float maxGauge)
         {
-            // 越智TODO バリアオブジェクトもInit出来るようにする
 
             bool hasBarrier = _barrierObject != null;
 
