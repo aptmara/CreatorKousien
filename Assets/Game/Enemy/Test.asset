@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c359e2404c41384c91cd27762a269b0, type: 3}
-  m_Name: Enemy_01_Definition
+  m_Name: Test
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyDefinition
-  EnemyId: Enemy_01
-  MaxHp: 3000
+  EnemyId: Test
+  MaxHp: 3000000
   DownDuration: 5
   HasBarrier: 1
   MaxGauge: 1000

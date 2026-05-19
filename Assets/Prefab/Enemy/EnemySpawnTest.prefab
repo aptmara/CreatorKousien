@@ -61,8 +61,8 @@ MonoBehaviour:
       m_Action: Spawn
       m_Flags: 0
     m_Flags: 0
-  _enemyPrefab: {fileID: 8990543758482931198, guid: eaa0360672a9ce241ba7f40388365257, type: 3}
+  _enemyPrefab: {fileID: 8990543758482931198, guid: 1929e3aeac607824092eabd95578b649, type: 3}
   _definition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-  _rangeSize: {x: 10, y: 5}
+  _rangeSize: {x: 10, y: 2}
   _spawnBasePoint: {fileID: 8125261586118470773}
-  _undergroundOffset: 10
+  _undergroundOffset: 0
