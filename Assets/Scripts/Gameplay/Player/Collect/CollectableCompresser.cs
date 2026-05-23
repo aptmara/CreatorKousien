@@ -56,14 +56,6 @@ public class CollectableCompresser : MonoBehaviour
             }
             
             center /= _compressAmount;
-
-            // 圧縮対象のオブジェクトを削除
-            for (int i = 0; i < _compressAmount; ++i)
-            {
-                Destroy(_nearbyCollectable[i].gameObject);
-            }
-
-            _nearbyCollectable.RemoveRange(0, _compressAmount);
             // 圧縮後のオブジェクトを生成
             var obj = Instantiate(
                 compressedPrefab,
@@ -73,6 +65,15 @@ public class CollectableCompresser : MonoBehaviour
             // 圧縮個数から解放時の個数を設定
             var comp = obj.GetComponent<CompressCollectable>();
             comp.amount = _compressAmount;
+
+            // 圧縮対象のオブジェクトを削除と同時に種類を保存
+            for (int i = 0; i < _compressAmount; ++i)
+            {
+                comp.expandDataList.Enqueue(_nearbyCollectable[i].GetCollectableData());
+                Destroy(_nearbyCollectable[i].gameObject);
+            }
+
+            _nearbyCollectable.RemoveRange(0, _compressAmount);
         }
     }
 

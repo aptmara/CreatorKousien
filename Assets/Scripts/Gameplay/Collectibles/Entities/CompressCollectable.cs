@@ -1,5 +1,6 @@
 using Game.Data.Collectibles;
 using Game.Gameplay.Collectibles;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CompressCollectable : MonoBehaviour
@@ -12,6 +13,8 @@ public class CompressCollectable : MonoBehaviour
 
     [SerializeField, Tooltip("解放する際に設定するSO")]
     private CollectibleData[] _data;
+
+    public Queue<CollectibleData> expandDataList = new();
 
     // 解放時の生成個数
     public int amount = 10;
@@ -47,7 +50,7 @@ public class CompressCollectable : MonoBehaviour
             // 生成オブジェクト
             var collect = obj.GetComponent<CollectibleObject>();
             collect.Initialize(
-                _data[UnityEngine.Random.RandomRange(0, _data.Length)],
+                expandDataList.Dequeue(),
                 Destroy,
                 false
                 );
