@@ -2158,6 +2158,7 @@ GameObject:
   - component: {fileID: 2602393159485194370}
   - component: {fileID: 7247494207850692046}
   - component: {fileID: 5507182380335505921}
+  - component: {fileID: 8211745941350326602}
   m_Layer: 0
   m_Name: Collector
   m_TagString: Untagged
@@ -2214,6 +2215,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.PlayerCollector
   _holder: {fileID: 233453283009943828}
+--- !u!114 &8211745941350326602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9063400500489455531}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 977c26f1d115e4548aeb1ad7e660a1ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.CollectableCompresser
+  compressedPrefab: {fileID: 3611862879482424463, guid: 6c30088ce4b2e6749bb2b3492d3439a2, type: 3}
+  _compressAmount: 10
 --- !u!1 &9216325882405763168
 GameObject:
   m_ObjectHideFlags: 0

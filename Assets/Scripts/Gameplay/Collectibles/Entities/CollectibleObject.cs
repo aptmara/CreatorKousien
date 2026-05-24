@@ -196,5 +196,10 @@ namespace Game.Gameplay.Collectibles
         {
             _rigidbody.AddForce(force, ForceMode.Impulse);
         }
+
+        public CollectibleData GetCollectableData()
+        {
+            return _data;
+        }
     }
 }
