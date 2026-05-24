@@ -8,6 +8,7 @@
 // ================================================================================
 
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Game.Data.Collectibles;
 
 namespace Game.Gameplay.Collectibles
@@ -39,12 +40,28 @@ namespace Game.Gameplay.Collectibles
         [Tooltip("プレイヤーが触れた時に保持/回収できるか")]
         [SerializeField] private bool _canBeCollectedByPlayer = false;
 
+
+        [Header("Debug")]
+        [SerializeField, Tooltip("デバック生成用のキー")]
+        private Key _debugSpawnKey = Key.F5;
+
+
         // テスト用: Context Menuから実行可能
         [ContextMenu("Spawn Test Items (10)")]
         public void SpawnTestItems10() => SpawnCollectibles(10);
 
         [ContextMenu("Spawn Test Items (100)")]
         public void SpawnTestItems100() => SpawnCollectibles(100);
+
+
+        private void Update()
+        {
+            if (Keyboard.current != null && Keyboard.current[_debugSpawnKey].wasPressedThisFrame)
+            {
+                SpawnTestItems100();
+            }
+        }
+
 
         /// <summary>
         /// 指定された数のアイテムを生成して配置します。
