@@ -26,8 +26,23 @@ namespace Game.Gameplay.Player
         [Tooltip("移動制御コンポーネント")]
         [SerializeField] private PlayerMotor _motor;
 
-        private bool _canMove = true;    ///< プレイヤーが移動可能かどうかを示すフラグ
 
+        [Header("移動設定")]
+        [Tooltip("プレイヤーが自動で回転するかどうか")]
+        [SerializeField] private bool _useAutoRotationMove = false;
+
+        [Tooltip("アタッチメントの拡大縮小機能を使用するかどうか")]
+        [SerializeField] private bool _useAttachmentScaling = false;
+
+        [Tooltip("アタッチメント拡縮をToggle方式にするかどうか。OFFならHold方式")]
+        [SerializeField] private bool _useAttachmentScaleToggle = false;
+
+        [Tooltip("アタッチメントのコントローラー")]
+        [SerializeField] private PlayerAttachmentController _attachmentController;
+
+
+        private bool _canMove = true;       ///< プレイヤーが移動可能かどうかを示すフラグ
+        private bool _isAttachmentShrunk;   ///< アタッチメントの拡大縮小状態を示すフラグ
 
 
         // 関数処理
@@ -50,9 +65,42 @@ namespace Game.Gameplay.Player
 
             // Facadeとして入力を取得し、Motorに移動処理を渡す
             PlayerInputState input = _inputReader.CurrentInput;
-            _motor.Move(input.MoveDirection);
-            _motor.Rotate(input.LookDirection);
 
+            if (_useAutoRotationMove)
+            {
+                _motor.MoveWithAutoRotation(input.MoveDirection);
+            }
+            else
+            {
+                _motor.Move(input.MoveDirection);
+                _motor.Rotate(input.LookDirection);
+            }
+
+            if (_attachmentController == null)
+            {
+                return;
+            }
+
+            if (!_useAttachmentScaling)
+            {
+                _isAttachmentShrunk = false;
+                _attachmentController.SetShrunk(false);
+                return;
+            }
+
+            if (_useAttachmentScaleToggle)
+            {
+                if (_inputReader.ConsumeAttachmentScalePressed())
+                {
+                    _isAttachmentShrunk = !_isAttachmentShrunk;
+                }
+            }
+            else
+            {
+                _isAttachmentShrunk = input.AttachmentScaleHeld;
+            }
+
+            _attachmentController.SetShrunk(_isAttachmentShrunk);
         }
 
         /// <summary>

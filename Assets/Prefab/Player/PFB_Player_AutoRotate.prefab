@@ -846,7 +846,7 @@ GameObject:
   - component: {fileID: 2483846165279528381}
   - component: {fileID: 5232212859440975684}
   m_Layer: 7
-  m_Name: PFB_Player
+  m_Name: PFB_Player_AutoRotate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -878,7 +878,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5658249862219205856}
-  m_Material: {fileID: 13400000, guid: 411a89ca1b4ae8d45bb1399458e376f9, type: 2}
+  m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -920,7 +920,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 116
-  m_CollisionDetection: 3
+  m_CollisionDetection: 0
 --- !u!114 &8157789754490040092
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -978,22 +978,6 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 42f4cc91-f2d5-45c7-a6e5-9912bc1c9a4e
     m_ActionName: 'Gameplay/Rotate[/Mouse/delta]'
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1265893493383323021}
-        m_TargetAssemblyTypeName: Game.Gameplay.Player.PlayerInputReader, Assembly-CSharp
-        m_MethodName: OnAttachmentScale
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-    m_ActionId: 003d9d7c-0387-4eb0-8ff5-5a4de01c9ea5
-    m_ActionName: 'Gameplay/AttachmentScale[/XInputControllerWindows/buttonSouth,/Mouse/leftButton]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Gameplay
@@ -1014,7 +998,6 @@ MonoBehaviour:
   _moveSpeed: 6
   _rotationSpeed: 15
   _turnSpeed: 150
-  _autoRotationDegreesPerSecond: 300
   _mainCamera: {fileID: 0}
 --- !u!114 &1265893493383323021
 MonoBehaviour:
@@ -1042,10 +1025,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.PlayerController
   _inputReader: {fileID: 1265893493383323021}
   _motor: {fileID: 3143861578243248535}
-  _useAutoRotationMove: 1
-  _useAttachmentScaling: 1
-  _useAttachmentScaleToggle: 0
-  _attachmentController: {fileID: 2483846165279528381}
 --- !u!114 &96972539515256430
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1076,9 +1055,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.PlayerAttachmentController
   _attachmentPrefab: {fileID: 2866212151138946041, guid: 2ed8d690fdd51de4c9df47a2053aaf7d, type: 3}
   _attachmentSocket: {fileID: 1983259960502521287}
-  _normalScale: {x: 1, y: 1, z: 1}
-  _shrinkScale: {x: 0.25, y: 0.25, z: 0.25}
-  _scaleSpeed: 12
 --- !u!114 &5232212859440975684
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1123,7 +1099,7 @@ Transform:
   m_GameObject: {fileID: 5870560623095878439}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: -0.036, z: 0.272}
+  m_LocalPosition: {x: 0, y: -0.352, z: 0.487}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

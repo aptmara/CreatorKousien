@@ -7,6 +7,7 @@
 //
 // Notes	:
 // - 5/6: ベース作成
+// - 5/24: アタッチメントの拡大縮小機能の作成
 // ------------------------------------------------------------
 using UnityEngine;
 
@@ -26,8 +27,20 @@ namespace Game.Gameplay.Player
         [Tooltip("アタッチメントの装着ポイント")]
         [SerializeField] private Transform _attachmentSocket;
 
-        private PhysicalAttachment _currentAttachment;  ///< 現在装備しているアタッチメント
+        [Header("アタッチメントのスケール設定")]
+        [Tooltip("アタッチメントの通常スケール")]
+        [SerializeField] private Vector3 _normalScale = Vector3.one;
 
+        [Tooltip("アタッチメントの拡大スケール")]
+        [SerializeField] private Vector3 _shrinkScale = new Vector3(0.45f, 0.45f, 0.45f);
+
+        [Tooltip("アタッチメントの拡大縮小にかかる時間")]
+        [SerializeField] private float _scaleSpeed = 12f;
+
+
+
+        private PhysicalAttachment _currentAttachment;  ///< 現在装備しているアタッチメント
+        private Vector3 _targetScale;                   ///< アタッチメントの目標スケール
 
 
         // 関数処理
@@ -37,10 +50,30 @@ namespace Game.Gameplay.Player
         /// </summary>
         private void Start()
         {
+            _targetScale = _normalScale;
+
             // 初期化処理
             SpawnAttachment();
         }
 
+
+        /// <summary>
+        /// 更新処理 - アタッチメントのスケールを滑らかに変化させる
+        /// </summary>
+        private void Update()
+        {
+            if (_currentAttachment == null)
+            {
+                return;
+            }
+
+            // アタッチメントのスケールを目標スケールに向かって滑らかに変化させる
+            _currentAttachment.transform.localScale = Vector3.Lerp(
+                    _currentAttachment.transform.localScale,
+                    _targetScale,
+                    Time.deltaTime * _scaleSpeed
+                );
+        }
 
 
         /// <summary>
@@ -56,6 +89,8 @@ namespace Game.Gameplay.Player
 
             // 1. Prefabを生成する（この時点ではプレイヤーの子にはせず、独立したオブジェクトとして生成）
             _currentAttachment = Instantiate(_attachmentPrefab, _attachmentSocket.position, _attachmentSocket.rotation);
+            _currentAttachment.transform.localScale = _normalScale;         // 初期スケールを設定
+            _targetScale = _normalScale;                                    // 目標スケールも初期スケールに設定
 
             // 2. 生成したアタッチメントに、追従先となるソケット（目印）を教える
             _currentAttachment.Initialize(_attachmentSocket);
@@ -63,6 +98,15 @@ namespace Game.Gameplay.Player
             Debug.Log("[PlayerAttachmentController] アタッチメントの生成と紐付けが完了しました。");
         }
 
+
+        /// <summary>
+        /// アタッチメントのスケールを更新する関数
+        /// </summary>
+        /// <param name="shrunk">拡大縮小状態のフラグ</param>
+        public void SetShrunk(bool shrunk)
+        {
+            _targetScale = shrunk ? _shrinkScale : _normalScale;
+        }
 
 
 

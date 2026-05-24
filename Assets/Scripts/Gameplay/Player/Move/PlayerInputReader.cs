@@ -6,7 +6,8 @@
 // Created	: 2026-05-06
 //
 // Notes	:
-// - 5/6: ベース作成
+// - 5/6 : ベース作成
+// - 5/24: アタッチメントのスケール入力の追加
 // ------------------------------------------------------------
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -19,6 +20,8 @@ namespace Game.Gameplay.Player
     public class PlayerInputReader : MonoBehaviour
     {
         private PlayerInputState _currentInput;     ///< 現在の入力状態
+
+        private bool _attachmentScalePressed;          ///< アタッチメントのスケール入力が押されているかどうかの内部フラグ
 
         /// <summary>
         /// 現在の入力状態を取得
@@ -46,5 +49,35 @@ namespace Game.Gameplay.Player
             _currentInput.LookDirection = context.ReadValue<Vector2>();
         }
 
+
+
+        /// <summary>
+        /// アタッチメントのスケール入力が押されたかどうかを消費する
+        /// </summary>
+        /// <returns>押された場合はtrue</returns>
+        public bool ConsumeAttachmentScalePressed()
+        {
+            bool pressed = _attachmentScalePressed;
+            _attachmentScalePressed = false;
+            return pressed;
+        }
+
+        /// <summary>
+        /// アタッチメントの拡縮を入力するコールバック
+        /// </summary>
+        /// <param name="context">入力コンテキスト</param>
+        public void OnAttachmentScale(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                _currentInput.AttachmentScaleHeld = true;
+                _attachmentScalePressed = true;
+            }
+
+            if (context.canceled)
+            {
+                _currentInput.AttachmentScaleHeld = false;
+            }
+        }
     }
 }
