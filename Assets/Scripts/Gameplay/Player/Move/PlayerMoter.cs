@@ -8,6 +8,7 @@
 // Notes	:
 // - 5/6 ベース作成
 // - 5/12 回転量の大元作成 - 滝谷
+// - 5/24 移動関連2パターン作り切り替えれるように修正 - 浅野
 // ------------------------------------------------------------
 using UnityEngine;
 
@@ -30,6 +31,9 @@ namespace Game.Gameplay.Player
 
         [Tooltip("プレイヤーの回転設定")]
         [SerializeField] private float _turnSpeed = 300.0f;
+
+        [Tooltip("移動方向へ自動回転するときの最大回転速度")]
+        [SerializeField] private float _autoRotationDegreesPerSecond = 90f;
 
 
         [Header("その他の設定")]
@@ -106,7 +110,10 @@ namespace Game.Gameplay.Player
             _rigidbody.linearVelocity = targetVelocity;
         }
 
-
+        /// <summary>
+        /// 回転入力に基づいてプレイヤーを回転させる関数
+        /// </summary>
+        /// <param name="lookInput">回転入力ベクトル</param>
         public void Rotate(Vector2 lookInput)
         {
 
@@ -117,13 +124,58 @@ namespace Game.Gameplay.Player
 
             if(lookInput.sqrMagnitude >= 0.01f)
             {
-                _targetYaw += lookInput.x * _turnSpeed * Time.fixedDeltaTime;   
+                _targetYaw += lookInput.x * _turnSpeed * Time.fixedDeltaTime;
             }
 
 
             Quaternion deltaRotation = Quaternion.Euler(0.0f, _targetYaw, 0.0f);
             _rigidbody.MoveRotation(Quaternion.Slerp(_rigidbody.rotation, deltaRotation, _rotationSpeed * Time.fixedDeltaTime));
 
+        }
+
+
+        /// <summary>
+        /// 移動と回転を同時に行う関数
+        /// </summary>
+        /// <param name="moveInput">移動入力ベクトル</param>
+        public void MoveWithAutoRotation(Vector2 moveInput)
+        {
+            if (moveInput.sqrMagnitude < 0.01f)
+            {
+                _rigidbody.linearVelocity = new Vector3(0f, _rigidbody.linearVelocity.y, 0f);
+                return;
+            }
+
+            // カメラの向きを取得
+            Vector3 cameraToPlayer = transform.position - _mainCamera.transform.position;
+            cameraToPlayer.y = 0f;
+
+            if (cameraToPlayer.sqrMagnitude < 0.01f)
+            {
+                cameraToPlayer = _mainCamera.transform.forward; // カメラとプレイヤーがほぼ同位置の場合はカメラの前方向を使用
+                cameraToPlayer.y = 0f;
+            }
+
+            // カメラ基準の移動方向を計算
+            Vector3 forward = cameraToPlayer.normalized;
+            Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
+
+            Vector3 targetDirection = (forward * moveInput.y + right * moveInput.x).normalized;
+
+            Vector3 targetVelocity = targetDirection * _moveSpeed;
+            targetVelocity.y = _rigidbody.linearVelocity.y; // 落下速度は維持する
+            _rigidbody.linearVelocity = targetVelocity;
+
+            // プレイヤーの向きを移動方向に合わせて回転させる
+            Quaternion targetRotation = Quaternion.LookRotation(targetDirection, Vector3.up);
+
+            Quaternion nextRotaiton = Quaternion.RotateTowards(
+                _rigidbody.rotation,
+                targetRotation,
+                _autoRotationDegreesPerSecond * Time.fixedDeltaTime
+            );
+
+            _rigidbody.MoveRotation(nextRotaiton);
         }
     }
 }

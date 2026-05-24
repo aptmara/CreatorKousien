@@ -26,5 +26,10 @@ namespace Game.Gameplay.Player
         /// 回転方向入力ベクトル
         /// </summary>
         public Vector2 LookDirection;
+
+        /// <summary>
+        /// アタッチメントのスケールの入力状態を示すフラグ
+        /// </summary>
+        public bool AttachmentScaleHeld;
     }
 }
