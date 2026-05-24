@@ -18,6 +18,7 @@ public class CompressCollectable : MonoBehaviour
 
     // 解放時の生成個数
     public int amount = 10;
+    public float expandHeight;
 
     public void OnStart()
     {// これうまくいってない
@@ -27,7 +28,7 @@ public class CompressCollectable : MonoBehaviour
     private void FixedUpdate()
     {
         // 位置から無理やり解放位置を指定
-        if(transform.position.y < 0.0f)
+        if(transform.position.y < expandHeight)
         {
             Expand();
         }

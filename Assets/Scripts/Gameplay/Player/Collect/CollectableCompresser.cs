@@ -65,6 +65,7 @@ public class CollectableCompresser : MonoBehaviour
             // 圧縮個数から解放時の個数を設定
             var comp = obj.GetComponent<CompressCollectable>();
             comp.amount = _compressAmount;
+            comp.expandHeight = gameObject.transform.position.y - 1.0f;
 
             // 圧縮対象のオブジェクトを削除と同時に種類を保存
             for (int i = 0; i < _compressAmount; ++i)
@@ -74,6 +75,7 @@ public class CollectableCompresser : MonoBehaviour
             }
 
             _nearbyCollectable.RemoveRange(0, _compressAmount);
+
         }
     }
 
