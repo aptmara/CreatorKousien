@@ -66,41 +66,42 @@ namespace Game.Gameplay.Player
             // Facadeとして入力を取得し、Motorに移動処理を渡す
             PlayerInputState input = _inputReader.CurrentInput;
 
-            if (_useAutoRotationMove)
+            if (_attachmentController != null && _useAttachmentScaling)
             {
-                _motor.MoveWithAutoRotation(input.MoveDirection);
+                if (_useAttachmentScaleToggle)
+                {
+                    if (_inputReader.ConsumeAttachmentScalePressed())
+                    {
+                        _isAttachmentShrunk = !_isAttachmentShrunk;
+                    }
+                }
+                else
+                {
+                    _isAttachmentShrunk = input.AttachmentScaleHeld;
+                }
+
+                _attachmentController.SetShrunk(_isAttachmentShrunk);
             }
             else
-            {
-                _motor.Move(input.MoveDirection);
-                _motor.Rotate(input.LookDirection);
-            }
-
-            if (_attachmentController == null)
-            {
-                return;
-            }
-
-            if (!_useAttachmentScaling)
             {
                 _isAttachmentShrunk = false;
-                _attachmentController.SetShrunk(false);
-                return;
+
+                if (_attachmentController != null)
+                {
+                    _attachmentController.SetShrunk(false);
+                }
             }
 
-            if (_useAttachmentScaleToggle)
+
+            if (_useAutoRotationMove)
             {
-                if (_inputReader.ConsumeAttachmentScalePressed())
-                {
-                    _isAttachmentShrunk = !_isAttachmentShrunk;
-                }
+                _motor.MoveWithAutoRotation(input.MoveDirection, _isAttachmentShrunk);
             }
             else
             {
-                _isAttachmentShrunk = input.AttachmentScaleHeld;
+                _motor.Move(input.MoveDirection, _isAttachmentShrunk);
+                _motor.Rotate(input.LookDirection, _isAttachmentShrunk);
             }
-
-            _attachmentController.SetShrunk(_isAttachmentShrunk);
         }
 
         /// <summary>
@@ -113,7 +114,7 @@ namespace Game.Gameplay.Player
 
             if (!_canMove)
             {
-                _motor.Move(Vector2.zero); // 移動を停止させる
+                _motor.Move(Vector2.zero, false); // 移動を停止させる
             }
         }
 
