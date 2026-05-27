@@ -28,5 +28,14 @@ namespace Game.Core.Enemy
         [Header("バリアゲージ")]
         [Tooltip("ゲージの最大値。0になるとダウンする。")]
         public float MaxGauge = 100f;
+
+        [Header("攻撃力")]
+        [Tooltip("防衛ラインに対する攻撃力")]
+        public float AttackPower = 5.0f;
+
+        [Header("攻撃間隔")]
+        [Tooltip("攻撃する際の間隔、EnemyRisingで上り切ってからカウントされる")]
+        public float Attackinterval = 5.0f;
+
     }
 }

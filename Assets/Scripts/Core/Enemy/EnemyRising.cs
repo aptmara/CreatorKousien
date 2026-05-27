@@ -5,6 +5,7 @@
  * 
  * 
  */
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -22,6 +23,12 @@ namespace Game.Core.Enemy
         [SerializeField] private float _riseDuration = 1.5f;
         [Tooltip("上昇の際の動き(調整中)")]
         [SerializeField] private AnimationCurve _riseCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
+        // ゴールに到達した際のコールバック
+        public Action OnEnemyReachedGoal;
+
+        // 何らかの方法でゴールから引きはがされた際のコールバック
+        public Action OnLeftReachedGoal;
 
         /// <summary>
         /// 指定した目標地点へ敵を上昇させる。
@@ -53,7 +60,9 @@ namespace Game.Core.Enemy
             }
             //-イージング処理完了後目標地点に位置を補正
             transform.position = _targetPosition;
-        }
+            // コールバックを発行
+            OnEnemyReachedGoal();
+    }
 }
 
 }

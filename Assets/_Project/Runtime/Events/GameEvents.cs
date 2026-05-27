@@ -90,6 +90,16 @@ namespace Game.Core.Events
         }
     }
 
+    public readonly struct RuleBarrierAttackEvent
+    {
+        public readonly float AttackPower;
+
+        public RuleBarrierAttackEvent(float attackPower)
+        {
+            AttackPower = attackPower;
+        }
+    }
+
     public readonly struct StageTiltStartedEvent
     {
         public readonly Vector3 TiltDirection;
@@ -167,7 +177,27 @@ namespace Game.Core.Events
         public EnemyAttackFiredEvent(string enemyId)
         {
             EnemyId = enemyId;
-            }
+         }
+    }
+
+    /// <summary>
+    /// 防衛ラインオブジェクトをダメージリアクションを行わせる。
+    /// </summary
+    public readonly struct DefLineHitReactionEvent
+    {
+        // 現状防衛ラインが何をもって被弾演出を行うか不明なため
+        // 空の構造体だが、演出に攻撃された座標や属性によるバリアの反応など
+        // 何かしらが必要になった場合このイベントで渡す
+    }
+
+    /// <summary>
+    /// 防衛ラインオブジェクトを破壊する
+    /// </summary
+    public readonly struct DefLineBreakReactionEvent
+    {
+        // 現状防衛ラインが何をもって被弾演出を行うか不明なため
+        // 空の構造体だが、演出に攻撃された座標や属性によるバリアの反応など
+        // 何かしらが必要になった場合このイベントで渡す
     }
 }
 
