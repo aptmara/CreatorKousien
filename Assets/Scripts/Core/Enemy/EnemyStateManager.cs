@@ -1,5 +1,6 @@
 // 制作者: 山内陽
 using System;
+using Unity.VisualScripting;
 
 namespace Game.Core.Enemy
 {
@@ -9,7 +10,7 @@ namespace Game.Core.Enemy
     /// </summary>
     public enum EnemyState
     {
-        /// <summary>通常：ゲージが自然増加し、ゲージダメージを受け付ける</summary>
+        /// <summary>通常：上昇しゲージダメージを受け付ける</summary>
         Normal,
         /// <summary>ダウン：本体HPへのダメージを受け付ける。ゲージは停止。</summary>
         Down,
@@ -27,6 +28,9 @@ namespace Game.Core.Enemy
         /// <summary>現在の状態</summary>
         public EnemyState CurrentState { get; private set; } = EnemyState.Normal;
 
+        /// <summary>現在上り切っているかどうか</summary>
+        private bool IsRose = false;
+
         /// <summary>状態変化時に発火するコールバック。引数は新しい状態。</summary>
         public event Action<EnemyState> OnStateChanged;
 
@@ -41,6 +45,17 @@ namespace Game.Core.Enemy
 
         /// <summary>本体ダメージを受け付けられるか（Down状態のみ）</summary>
         public bool CanReceiveBodyDamage => CurrentState == EnemyState.Down;
+
+        /// <summary>攻撃可能か(Attack状態のみ)）</summary>
+        public bool CanAttackDefenceLine => IsRose;
+
+
+        /// <summary>上昇状態を設定</summary>
+        public void SetRose(bool a_isRised)
+        {
+            if (IsDefeated) return;
+            IsRose = a_isRised;
+        }
 
         /// <summary>
         /// 状態を遷移させる。
@@ -57,8 +72,6 @@ namespace Game.Core.Enemy
             var prev = CurrentState;
             CurrentState = newState;
             OnStateChanged?.Invoke(newState);
-
-            UnityEngine.Debug.Log($"[EnemyStateManager] {prev} → {newState}");
         }
     }
 }

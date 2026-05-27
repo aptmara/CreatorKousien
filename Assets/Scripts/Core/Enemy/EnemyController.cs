@@ -29,12 +29,16 @@ namespace Game.Core.Enemy
         private EnemyHealth _health;
         private EnemyStateManager _stateManager;
         private EnemyBarrierGauge _barrierGauge;
+        private EnemyRising _rising;
+        private EnemyAttack _enemyAttack;
         private Coroutine _downTimerCoroutine;
 
         private void Awake()
         {
             // RequireComponentで必ず存在するためnullチェック不要
             _barrierGauge = GetComponent<EnemyBarrierGauge>();
+            _rising = GetComponent<EnemyRising>();
+            _enemyAttack = GetComponent<EnemyAttack>();
 
             if (_definition != null)
             {
@@ -69,11 +73,24 @@ namespace Game.Core.Enemy
                 EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max));
             _barrierGauge.OnGaugeBroken = HandleGaugeBroken;
 
+            // 上昇初期化
+            _rising.OnEnemyReachedGoal = HandleRose;
+            _rising.OnLeftReachedGoal = HandleRoseLeft;
+
+            // 敵攻撃処理初期化
+            _enemyAttack.Initialize(def.AttackPower, def.Attackinterval, false);
+
+
             // 初期HP・ゲージをUIに通知
             EventBus.Publish(new EnemyHealthChangedEvent(InstanceEnemyId, def.MaxHp, def.MaxHp));
             EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, 0f, def.MaxGauge));
 
             Debug.Log($"[EnemyController] {InstanceEnemyId} 初期化完了。HP={def.MaxHp}, MaxGauge={def.MaxGauge}, BarrierActive={def.HasBarrier}");
+
+
+
+            Vector3 _currentPos = this.gameObject.transform.position;
+            _currentPos.y = 0.0f;
         }
 
         private void OnEnable()
@@ -119,6 +136,7 @@ namespace Game.Core.Enemy
             _barrierGauge.ApplyGaugeDamage(ev.GaugeDamage);
         }
 
+
         // ─────────────────────────────────────────
         // コールバックハンドラ
         // ─────────────────────────────────────────
@@ -149,6 +167,24 @@ namespace Game.Core.Enemy
 
             EventBus.Publish(new EnemyDefeatedEvent(InstanceEnemyId));
             Debug.Log($"[EnemyController] {InstanceEnemyId} 撃破！");
+        }
+
+        /// <summary>
+        /// 上昇終了時の処理。攻撃状態へ遷移する。
+        /// </summary>
+        private void HandleRose()
+        {
+            _stateManager.SetRose(true);
+            _enemyAttack.SetActiv(_stateManager.CanAttackDefenceLine);
+        }
+
+        /// <summary>
+        /// 上昇しきった後引きずり落された時の処理。攻撃状態を解除する。
+        /// </summary>
+        private void HandleRoseLeft()
+        {
+            _stateManager.SetRose(false);
+            _enemyAttack.SetActiv(false);
         }
 
         // ─────────────────────────────────────────
