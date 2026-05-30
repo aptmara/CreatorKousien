@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Enemy_01_Definition
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyDefinition
   EnemyId: Enemy_01
-  MaxHp: 3000
+  MaxHp: 1000
   DownDuration: 7
   HasBarrier: 1
-  MaxGauge: 1000
+  MaxGauge: 500
   AttackPower: 3
   Attackinterval: 1

@@ -28,13 +28,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4531107014868412126}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.16527644, y: -0, z: -0, w: 0.9862473}
-  m_LocalPosition: {x: 0, y: 2.5, z: 0}
-  m_LocalScale: {x: 5, y: 0.1, z: 7}
+  m_LocalRotation: {x: -0.08152297, y: -0, z: -0, w: 0.9966715}
+  m_LocalPosition: {x: 0, y: 1.85, z: 0}
+  m_LocalScale: {x: 5, y: 0.1, z: 4.63309}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2232749689525218959}
-  m_LocalEulerAnglesHint: {x: -19.027, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -9.352, y: 0, z: 0}
 --- !u!33 &2765853525151985380
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -68,7 +68,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: a222df93acceaa345b756f26b6a1c9a2, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -140,9 +140,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2599179025614089883}
   - component: {fileID: 7195998629782474228}
-  - component: {fileID: 97564885068403576}
   - component: {fileID: 8380308488126507835}
   - component: {fileID: 1946227066249143615}
+  - component: {fileID: 1185394238944925242}
   m_Layer: 0
   m_Name: EnemyBody_HitReceiver
   m_TagString: Untagged
@@ -158,13 +158,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7314105400346366023}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 3.9462726, y: 3.1570184, z: 3.510078}
+  m_LocalRotation: {x: -0, y: -0.0019531467, z: -0, w: 0.9999981}
+  m_LocalPosition: {x: 0, y: -1.28, z: 0}
+  m_LocalScale: {x: 4.5, y: 2.4115074, z: 4.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2232749689525218959}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -0.224, z: 0}
 --- !u!33 &7195998629782474228
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -172,28 +172,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7314105400346366023}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!65 &97564885068403576
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7314105400346366023}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!23 &8380308488126507835
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -219,7 +198,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 36aae62b9230a0541802351f7084be98, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -259,6 +238,29 @@ MonoBehaviour:
   _bodyDamageMultiplier: 3
   _sameItemCooldown: 0.2
   _despawnItemOnHit: 1
+--- !u!136 &1185394238944925242
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7314105400346366023}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2.09
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &8990543758482931198
 GameObject:
   m_ObjectHideFlags: 0
@@ -337,6 +339,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyController
   _definition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+  _destroyDelay: 0
 --- !u!114 &1807098853613361509
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -349,7 +352,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2204d8f9c460c0459fe88d7811711ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.EnemyWorldStatusView
-  _worldOffset: {x: 0, y: 2.7, z: 0}
+  _worldOffset: {x: 0, y: 3, z: 0}
   _canvasSize: {x: 220, y: 56}
   _canvasScale: 0.012
 --- !u!114 &4728985359496305841
@@ -364,15 +367,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d7c44b74282aeb44b9f77a1c37a8411, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyRising
-  _riseDuration: 10
+  _riseDuration: 60
   _riseCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: 2
+      outSlope: 2
       tangentMode: 0
       weightedMode: 0
       inWeight: 0

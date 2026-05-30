@@ -21,7 +21,9 @@ namespace Game.Gameplay.Player
     {
         private PlayerInputState _currentInput;     ///< 現在の入力状態
 
-        private bool _attachmentScalePressed;          ///< アタッチメントのスケール入力が押されているかどうかの内部フラグ
+        private bool _attachmentScalePressed;       ///< アタッチメントのスケール入力が押されているかどうかの内部フラグ
+
+        private bool _interactPressed;              ///< インタラクト入力が押されているかどうかの内部フラグ
 
         /// <summary>
         /// 現在の入力状態を取得
@@ -77,6 +79,30 @@ namespace Game.Gameplay.Player
             if (context.canceled)
             {
                 _currentInput.AttachmentScaleHeld = false;
+            }
+        }
+
+
+        /// <summary>
+        /// インタラクト入力が押されたかどうかを消費する
+        /// </summary>
+        /// <returns>押されたかどうか</returns>
+        public bool ConsumeInteractPressed()
+        {
+            bool pressed = _interactPressed;
+            _interactPressed = false;
+            return pressed;
+        }
+
+        /// <summary>
+        /// インタラクト入力を受け取るコールバック
+        /// </summary>
+        /// <param name="context">インタラクト入力のコンテキスト</param>
+        public void OnInteract(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                _interactPressed = true;
             }
         }
     }

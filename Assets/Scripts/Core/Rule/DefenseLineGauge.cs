@@ -38,7 +38,7 @@ namespace Game.Core.DefenceLine
         private void OnBarrierHitBatch(RuleBarrierAttackEvent ev)
         {
             // 破壊済みなら抜ける
-            if (_isBroken) return; 
+            if (_isBroken) return;
 
             // ダメージを与える
             _gaugeHP -= ev.AttackPower;

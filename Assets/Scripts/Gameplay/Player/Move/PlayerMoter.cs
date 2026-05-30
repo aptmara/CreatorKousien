@@ -165,20 +165,16 @@ namespace Game.Gameplay.Player
             }
 
             // カメラの向きを取得
-            Vector3 cameraToPlayer = transform.position - _mainCamera.transform.position;
-            cameraToPlayer.y = 0f;
+            Vector3 cameraForward = _mainCamera.transform.forward;
+            cameraForward.y = 0f; // 上下方向の傾きは無視
+            cameraForward.Normalize();
 
-            if (cameraToPlayer.sqrMagnitude < 0.01f)
-            {
-                cameraToPlayer = _mainCamera.transform.forward; // カメラとプレイヤーがほぼ同位置の場合はカメラの前方向を使用
-                cameraToPlayer.y = 0f;
-            }
+            Vector3 cameraRight = _mainCamera.transform.right;
+            cameraRight.y = 0f;
+            cameraRight.Normalize();
 
-            // カメラ基準の移動方向を計算
-            Vector3 forward = cameraToPlayer.normalized;
-            Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
-
-            Vector3 targetDirection = (forward * moveInput.y + right * moveInput.x).normalized;
+            // 入力ベクトルをカメラ基準のワールド方向に変換
+            Vector3 targetDirection = (cameraForward * moveInput.y + cameraRight * moveInput.x).normalized;
 
             Vector3 targetVelocity = targetDirection * moveSpeed;
             targetVelocity.y = _rigidbody.linearVelocity.y; // 落下速度は維持する
