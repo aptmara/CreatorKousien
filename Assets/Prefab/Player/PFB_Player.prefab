@@ -994,6 +994,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 003d9d7c-0387-4eb0-8ff5-5a4de01c9ea5
     m_ActionName: 'Gameplay/AttachmentScale[/XInputControllerWindows/buttonSouth,/Mouse/leftButton]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1265893493383323021}
+        m_TargetAssemblyTypeName: Game.Gameplay.Player.PlayerInputReader, Assembly-CSharp
+        m_MethodName: OnInteract
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: f5942d81-fca0-485b-946e-6866bc091c34
+    m_ActionName: 'Gameplay/Interact[/Keyboard/e,/XInputControllerWindows/buttonWest]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Gameplay
@@ -1011,10 +1027,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9098961418a9d7e41ae1bd7386de323c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.PlayerMotor
-  _moveSpeed: 6
-  _rotationSpeed: 15
-  _turnSpeed: 150
-  _autoRotationDegreesPerSecond: 300
+  _normalMoveSpeed: 10
+  _normalRotationSpeed: 25
+  _normalTurnSpeed: 500
+  _normalAutoRotationDegreesPerSecond: 700
+  _shrunkMoveSpeed: 6
+  _shrunkRotationSpeed: 15
+  _shrunkTurnSpeed: 250
+  _shrunkAutoRotationDegreesPerSecond: 350
   _mainCamera: {fileID: 0}
 --- !u!114 &1265893493383323021
 MonoBehaviour:
@@ -1076,8 +1096,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.PlayerAttachmentController
   _attachmentPrefab: {fileID: 2866212151138946041, guid: 2ed8d690fdd51de4c9df47a2053aaf7d, type: 3}
   _attachmentSocket: {fileID: 1983259960502521287}
-  _normalScale: {x: 1, y: 1, z: 1}
-  _shrinkScale: {x: 0.25, y: 0.25, z: 0.25}
+  _normalScale: {x: 0.25, y: 0.25, z: 0.25}
+  _shrinkScale: {x: 1, y: 1, z: 1}
   _scaleSpeed: 12
 --- !u!114 &5232212859440975684
 MonoBehaviour:

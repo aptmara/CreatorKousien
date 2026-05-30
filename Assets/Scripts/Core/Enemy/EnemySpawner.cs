@@ -1,11 +1,15 @@
 /**
  * 作成：寺田晴
- * 
+ *
  * 内容：敵を生成する(現在はデバッグキー込み)
- * 
+ *
+ * 更新履歴：
+ * 5/30: 敵生成時、重なってスポーンしないように修正しました - 浅野
+ *       自動で敵がスポーンするようにしました。
  */
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 
 namespace Game.Core.Enemy
@@ -33,21 +37,63 @@ namespace Game.Core.Enemy
         [Tooltip("どのくらい下から出現させるか")]
         [SerializeField] private float _undergroundOffset = 10.0f;
 
+        [Header("スポーン設定")]
+        [Tooltip("既存の敵と最低限空ける距離")]
+        [SerializeField, Min(0f)] private float _minDistanceFromOtherEnemies = 3.0f;
+
+        [Tooltip("スポーン位置を探す最大試行回数")]
+        [SerializeField, Min(1)] private int _maxSpawnPositionAttempts = 20;
+
+
+        [Header("自動スポーン設定")]
+        [Tooltip("一定時間ごとに自動でスポーンするか")]
+        [SerializeField] private bool _enableAutoSpawn = true;
+
+        [Tooltip("自動スポーン開始までの待機時間")]
+        [SerializeField, Min(0f)] private float _initialSpawnDelay = 2.0f;
+
+        [Tooltip("自動スポーンの間隔")]
+        [SerializeField, Min(0.1f)] private float _spawnInterval = 5.0f;
+
+        [Tooltip("1回の自動スポーンで出す敵の数")]
+        [SerializeField, Min(1)] private int _enemiesPerSpawn = 1;
+
+        [Tooltip("同時に存在できる敵の最大数,0以下なら制限なし")]
+        [SerializeField] private int _maxAliveEnemies = 3;
+
+
+        private Coroutine _autoSpawnCoroutine;
+
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         private void OnEnable()
         {
             // デバッグインプットを行うための登録
-            if (_spawnAction == null) return;
-            _spawnAction.Enable();
-            _spawnAction.performed += OnSpawnPerformed;
+            if (_spawnAction != null)
+            {
+                _spawnAction.performed += OnSpawnPerformed;
+                _spawnAction.Enable();
+            }
+
+            if (_enableAutoSpawn)
+            {
+                _autoSpawnCoroutine = StartCoroutine(AutoSpawnRoutine());
+            }
         }
 
         private void OnDisable()
         {
             // デバッグインプットの登録解除
-            if (_spawnAction == null) return;
-            _spawnAction.performed -= OnSpawnPerformed;
-            _spawnAction.Disable();
+            if (_spawnAction != null)
+            {
+                _spawnAction.performed -= OnSpawnPerformed;
+                _spawnAction.Disable();
+            }
+
+            if (_autoSpawnCoroutine != null)
+            {
+                StopCoroutine(_autoSpawnCoroutine);
+                _autoSpawnCoroutine = null;
+            }
         }
 
         /// <summary>
@@ -67,10 +113,11 @@ namespace Game.Core.Enemy
             if (_enemyPrefab == null || _definition == null) return;
 
             // 目標位置計算
-            Vector3 spawnPos = _spawnBasePoint != null ? _spawnBasePoint.position : transform.position;
-            float randomX = Random.Range(spawnPos.x - _rangeSize.x / 2f, spawnPos.x + _rangeSize.x / 2f);
-            float randomZ = Random.Range(spawnPos.z - _rangeSize.y / 2f, spawnPos.z + _rangeSize.y / 2f);
-            Vector3 targetPos = new Vector3(randomX, spawnPos.y, randomZ);
+            if (!TryGetSpawnTargetPosition(out Vector3 targetPos))
+            {
+                Debug.LogWarning("[EnemySpawner] 敵のスポーンに失敗しました。既存の敵と十分な距離を取れる位置が見つかりませんでした。");
+                return;
+            }
 
             // プレハブから敵生成
             GameObject enemyGo = Instantiate(_enemyPrefab);
@@ -104,6 +151,139 @@ namespace Game.Core.Enemy
         }
 
 
-    }
+        /// <summary>
+        /// スポーンターゲットの位置を試行的に取得する
+        /// </summary>
+        /// <param name="targetPos">ターゲット位置</param>
+        /// <returns>見つかったらtrueを返す</returns>
+        private bool TryGetSpawnTargetPosition(out Vector3 targetPos)
+        {
+            for (int i = 0; i < _maxSpawnPositionAttempts; i++)
+            {
+                targetPos = CreateRandomTargetPosition();
 
+                if (IsFarEnoughFromExistingEnemies(targetPos))
+                {
+                    return true;
+                }
+            }
+
+            targetPos = default;
+            return false;
+        }
+
+
+        /// <summary>
+        /// ランダムなターゲット位置を生成する
+        /// </summary>
+        /// <returns>ランダムなターゲット位置</returns>
+        private Vector3 CreateRandomTargetPosition()
+        {
+            Vector3 spawnPos = _spawnBasePoint != null ? _spawnBasePoint.position : transform.position;
+
+            float randomX = Random.Range(spawnPos.x - _rangeSize.x / 2f, spawnPos.x + _rangeSize.x / 2f);
+            float randomZ = Random.Range(spawnPos.z - _rangeSize.y / 2f, spawnPos.z + _rangeSize.y / 2f);
+
+            return new Vector3(randomX, spawnPos.y, randomZ);
+        }
+
+
+        /// <summary>
+        /// 既存の敵と十分な距離があるか
+        /// </summary>
+        /// <param name="position">ターゲットのポジション</param>
+        /// <returns>結果</returns>
+        private bool IsFarEnoughFromExistingEnemies(Vector3 position)
+        {
+            float minDistanceSqr = _minDistanceFromOtherEnemies * _minDistanceFromOtherEnemies;
+            EnemyController[] enemies = FindObjectsByType<EnemyController>(FindObjectsSortMode.None);
+
+            foreach (EnemyController enemy in enemies)
+            {
+                if (enemy == null || !enemy.gameObject.activeInHierarchy) continue;
+
+                Vector3 enemyPos = enemy.transform.position;
+                enemyPos.y = position.y; // Y軸は無視して距離を計算
+
+                if ((enemyPos - position).sqrMagnitude < minDistanceSqr)
+                {
+                    return false; // 既存の敵と近すぎる
+                }
+            }
+
+            return true; // 十分な距離がある
+        }
+
+
+        /// <summary>
+        /// 自動スポーンのルーチン
+        /// </summary>
+        /// <returns>時間</returns>
+        private IEnumerator AutoSpawnRoutine()
+        {
+            if (_initialSpawnDelay > 0f)
+            {
+                yield return new WaitForSeconds(_initialSpawnDelay);
+            }
+
+            WaitForSeconds wait = new WaitForSeconds(Mathf.Max(0.1f, _spawnInterval));
+
+            while (isActiveAndEnabled)
+            {
+                SpawnAutoWave();
+                yield return wait;
+            }
+        }
+
+
+        /// <summary>
+        /// 自動スポーンの1回分の処理
+        /// </summary>
+        private void SpawnAutoWave()
+        {
+            int spawnCount = Mathf.Max(1, _enemiesPerSpawn);
+
+            for (int i = 0; i < spawnCount; i++)
+            {
+                if (IsAliveEnemyLimitReached())
+                {
+                    return; // 同時に存在できる敵の最大数に達している場合はスポーンを中止
+                }
+
+                SpawnEnemy();
+            }
+        }
+
+        /// <summary>
+        /// 同時に存在できる敵の最大数に達しているか
+        /// </summary>
+        /// <returns>達していたらtrue</returns>
+        private bool IsAliveEnemyLimitReached()
+        {
+            if (_maxAliveEnemies <= 0) return false; // 制限なし
+
+            return CountAliveEnemies() >= _maxAliveEnemies;
+        }
+
+
+        /// <summary>
+        /// 現在存在する生存中の敵の数を数える
+        /// </summary>
+        /// <returns>生存する敵の数</returns>
+        private int CountAliveEnemies()
+        {
+            EnemyController[] enemies = FindObjectsByType<EnemyController>(FindObjectsSortMode.None);
+            int count = 0;
+
+            foreach (EnemyController enemy in enemies)
+            {
+                if (enemy != null && enemy.gameObject.activeInHierarchy)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+    }
 }

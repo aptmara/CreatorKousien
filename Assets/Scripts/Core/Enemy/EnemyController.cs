@@ -33,6 +33,10 @@ namespace Game.Core.Enemy
         private EnemyAttack _enemyAttack;
         private Coroutine _downTimerCoroutine;
 
+        [Header("演出設定")]
+        [Tooltip("撃破後、敵オブジェクトを消すまでの遅延時間（秒）。0の場合は即座に消す。")]
+        [SerializeField, Min(0f)] private float _destroyDelay = 0f;
+
         private void Awake()
         {
             // RequireComponentで必ず存在するためnullチェック不要
@@ -55,7 +59,7 @@ namespace Game.Core.Enemy
         {
             _definition = def;
             InstanceEnemyId = $"{def.EnemyId}_{GetInstanceID()}";
-            
+
             // 状態管理初期化
             _stateManager = new EnemyStateManager();
 
@@ -120,7 +124,7 @@ namespace Game.Core.Enemy
             if (_definition == null || ev.EnemyId != InstanceEnemyId) return;
 
             _health.ApplyBodyDamage(ev.BodyDamage);
-            
+
         }
 
         /// <summary>
@@ -167,6 +171,8 @@ namespace Game.Core.Enemy
 
             EventBus.Publish(new EnemyDefeatedEvent(InstanceEnemyId));
             Debug.Log($"[EnemyController] {InstanceEnemyId} 撃破！");
+
+            Destroy(gameObject, _destroyDelay);
         }
 
         /// <summary>
