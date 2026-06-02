@@ -4,6 +4,7 @@
 //
 // Author   : 山内陽
 // Created  : 2026-05-06
+// Updated  : 2026-06-02 (カメラモード分岐ロジック)
 //
 // Notes    :
 // - 5/6: Bootから設計通りのAdditiveシーンを読み込む統合用Bootstrapを追加
@@ -34,6 +35,13 @@ namespace Game.Infrastructure.Bootstrap
 
         [Tooltip("DebugOverlayシーン名")]
         [SerializeField] private string _debugScene = "DebugOverlay";
+
+        [Header("カメラシステム設定群")]
+        [Tooltip("カメラの位置・角度パラメータを保持するScriptableObjectアセット")]
+        [SerializeField] private StaticCameraConfig _cameraConfig;
+
+        [Tooltip("このプロトタイプ起動時に適用するカメラの投影モード")]
+        [SerializeField] private CameraRigController.ProjectionMode _cameraProjectionMode = CameraRigController.ProjectionMode.Perspective;
 
         [Header("Initial Runtime")]
         [Tooltip("統合シーン開始時に生成する収集物数")]
@@ -76,7 +84,7 @@ namespace Game.Infrastructure.Bootstrap
 
             PlayerFacade player = SpawnPlayer();
             DisablePlayerHoldMode(player);
-            BindCamera(player);
+            ApplyCameraConfiguration();
             SpawnCollectibles();
         }
 
@@ -162,24 +170,32 @@ namespace Game.Infrastructure.Bootstrap
         }
 
         /// <summary>
-        /// カメラリグの追従対象を生成済みプレイヤーへ接続する。
+        /// 指定されたConfigと投影モードをCameraRigControllerに流し込んで固定配置する
         /// </summary>
-        /// <param name="player">追従対象のプレイヤー</param>
-        private static void BindCamera(PlayerFacade player)
+        private void ApplyCameraConfiguration()
         {
-            if (player == null)
-            {
-                return;
-            }
-
             CameraRigController cameraRig = Object.FindFirstObjectByType<CameraRigController>();
             if (cameraRig == null)
             {
-                Debug.LogWarning("[PrototypeSceneFlowController] CameraRigControllerが見つかりません。");
+                Debug.LogWarning("[PrototypeSceneFlowController] 設定適用対象のCameraRigControllerが見つかりません。");
                 return;
             }
 
-            cameraRig.SetTarget(player.transform);
+            // configとモードを流し込むよん
+            cameraRig.SetupStaticCamera(_cameraConfig, _cameraProjectionMode);
+        }
+
+        /// <summary>
+        /// カメラリグの追従対象を生成済みプレイヤーへ接続する。
+        /// </summary>
+        /// <param name="player">追従対象のプレイヤー</param>
+        private static void BindCameraLegacy(PlayerFacade player)
+        {
+            if (player == null) return;
+
+            CameraRigController cameraRig = Object.FindFirstObjectByType<CameraRigController>();
+
+            if (cameraRig != null) cameraRig.SetTarget(player.transform);
         }
 
         /// <summary>

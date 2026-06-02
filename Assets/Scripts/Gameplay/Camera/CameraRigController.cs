@@ -4,6 +4,7 @@
 //
 // Author	: [浅野 勇生]
 // Created	: 2026-05-06
+// Updated	: 2026-06-02 (固定カメラ・Ortho / Persp動的切り替え対応)
 //
 // Notes	:
 // - 5/6: ベース作成
@@ -18,8 +19,25 @@ namespace Game.Gameplay.Cameras
     /// </summary>
     public class CameraRigController : MonoBehaviour
     {
+        public enum ProjectionMode
+        {
+            Orthographic,
+            Perspective
+        }
+
+        [Header("モード設定")]
+        [Tooltip("チェックを入れると、昔のプレイヤー追従・ブレンド挙動に戻ります")]
+        [SerializeField] private bool _useLegacyFollowMode = false;
+
+        [Header("コンポーネント参照")]
+        [Tooltip("実際に制御する対象のカメラ (未設定時はMainCameraを自動取得)")]
+        [SerializeField] private Camera _targetCamera;
+
+        #region Legacy Fields
         // 変数宣言
-        // ------------------------------------------------------------
+        // -----------------------------------------------------------
+        [Space(10)]
+        [Header("---------- Legacy ----------")]
         [Header("コンポーネント参照")]
         [Tooltip("実際に画角を動かす対象のカメラ")]
         [SerializeField] private Transform _cameraTransform;
@@ -74,7 +92,7 @@ namespace Game.Gameplay.Cameras
         private Vector3 _currentVelocity;
         private Transform _focusTarget;
         private float _focusTimer;
-
+        #endregion
 
 
         // 関数処理
@@ -103,6 +121,7 @@ namespace Game.Gameplay.Cameras
                 return;
             }
 
+            #region Legacy Update Logic
             // 1. Z座標の割合を算出 (0.0: 手前 ～ 1.0: 奥)
             float phaseRatio = Mathf.InverseLerp(_dropLineZ, _collectLineZ, _targetTransform.position.z);
 
@@ -157,6 +176,48 @@ namespace Game.Gameplay.Cameras
 
             float rotSmooth = (_focusTarget != null) ? _focusRotationSmoothTime : _rotationSmoothTime;
             transform.rotation = Quaternion.Slerp(transform.rotation, finalTargetRot, Time.deltaTime / rotSmooth);
+            #endregion
+        }
+
+        /// <summary>
+        /// 指定された設定データとモードに基づいて、カメラを固定配置する。
+        /// </summary>
+        /// <param name="config">カメラ配置アセット</param>
+        /// <param name="mode">投影モード</param>
+        public void SetupStaticCamera(StaticCameraConfig config, ProjectionMode mode)
+        {
+            // レガシーモードがオンの場合は、暴発防止でスキップ
+            if (_useLegacyFollowMode) return;
+
+            if (config == null)
+            {
+                Debug.LogError("[CameraRigController] 設定アセットが空です。");
+                return;
+            }
+
+            if (_targetCamera == null) _targetCamera = Camera.main;
+            if (_targetCamera == null) return;
+
+            // アセットから指定モードの構造体データを取得
+            StaticCameraConfig.ProjectionSettings settings = config.GetSettings(mode);
+
+            // 1. 投影法の切り替え
+            _targetCamera.orthographic = (mode == ProjectionMode.Orthographic);
+
+            // 2. モード固有値の適用
+            if (_targetCamera.orthographic)
+            {
+                _targetCamera.orthographicSize = settings.OrthographicSize;
+            }
+            else
+            {
+                _targetCamera.fieldOfView = settings.FieldOfView;
+            }
+
+            // 3. トランスフォームの適用
+            Transform targetXform = (_cameraTransform != null) ? _cameraTransform : transform;
+            targetXform.position = settings.Position;
+            targetXform.eulerAngles = settings.Rotation;
         }
 
 
@@ -167,7 +228,7 @@ namespace Game.Gameplay.Cameras
         public void SetTarget(Transform targetTransform)
         {
             _targetTransform = targetTransform;
-            UpdateCameraTransformInstant();
+            if (_useLegacyFollowMode) UpdateCameraTransformInstant();
         }
 
         /// <summary>
@@ -177,6 +238,7 @@ namespace Game.Gameplay.Cameras
         /// <param name="duration">時間</param>
         public void SetFocusTarget(Transform target, float duration)
         {
+            if (_useLegacyFollowMode) return;
             _focusTarget = target;
             _focusTimer = duration;
         }
@@ -217,7 +279,7 @@ namespace Game.Gameplay.Cameras
 
         private void OnHitBatch(EnemyHitBatchEvent ev)
         {
-            if (ev.EnemyTransform == null || _targetTransform == null) return;
+            if (!_useLegacyFollowMode || ev.EnemyTransform == null || _targetTransform == null) return;
 
             // プレイヤーと敵が近い場合のみツーショット・フォーカスをかける
             float dist = Vector3.Distance(_targetTransform.position, ev.EnemyTransform.position);

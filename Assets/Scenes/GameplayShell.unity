@@ -348,11 +348,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1756462884}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 37cbec290e4535b4bb51d1e32113ca47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Cameras.CameraRigController
+  _useLegacyFollowMode: 0
+  _targetCamera: {fileID: 1756462888}
   _cameraTransform: {fileID: 1756462889}
   _targetTransform: {fileID: 0}
   _fixedX: 0
