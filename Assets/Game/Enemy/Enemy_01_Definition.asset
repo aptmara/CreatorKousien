@@ -19,3 +19,5 @@ MonoBehaviour:
   MaxGauge: 500
   AttackPower: 3
   Attackinterval: 1
+  HealRegenWaitTime: 7
+  HealPower: 30

@@ -37,5 +37,13 @@ namespace Game.Core.Enemy
         [Tooltip("攻撃する際の間隔、EnemyRisingで上り切ってからカウントされる")]
         public float Attackinterval = 5.0f;
 
+        [Header("回復待機時の復帰間隔")]
+        [Tooltip("回復待機に移行した際に復帰するまでの間隔")]
+        public float HealRegenWaitTime = 7.0f;
+
+        [Header("回復力")]
+        [Tooltip("1秒あたりの回復力")]
+        public float HealPower = 30.0f;
+
     }
 }

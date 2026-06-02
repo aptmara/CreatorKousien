@@ -72,7 +72,7 @@ namespace Game.Core.Enemy
 
             // ゲージ管理初期化
             // TODO越智 EnemyDefinitionを現在の形に改変
-            _barrierGauge.Initialize(InstanceEnemyId, def.MaxGauge);
+            _barrierGauge.Initialize(InstanceEnemyId, def.MaxGauge, def.HealRegenWaitTime, def.HealPower);
             _barrierGauge.OnGaugeChanged = (current, max) =>
                 EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max));
             _barrierGauge.OnGaugeBroken = HandleGaugeBroken;
