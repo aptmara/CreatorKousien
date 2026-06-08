@@ -153,7 +153,7 @@ MonoBehaviour:
   _uiScene: UI_HUD
   _debugScene: DebugOverlay
   _cameraConfig: {fileID: 11400000, guid: aa330ccda141b004cb12309afff5dbbb, type: 2}
-  _cameraProjectionMode: 0
+  _cameraProjectionMode: 1
   _initialCollectibleCount: 120
   _disablePlayerHoldMode: 1
 --- !u!4 &1756462886
