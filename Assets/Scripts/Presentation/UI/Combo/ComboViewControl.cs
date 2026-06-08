@@ -30,7 +30,10 @@ namespace Game.Presentation.UI.Combo
         [SerializeField] private RectTransform _comboTextRect;
 
         [Tooltip("コンボ数テキスト")]
-        [SerializeField] private TMPro.TMP_Text _comboText;
+        [SerializeField] private TMPro.TMP_Text _comboTextBase;
+
+        [Tooltip("前面にあるエネルギー充填テキスト")]
+        [SerializeField] private TMPro.TMP_Text _comboTextFill;
 
         [Header("Feedback Patterns (検証用演出リスト)")]
         [RequireInterface(typeof(IComboFeedback))]
@@ -49,7 +52,7 @@ namespace Game.Presentation.UI.Combo
             {
                 if (fb is IComboFeedback feedback)
                 {
-                    feedback.Initialize(_comboTextRect, _comboText);
+                    feedback.Initialize(_comboTextRect, _comboTextBase);
                     _activeFeedbacks.Add(feedback);
                 }
             }
@@ -59,7 +62,7 @@ namespace Game.Presentation.UI.Combo
             _comboManager.OnComboReset += HandleComboReset;
 
             // 初期状態は非表示
-            if (_comboText != null) _comboText.gameObject.SetActive(false);
+            SetTextActive(false);
         }
 
         private void OnEnable()
@@ -81,49 +84,71 @@ namespace Game.Presentation.UI.Combo
             _comboManager.Tick(Time.deltaTime);
         }
 
+        /// <summary>
+        /// 本体ヒットイベント受信
+        /// </summary>
         private void OnEnemyHit(EnemyHitBatchEvent ev)
         {
-            // 敵へのヒットをコンボ数として加算
-            _comboManager.AddCombo(ev.HitCount);
+            int hits = ev.HitCount;
+            _comboManager.AddCombo(hits);
         }
 
+        /// <summary>
+        /// バリアヒットイベント受信
+        /// </summary>
         private void OnBarrierHit(BarrierHitBatchEvent ev)
         {
-            // バリアへのヒットも同様に加算
-            _comboManager.AddCombo(ev.HitCount);
+            int hits = ev.HitCount;
+            _comboManager.AddCombo(hits);
         }
 
         private void HandleComboUpdated(int currentCombo, float durationRatio)
         {
-            if (_comboText == null) return;
+            SetTextActive(true);
 
-            // テキストの有効化と表示更新
-            if (!_comboText.gameObject.activeSelf)
-            {
-                _comboText.gameObject.SetActive(true);
-            }
-
-            _comboText.text = $"{currentCombo} Combo!";
+            string textString = $"{currentCombo} Combo!";
+            if (_comboTextBase != null) _comboTextBase.text = textString;
+            if (_comboTextFill != null) _comboTextFill.text = textString;
 
             // 登録されているすべての演出パターンを一斉更新
             foreach (var feedback in _activeFeedbacks)
             {
+                if (feedback is MonoBehaviour mono && !mono.enabled)
+                {
+                    continue;
+                }
+
                 feedback.OnUpdate(currentCombo, durationRatio);
             }
         }
 
         private void HandleComboReset()
         {
-            if (_comboText != null)
-            {
-                _comboText.gameObject.SetActive(false);
-            }
+            SetTextActive(false);
 
             // すべての演出パターンをリセット
             foreach (var feedback in _activeFeedbacks)
             {
+                if (feedback is MonoBehaviour mono && !mono.enabled)
+                {
+                    continue;
+                }
+
                 feedback.OnReset();
             }
+        }
+
+        /// <summary>
+        /// テキストオブジェクトのアクティブ状態を一括管理する
+        /// </summary>
+        private void SetTextActive(bool active)
+        {
+            if (_comboTextBase != null && _comboTextBase.gameObject.activeSelf != active)
+                _comboTextBase.gameObject.SetActive(active);
+
+            // Fill文字側は、親のBaseが消えるなら一緒に消す
+            if (_comboTextFill != null && _comboTextFill.gameObject.activeSelf != active)
+                _comboTextFill.gameObject.SetActive(active);
         }
     }
 
