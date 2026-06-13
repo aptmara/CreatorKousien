@@ -35,6 +35,9 @@ namespace Game.Presentation.UI.Combo
         [Tooltip("前面にあるエネルギー充填テキスト")]
         [SerializeField] private TMPro.TMP_Text _comboTextFill;
 
+        [SerializeField,Tooltip("コンボゲージのUI")]
+        private ComboGaugeUI _comboGaugeUI;
+
         [Header("Feedback Patterns (検証用演出リスト)")]
         [RequireInterface(typeof(IComboFeedback))]
         [SerializeField] private List<MonoBehaviour> _feedbacks = new List<MonoBehaviour>();
@@ -91,6 +94,7 @@ namespace Game.Presentation.UI.Combo
         {
             int hits = ev.HitCount;
             _comboManager.AddCombo(hits);
+            _comboGaugeUI.GaugeUpdate(hits);
         }
 
         /// <summary>
@@ -109,6 +113,7 @@ namespace Game.Presentation.UI.Combo
             string textString = $"{currentCombo} Combo!";
             if (_comboTextBase != null) _comboTextBase.text = textString;
             if (_comboTextFill != null) _comboTextFill.text = textString;
+            _comboGaugeUI.GaugeUpdate(currentCombo);
 
             // 登録されているすべての演出パターンを一斉更新
             foreach (var feedback in _activeFeedbacks)
@@ -125,6 +130,7 @@ namespace Game.Presentation.UI.Combo
         private void HandleComboReset()
         {
             SetTextActive(false);
+            _comboGaugeUI.resetGauge();
 
             // すべての演出パターンをリセット
             foreach (var feedback in _activeFeedbacks)
