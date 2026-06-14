@@ -104,6 +104,7 @@ namespace Game.Presentation.UI.Combo
         {
             int hits = ev.HitCount;
             _comboManager.AddCombo(hits);
+            _comboGaugeUI.GaugeUpdate(hits);
         }
 
         private void HandleComboUpdated(int currentCombo, float durationRatio)
@@ -113,7 +114,7 @@ namespace Game.Presentation.UI.Combo
             string textString = $"{currentCombo} Combo!";
             if (_comboTextBase != null) _comboTextBase.text = textString;
             if (_comboTextFill != null) _comboTextFill.text = textString;
-            _comboGaugeUI.GaugeUpdate(currentCombo);
+            
 
             // 登録されているすべての演出パターンを一斉更新
             foreach (var feedback in _activeFeedbacks)

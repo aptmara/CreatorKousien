@@ -19,6 +19,9 @@ public class ComboGaugeUI : MonoBehaviour
     // コンボの値
     private int _comboValue;
 
+    // アップグレードできるかどうか確認するための変数
+    private int _nextComboValue;
+
     [SerializeField, Tooltip("ゲージのフレーム")]
     private Image _gaugeFrame;
 
@@ -51,11 +54,11 @@ public class ComboGaugeUI : MonoBehaviour
     public int GaugeUpdate(int comboVal)
     {
         // ゲージ用コンボの更新
-        _comboValue = comboVal;
-        _gaugeValue = (float)(comboVal % _gaugeUpdateValue) / (float)_gaugeUpdateValue;
-        if(_gaugeValue >= _gaugeUpdateValue)
+        _comboValue += comboVal;
+        _nextComboValue += comboVal;
+        if(_nextComboValue >= _gaugeUpdateValue)
         {
-            _gaugeValue -= _gaugeUpdateValue;
+            _nextComboValue -= _gaugeUpdateValue;
             // コンボの段階レベルを更新
             if(++_gaugeLevel >= _maxGaugeLevel)
                 _gaugeLevel = _maxGaugeLevel;
@@ -67,6 +70,7 @@ public class ComboGaugeUI : MonoBehaviour
 
             Debug.Log("GaugeFrameColor B : " + _gaugeFrame.color.b);
         }
+        _gaugeValue = (float)_nextComboValue / (float)_gaugeUpdateValue;
 
 
         // コンボのゲージ量からゲージの大きさを計算
@@ -81,7 +85,7 @@ public class ComboGaugeUI : MonoBehaviour
     {
         _gaugeLevel = 0;
         _gaugeValue = 0.0f;
-
+        _nextComboValue = 0;
         // ゲージの大きさ
         Vector3 currentScale = _gaugeImgae.rectTransform.localScale;
         currentScale.y = _gaugeValue;
