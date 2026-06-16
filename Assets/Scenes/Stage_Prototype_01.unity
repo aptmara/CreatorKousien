@@ -3521,6 +3521,7 @@ MonoBehaviour:
   _maxInitialSpeed: 5.5
   _initialUpwardSpeed: 0.2
   _canBeCollectedByPlayer: 0
+  _eventChannel: {fileID: 11400000, guid: 58e1728789289fa47b441403e4650359, type: 2}
   _debugSpawnKey: 98
 --- !u!114 &2109572805
 MonoBehaviour:

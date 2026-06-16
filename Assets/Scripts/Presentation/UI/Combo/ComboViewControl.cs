@@ -94,7 +94,7 @@ namespace Game.Presentation.UI.Combo
         {
             int hits = ev.HitCount;
             _comboManager.AddCombo(hits);
-            _comboGaugeUI.GaugeUpdate(hits);
+            _comboGaugeUI?.GaugeUpdate(hits);
         }
 
         /// <summary>
@@ -104,14 +104,14 @@ namespace Game.Presentation.UI.Combo
         {
             int hits = ev.HitCount;
             _comboManager.AddCombo(hits);
-            _comboGaugeUI.GaugeUpdate(hits);
+            _comboGaugeUI?.GaugeUpdate(hits);
         }
 
         private void HandleComboUpdated(int currentCombo, float durationRatio)
         {
             SetTextActive(true);
 
-            string textString = $"{currentCombo} Combo!";
+            string textString = $"{currentCombo}";// Combo!";
             if (_comboTextBase != null) _comboTextBase.text = textString;
             if (_comboTextFill != null) _comboTextFill.text = textString;
             
@@ -131,7 +131,7 @@ namespace Game.Presentation.UI.Combo
         private void HandleComboReset()
         {
             SetTextActive(false);
-            _comboGaugeUI.resetGauge();
+            _comboGaugeUI?.resetGauge();
 
             // すべての演出パターンをリセット
             foreach (var feedback in _activeFeedbacks)
