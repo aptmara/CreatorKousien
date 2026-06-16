@@ -78,6 +78,7 @@ namespace Game.Core.Enemy
             _barrierGauge.OnGaugeBroken = HandleGaugeBroken;
 
             // 上昇初期化
+            _rising.Initialize(def.RiseDuration);
             _rising.OnEnemyReachedGoal = HandleRose;
             _rising.OnLeftReachedGoal = HandleRoseLeft;
 

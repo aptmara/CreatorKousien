@@ -45,5 +45,9 @@ namespace Game.Core.Enemy
         [Tooltip("1秒あたりの回復力")]
         public float HealPower = 30.0f;
 
+        [Header("上昇合計時間")]
+        [Tooltip("敵の上昇にかかる秒数")]
+        public float RiseDuration = 30.0f;
+
     }
 }
