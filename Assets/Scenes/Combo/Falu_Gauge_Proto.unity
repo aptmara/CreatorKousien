@@ -210,7 +210,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ComboGaugeUI
   _gaugeUpdateValue: 100
-  _maxGaugeLevel: 0
+  _maxGaugeLevel: 3
+  _gaugeBonusRatio: 0.3
+  _sceneEventChannel: {fileID: 11400000, guid: 58e1728789289fa47b441403e4650359, type: 2}
   _gaugeFrame: {fileID: 1246461755}
   _gaugeImgae: {fileID: 848111499}
 --- !u!1 &375669160
@@ -1221,7 +1223,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Combo.ComboViewControl
   _addDurationPerHit: 0.5
-  _maxDuration: 10
+  _maxDuration: 20
   _limitMode: 0
   _comboTextRect: {fileID: 698986948}
   _comboTextBase: {fileID: 698986953}
@@ -1239,7 +1241,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1964589194}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bdf2308edd9a28d4ebecc8a6646207f0, type: 3}
   m_Name: 
@@ -1252,16 +1254,16 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1964589194}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 825ba0a281b3c0a47ba86409712abafa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Combo.FeedbackColor
   _safeColor: {r: 0.2, g: 0.9, b: 1, a: 1}
   _normalColor: {r: 1, g: 0.85, b: 0.2, a: 1}
-  _dangerColor: {r: 1, g: 0.2, b: 0.2, a: 1}
+  _dangerColor: {r: 1, g: 1, b: 1, a: 0}
   _flashThreshold: 0.25
-  _flashSpeed: 15
+  _flashSpeed: 0
 --- !u!114 &1964589199
 MonoBehaviour:
   m_ObjectHideFlags: 0
