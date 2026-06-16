@@ -7,6 +7,7 @@
  */
 using System;
 using System.Collections;
+using System.Xml.Serialization;
 using UnityEngine;
 
 namespace Game.Core.Enemy
@@ -29,6 +30,15 @@ namespace Game.Core.Enemy
 
         // 何らかの方法でゴールから引きはがされた際のコールバック
         public Action OnLeftReachedGoal;
+
+        /// <summary>
+        /// 初期化。インスタンス生成後に必ず呼ぶ。
+        /// </summary>
+        /// <param name="riseDuration">敵が上るのにかかる秒数</param>
+        public void Initialize(float riseDuration)
+        {
+            _riseDuration = riseDuration;
+        }
 
         /// <summary>
         /// 指定した目標地点へ敵を上昇させる。

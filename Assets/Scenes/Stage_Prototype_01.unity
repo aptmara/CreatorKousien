@@ -550,7 +550,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7354903618691012521, guid: c7c91172efd510b46b83a0b7bac19708, type: 3}
       propertyPath: _undergroundOffset
-      value: 4
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 7354903618691012521, guid: c7c91172efd510b46b83a0b7bac19708, type: 3}
       propertyPath: _minDistanceFromOtherEnemies
@@ -562,7 +562,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8125261586118470773, guid: c7c91172efd510b46b83a0b7bac19708, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.62
+      value: -2.2
       objectReference: {fileID: 0}
     - target: {fileID: 8125261586118470773, guid: c7c91172efd510b46b83a0b7bac19708, type: 3}
       propertyPath: m_LocalPosition.z
