@@ -8,8 +8,10 @@
 // Notes	:
 // - 5/6: ベース作成
 // - 5/24: アタッチメントの拡大縮小機能の作成
+// - 6/19: PlayerRuntimeDataを参照、アタッチメントのサイズをステータスに基づいて変化させる機能の追加
 // ------------------------------------------------------------
 using UnityEngine;
+using Game.Gameplay.Player.Progression;
 
 namespace Game.Gameplay.Player
 {
@@ -42,6 +44,9 @@ namespace Game.Gameplay.Player
         private PhysicalAttachment _currentAttachment;  ///< 現在装備しているアタッチメント
         private Vector3 _targetScale;                   ///< アタッチメントの目標スケール
 
+        private PlayerRuntimeData _runtimeData;         ///< プレイヤーのランタイムデータ（強化のアタッチメントのサイズ倍率）
+        private bool _isShrunkInternal;                 ///< 内部的な拡大縮小状態のフラグ（SetShrunk()で更新される）
+
 
         // 関数処理
         // ------------------------------------------------------------
@@ -67,7 +72,13 @@ namespace Game.Gameplay.Player
                 return;
             }
 
-            // アタッチメントのスケールを目標スケールに向かって滑らかに変化させる
+            // 強化によるサイズ倍率（RuntimeData未注入時は1.0として扱う）
+            float upgradeScale = _runtimeData != null ? _runtimeData.AttachmentScaleMultiplier : 1f;
+
+            // 基準スケール（通常 or 縮小）に強化倍率を掛けたものを目標にする
+            Vector3 baseScale = _isShrunkInternal ? _shrinkScale : _normalScale;
+            _targetScale = baseScale * upgradeScale;
+
             _currentAttachment.transform.localScale = Vector3.Lerp(
                     _currentAttachment.transform.localScale,
                     _targetScale,
@@ -100,12 +111,21 @@ namespace Game.Gameplay.Player
 
 
         /// <summary>
+        /// 強化倍率を読むためのRuntimeDataをセットする。PlayerFacadeから呼ばれる。
+        /// </summary>
+        public void SetRuntimeData(PlayerRuntimeData runtimeData)
+        {
+            _runtimeData = runtimeData;
+        }
+
+
+        /// <summary>
         /// アタッチメントのスケールを更新する関数
         /// </summary>
         /// <param name="shrunk">拡大縮小状態のフラグ</param>
         public void SetShrunk(bool shrunk)
         {
-            _targetScale = shrunk ? _shrinkScale : _normalScale;
+            _isShrunkInternal = shrunk;
         }
 
 

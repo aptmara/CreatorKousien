@@ -1082,6 +1082,9 @@ MonoBehaviour:
   _motor: {fileID: 3143861578243248535}
   _collector: {fileID: 5507182380335505921}
   _holder: {fileID: 233453283009943828}
+  _attachmentController: {fileID: 2483846165279528381}
+  _initialStats: {fileID: 11400000, guid: 58b230540aa53be4898942de357d2661, type: 2}
+  _levelTable: {fileID: 11400000, guid: 446956b829daab14c92179f32b160ebe, type: 2}
 --- !u!114 &2483846165279528381
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -9,8 +9,10 @@
 // - 5/6 ベース作成
 // - 5/12 回転量の大元作成 - 滝谷
 // - 5/24 移動関連2パターン作り切り替えれるように修正 - 浅野
+// - 6/19 PlayerRuntimeDataを参照、移動速度をステータスに基づいて変化させる機能の追加 - 浅野
 // ------------------------------------------------------------
 using UnityEngine;
+using Game.Gameplay.Player.Progression;
 
 namespace Game.Gameplay.Player
 {
@@ -56,6 +58,22 @@ namespace Game.Gameplay.Player
 
         private Rigidbody _rigidbody;       ///< プレイヤーのRigidbodyコンポーネント
 
+        private PlayerRuntimeData _runtimeData; ///< プレイヤーのランタイムデータ（ステータスなど）
+
+        /// <summary>
+        /// プレイヤーのランタイムデータを設定する関数
+        /// </summary>
+        /// <param name="runtimeData">プレイヤーのランタイムデータ</param>
+        public void SetRuntimeData(PlayerRuntimeData runtimeData)
+        {
+            _runtimeData = runtimeData;
+        }
+
+        /// <summary>
+        /// 現在の移動速度倍率(null の場合は1.0)
+        /// </summary>
+        private float MoveSpeedMultiplier => _runtimeData != null ? _runtimeData.MoveSpeedMultiplier : 1f;
+
         private float _targetYaw;
 
         /// <summary>
@@ -99,7 +117,7 @@ namespace Game.Gameplay.Player
         /// <param name="moveInput">移動入力ベクトル</param>
         public void Move(Vector2 moveInput, bool isAttachmentShrunk)
         {
-            float moveSpeed = isAttachmentShrunk ? _shrunkMoveSpeed : _normalMoveSpeed;
+            float moveSpeed = (isAttachmentShrunk ? _shrunkMoveSpeed : _normalMoveSpeed) * MoveSpeedMultiplier;
 
             // 入力がほぼ無い場合は水平移動を停止する
             if (moveInput.sqrMagnitude < 0.01f)
@@ -155,7 +173,7 @@ namespace Game.Gameplay.Player
         /// <param name="moveInput">移動入力ベクトル</param>
         public void MoveWithAutoRotation(Vector2 moveInput, bool isAttachmentShrunk)
         {
-            float moveSpeed = isAttachmentShrunk ? _shrunkMoveSpeed : _normalMoveSpeed;
+            float moveSpeed = (isAttachmentShrunk ? _shrunkMoveSpeed : _normalMoveSpeed) * MoveSpeedMultiplier;
             float autoRotationSpeed = isAttachmentShrunk ? _shrunkAutoRotationDegreesPerSecond : _normalAutoRotationDegreesPerSecond;
 
             if (moveInput.sqrMagnitude < 0.01f)
