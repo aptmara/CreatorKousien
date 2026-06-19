@@ -14,7 +14,6 @@ namespace Game.Core.Enemy
     /// </summary>
     public class EnemyBarrierGauge : MonoBehaviour
     {
-        private string _enemyId;
         private float _maxGauge;
         private float _currentGauge;
         private float _healPower;
@@ -56,7 +55,6 @@ namespace Game.Core.Enemy
 
             bool hasBarrier = _barrierObject != null;
 
-            _enemyId = enemyId;
             _maxGauge = maxGauge;
             _currentGauge = hasBarrier ? maxGauge : 0.0f;
             _isActive = hasBarrier;
