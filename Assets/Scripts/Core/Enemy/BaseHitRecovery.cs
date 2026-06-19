@@ -1,3 +1,5 @@
+
+
 // 制作者: 山内陽
 using System.Collections.Generic;
 using Game.Core.Events;
@@ -9,8 +11,9 @@ namespace Game.Core.Enemy
     /// <summary>
     /// 自由移動アイテムの衝突を敵へのHitBatchEventへ変換する受け口。
     /// </summary>
-    public sealed class EnemyHitReceiver : MonoBehaviour
+    public class BaseHitRecovery : MonoBehaviour
     {
+
         [Tooltip("実行時に親のEnemyControllerから自動取得されるユニークなID。")]
         private string _enemyId;
 
@@ -87,11 +90,9 @@ namespace Game.Core.Enemy
 
             _nextHitTimes[itemId] = Time.time + Mathf.Max(0f, _sameItemCooldown);
 
-            float baseDamage = Mathf.Max(1f, collectible.DamageAmount);
-            float speedFactor = Mathf.Max(1f, hitSpeed);
-            float bodyDamage = baseDamage * speedFactor * _bodyDamageMultiplier;
+            float damage = ComputeDamage(collectible, hitSpeed);
 
-            EventBus.Publish(new EnemyHitBatchEvent(_enemyId, 1, bodyDamage, hitPosition, transform));
+            ApplyDamageRequest(1, damage, hitPosition);
 
             if (_despawnItemOnHit)
             {
@@ -101,6 +102,25 @@ namespace Game.Core.Enemy
             return true;
         }
 
-        
+
+        protected virtual float ComputeDamage(CollectibleObject collectible, float hitSpeed)
+        {
+            float baseDamage = Mathf.Max(1f, collectible.DamageAmount);
+            float speedFactor = Mathf.Max(1f, hitSpeed);
+
+            return baseDamage * speedFactor * _bodyDamageMultiplier;
+        }
+
+
+        protected virtual void ApplyDamageRequest(int hitCount, float damage, Vector3 hitPosition)
+        {
+            EventBus.Publish(new EnemyHitBatchEvent(_enemyId, 1, damage, hitPosition, transform));
+        }
+
     }
+
 }
+
+
+
+

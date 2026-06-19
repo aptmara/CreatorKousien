@@ -14,9 +14,13 @@ namespace Game.Core.Enemy
         [Tooltip("ゲームシーン内でユニークな文字列。EventBusのフィルタリングに使用。")]
         public string EnemyId = "Enemy_01";
 
-        [Header("本体HP")]
-        [Tooltip("ダウン中にのみ削れるHP。")]
+        [Header("本体基本HP")]
+        [Tooltip("敵毎の標準となる数値、倍率をかけることで実数値となる")]
         public float MaxHp = 300f;
+
+        [Header("経験値倍率")]
+        [Tooltip("経験値倍率、HP実数値にかけることで実数地となる")]
+        public float ExpRate = 1.0f;
 
         [Header("ダウン挙動")]
         [Tooltip("ダウン持続時間[秒]。経過後にNormal状態へ復帰する。")]
