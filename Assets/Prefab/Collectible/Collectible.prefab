@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 501364914817027249}
   - component: {fileID: 6387654242037428932}
   - component: {fileID: 2139515936200401590}
+  - component: {fileID: -854799001704299}
   m_Layer: 0
   m_Name: Collectible
   m_TagString: Untagged
@@ -160,3 +161,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemPhysicsStabilizer
   _maxDepenetration: 1
   _maxSpeed: 10
+  _usePlayerAttachmentImpactLimit: 1
+  _playerAttachmentMaxSpeed: 2.5
+  _impactLimitDuration: 0.2
+  _impactVelocityMultiplier: 0.35
+--- !u!114 &-854799001704299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 545967179075052199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b172afb0eb15a546b0485820fbd6312, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CollectableGravity
