@@ -47,12 +47,31 @@ namespace Game.Gameplay.Cameras
             FieldOfView = 60f
         };
 
+        [Header("TileFloorPers設定")]
+        [SerializeField]
+        private ProjectionSettings _tiltFloorPers = new ProjectionSettings
+        {
+            Position = new Vector3(0f, 15f, -25f),
+            Rotation = new Vector3(30f, 0f, 0f),
+            FieldOfView = 60f
+        };
+
         public ProjectionSettings OrthoSettings => _orthoSettings;
         public ProjectionSettings PerspSettings => _perspSettings;
+        public ProjectionSettings TiltFloorPers => _tiltFloorPers;
 
         public ProjectionSettings GetSettings(CameraRigController.ProjectionMode mode)
         {
-            return (mode == CameraRigController.ProjectionMode.Orthographic) ? _orthoSettings : _perspSettings;
+            switch (mode)
+            {
+                case CameraRigController.ProjectionMode.Orthographic:
+                    return _orthoSettings;
+                case CameraRigController.ProjectionMode.Perspective:
+                    return _perspSettings;
+                case CameraRigController.ProjectionMode.tiltFloorPers:
+                    return _tiltFloorPers;
+            }
+            return _perspSettings;
         }
     }
 }

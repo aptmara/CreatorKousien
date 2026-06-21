@@ -22,7 +22,8 @@ namespace Game.Gameplay.Cameras
         public enum ProjectionMode
         {
             Orthographic,
-            Perspective
+            Perspective,
+            tiltFloorPers,
         }
 
         [Header("モード設定")]
