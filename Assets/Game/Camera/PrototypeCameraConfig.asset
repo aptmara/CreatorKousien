@@ -18,8 +18,8 @@ MonoBehaviour:
     FieldOfView: 1
     OrthographicSize: 11
   _perspSettings:
-    Position: {x: 0, y: 20, z: -15}
-    Rotation: {x: 54, y: 0, z: 0}
+    Position: {x: 0, y: 26, z: -27}
+    Rotation: {x: 38, y: 0, z: 0}
     FieldOfView: 45
     OrthographicSize: 1
   _tiltFloorPers:

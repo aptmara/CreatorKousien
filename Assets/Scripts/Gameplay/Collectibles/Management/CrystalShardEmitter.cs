@@ -394,14 +394,34 @@ namespace Game.Gameplay.Collectibles
                 ? direction.normalized
                 : transform.up;
 
-            Vector3 finalDirection = baseDirection + UnityEngine.Random.insideUnitSphere * Mathf.Max(0f, randomRange);
-            if (finalDirection.sqrMagnitude < 0.0001f)
-            {
-                finalDirection = Vector3.up;
-            }
-
-            return finalDirection.normalized * Mathf.Max(0f, movementAmount);
+            // ランダム方向のばらつき角度を計算する
+            Vector3 finalDirection = RandomInCone(baseDirection, randomRange);
+            return finalDirection * Mathf.Max(0f, movementAmount);
         }
+
+
+        /// <summary>
+        /// 指定した方向を中心に、指定角度の円錐内でランダムな方向ベクトルを作る。
+        /// 6.23 浅野：円錐内ランダム方向を作るように修正しました。
+        /// </summary>
+        /// <param name="baseDir">中心</param>
+        /// <param name="maxAngleDeg">最大開き角</param>
+        /// <returns>ランダムな方向ベクトル</returns>
+        private static Vector3 RandomInCone(Vector3 baseDir, float maxAngleDeg)
+        {
+            baseDir = baseDir.normalized;
+
+            float angle = UnityEngine.Random.Range(0f, Mathf.Max(0f, maxAngleDeg)); // 中心からの開き角
+            float roll = UnityEngine.Random.Range(0f, 360f);                        // 中心軸まわりの回転
+
+            // BaseDir に直行する軸を作る
+            Vector3 perp = Vector3.Cross(baseDir, Mathf.Abs(baseDir.y) < 0.99f ? Vector3.up : Vector3.right).normalized;
+
+            Vector3 tilted = Quaternion.AngleAxis(angle, perp) * baseDir;           // angle だけ傾けた方向
+            return Quaternion.AngleAxis(roll, baseDir) * tilted;                    // baseDir まわりに roll 回転させる
+        }
+
+
 
         /// <summary>
         /// 欠片に与えるランダムな角速度を作る。

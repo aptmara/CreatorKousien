@@ -13,6 +13,7 @@
 // ------------------------------------------------------------
 using UnityEngine;
 using Game.Gameplay.Player.Progression;
+using Game.Gameplay.Stage;
 
 namespace Game.Gameplay.Player
 {
@@ -59,6 +60,8 @@ namespace Game.Gameplay.Player
         private Rigidbody _rigidbody;       ///< プレイヤーのRigidbodyコンポーネント
 
         private PlayerRuntimeData _runtimeData; ///< プレイヤーのランタイムデータ（ステータスなど）
+
+        private Vector3 Up => FieldContext.IsReady ? FieldContext.Up : Vector3.up;   ///< フィールドの上方向
 
         /// <summary>
         /// プレイヤーのランタイムデータを設定する関数
@@ -110,6 +113,19 @@ namespace Game.Gameplay.Player
             _targetYaw = transform.eulerAngles.y;
         }
 
+        private void Start()
+        {
+            // 初期回転をフィールドのupに合わせる
+            Vector3 up = Up;
+
+            Vector3 planeForward = Vector3.ProjectOnPlane(Vector3.forward, up).normalized;
+            Vector3 faceDir = Quaternion.AngleAxis(_targetYaw, up) * planeForward;
+            Quaternion rot = Quaternion.LookRotation(faceDir, up);
+
+            _rigidbody.rotation = rot;
+            transform.rotation = rot;
+        }
+
 
         /// <summary>
         /// 指定された入力ベクトルに基づいてプレイヤーを移動・回転させる関数
@@ -119,29 +135,26 @@ namespace Game.Gameplay.Player
         {
             float moveSpeed = (isAttachmentShrunk ? _shrunkMoveSpeed : _normalMoveSpeed) * MoveSpeedMultiplier;
 
+            Vector3 up = Up;
+            Vector3 vel = _rigidbody.linearVelocity;
+            float alongUp = Vector3.Dot(vel, up);
+
             // 入力がほぼ無い場合は水平移動を停止する
             if (moveInput.sqrMagnitude < 0.01f)
             {
-                _rigidbody.linearVelocity = new Vector3(0f, _rigidbody.linearVelocity.y, 0f);
+                _rigidbody.linearVelocity = up * alongUp;
                 return;
             }
 
-            // カメラの向きを取得
-            Vector3 cameraForward = _mainCamera.transform.forward;
-            cameraForward.y = 0f;                                   // 上下方向の傾きは無視
-            cameraForward.Normalize();
+            // カメラの向きを「フィールド面」に投影
+            Vector3 cameraForward = Vector3.ProjectOnPlane(_mainCamera.transform.forward, up).normalized;
+            Vector3 cameraRight = Vector3.ProjectOnPlane(_mainCamera.transform.right, up).normalized;
 
-            Vector3 cameraRight = _mainCamera.transform.right;
-            cameraRight.y = 0f;
-            cameraRight.Normalize();
-
-            // 入力ベクトルをカメラ基準のワールド方向に変換
             Vector3 targetDirection = (cameraForward * moveInput.y + cameraRight * moveInput.x).normalized;
+            Vector3 planarVelocity = targetDirection * moveSpeed;
 
-            // 移動の適用
-            Vector3 targetVelocity = targetDirection * moveSpeed;
-            targetVelocity.y = _rigidbody.linearVelocity.y;         // 落下速度は維持する
-            _rigidbody.linearVelocity = targetVelocity;
+            // 面内移動 + 上下成分維持
+            _rigidbody.linearVelocity = planarVelocity + up * alongUp;
         }
 
         /// <summary>
@@ -160,10 +173,14 @@ namespace Game.Gameplay.Player
 
             _targetYaw += lookInput.x * turnSpeed * Time.fixedDeltaTime;
 
-            Quaternion targetRotation = Quaternion.Euler(0.0f, _targetYaw, 0.0f);
+            Vector3 up = Up;
 
+            // フィールドの上方向
+            Vector3 planeForward = Vector3.ProjectOnPlane(Vector3.forward, up).normalized;
+            Vector3 faceDir = Quaternion.AngleAxis(_targetYaw, up) * planeForward;
+
+            Quaternion targetRotation = Quaternion.LookRotation(faceDir, up);
             _rigidbody.MoveRotation(Quaternion.Slerp(_rigidbody.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
-
         }
 
 
@@ -176,38 +193,27 @@ namespace Game.Gameplay.Player
             float moveSpeed = (isAttachmentShrunk ? _shrunkMoveSpeed : _normalMoveSpeed) * MoveSpeedMultiplier;
             float autoRotationSpeed = isAttachmentShrunk ? _shrunkAutoRotationDegreesPerSecond : _normalAutoRotationDegreesPerSecond;
 
+            Vector3 up = Up;
+            Vector3 vel = _rigidbody.linearVelocity;
+            float alongUp = Vector3.Dot(vel, up);
+
             if (moveInput.sqrMagnitude < 0.01f)
             {
-                _rigidbody.linearVelocity = new Vector3(0f, _rigidbody.linearVelocity.y, 0f);
+                _rigidbody.linearVelocity = up * alongUp;
                 return;
             }
 
-            // カメラの向きを取得
-            Vector3 cameraForward = _mainCamera.transform.forward;
-            cameraForward.y = 0f; // 上下方向の傾きは無視
-            cameraForward.Normalize();
+            // カメラの向きを「フィールド面」に投影
+            Vector3 cameraForward = Vector3.ProjectOnPlane(_mainCamera.transform.forward, up).normalized;
+            Vector3 cameraRight = Vector3.ProjectOnPlane(_mainCamera.transform.right, up).normalized;
 
-            Vector3 cameraRight = _mainCamera.transform.right;
-            cameraRight.y = 0f;
-            cameraRight.Normalize();
-
-            // 入力ベクトルをカメラ基準のワールド方向に変換
             Vector3 targetDirection = (cameraForward * moveInput.y + cameraRight * moveInput.x).normalized;
+            _rigidbody.linearVelocity = targetDirection * moveSpeed + up * alongUp;
 
-            Vector3 targetVelocity = targetDirection * moveSpeed;
-            targetVelocity.y = _rigidbody.linearVelocity.y; // 落下速度は維持する
-            _rigidbody.linearVelocity = targetVelocity;
-
-            // プレイヤーの向きを移動方向に合わせて回転させる
-            Quaternion targetRotation = Quaternion.LookRotation(targetDirection, Vector3.up);
-
-            Quaternion nextRotaiton = Quaternion.RotateTowards(
-                _rigidbody.rotation,
-                targetRotation,
-                autoRotationSpeed * Time.fixedDeltaTime
-            );
-
-            _rigidbody.MoveRotation(nextRotaiton);
+            // 進行方向へ、床のupを使って向く
+            Quaternion targetRotation = Quaternion.LookRotation(targetDirection, up);
+            Quaternion nextRotation = Quaternion.RotateTowards(_rigidbody.rotation, targetRotation, autoRotationSpeed * Time.fixedDeltaTime);
+            _rigidbody.MoveRotation(nextRotation);
         }
     }
 }

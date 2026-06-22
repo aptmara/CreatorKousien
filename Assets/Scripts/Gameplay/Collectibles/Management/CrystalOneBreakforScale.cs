@@ -49,10 +49,10 @@ namespace Game.Data.Collectibles
             _currentScaleCount = _crystalInitScale;
             if(_gizmo != null)
             {
-                _emitVector = (_gizmo._origin.transform.position - _gizmo._target.transform.position).normalized;
+                _emitVector = _gizmo.Direction; // Gizmoの矢印通り飛ぶように修正しました！6/23 浅野
             }
         }
-    
+
         // Update is called once per frame
         void FixedUpdate()
         {

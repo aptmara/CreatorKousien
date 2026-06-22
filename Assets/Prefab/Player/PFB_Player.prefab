@@ -656,8 +656,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3981410720987060132}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0.12278779, y: -0.6963643, z: 0.12278779, w: 0.6963643}
+  m_LocalPosition: {x: -0.0000000021627287, y: 0.0014626235, z: 0.035763368}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -666,7 +666,7 @@ Transform:
   - {fileID: 7603613802830760435}
   - {fileID: 1685605766767915548}
   m_Father: {fileID: 2670995304890142112}
-  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 20}
 --- !u!1 &4367510288210668590
 GameObject:
   m_ObjectHideFlags: 0
@@ -845,6 +845,8 @@ GameObject:
   - component: {fileID: 96972539515256430}
   - component: {fileID: 2483846165279528381}
   - component: {fileID: 5232212859440975684}
+  - component: {fileID: 500388845292491572}
+  - component: {fileID: 704689617528994596}
   m_Layer: 7
   m_Name: PFB_Player
   m_TagString: Untagged
@@ -919,7 +921,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 116
+  m_Constraints: 112
   m_CollisionDetection: 3
 --- !u!114 &8157789754490040092
 MonoBehaviour:
@@ -1121,6 +1123,38 @@ MonoBehaviour:
   _depthRows: 4
   _spacing: 0.8
   _randomJitter: 0.2
+--- !u!114 &500388845292491572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5658249862219205856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b172afb0eb15a546b0485820fbd6312, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CollectableGravity
+  _gravity: 9.8
+--- !u!114 &704689617528994596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5658249862219205856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2854d87183ed9944dabe82b61fef0230, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.PlayerGroundStick
+  _groundMask:
+    serializedVersion: 2
+    m_Bits: 64
+  _probeDistance: 1.5
+  _rideHeight: 1
+  _snapStrength: 15
+  _maxCorrectionSpeed: 8
 --- !u!1 &5870560623095878439
 GameObject:
   m_ObjectHideFlags: 0
