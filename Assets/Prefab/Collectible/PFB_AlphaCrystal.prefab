@@ -866,6 +866,7 @@ MonoBehaviour:
   _rayMask:
     serializedVersion: 2
     m_Bits: 512
+  _hitDelay: 0.8
 --- !u!114 &4253139232898160154
 MonoBehaviour:
   m_ObjectHideFlags: 0

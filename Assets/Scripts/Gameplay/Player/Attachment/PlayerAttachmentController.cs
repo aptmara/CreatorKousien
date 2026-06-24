@@ -42,11 +42,20 @@ namespace Game.Gameplay.Player
 
 
         private PhysicalAttachment _currentAttachment;  ///< 現在装備しているアタッチメント
+
+
+        /// <summary>
+        /// 現在装備しているアタッチメントを取得する
+        /// </summary>
+        public PhysicalAttachment CurrentAttachment => _currentAttachment;
+
+
         private Vector3 _targetScale;                   ///< アタッチメントの目標スケール
 
         private PlayerRuntimeData _runtimeData;         ///< プレイヤーのランタイムデータ（強化のアタッチメントのサイズ倍率）
         private bool _isShrunkInternal;                 ///< 内部的な拡大縮小状態のフラグ（SetShrunk()で更新される）
-
+        private float _forceLargeUntil;                 ///< 強制的に拡大状態にする時間（0以下なら強制拡大状態ではない）
+        private bool _forceLargeByPunch;                ///< パンチによる強制拡大状態のフラグ（trueなら強制拡大状態、falseなら通常状態）
 
         // 関数処理
         // ------------------------------------------------------------
@@ -76,7 +85,8 @@ namespace Game.Gameplay.Player
             float upgradeScale = _runtimeData != null ? _runtimeData.AttachmentScaleMultiplier : 1f;
 
             // 基準スケール（通常 or 縮小）に強化倍率を掛けたものを目標にする
-            Vector3 baseScale = _isShrunkInternal ? _shrinkScale : _normalScale;
+            bool forceLarge = _forceLargeByPunch || Time.time < _forceLargeUntil;
+            Vector3 baseScale = (_isShrunkInternal || forceLarge) ? _shrinkScale : _normalScale;
             _targetScale = baseScale * upgradeScale;
 
             _currentAttachment.transform.localScale = Vector3.Lerp(
@@ -139,6 +149,26 @@ namespace Game.Gameplay.Player
             {
                 Destroy(_currentAttachment.gameObject);
             }
+        }
+
+
+        /// <summary>
+        /// アタッチメントを強制的に拡大状態にする
+        /// </summary>
+        /// <param name="duration">指定時間</param>
+        public void ForceLargeFor(float duration)
+        {
+            _forceLargeUntil = Mathf.Max(_forceLargeUntil, Time.time + duration);
+        }
+
+
+        /// <summary>
+        /// アタッチメントをパンチによる強制拡大状態にするかどうかを設定する
+        /// </summary>
+        /// <param name="forceLarge">腕の強制拡大状態フラグ</param>
+        public void SetPunchForceLarge(bool forceLarge)
+        {
+            _forceLargeByPunch = forceLarge;
         }
     }
 }
