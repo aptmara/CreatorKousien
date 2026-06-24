@@ -1,4 +1,6 @@
-// 制作者: 越智晴彦
+
+
+// 制作者: 山内陽
 using System.Collections.Generic;
 using Game.Core.Events;
 using Game.Gameplay.Collectibles;
@@ -9,8 +11,9 @@ namespace Game.Core.Enemy
     /// <summary>
     /// 自由移動アイテムの衝突を敵へのHitBatchEventへ変換する受け口。
     /// </summary>
-    public sealed class EnemyBirrerReceiver : MonoBehaviour
+    public class BaseHitRecovery : MonoBehaviour
     {
+
         [Tooltip("実行時に親のEnemyControllerから自動取得されるユニークなID。")]
         private string _enemyId;
 
@@ -23,19 +26,13 @@ namespace Game.Core.Enemy
             }
         }
 
-        public void Initialize(string enemyID)
-        {
-            _enemyId = enemyID;
-            Debug.Log("バリア初期化完了 EnemyID =" + _enemyId);
-        }
-
         [SerializeField]
         [Tooltip("この速度未満の衝突はダメージにしない。")]
         private float _minimumHitSpeed = 0.75f;
 
         [SerializeField]
-        [Tooltip("CollectibleData.DamageAmountと衝突速度に掛けるゲージダメージ倍率。")]
-        private float _gaugeDamageMultiplier = 8.0f;
+        [Tooltip("CollectibleData.DamageAmountと衝突速度に掛ける本体ダメージ倍率。")]
+        private float _bodyDamageMultiplier = 2.5f;
 
         [SerializeField]
         [Tooltip("同じアイテムから連続ヒットを受け付けない秒数。")]
@@ -43,13 +40,7 @@ namespace Game.Core.Enemy
 
         [SerializeField]
         [Tooltip("命中したアイテムをPoolへ戻すか。")]
-        private bool _despawnItemOnHit = true;
-
-        [SerializeField]
-        [Tooltip("バリアがダメージを受けた際の加速補正")]
-        private float _onHitAcceleration = 3.0f;
-
-
+        private bool _despawnItemOnHit = false;
 
         private readonly Dictionary<int, float> _nextHitTimes = new Dictionary<int, float>();
 
@@ -84,7 +75,7 @@ namespace Game.Core.Enemy
         /// <param name="hitSpeed">衝突速度</param>
         /// <param name="hitPosition">命中位置</param>
         /// <returns>命中として処理した場合はtrue</returns>
-        public bool ApplyCollectibleHit(CollectibleObject collectible, float hitSpeed, Vector3 hitPosition)
+        private bool ApplyCollectibleHit(CollectibleObject collectible, float hitSpeed, Vector3 hitPosition)
         {
             if (collectible == null || hitSpeed < _minimumHitSpeed)
             {
@@ -99,24 +90,37 @@ namespace Game.Core.Enemy
 
             _nextHitTimes[itemId] = Time.time + Mathf.Max(0f, _sameItemCooldown);
 
-            float baseDamage = Mathf.Max(1f, collectible.DamageAmount);
-            float speedFactor = Mathf.Max(1f, hitSpeed);
-            float gaugeDamage = baseDamage * speedFactor * _gaugeDamageMultiplier;
+            float damage = ComputeDamage(collectible, hitSpeed);
 
-            EventBus.Publish(new BarrierHitBatchEvent(_enemyId, 1, gaugeDamage, hitPosition, transform));
+            ApplyDamageRequest(1, damage, hitPosition);
 
             if (_despawnItemOnHit)
             {
-               collectible.Despawn();
-            }
-            else
-            {
-                Rigidbody rb = collectible.GetComponent<Rigidbody>();
-                Vector3 newVel = rb.linearVelocity * _onHitAcceleration;
-                rb.linearVelocity = newVel;
+                collectible.Despawn();
             }
 
             return true;
         }
+
+
+        protected virtual float ComputeDamage(CollectibleObject collectible, float hitSpeed)
+        {
+            float baseDamage = Mathf.Max(1f, collectible.DamageAmount);
+            float speedFactor = Mathf.Max(1f, hitSpeed);
+
+            return baseDamage * speedFactor * _bodyDamageMultiplier;
+        }
+
+
+        protected virtual void ApplyDamageRequest(int hitCount, float damage, Vector3 hitPosition)
+        {
+            EventBus.Publish(new EnemyHitBatchEvent(_enemyId, 1, damage, hitPosition, transform));
+        }
+
     }
+
 }
+
+
+
+

@@ -45,18 +45,18 @@ namespace Game.Core.Enemy
         /// </summary>
         /// <param name="targetPos">上昇後に到達する目標座標。</param>
         /// <param name="startYOffset">開始時に目標位置から下方向へ下げる距離（正値で下方向へ移動）。</param>
-        public void StartRise(Vector3 targetPos, float startYOffset)
+        public void StartRise(Vector3 targetPos, float startYOffset, Transform enemyTransform)
         {
             _targetPosition = targetPos;
             // 上昇目標と目標までの距離から初期位置設定
-            transform.position = _targetPosition + Vector3.down * startYOffset;
+            enemyTransform.position = _targetPosition + Vector3.down * startYOffset;
             // 上昇開始
-            StartCoroutine(RiseRoutine());
+            StartCoroutine(RiseRoutine(enemyTransform));
         }
 
-        private IEnumerator RiseRoutine()
+        private IEnumerator RiseRoutine(Transform enemyTransform)
         {
-            Vector3 startPos = transform.position;
+            Vector3 startPos = enemyTransform.position;
             float elapsed = 0.0f;
             // カーブも考慮した目標地点までの滑らかな動き
             while (elapsed < _riseDuration)
@@ -65,14 +65,14 @@ namespace Game.Core.Enemy
                 float t = elapsed / _riseDuration;
                 float curveT = _riseCurve.Evaluate(t);
                 //-イージングにより位置の更新
-                transform.position = Vector3.Lerp(startPos, _targetPosition, curveT);
+                enemyTransform.position = Vector3.Lerp(startPos, _targetPosition, curveT);
                 yield return null;
             }
             //-イージング処理完了後目標地点に位置を補正
-            transform.position = _targetPosition;
+            enemyTransform.position = _targetPosition;
             // コールバックを発行
             OnEnemyReachedGoal();
+        }
     }
-}
 
 }

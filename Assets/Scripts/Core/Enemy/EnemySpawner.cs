@@ -6,10 +6,20 @@
  * 更新履歴：
  * 5/30: 敵生成時、重なってスポーンしないように修正しました - 浅野
  *       自動で敵がスポーンするようにしました。
+ *       
+ *       
+ * 6/24: データをSO化した！
+ *       生成方法を空のゲームオブジェクトを出してコンポーネントつけて
+ *       子オブジェクトに当たり判定用オブジェクトを生成する形に変更した！
  */
+using System.Collections;
+using Unity.VisualScripting;
+using UnityEditor.U2D.Sprites;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Collections;
+using UnityEngine.UIElements;
+using System.Collections.Generic;
+using static Unity.VisualScripting.AnnotationUtility;
 
 
 namespace Game.Core.Enemy
@@ -23,46 +33,70 @@ namespace Game.Core.Enemy
         [Header("DebugInput設定")]
         [SerializeField] private InputAction _spawnAction;
 
-        [Header("生成する敵の設定")]
-        [Tooltip("生成する敵のプレハブ")]
-        [SerializeField] private GameObject _enemyPrefab;
-        [Tooltip("生成する敵のデータ")]
-        [SerializeField] private EnemyDefinition _definition;
         [Tooltip("生成する範囲(2D:横幅*奥行)")]
         [SerializeField] private Vector2 _rangeSize;
 
         [Header("出現位置の設定")]
         [Tooltip("最終目標地点")]
         [SerializeField] private Transform _spawnBasePoint;
-        [Tooltip("どのくらい下から出現させるか")]
-        [SerializeField] private float _undergroundOffset = 10.0f;
+        // どのくらい下から出現させるか
+        float _undergroundOffset = 10.0f;
 
-        [Header("スポーン設定")]
-        [Tooltip("既存の敵と最低限空ける距離")]
-        [SerializeField, Min(0f)] private float _minDistanceFromOtherEnemies = 3.0f;
+        
+        // 既存の敵と最低限空ける距離
+        [Min(0f)] private float _minDistanceFromOtherEnemies = 3.0f;
 
-        [Tooltip("スポーン位置を探す最大試行回数")]
-        [SerializeField, Min(1)] private int _maxSpawnPositionAttempts = 20;
+        // スポーン位置を探す最大試行回数"
+        [Min(1)] private int _maxSpawnPositionAttempts = 20;
 
 
-        [Header("自動スポーン設定")]
-        [Tooltip("一定時間ごとに自動でスポーンするか")]
-        [SerializeField] private bool _enableAutoSpawn = true;
+        // 一定時間ごとに自動でスポーンするか
+        private bool _enableAutoSpawn = true;
 
-        [Tooltip("自動スポーン開始までの待機時間")]
-        [SerializeField, Min(0f)] private float _initialSpawnDelay = 2.0f;
+        // 自動スポーン開始までの待機時間
+        [Min(0f)] private float _initialSpawnDelay = 2.0f;
 
-        [Tooltip("自動スポーンの間隔")]
-        [SerializeField, Min(0.1f)] private float _spawnInterval = 5.0f;
+        // 自動スポーンの間隔
+        [Min(0.1f)] private float _spawnInterval = 5.0f;
 
-        [Tooltip("1回の自動スポーンで出す敵の数")]
-        [SerializeField, Min(1)] private int _enemiesPerSpawn = 1;
+        // 1回の自動スポーンで出す敵の数
+        [Min(1)] private int _enemiesPerSpawn = 1;
 
-        [Tooltip("同時に存在できる敵の最大数,0以下なら制限なし")]
-        [SerializeField] private int _maxAliveEnemies = 3;
+        // 同時に存在できる敵の最大数,0以下なら制限なし
+        private int _maxAliveEnemies = 3;
 
+
+        [Tooltip("スポナー情報")]
+        [SerializeField]private EnemySpawnerDefinition _enemySpawnerDefinition = null;
+
+        // ウェーブごとの敵のステータス補正
+        private List<EnemyDefinition> _currentSpawnEnemies;
+        private float _currentHpRate = 1.0f;
+        private float _currentBarrierRate = 1.0f;
+
+        private bool _isEndSpawn = false;
 
         private Coroutine _autoSpawnCoroutine;
+
+        int _currentWaveCount = 0;
+
+
+        private void Start()
+        {
+            _currentWaveCount = 0;
+            if(_enemySpawnerDefinition.WaveDatas.Count <= 0)
+            {
+                Debug.Log("ウェーブが設定されていません！");
+                return;
+            }
+
+            ApplySpawnDefinition();
+
+            if (_enableAutoSpawn)
+            {
+                _autoSpawnCoroutine = StartCoroutine(AutoSpawnRoutine());
+            }
+        }
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         private void OnEnable()
@@ -74,10 +108,6 @@ namespace Game.Core.Enemy
                 _spawnAction.Enable();
             }
 
-            if (_enableAutoSpawn)
-            {
-                _autoSpawnCoroutine = StartCoroutine(AutoSpawnRoutine());
-            }
         }
 
         private void OnDisable()
@@ -110,7 +140,11 @@ namespace Game.Core.Enemy
         /// </summary>
         private void SpawnEnemy()
         {
-            if (_enemyPrefab == null || _definition == null) return;
+            if (_currentSpawnEnemies.Count <= 0 || _isEndSpawn) return;
+
+            // 敵情報を取得しデータから削除
+            EnemyDefinition definition = _currentSpawnEnemies[0];
+            _currentSpawnEnemies.RemoveAt(0);
 
             // 目標位置計算
             if (!TryGetSpawnTargetPosition(out Vector3 targetPos))
@@ -119,8 +153,23 @@ namespace Game.Core.Enemy
                 return;
             }
 
-            // プレハブから敵生成
-            GameObject enemyGo = Instantiate(_enemyPrefab);
+            // Defから敵生成
+            GameObject enemyGo = new GameObject("EmptyObject");
+            enemyGo.transform.SetPositionAndRotation(targetPos, new Quaternion(0.0f, 0.0f, 0.0f, 0.0f));
+
+            GameObject body = Instantiate(definition.EnemyBody, enemyGo.transform);
+            GameObject barrier = null; ;
+
+            if (definition.HasBarrier)
+            {
+                barrier = Instantiate(definition.BarrierBody, enemyGo.transform);
+            }
+
+
+            // コントローラーを追加
+            enemyGo.AddComponent<EnemyController>();
+            // 苦肉の策でRisingもモノビヘイビア
+            enemyGo.AddComponent<EnemyRising>();
 
             // 敵の初期化
             if (!enemyGo.TryGetComponent(out EnemyController controller))
@@ -129,13 +178,32 @@ namespace Game.Core.Enemy
                 Destroy(enemyGo);
                 return;
             }
-            if (!enemyGo.TryGetComponent(out EnemyRising rising))
+            if (!body.TryGetComponent(out EnemyHitReceiver bodyReceiver))
             {
-                rising = enemyGo.AddComponent<EnemyRising>();
+                Debug.LogWarning("[EnemySpawner] EnemyHitReceiver が付与されていないため生成を中止します。", body);
+                // Bodyが正しく生成されなかった場合親ごと削除
+                Destroy(enemyGo);
+                return;
             }
-            controller.Initialize(_definition);
-            // 上昇処理の開始
-            rising.StartRise(targetPos, _undergroundOffset);
+            // 先にBodyのみ初期化
+            EnemyController.SpawnSummary spawnSummary = new EnemyController.SpawnSummary(targetPos, _undergroundOffset, _currentHpRate, _currentBarrierRate);
+            controller.Initialize(definition, spawnSummary, bodyReceiver);
+
+            // バリアが存在する場合初期化
+            if (definition.HasBarrier)
+            {
+                controller.BarrierInitialize(definition, spawnSummary, barrier);
+            }
+
+
+            if (_currentSpawnEnemies.Count <= 0)
+            {
+                if (!AddWave())
+                {
+                    _isEndSpawn = true;
+                }
+
+            }
         }
 
         private void OnDrawGizmosSelected()
@@ -147,7 +215,8 @@ namespace Game.Core.Enemy
             Gizmos.DrawWireCube(_spawnBasePoint.position, size);
 
             Gizmos.color = Color.magenta;
-            Gizmos.DrawWireCube(_spawnBasePoint.position + Vector3.down * _undergroundOffset, size);
+            float gizmoUndergroundOffset = _enemySpawnerDefinition != null ? _enemySpawnerDefinition.UndergroundOffset : 0.0f;
+            Gizmos.DrawWireCube(_spawnBasePoint.position + Vector3.down * gizmoUndergroundOffset, size);
         }
 
 
@@ -284,6 +353,46 @@ namespace Game.Core.Enemy
             }
 
             return count;
+        }
+
+        /// <summary>
+        /// Waveを進める
+        /// </summary>
+        /// <returns></returns>
+        private bool AddWave()
+        {
+            _currentWaveCount++;
+            // Waveが存在しない場合失敗を返す
+            if(_enemySpawnerDefinition.WaveDatas.Count <= _currentWaveCount) return false;
+
+            
+            ApplyWaveData(_enemySpawnerDefinition.WaveDatas[_currentWaveCount]);
+            return true;
+        }
+
+        void ApplyWaveData(EnemySpawnerDefinition.WaveData waveData)
+        {
+            // ウェーブごとのスポーン設定
+            _maxAliveEnemies = waveData.MaxAliveEnemies;
+            _minDistanceFromOtherEnemies = waveData.MinDistanceFromOtherEnemies;
+            _spawnInterval = waveData.SpawnInterval;
+
+            // ウェーブごとの敵情報設定
+            _currentSpawnEnemies = waveData.SpawnEnemies;
+            _currentHpRate = waveData.HPRate;
+            _currentBarrierRate = waveData.BarrierRate;
+        }
+
+        private void ApplySpawnDefinition()
+        {
+            // ウェーブに関係なく一貫した情報を保持
+            _undergroundOffset = _enemySpawnerDefinition.UndergroundOffset;
+            _maxAliveEnemies = _enemySpawnerDefinition.MaxSpawnPositionAttempts;
+            _initialSpawnDelay = _enemySpawnerDefinition.InitialSpawnDelay;
+            _enemiesPerSpawn = _enemySpawnerDefinition.EnemyPerSpawn;
+            _enableAutoSpawn = _enemySpawnerDefinition.EnableAutoSpawn;
+           
+            ApplyWaveData(_enemySpawnerDefinition.WaveDatas[_currentWaveCount]);
         }
     }
 }

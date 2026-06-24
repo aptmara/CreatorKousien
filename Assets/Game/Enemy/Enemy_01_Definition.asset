@@ -13,12 +13,15 @@ MonoBehaviour:
   m_Name: Enemy_01_Definition
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyDefinition
   EnemyId: Enemy_01
+  EnemyBody: {fileID: 8030826446297109252, guid: d826fadafe92e9e4d8fa4002d2268303, type: 3}
   MaxHp: 1000
+  ExpRate: 1
   DownDuration: 7
   HasBarrier: 1
   MaxGauge: 500
+  BarrierBody: {fileID: 180197807806133772, guid: 23a14d1624590fe49b83c3dd3bfc3c36, type: 3}
   AttackPower: 3
   Attackinterval: 1
   HealRegenWaitTime: 7
   HealPower: 30
-  RiseDuration: 30
+  RiseDuration: 15
