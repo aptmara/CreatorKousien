@@ -41,6 +41,11 @@ namespace Game.Core.Enemy
 
         private readonly Dictionary<int, float> _nextHitTimes = new Dictionary<int, float>();
 
+        public void Initialize(string enemyID)
+        {
+            _enemyId = enemyID;
+        }
+
         private void OnCollisionEnter(Collision collision)
         {
             CollectibleObject collectible = collision.collider.GetComponentInParent<CollectibleObject>();

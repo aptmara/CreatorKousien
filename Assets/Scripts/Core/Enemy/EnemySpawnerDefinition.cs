@@ -19,6 +19,11 @@ namespace Game.Core.Enemy
             [SerializeField] private float _hpRate;
             public float HPRate => _hpRate;
 
+            [Header("バリア倍率補正")]
+            [Tooltip("ウェーブ毎に異なるバリアにかかる倍率補正、敵毎に保持する基準バリアHPをかけることで実数値となる")]
+            [SerializeField] private float _barrierRate;
+            public float BarrierRate => _barrierRate;
+
             [Header("スポーン間隔")]
             [Tooltip("敵のスポーン間隔")]
             [SerializeField] private float _spawnInterval;
@@ -46,18 +51,27 @@ namespace Game.Core.Enemy
 
         public List<WaveData> WaveDatas => new (_waveDatas);  // Listの参照を渡さないために新たにコピーを作成し返す
 
-        [Header("ウェーブ情報")]
+        [Header("自動スポーン設定")]
         [Tooltip("どのくらい下から出現させるか")]
         [SerializeField] private float _undergroundOffset = 10.0f;
         public float UndergroundOffset => _undergroundOffset;
 
         [Tooltip("自動スポーン開始までの待機時間")]
         [SerializeField, Min(0f)] private float _initialSpawnDelay = 2.0f;
-        public float InitialSpawnDelay => InitialSpawnDelay;
+        public float InitialSpawnDelay => _initialSpawnDelay;
 
         [Tooltip("スポーン位置を探す最大試行回数")]
         [SerializeField, Min(1)] int _maxSpawnPositionAttempts = 20;
         public int MaxSpawnPositionAttempts => _maxSpawnPositionAttempts;
+
+
+        [Tooltip("1回の自動スポーンで出す敵の数")]
+        [SerializeField, Min(1)] private int _enemiesPerSpawn = 1;
+        public int EnemyPerSpawn => _enemiesPerSpawn;
+
+        [Tooltip("一定時間ごとに自動でスポーンするか")]
+        [SerializeField] private bool _enableAutoSpawn = true;
+        public bool EnableAutoSpawn => _enableAutoSpawn;
 
     }
 

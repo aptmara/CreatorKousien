@@ -24,4 +24,4 @@ MonoBehaviour:
   Attackinterval: 1
   HealRegenWaitTime: 7
   HealPower: 30
-  RiseDuration: 30
+  RiseDuration: 15

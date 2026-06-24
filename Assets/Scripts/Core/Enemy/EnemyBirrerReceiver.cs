@@ -23,6 +23,12 @@ namespace Game.Core.Enemy
             }
         }
 
+        public void Initialize(string enemyID)
+        {
+            _enemyId = enemyID;
+            Debug.Log("バリア初期化完了 EnemyID =" + _enemyId);
+        }
+
         [SerializeField]
         [Tooltip("この速度未満の衝突はダメージにしない。")]
         private float _minimumHitSpeed = 0.75f;

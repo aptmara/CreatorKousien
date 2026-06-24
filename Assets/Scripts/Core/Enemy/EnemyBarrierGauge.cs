@@ -21,7 +21,6 @@ namespace Game.Core.Enemy
         private bool _isHeal;
         private float _maxHealWaitTime;
         private float _healWaitTime;
-        [SerializeField]
         private GameObject _barrierObject = null;
 
         /// <summary>0.0〜1.0 の正規化ゲージ量（UI用）</summary>
@@ -50,7 +49,7 @@ namespace Game.Core.Enemy
         /// </summary>
         /// <param name="enemyId">識別ID</param>
         /// <param name="maxGauge">最大ゲージ量</param>
-        public void Initialize(string enemyId, float maxGauge, float healRegenWaitTime, float healPower)
+        public void Initialize(string enemyId, float maxGauge, float healRegenWaitTime, float healPower, GameObject barrierObject)
         {
 
             bool hasBarrier = _barrierObject != null;
@@ -60,6 +59,7 @@ namespace Game.Core.Enemy
             _isActive = hasBarrier;
             _maxHealWaitTime = healRegenWaitTime;
             _healPower = healPower;
+            _barrierObject = barrierObject;
 
             ResetGauge();
             ResetHeal();
