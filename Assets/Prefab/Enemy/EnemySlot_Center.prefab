@@ -142,8 +142,6 @@ GameObject:
   - component: {fileID: 3478285891699174855}
   - component: {fileID: 7243863264921088458}
   - component: {fileID: 1807098853613361509}
-  - component: {fileID: 4728985359496305841}
-  - component: {fileID: -6433030292766443715}
   m_Layer: 0
   m_Name: EnemySlot_Center
   m_TagString: Untagged
@@ -205,6 +203,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyController
   _definition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+  _destroyDelay: 0
 --- !u!114 &1807098853613361509
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -220,53 +219,3 @@ MonoBehaviour:
   _worldOffset: {x: 0, y: 2.7, z: 0}
   _canvasSize: {x: 220, y: 56}
   _canvasScale: 0.012
---- !u!114 &4728985359496305841
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8990543758482931198}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d7c44b74282aeb44b9f77a1c37a8411, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyRising
-  _riseDuration: 10
-  _riseCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
---- !u!114 &-6433030292766443715
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8990543758482931198}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3bcf9d2c9af4b8c47a8df6e31805a627, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyBarrierGauge
-  _barrierObject: {fileID: 0}

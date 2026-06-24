@@ -553,6 +553,10 @@ PrefabInstance:
       value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 7354903618691012521, guid: c7c91172efd510b46b83a0b7bac19708, type: 3}
+      propertyPath: _enemySpawnerDefinition
+      value: 
+      objectReference: {fileID: 11400000, guid: f14a04607d1020d4c9a6e8adde6d5a6e, type: 2}
+    - target: {fileID: 7354903618691012521, guid: c7c91172efd510b46b83a0b7bac19708, type: 3}
       propertyPath: _minDistanceFromOtherEnemies
       value: 4
       objectReference: {fileID: 0}

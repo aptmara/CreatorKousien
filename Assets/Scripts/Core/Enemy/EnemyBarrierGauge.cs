@@ -12,7 +12,7 @@ namespace Game.Core.Enemy
     /// EventBusへは直接発行せず、コールバック経由でEnemyControllerに委ねる。
     /// これによりEnemyBarrierGauge自体はEventBusに非依存になり、単体テストが書きやすくなる。
     /// </summary>
-    public class EnemyBarrierGauge : MonoBehaviour
+    public class EnemyBarrierGauge
     {
         private float _maxGauge;
         private float _currentGauge;
