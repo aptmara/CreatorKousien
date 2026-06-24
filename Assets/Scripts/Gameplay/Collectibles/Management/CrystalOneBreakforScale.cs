@@ -77,6 +77,7 @@ namespace Game.Data.Collectibles
             if(_shardEmitter != null)
             {
                 int max = UnityEngine.Random.Range(_min, _max);
+                max = (int)((float)(_max) * (_currentScaleCount / MaxScaleCount));
                 for(int i = 0; i < max;i++)
                 _shardEmitter.Emitter(_emitVector,_gizmo._emissionAngle,EmissionPower,_shard);
             }
