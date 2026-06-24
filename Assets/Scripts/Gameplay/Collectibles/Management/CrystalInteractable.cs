@@ -12,6 +12,7 @@
 using Game.Gameplay.Player;
 using UnityEngine;
 using Game.Data.Collectibles;
+using System.Collections;
 
 namespace Game.Gameplay.Collectibles
 {
@@ -43,6 +44,7 @@ namespace Game.Gameplay.Collectibles
         [Tooltip("Rayの当たり判定に使うレイヤー")]
         [SerializeField] private LayerMask _rayMask = ~0;
 
+        private Coroutine _hitRoutine;
         private PlayerFacade _nearbyPlayer;
         private PlayerInputReader _nearbyInput;
         private float _nextInteractTime;
@@ -76,9 +78,15 @@ namespace Game.Gameplay.Collectibles
             if (!TryRaycastThisCrystal())
                 return;
 
-            // クールダウンをリセットして、エミッターを発動
             _nextInteractTime = Time.time + _interactCooldown;
-            EmitFromPlayerInteraction(_nearbyPlayer.transform);
+
+            Transform playerTransform = _nearbyPlayer.transform;
+            PlayerPunchController punchController = _nearbyPlayer.GetComponent<PlayerPunchController>();
+
+            if (punchController != null)
+            {
+                punchController.TryPlayPunch(() => EmitFromPlayerInteraction(playerTransform));
+            }
         }
 
 
