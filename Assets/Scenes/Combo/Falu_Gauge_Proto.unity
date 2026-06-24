@@ -1222,8 +1222,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f9abc0ff12a97841972a3ac8c5e19c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Combo.ComboViewControl
-  _addDurationPerHit: 0.5
-  _maxDuration: 20
+  _addDurationPerHit: 0.1
+  _maxDuration: 1
   _limitMode: 0
   _comboTextRect: {fileID: 698986948}
   _comboTextBase: {fileID: 698986953}
@@ -1261,7 +1261,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Combo.FeedbackColor
   _safeColor: {r: 0.2, g: 0.9, b: 1, a: 1}
   _normalColor: {r: 1, g: 0.85, b: 0.2, a: 1}
-  _dangerColor: {r: 1, g: 1, b: 1, a: 0}
+  _dangerColor: {r: 1, g: 1, b: 1, a: 0.2}
   _flashThreshold: 0.25
   _flashSpeed: 0
 --- !u!114 &1964589199
