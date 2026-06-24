@@ -1,3 +1,5 @@
+// 製作者 越智晴彦
+
 using NUnit.Framework;
 using UnityEngine;
 
