@@ -156,7 +156,6 @@ namespace Game.Core.Enemy
             }
 
             // バリアゲージを再初期化
-            _barrierGauge = new EnemyBarrierGauge();
             _barrierGauge.Initialize(
                 InstanceEnemyId,
                 definition.MaxGauge * spawnSummary.BarrierRate,
@@ -182,6 +181,12 @@ namespace Game.Core.Enemy
         {
             EventBus.Unsubscribe<EnemyHitBatchEvent>(OnEnemyHitBatch);
             EventBus.Unsubscribe<BarrierHitBatchEvent>(OnBarrierHitBatch);
+        }
+
+        private void Update()
+        {
+            _barrierGauge.UpdateBarrier();
+            _enemyAttack.UpdateAttack();
         }
 
         // ─────────────────────────────────────────

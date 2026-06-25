@@ -22,7 +22,7 @@ namespace Game.Core.Enemy
             _isActiv = isActiv;
         }
         // Update is called once per frame
-        void Update()
+        public void UpdateAttack()
         {
             if (!_isActiv) return;
 
