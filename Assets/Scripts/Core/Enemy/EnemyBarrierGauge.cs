@@ -49,7 +49,7 @@ namespace Game.Core.Enemy
         /// </summary>
         /// <param name="enemyId">識別ID</param>
         /// <param name="maxGauge">最大ゲージ量</param>
-        public void Initialize(string enemyId, float maxGauge, float healRegenWaitTime, float healPower, GameObject barrierObject)
+        public void Initialize(string enemyId, float maxGauge, float healRegenWaitTime, float healPower, GameObject barrierObject, Action<float, float> OnGaugeChanged, Action OnGaugeBroken)
         {
 
             bool hasBarrier = _barrierObject != null;
@@ -60,6 +60,9 @@ namespace Game.Core.Enemy
             _maxHealWaitTime = healRegenWaitTime;
             _healPower = healPower;
             _barrierObject = barrierObject;
+
+            this.OnGaugeChanged = OnGaugeChanged;
+            this.OnGaugeBroken = OnGaugeBroken;
 
             ResetGauge();
             ResetHeal();

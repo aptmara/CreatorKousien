@@ -14,6 +14,8 @@ namespace Game.Core.Enemy
         Normal,
         /// <summary>ダウン：本体HPへのダメージを受け付ける。ゲージは停止。</summary>
         Down,
+        /// <summary>死体蹴り状態: HPへのダメージを受け付けないがコンボを受け付ける
+        OverHit,
         /// <summary>撃破済み：一切の状態遷移・ダメージを受け付けない</summary>
         Defeated,
     }
@@ -43,8 +45,11 @@ namespace Game.Core.Enemy
         /// <summary>ゲージダメージを受け付けられるか（Normal状態のみ）</summary>
         public bool CanReceiveGaugeDamage => CurrentState == EnemyState.Normal;
 
-        /// <summary>本体ダメージを受け付けられるか（Down状態のみ）</summary>
-        public bool CanReceiveBodyDamage => CurrentState == EnemyState.Down;
+        /// <summary>本体ダメージを受け付けられるか（Down状態かNormal状態）</summary>
+        public bool CanReceiveBodyDamage => CurrentState == EnemyState.Down || CurrentState == EnemyState.Normal;
+
+        /// <summary>コンボを受け付けられるか（）</summary>
+        public bool CanReceiveBodyCombo => CurrentState == EnemyState.Down || CurrentState == EnemyState.Normal || CurrentState == EnemyState.OverHit;
 
         /// <summary>攻撃可能か(Attack状態のみ)）</summary>
         public bool CanAttackDefenceLine => IsRose;

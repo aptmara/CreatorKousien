@@ -7,6 +7,8 @@
  */
 using System;
 using System.Collections;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Xml.Serialization;
 using UnityEngine;
 
@@ -20,10 +22,22 @@ namespace Game.Core.Enemy
         //　敵の目標地点
         private Vector3 _targetPosition;
 
+        //　敵の開始地点
+        private Vector3 _startPosition;
+
         [Tooltip("上昇にかかる時間(調整中)")]
         [SerializeField] private float _riseDuration = 1.5f;
+        [Tooltip("上昇にかかる時間(調整中)")]
+        [SerializeField] private float _dropDuration = 5.0f;
+
         [Tooltip("上昇の際の動き(調整中)")]
         [SerializeField] private AnimationCurve _riseCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
+        [Tooltip("ずり落ちの際の動き(調整中)")]
+        [SerializeField] private AnimationCurve _downCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
+        [Tooltip("落下の際の動き")]
+        [SerializeField] private AnimationCurve _dropCurve = AnimationCurve.Linear(0, 0, 1, 1);
 
         // ゴールに到達した際のコールバック
         public Action OnEnemyReachedGoal;
@@ -31,13 +45,22 @@ namespace Game.Core.Enemy
         // 何らかの方法でゴールから引きはがされた際のコールバック
         public Action OnLeftReachedGoal;
 
+        public Action OnEnemyDroped;
+
+        // 進行度
+        float _elapsed = 0.0f;
+
+        // 落下
+        bool _isDrop = false;
+
         /// <summary>
         /// 初期化。インスタンス生成後に必ず呼ぶ。
         /// </summary>
         /// <param name="riseDuration">敵が上るのにかかる秒数</param>
-        public void Initialize(float riseDuration)
+        public void Initialize(float riseDuration, float dropDuration)
         {
             _riseDuration = riseDuration;
+            _dropDuration = dropDuration;
         }
 
         /// <summary>
@@ -49,23 +72,25 @@ namespace Game.Core.Enemy
         {
             _targetPosition = targetPos;
             // 上昇目標と目標までの距離から初期位置設定
-            enemyTransform.position = _targetPosition + Vector3.down * startYOffset;
+            _startPosition = _targetPosition + Vector3.down * startYOffset;
+            enemyTransform.position = _startPosition;
+            _elapsed = 0.0f;
             // 上昇開始
             StartCoroutine(RiseRoutine(enemyTransform));
         }
 
         private IEnumerator RiseRoutine(Transform enemyTransform)
         {
-            Vector3 startPos = enemyTransform.position;
-            float elapsed = 0.0f;
+
             // カーブも考慮した目標地点までの滑らかな動き
-            while (elapsed < _riseDuration)
+            while (_elapsed < 1.0f)
             {
-                elapsed += Time.deltaTime;
-                float t = elapsed / _riseDuration;
+                _elapsed += Time.deltaTime / _riseDuration;
+                Mathf.Min(_elapsed, 1.0f);
+                float t = _elapsed;
                 float curveT = _riseCurve.Evaluate(t);
                 //-イージングにより位置の更新
-                enemyTransform.position = Vector3.Lerp(startPos, _targetPosition, curveT);
+                enemyTransform.position = Vector3.Lerp(_startPosition, _targetPosition, curveT);
                 yield return null;
             }
             //-イージング処理完了後目標地点に位置を補正
@@ -73,6 +98,111 @@ namespace Game.Core.Enemy
             // コールバックを発行
             OnEnemyReachedGoal();
         }
-    }
 
+        public void DropStart(Transform enemyTransform)
+        {
+            // 現在の進行度の値を上昇カーブから見た進行度から落下カーブから見た進行度に変換する
+            float currentValue = _riseCurve.Evaluate(_elapsed);
+            _elapsed = ValueToCurveTime(currentValue, _dropCurve);
+
+            // 落下開始
+            StartCoroutine(DropRoutine(enemyTransform));
+        }
+
+        private IEnumerator DropRoutine(Transform enemyTransform)
+        {
+
+            while (_elapsed > 0.0f)
+            {
+                _elapsed -= Time.deltaTime / _dropDuration;
+                Mathf.Max(_elapsed, 0.0f);
+                float t = _elapsed;
+                float curveT = _riseCurve.Evaluate(t);
+                //-イージングにより位置の更新
+                enemyTransform.position = Vector3.Lerp(_startPosition, _targetPosition, curveT);
+                yield return null;
+            }
+
+            //-イージング処理完了後開始地点に位置を補正
+            enemyTransform.position = _startPosition;
+            OnEnemyDroped();
+        }
+
+
+        private float ValueToCurveTime(float value, AnimationCurve curve)
+        {
+            float minValue = 0.0f;
+            float maxValue = 1.0f;
+
+            for (int i = 0; i < 10; i++)
+            {
+                if (!FindValueRangeByStepping(out minValue, out maxValue, value, 3, curve, minValue, maxValue)) break;
+            }
+            Debug.Log("value = " + (minValue + maxValue) / 2.0f);
+            return (minValue + maxValue) / 2.0f;
+        }
+
+
+        // 今思えば、二分探索で良かったのかもね
+        private bool FindValueRangeByStepping(out float outMinPoint, out float outMaxPoint, float value, int findCount, AnimationCurve curve, float findMinPoint, float findMaxPoint)
+        {
+
+            // 前から探索するか後ろから探索するかを値が半分以上進んでいるかどうかで推定(カーブの曲がり方によって最高率ではなくなるがないよりマシ)
+            bool isFowerdFind = value < findMaxPoint - findMinPoint;
+
+            // 1ループでの探索範囲を決める
+            float step;
+            float startPoint;
+            float endPoint;
+            if (isFowerdFind)
+            {
+                // 前方向に探索する
+                step = (findMaxPoint - findMinPoint) / (float)findCount;
+                startPoint = findMinPoint;
+                endPoint = findMaxPoint;
+            }
+            else
+            {
+                // 後ろ方向に探索する
+                step = (findMinPoint - findMaxPoint) / (float)findCount;
+                startPoint = findMaxPoint;
+                endPoint = findMinPoint;
+            }
+
+            int i;
+            float currentPoint;
+            for (i = 0, currentPoint = startPoint; i < findCount; i++, currentPoint += step)
+            {
+                // 値を取る
+                float currentValue = curve.Evaluate(currentPoint);
+                float nextValue = curve.Evaluate(currentPoint + step);
+                
+                if(isFowerdFind)
+                {
+                    // 前方向に探索、範囲内か確認
+                    if(currentValue <= value && value <= nextValue )
+                    {
+                        outMinPoint = currentValue;
+                        outMaxPoint = nextValue;
+                        return true;
+                    }
+                }
+                else
+                {
+                    // 後方向に探索している場合小さくなっていくため符号や戻り値が逆になる
+                    if(currentValue >= value && value >= nextValue)
+                    {
+                        outMaxPoint = currentValue;
+                        outMinPoint = nextValue;
+                        return true;
+                    }
+                }
+            }
+            // 探索中見つからなかった場合失敗を返す
+            outMinPoint = findMinPoint;
+            outMaxPoint = findMaxPoint;
+            Debug.Log("探索失敗！");
+            return false;
+        }
+    }
 }

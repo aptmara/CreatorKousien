@@ -22,6 +22,12 @@ namespace Game.Presentation.UI
             }
         }
 
+        public void Initialize(string enemyID, Vector3 worldOffset)
+        {
+            _targetEnemyId = enemyID;
+            _worldOffset = worldOffset;
+        }
+
         [SerializeField]
         [Tooltip("敵RootからUIを出す高さ")]
         private Vector3 _worldOffset = new Vector3(0f, 2.4f, 0f);

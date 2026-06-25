@@ -20,6 +20,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using static Unity.VisualScripting.AnnotationUtility;
+using Game.Presentation.UI;
 
 
 namespace Game.Core.Enemy
@@ -170,6 +171,8 @@ namespace Game.Core.Enemy
             enemyGo.AddComponent<EnemyController>();
             // 苦肉の策でRisingもモノビヘイビア
             enemyGo.AddComponent<EnemyRising>();
+
+            enemyGo.AddComponent<EnemyWorldStatusView>();
 
             // 敵の初期化
             if (!enemyGo.TryGetComponent(out EnemyController controller))

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c359e2404c41384c91cd27762a269b0, type: 3}
+  m_Name: Enemy_02_Definition
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyDefinition
+  EnemyId: Enemy_02
+  EnemyBody: {fileID: 352193085779561977, guid: 9805557e075844e4a9d51a9e81c20bd7, type: 3}
+  MaxHp: 150
+  ExpRate: 0.8
+  DownDuration: 3.5
+  HasBarrier: 1
+  MaxGauge: 50
+  BarrierBody: {fileID: 180197807806133772, guid: 23a14d1624590fe49b83c3dd3bfc3c36, type: 3}
+  AttackPower: 3
+  Attackinterval: 5
+  HealRegenWaitTime: 7
+  HealPower: 30
+  RiseDuration: 11
