@@ -14,9 +14,17 @@ namespace Game.Core.Enemy
         [Tooltip("ゲームシーン内でユニークな文字列。EventBusのフィルタリングに使用。")]
         public string EnemyId = "Enemy_01";
 
-        [Header("本体HP")]
-        [Tooltip("ダウン中にのみ削れるHP。")]
+        [Header("敵実体オブジェクト")]
+        [Tooltip("敵の実体として生成されるオブジェクト、敵のプレファブを設定する")]
+        public GameObject EnemyBody;
+
+        [Header("本体基本HP")]
+        [Tooltip("敵毎の標準となる数値、倍率をかけることで実数値となる")]
         public float MaxHp = 300f;
+
+        [Header("経験値倍率")]
+        [Tooltip("経験値倍率、HP実数値にかけることで実数地となる")]
+        public float ExpRate = 1.0f;
 
         [Header("ダウン挙動")]
         [Tooltip("ダウン持続時間[秒]。経過後にNormal状態へ復帰する。")]
@@ -27,7 +35,12 @@ namespace Game.Core.Enemy
         public bool HasBarrier = false;
         [Header("バリアゲージ")]
         [Tooltip("ゲージの最大値。0になるとダウンする。")]
-        public float MaxGauge = 100f;
+        public float MaxGauge = 100;
+
+        [Header("バリア実体オブジェクト")]
+        [Tooltip("バリアの実体として生成されるオブジェクト、バリア系のプレファブを設定する")]
+        public GameObject BarrierBody;
+
 
         [Header("攻撃力")]
         [Tooltip("防衛ラインに対する攻撃力")]
@@ -36,6 +49,20 @@ namespace Game.Core.Enemy
         [Header("攻撃間隔")]
         [Tooltip("攻撃する際の間隔、EnemyRisingで上り切ってからカウントされる")]
         public float Attackinterval = 5.0f;
+
+        [Header("回復待機時の復帰間隔")]
+        [Tooltip("回復待機に移行した際に復帰するまでの間隔")]
+        public float HealRegenWaitTime = 7.0f;
+
+        [Header("回復力")]
+        [Tooltip("1秒あたりの回復力")]
+        public float HealPower = 30.0f;
+
+        [Header("上昇合計時間")]
+        [Tooltip("敵の上昇にかかる秒数")]
+        public float RiseDuration = 30.0f;
+
+
 
     }
 }

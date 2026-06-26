@@ -40,6 +40,9 @@ namespace Game.Gameplay.Collectibles
         [Tooltip("プレイヤーが触れた時に保持/回収できるか")]
         [SerializeField] private bool _canBeCollectedByPlayer = false;
 
+        [SerializeField, Tooltip("SubScene連携用SO")]
+        private SceneEventChannel _eventChannel;
+
 
         [Header("Debug")]
         [SerializeField, Tooltip("デバック生成用のキー")]
@@ -53,6 +56,15 @@ namespace Game.Gameplay.Collectibles
         [ContextMenu("Spawn Test Items (100)")]
         public void SpawnTestItems100() => SpawnCollectibles(100);
 
+
+        private void Awake()
+        {
+            _eventChannel.OnExecuteResultRequest += SpawnCollectibles;
+        }
+        private void OnDisable()
+        {
+            _eventChannel.OnExecuteResultRequest -= SpawnCollectibles;
+        }
 
         private void Update()
         {

@@ -103,6 +103,11 @@ namespace Game.Gameplay.Collectibles
             {
                 _targets.Add(rb);
             }
+
+            if (collectible.TryGetComponent(out CollectableGravity grav))
+            {
+                grav.Release();
+            }
         }
 
 

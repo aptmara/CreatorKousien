@@ -66,3 +66,11 @@ MonoBehaviour:
   _rangeSize: {x: 10, y: 2}
   _spawnBasePoint: {fileID: 8125261586118470773}
   _undergroundOffset: 0
+  _minDistanceFromOtherEnemies: 3
+  _maxSpawnPositionAttempts: 20
+  _enableAutoSpawn: 1
+  _initialSpawnDelay: 2
+  _spawnInterval: 5
+  _enemiesPerSpawn: 1
+  _maxAliveEnemies: 3
+  _enemySpawnerDefinition: {fileID: 11400000, guid: f14a04607d1020d4c9a6e8adde6d5a6e, type: 2}

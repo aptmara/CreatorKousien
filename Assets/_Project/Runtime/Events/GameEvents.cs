@@ -199,5 +199,118 @@ namespace Game.Core.Events
         // 空の構造体だが、演出に攻撃された座標や属性によるバリアの反応など
         // 何かしらが必要になった場合このイベントで渡す
     }
+
+
+
+
+
+    // プレイヤー育成系イベント!
+    // 制作者: 浅野
+    // 制作日: 2026/06/19
+    // ------------------------------------------------------------
+
+    /// <summary>
+    /// 経験値獲得通知。敵/ダメージ系マネージャーが発行する。
+    /// Amountは「敵が持っている経験値量」であり、換算はPlayerExpSystem側で行う。
+    /// 敵担当？はるひこかな？は、多分これ呼ぶ感じになるかも！それかダメージマネージャーかも！
+    /// </summary>
+    public readonly struct ExpGainedEvent
+    {
+        public readonly float Amount;           ///< 獲得経験値量
+        public readonly string SourceId;        ///< 経験値獲得元のID（敵IDなど）を保持する。nullの場合は不明。
+
+        /// <summary>
+        /// 経験値獲得通知イベントを作成する。
+        /// </summary>
+        /// <param name="amount">値</param>
+        /// <param name="sourceId">経験値獲得元のID</param>
+        public ExpGainedEvent(float amount, string sourceId = null)
+        {
+            Amount = amount;
+            SourceId = sourceId;
+        }
+    }
+
+    /// <summary>
+    /// 経験値量の変化通知。PlayerExpSystemが発行する。
+    /// 経験値バーUIはRatioのみ使用することもできる。
+    /// </summary>
+    public readonly struct PlayerExpChangedEvent
+    {
+        public readonly float CurrentExp;                           ///< 現在の経験値量
+        public readonly float ExpToNextLevel;                       ///< 次のレベルまでの経験値量
+        public readonly float Ratio;                                ///< 0.0〜1.0 の正規化経験値量（UI用）
+
+        /// <summary>
+        /// 経験値量の変化通知イベントを作成する。
+        /// </summary>
+        public PlayerExpChangedEvent(float currentExp, float expToNextLevel)
+        {
+            CurrentExp = currentExp;
+            ExpToNextLevel = expToNextLevel;
+            Ratio = expToNextLevel > 0f ? currentExp / expToNextLevel : 0f;
+        }
+    }
+
+    /// <summary>
+    /// レベルアップ通知。PlayerExpSystemがレベル上昇確定時に発行する。
+    /// </summary>
+    public readonly struct PlayerLeveledUpEvent
+    {
+        public readonly int NewLevel;               ///< 新しいレベル値
+
+        /// <summary>
+        /// プレイヤーレベルアップ通知イベントを作成する。
+        /// </summary>
+        /// <param name="newLevel">新しいレベル値</param>
+        public PlayerLeveledUpEvent(int newLevel)
+        {
+            NewLevel = newLevel;
+        }
+    }
+
+    /// <summary>
+    /// ローグライク強化の開始要求。PlayerExpSystemがレベルアップ時に発行する。
+    /// 候補提示・一時停止・選択はローグライク担当が受け取って行う。
+    /// </summary>
+    public readonly struct UpgradeSelectionRequestedEvent
+    {
+        public readonly int Level;                  ///< レベルアップ後のレベル値
+
+        /// <summary>
+        /// ローグライク強化の開始要求イベントを作成する。
+        /// </summary>
+        /// <param name="level">レベルアップ後のレベル値</param>
+        public UpgradeSelectionRequestedEvent(int level)
+        {
+            Level = level;
+        }
+    }
+
+    /// <summary>
+    /// 強化適用完了通知。PlayerStatsServiceが適用後に発行する。
+    /// </summary>
+    public readonly struct UpgradeAppliedEvent
+    {
+        public readonly string UpgradeId;               ///< 適用された強化のID
+
+        /// <summary>
+        /// 強化適用完了通知イベントを作成する。
+        /// </summary>
+        /// <param name="upgradeId">適用された強化のID</param>
+        public UpgradeAppliedEvent(string upgradeId)
+        {
+            UpgradeId = upgradeId;
+        }
+    }
+
+    /// <summary>
+    /// プレイヤーステータス変化通知。PlayerStatsServiceが更新後に発行する。
+    /// 各View/機能はこれを購読してPlayerRuntimeDataを再Readする。
+    /// </summary>
+    public readonly struct PlayerStatsChangedEvent
+    {
+        // 現状は「何か変わった」だけを伝える空イベント
+    }
 }
 

@@ -41,6 +41,11 @@ namespace Game.Core.Enemy
 
         private readonly Dictionary<int, float> _nextHitTimes = new Dictionary<int, float>();
 
+        public void Initialize(string enemyID)
+        {
+            _enemyId = enemyID;
+        }
+
         private void OnCollisionEnter(Collision collision)
         {
             CollectibleObject collectible = collision.collider.GetComponentInParent<CollectibleObject>();
@@ -72,7 +77,7 @@ namespace Game.Core.Enemy
         /// <param name="hitSpeed">衝突速度</param>
         /// <param name="hitPosition">命中位置</param>
         /// <returns>命中として処理した場合はtrue</returns>
-        public bool ApplyCollectibleHit(CollectibleObject collectible, float hitSpeed, Vector3 hitPosition)
+        private bool ApplyCollectibleHit(CollectibleObject collectible, float hitSpeed, Vector3 hitPosition)
         {
             if (collectible == null || hitSpeed < _minimumHitSpeed)
             {
@@ -100,5 +105,7 @@ namespace Game.Core.Enemy
 
             return true;
         }
+
+        
     }
 }

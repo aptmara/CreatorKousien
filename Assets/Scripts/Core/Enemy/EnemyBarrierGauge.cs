@@ -12,13 +12,15 @@ namespace Game.Core.Enemy
     /// EventBusへは直接発行せず、コールバック経由でEnemyControllerに委ねる。
     /// これによりEnemyBarrierGauge自体はEventBusに非依存になり、単体テストが書きやすくなる。
     /// </summary>
-    public class EnemyBarrierGauge : MonoBehaviour
+    public class EnemyBarrierGauge
     {
-        private string _enemyId;
         private float _maxGauge;
         private float _currentGauge;
+        private float _healPower;
         private bool _isActive;
-        [SerializeField]
+        private bool _isHeal;
+        private float _maxHealWaitTime;
+        private float _healWaitTime;
         private GameObject _barrierObject = null;
 
         /// <summary>0.0〜1.0 の正規化ゲージ量（UI用）</summary>
@@ -47,17 +49,32 @@ namespace Game.Core.Enemy
         /// </summary>
         /// <param name="enemyId">識別ID</param>
         /// <param name="maxGauge">最大ゲージ量</param>
-        public void Initialize(string enemyId, float maxGauge)
+        public void Initialize(string enemyId, float maxGauge, float healRegenWaitTime, float healPower, GameObject barrierObject)
         {
 
             bool hasBarrier = _barrierObject != null;
 
-            _enemyId = enemyId;
             _maxGauge = maxGauge;
             _currentGauge = hasBarrier ? maxGauge : 0.0f;
             _isActive = hasBarrier;
+            _maxHealWaitTime = healRegenWaitTime;
+            _healPower = healPower;
+            _barrierObject = barrierObject;
+
+            ResetGauge();
+            ResetHeal();
         }
 
+        /// <summary>
+        /// 更新処理、継続回復等はここで行われる
+        /// </summary>
+        public void Update()
+        {
+            if (!_isActive) return;
+
+            UpdateHealInterval();
+            if(_isHeal) GaugeHeal(_healPower * Time.deltaTime);
+        }
         /// <summary>
         /// MAXチェックを一時停止/再開する。
         /// ダウン中は停止、復帰後に再開する。
@@ -79,6 +96,8 @@ namespace Game.Core.Enemy
             _currentGauge = Mathf.Max(0f, _currentGauge);
 
             OnGaugeChanged?.Invoke(_currentGauge, _maxGauge);
+            // 回復待機する
+            WaitHeal();
 
             if (_currentGauge <= 0f)
             {
@@ -98,6 +117,48 @@ namespace Game.Core.Enemy
             _currentGauge = _maxGauge;
             OnGaugeChanged?.Invoke(_currentGauge, _maxGauge);
             _barrierObject.SetActive(true);
+            ResetHeal();
+        }
+
+        /// <summary>
+        /// ゲージを回復する
+        /// </summary>
+        /// <param name="healValue"></param>
+        public void GaugeHeal(float healValue)
+        {
+            _currentGauge += healValue;
+            _currentGauge = Mathf.Min(_maxGauge, _currentGauge);
+            OnGaugeChanged?.Invoke(_currentGauge, _maxGauge);
+        }
+
+        public void UpdateHealInterval()
+        {
+            // バリアが非アクティブだったり既に回復中であれば抜ける
+            if(!_isActive) return;
+            if(_isHeal) return;
+            _healWaitTime -= Time.deltaTime;
+            _healWaitTime = Mathf.Max(_healWaitTime, 0.0f);
+
+            if( _healWaitTime <= 0.0f)
+            {
+                _isHeal = true;
+            }
+        }
+
+        /// <summary>
+        /// 回復状態を初期状態リセットする(現在は普通に回復)
+        /// </summary>
+        void ResetHeal()
+        {
+            _isHeal = true;
+            _healWaitTime = 0.0f;
+        }
+
+        // ダメージなどを受けた際にインターバル分回復を止める
+        void WaitHeal()
+        {
+            _isHeal = false;
+            _healWaitTime = _maxHealWaitTime;
         }
     }
 }

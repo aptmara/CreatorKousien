@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Game.Core.Enemy
 {
-    public class EnemyAttack : MonoBehaviour
+    public class EnemyAttack
     {
         //! 攻撃頻度
         float _maxAttackInterval;
