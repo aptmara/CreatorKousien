@@ -134,7 +134,7 @@ namespace Game.Core.Enemy
                 gameObject.AddComponent<EnemyRising>();
             }
 
-            _rising.Initialize(definition.RiseDuration, definition.DropDuration);
+            _rising.Initialize(definition.RiseDuration, definition.DropDuration, _definition.riseCurve, _definition.dropCurve);
             _rising.OnEnemyReachedGoal = HandleRose;
             _rising.OnLeftReachedGoal = HandleRoseLeft;
             _rising.OnEnemyDroped = HandleDroped;

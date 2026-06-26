@@ -50,17 +50,26 @@ namespace Game.Core.Enemy
         // 進行度
         float _elapsed = 0.0f;
 
-        // 落下
-        bool _isDrop = false;
+
+
+        Coroutine _riseCoroutine = null;
+        Coroutine _dropCoroutine = null;
 
         /// <summary>
         /// 初期化。インスタンス生成後に必ず呼ぶ。
         /// </summary>
         /// <param name="riseDuration">敵が上るのにかかる秒数</param>
-        public void Initialize(float riseDuration, float dropDuration)
+        public void Initialize(float riseDuration, float dropDuration, AnimationCurve riseCurve, AnimationCurve dropCurve)
         {
+            if (_riseCoroutine != null) StopCoroutine(_riseCoroutine);
+            if (_dropCoroutine!= null) StopCoroutine(_dropCoroutine);
+            _riseCoroutine = null;
+            _dropCoroutine = null;
             _riseDuration = riseDuration;
             _dropDuration = dropDuration;
+            if(riseCurve != null) _riseCurve = riseCurve;
+
+            if(dropCurve != null)_dropCurve = dropCurve;
         }
 
         /// <summary>
@@ -76,7 +85,7 @@ namespace Game.Core.Enemy
             enemyTransform.position = _startPosition;
             _elapsed = 0.0f;
             // 上昇開始
-            StartCoroutine(RiseRoutine(enemyTransform));
+            _riseCoroutine = StartCoroutine(RiseRoutine(enemyTransform));
         }
 
         private IEnumerator RiseRoutine(Transform enemyTransform)
@@ -86,9 +95,10 @@ namespace Game.Core.Enemy
             while (_elapsed < 1.0f)
             {
                 _elapsed += Time.deltaTime / _riseDuration;
-                Mathf.Min(_elapsed, 1.0f);
+                _elapsed = Mathf.Clamp(_elapsed, 0.0f, 1.0f);
                 float t = _elapsed;
                 float curveT = _riseCurve.Evaluate(t);
+                curveT = Mathf.Clamp(curveT, 0.0f, 1.0f);
                 //-イージングにより位置の更新
                 enemyTransform.position = Vector3.Lerp(_startPosition, _targetPosition, curveT);
                 yield return null;
@@ -101,12 +111,15 @@ namespace Game.Core.Enemy
 
         public void DropStart(Transform enemyTransform)
         {
+            if(_riseCoroutine != null) StopCoroutine(_riseCoroutine);
+            _riseCoroutine = null;
             // 現在の進行度の値を上昇カーブから見た進行度から落下カーブから見た進行度に変換する
             float currentValue = _riseCurve.Evaluate(_elapsed);
             _elapsed = ValueToCurveTime(currentValue, _dropCurve);
-
+            float newValue = _dropCurve.Evaluate(_elapsed);
+            Debug.Log("newValue = " + newValue + " oldValue = " + currentValue ); 
             // 落下開始
-            StartCoroutine(DropRoutine(enemyTransform));
+            _dropCoroutine = StartCoroutine(DropRoutine(enemyTransform));
         }
 
         private IEnumerator DropRoutine(Transform enemyTransform)
@@ -115,9 +128,9 @@ namespace Game.Core.Enemy
             while (_elapsed > 0.0f)
             {
                 _elapsed -= Time.deltaTime / _dropDuration;
-                Mathf.Max(_elapsed, 0.0f);
-                float t = _elapsed;
-                float curveT = _riseCurve.Evaluate(t);
+                _elapsed = Mathf.Clamp(_elapsed, 0.0f, 1.0f);
+                float curveT = _dropCurve.Evaluate(_elapsed);
+                curveT = Mathf.Clamp(curveT, 0.0f, 1.0f);
                 //-イージングにより位置の更新
                 enemyTransform.position = Vector3.Lerp(_startPosition, _targetPosition, curveT);
                 yield return null;
@@ -134,21 +147,21 @@ namespace Game.Core.Enemy
             float minValue = 0.0f;
             float maxValue = 1.0f;
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 15; i++)
             {
                 if (!FindValueRangeByStepping(out minValue, out maxValue, value, 3, curve, minValue, maxValue)) break;
             }
-            Debug.Log("value = " + (minValue + maxValue) / 2.0f);
             return (minValue + maxValue) / 2.0f;
         }
 
 
-        // 今思えば、二分探索で良かったのかもね
+
+
         private bool FindValueRangeByStepping(out float outMinPoint, out float outMaxPoint, float value, int findCount, AnimationCurve curve, float findMinPoint, float findMaxPoint)
         {
 
             // 前から探索するか後ろから探索するかを値が半分以上進んでいるかどうかで推定(カーブの曲がり方によって最高率ではなくなるがないよりマシ)
-            bool isFowerdFind = value < findMaxPoint - findMinPoint;
+            bool isFowerdFind = value < (findMaxPoint + findMinPoint) * 0.5f;
 
             // 1ループでの探索範囲を決める
             float step;
@@ -164,7 +177,7 @@ namespace Game.Core.Enemy
             else
             {
                 // 後ろ方向に探索する
-                step = (findMinPoint - findMaxPoint) / (float)findCount;
+                step = ((findMaxPoint - findMinPoint) * -1.0f) / (float)findCount;
                 startPoint = findMaxPoint;
                 endPoint = findMinPoint;
             }
@@ -174,16 +187,17 @@ namespace Game.Core.Enemy
             for (i = 0, currentPoint = startPoint; i < findCount; i++, currentPoint += step)
             {
                 // 値を取る
+                float nextPoint = currentPoint + step;
                 float currentValue = curve.Evaluate(currentPoint);
-                float nextValue = curve.Evaluate(currentPoint + step);
+                float nextValue = curve.Evaluate(nextPoint);
                 
                 if(isFowerdFind)
                 {
                     // 前方向に探索、範囲内か確認
                     if(currentValue <= value && value <= nextValue )
                     {
-                        outMinPoint = currentValue;
-                        outMaxPoint = nextValue;
+                        outMinPoint = currentPoint;
+                        outMaxPoint = nextPoint;
                         return true;
                     }
                 }
@@ -192,8 +206,8 @@ namespace Game.Core.Enemy
                     // 後方向に探索している場合小さくなっていくため符号や戻り値が逆になる
                     if(currentValue >= value && value >= nextValue)
                     {
-                        outMaxPoint = currentValue;
-                        outMinPoint = nextValue;
+                        outMaxPoint = currentPoint;
+                        outMinPoint = nextPoint;
                         return true;
                     }
                 }
