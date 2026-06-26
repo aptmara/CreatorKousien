@@ -121,6 +121,11 @@ namespace Game.Gameplay.Collectibles
         /// </summary>
         [SerializeField] private bool _canBeCollectedByPlayer = true;
 
+        /// <summary>
+        /// 生成する欠片の表示倍率。Pool 返却時に 1 倍へ戻すため、他の Spawner には影響しない。
+        /// </summary>
+        [SerializeField, Min(0.01f)] private float _shardScale = 1.0f;
+
         [Header("Amount")]
         /// <summary>
         /// 欠片数を固定値にするか、クリスタルサイズに応じて変えるかを指定する。
@@ -154,12 +159,12 @@ namespace Game.Gameplay.Collectibles
 
         [Header("Emission")]
         /// <summary>
-        /// 欠片の発生基準位置。未設定の場合はヒット位置を使う。
+        /// 欠片を飛ばす中心位置。クリスタル本体からこの位置へ向かう方向を基準にする。
         /// </summary>
-        [SerializeField] private Transform _emitOrigin;
+        [SerializeField] private ShardEmissionVector _emissionVector;
 
         /// <summary>
-        /// 発生位置を基準点からどれくらいランダムに散らすか。
+        /// Target 方向から何度まで欠片を散らすか。Gizmo では円錐状の範囲として表示する。
         /// </summary>
         [SerializeField, Min(0f)] private float _spawnRadius = 1.0f;
 
@@ -174,25 +179,14 @@ namespace Game.Gameplay.Collectibles
         [SerializeField, Min(0f)] private float _maxLaunchSpeed = 5.0f;
 
         /// <summary>
-        /// 欠片を上方向へ持ち上げる補正量。
+        /// 欠片に与える角速度の固定範囲。Inspector での調整対象にはしない。
         /// </summary>
-        [SerializeField, Min(0f)] private float _upwardBias = 0.75f;
+        private const float MinAngularSpeed = 2.0f;
+        private const float MaxAngularSpeed = 8.0f;
 
         /// <summary>
-        /// 欠片の飛ぶ方向に加えるランダムなばらつき。
+        /// Scene 上に表示する Gizmo の固定色。
         /// </summary>
-        [SerializeField, Min(0f)] private float _randomSpread = 0.45f;
-
-        /// <summary>
-        /// 欠片に与える角速度の最小値。
-        /// </summary>
-        [SerializeField, Min(0f)] private float _minAngularSpeed = 2.0f;
-
-        /// <summary>
-        /// 欠片に与える角速度の最大値。
-        /// </summary>
-        [SerializeField, Min(0f)] private float _maxAngularSpeed = 8.0f;
-
         /// <summary>
         /// 起動時に Pool と Registry の参照を補完する。
         /// </summary>
@@ -207,7 +201,7 @@ namespace Game.Gameplay.Collectibles
         [ContextMenu("DEBUG: Emit Shards")]
         public void Emit()
         {
-            EmitFromHit(GetBasePosition(transform.position), transform.up, 1f);
+            EmitFromHit(transform.position, Vector3.zero, 1f);
         }
 
         /// <summary>
@@ -224,9 +218,10 @@ namespace Game.Gameplay.Collectibles
 
         /// <summary>
         /// プレイヤーの攻撃判定、またはヒット検知側から呼ぶ欠片発生 API。
+        /// 互換性のため hitPoint と hitDirection を受け取るが、射出位置と方向は Scene 上の設定を使う。
         /// </summary>
-        /// <param name="hitPoint">クリスタルが殴られたワールド座標。</param>
-        /// <param name="hitDirection">欠片を主に飛ばしたいワールド方向。</param>
+        /// <param name="hitPoint">互換性維持用。現在の射出位置計算では使わない。</param>
+        /// <param name="hitDirection">互換性維持用。現在の射出方向計算では使わない。</param>
         /// <param name="power">欠片の飛ぶ速度に掛ける倍率。0.1 未満は 0.1 として扱う。</param>
         public void EmitFromHit(Vector3 hitPoint, Vector3 hitDirection, float power = 1f)
         {
@@ -240,7 +235,7 @@ namespace Game.Gameplay.Collectibles
             int count = GetShardCount();
             for (int i = 0; i < count; i++)
             {
-                EmitOne(hitPoint, hitDirection, power);
+                EmitOne(power);
             }
         }
 
@@ -260,18 +255,17 @@ namespace Game.Gameplay.Collectibles
         /// <summary>
         /// 欠片を 1 個だけ生成し、位置、見た目データ、初速、角速度、Registry 登録を行う。
         /// </summary>
-        /// <param name="hitPoint">発生位置計算に使うヒット座標。</param>
-        /// <param name="hitDirection">初速方向計算に使うヒット方向。</param>
         /// <param name="power">初速に掛ける倍率。</param>
-        private void EmitOne(Vector3 hitPoint, Vector3 hitDirection, float power)
+        private void EmitOne(float power)
         {
             CollectibleObject shard = _pool.Get();
             CollectibleData data = _shardData[UnityEngine.Random.Range(0, _shardData.Length)];
 
-            shard.transform.position = CreateSpawnPosition(hitPoint);
+            shard.transform.position = _emissionVector.OriginPosition;
             shard.transform.rotation = UnityEngine.Random.rotation;
+            shard.transform.localScale = Vector3.one * Mathf.Max(0.01f, _shardScale);
             shard.Initialize(data, ReturnToPool, _canBeCollectedByPlayer);
-            shard.SetInitialMotion(CreateVelocity(hitDirection, power), CreateAngularVelocity());
+            shard.SetInitialMotion(CreateVelocity(power), CreateAngularVelocity());
 
             _registry.Register(shard);
         }
@@ -332,53 +326,50 @@ namespace Game.Gameplay.Collectibles
         }
 
         /// <summary>
-        /// 欠片を実際に配置するワールド座標を作る。
-        /// </summary>
-        /// <param name="hitPoint">発生基準位置として使うヒット座標。</param>
-        /// <returns>ランダムな散らばりを加えたワールド座標。</returns>
-        private Vector3 CreateSpawnPosition(Vector3 hitPoint)
-        {
-            Vector3 basePosition = GetBasePosition(hitPoint);
-            Vector3 offset = UnityEngine.Random.insideUnitSphere * _spawnRadius;
-            offset.y = Mathf.Abs(offset.y);
-            return basePosition + offset;
-        }
-
-        /// <summary>
-        /// 欠片発生の基準位置を返す。
-        /// </summary>
-        /// <param name="fallbackPosition">EmitOrigin が未設定の場合に使う代替位置。</param>
-        /// <returns>EmitOrigin があればその位置、なければ fallbackPosition。</returns>
-        private Vector3 GetBasePosition(Vector3 fallbackPosition)
-        {
-            return _emitOrigin != null ? _emitOrigin.position : fallbackPosition;
-        }
-
-        /// <summary>
         /// 欠片に与える初速ベクトルを作る。
         /// </summary>
-        /// <param name="hitDirection">欠片を主に飛ばす方向。</param>
         /// <param name="power">速度倍率。</param>
         /// <returns>SetInitialMotion に渡す初速ベクトル。</returns>
-        private Vector3 CreateVelocity(Vector3 hitDirection, float power)
+        private Vector3 CreateVelocity(float power)
         {
-            Vector3 baseDirection = hitDirection.sqrMagnitude > 0.01f
-                ? hitDirection.normalized
-                : transform.up;
-
-            Vector3 direction = baseDirection
-                + Vector3.up * _upwardBias
-                + UnityEngine.Random.insideUnitSphere * _randomSpread;
-
-            if (direction.sqrMagnitude < 0.01f)
-            {
-                direction = Vector3.up;
-            }
+            Vector3 centerDirection = _emissionVector.Direction;
+            Vector3 direction = CreateRandomDirectionInCone(centerDirection);
 
             float minSpeed = Mathf.Min(_minLaunchSpeed, _maxLaunchSpeed);
             float maxSpeed = Mathf.Max(_minLaunchSpeed, _maxLaunchSpeed);
             float speed = UnityEngine.Random.Range(minSpeed, maxSpeed);
             return direction.normalized * speed * Mathf.Max(0.1f, power);
+        }
+
+        /// <summary>
+        /// クリスタル本体から Target へ向かう中心方向を取得する。
+        /// </summary>
+        /// <returns>正規化済みの中心方向。</returns>
+        /// <summary>
+        /// Scene 上で指定された中心方向を基準に、円錐範囲内のランダムな方向を作る。
+        /// </summary>
+        /// <param name="centerDirection">円錐の中心方向。</param>
+        /// <returns>円錐範囲内に収まる正規化済み方向。</returns>
+        private Vector3 CreateRandomDirectionInCone(Vector3 centerDirection)
+        {
+            float angle = UnityEngine.Random.Range(0f, _emissionVector.EmissionAngle);
+            float rotation = UnityEngine.Random.Range(0f, 360f);
+            Vector3 perpendicular = GetPerpendicular(centerDirection);
+            Vector3 tiltedDirection = Quaternion.AngleAxis(angle, perpendicular) * centerDirection;
+            return (Quaternion.AngleAxis(rotation, centerDirection) * tiltedDirection).normalized;
+        }
+
+        /// <summary>
+        /// 指定方向と直交するベクトルを作る。
+        /// </summary>
+        /// <param name="direction">基準方向。</param>
+        /// <returns>基準方向と直交する正規化済みベクトル。</returns>
+        private static Vector3 GetPerpendicular(Vector3 direction)
+        {
+            Vector3 axis = Mathf.Abs(Vector3.Dot(direction, Vector3.up)) < 0.99f
+                ? Vector3.up
+                : Vector3.right;
+            return Vector3.Cross(direction, axis).normalized;
         }
 
         /// <summary>
@@ -429,9 +420,7 @@ namespace Game.Gameplay.Collectibles
         /// <returns>SetInitialMotion に渡す角速度ベクトル。</returns>
         private Vector3 CreateAngularVelocity()
         {
-            float minSpeed = Mathf.Min(_minAngularSpeed, _maxAngularSpeed);
-            float maxSpeed = Mathf.Max(_minAngularSpeed, _maxAngularSpeed);
-            return UnityEngine.Random.insideUnitSphere * UnityEngine.Random.Range(minSpeed, maxSpeed);
+            return UnityEngine.Random.insideUnitSphere * UnityEngine.Random.Range(MinAngularSpeed, MaxAngularSpeed);
         }
 
         /// <summary>
@@ -449,6 +438,12 @@ namespace Game.Gameplay.Collectibles
             if (_shardData == null || _shardData.Length == 0)
             {
                 Debug.LogError("[CrystalShardEmitter] Shard data is missing.", this);
+                return false;
+            }
+
+            if (_emissionVector == null || !_emissionVector.HasTarget)
+            {
+                Debug.LogError("[CrystalShardEmitter] ShardEmissionVector or its Target is missing.", this);
                 return false;
             }
 
@@ -569,7 +564,20 @@ namespace Game.Gameplay.Collectibles
         private void ReturnToPool(CollectibleObject shard)
         {
             _registry.Unregister(shard);
+            shard.transform.localScale = Vector3.one;
             _pool.Return(shard);
         }
+
+        /// <summary>
+        /// Scene 上で選択した時に、欠片の中心方向と発射可能範囲を円錐 Gizmo として表示する。
+        /// オレンジ色の矢印が欠片の主方向、水色の円錐が散らばる範囲を表す。
+        /// 表示方向と実際の発射方向は、どちらもクリスタル本体から Target へ向かう方向になる。
+        /// </summary>
+        /// <summary>
+        /// Scene 上で欠片の主方向を確認できる矢印 Gizmo を描画する。
+        /// </summary>
+        /// <param name="origin">矢印の始点。</param>
+        /// <param name="direction">矢印が向く方向。</param>
+        /// <param name="length">矢印全体の長さ。</param>
     }
 }
