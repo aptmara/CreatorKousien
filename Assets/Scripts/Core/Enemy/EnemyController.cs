@@ -1,5 +1,6 @@
 // 制作者: 山内陽
 using Game.Core.Events;
+using Game.Presentation.UI;
 using System.Collections;
 using System.Threading;
 using UnityEngine;
@@ -76,19 +77,36 @@ namespace Game.Core.Enemy
             // 状態管理初期化
             _stateManager = new EnemyStateManager();
 
+            // 体力バー表示のためのView設定
+            EnemyWorldStatusView statusView = GetComponent<EnemyWorldStatusView>();
+            if (statusView == null)
+            {
+                gameObject.AddComponent<EnemyWorldStatusView>();
+            }
+            // TODO 敵オブジェクトの高さを決定できるようにする
+            statusView.Initialize(InstanceEnemyId, new Vector3(0.0f, 3.6f, 1.5f));
+
             // HP管理初期化
             _health = new EnemyHealth();
-            _health.Initialize(InstanceEnemyId, definition.MaxHp * spawnSummary.HPRate);
-            _health.OnHealthChanged = (current, max) =>
-                EventBus.Publish(new EnemyHealthChangedEvent(InstanceEnemyId, current, max));
-            _health.OnDefeated = HandleDefeated;
+            _health.Initialize(InstanceEnemyId, definition.MaxHp * spawnSummary.HPRate,
+                (current, max) => EventBus.Publish(new EnemyHealthChangedEvent(InstanceEnemyId, current, max)),
+                HandleDefeated
+            );
+            
+            
 
             // バリア初期化、 初期化しないのも大変なため、当たり判定オブジェクトが存在しない状態で初期化しておく
             _barrierGauge = new EnemyBarrierGauge();
-            _barrierGauge.Initialize(InstanceEnemyId, definition.MaxGauge * spawnSummary.BarrierRate, definition.HealRegenWaitTime, definition.HealPower * spawnSummary.BarrierRate, null);
-            _barrierGauge.OnGaugeChanged = (current, max) =>
-                EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max));
-            _barrierGauge.OnGaugeBroken = HandleGaugeBroken;
+            _barrierGauge.Initialize
+                (InstanceEnemyId,
+                definition.MaxGauge * spawnSummary.BarrierRate,
+                definition.HealRegenWaitTime,
+                definition.HealPower * spawnSummary.BarrierRate,
+                null,
+                (current, max) =>
+                EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max)),
+                HandleGaugeBroken
+        );
 
             // 敵攻撃処理初期化
             _enemyAttack = new EnemyAttack();
@@ -99,7 +117,8 @@ namespace Game.Core.Enemy
             EventBus.Publish(new EnemyHealthChangedEvent(InstanceEnemyId, definition.MaxHp, definition.MaxHp));
             EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, 0f, definition.MaxGauge));
 
-            Debug.Log($"[EnemyController] {InstanceEnemyId} 初期化完了。HP={definition.MaxHp}, MaxGauge={definition.MaxGauge}, BarrierActive={definition.HasBarrier}");
+            Debug.Log($"[EnemyController] {InstanceEnemyId} 初期化完了。HP={definition.MaxHp * spawnSummary.HPRate}," +
+                      $" MaxGauge={definition.MaxGauge * spawnSummary.BarrierRate}, BarrierActive={definition.HasBarrier}");
 
 
             Vector3 _currentPos = this.gameObject.transform.position;
@@ -114,9 +133,11 @@ namespace Game.Core.Enemy
             {
                 gameObject.AddComponent<EnemyRising>();
             }
-            _rising.Initialize(definition.RiseDuration);
+
+            _rising.Initialize(definition.RiseDuration, definition.DropDuration, _definition.riseCurve, _definition.dropCurve);
             _rising.OnEnemyReachedGoal = HandleRose;
             _rising.OnLeftReachedGoal = HandleRoseLeft;
+            _rising.OnEnemyDroped = HandleDroped;
 
             // 上昇開始
             _rising.StartRise(spawnSummary.TargetPos, spawnSummary.UndergroundOffset, transform);
@@ -135,11 +156,14 @@ namespace Game.Core.Enemy
             }
 
             // バリアゲージを再初期化
-            _barrierGauge = new EnemyBarrierGauge();
-            _barrierGauge.Initialize(InstanceEnemyId, definition.MaxGauge * spawnSummary.BarrierRate, definition.HealRegenWaitTime, definition.HealPower * spawnSummary.BarrierRate, barrierObject);
-            _barrierGauge.OnGaugeChanged = (current, max) =>
-                EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max));
-            _barrierGauge.OnGaugeBroken = HandleGaugeBroken;
+            _barrierGauge.Initialize(
+                InstanceEnemyId,
+                definition.MaxGauge * spawnSummary.BarrierRate,
+                definition.HealRegenWaitTime, definition.HealPower * spawnSummary.BarrierRate,
+                barrierObject,
+                (current, max) => EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max)),
+                HandleGaugeBroken
+            );
 
             // 実体オブジェクトを初期化
             barrierReceiver.Initialize(InstanceEnemyId);
@@ -157,6 +181,12 @@ namespace Game.Core.Enemy
         {
             EventBus.Unsubscribe<EnemyHitBatchEvent>(OnEnemyHitBatch);
             EventBus.Unsubscribe<BarrierHitBatchEvent>(OnBarrierHitBatch);
+        }
+
+        private void Update()
+        {
+            _barrierGauge.UpdateBarrier();
+            _enemyAttack.UpdateAttack();
         }
 
         // ─────────────────────────────────────────
@@ -206,7 +236,7 @@ namespace Game.Core.Enemy
         }
 
         /// <summary>
-        /// HP0到達時の処理。撃破状態へ遷移し、EnemyDefeatedEventを発行する。
+        /// HP0到達時の処理。落下状態へ遷移し、Risingを落下させる。
         /// </summary>
         private void HandleDefeated()
         {
@@ -216,9 +246,20 @@ namespace Game.Core.Enemy
                 _downTimerCoroutine = null;
             }
 
-            _stateManager.TransitionTo(EnemyState.Defeated);
             _barrierGauge.SetActive(false);
 
+            _stateManager.TransitionTo(EnemyState.OverHit);
+
+            _rising.DropStart(transform);
+        }
+
+
+        /// <summary>
+        /// 完全落下の処理。撃破状態へ遷移し、EnemyDefeatedEventを発行する。
+        /// </summary>
+        private void HandleDroped()
+        {
+            _stateManager.TransitionTo(EnemyState.Defeated);
             EventBus.Publish(new EnemyDefeatedEvent(InstanceEnemyId));
             Debug.Log($"[EnemyController] {InstanceEnemyId} 撃破！");
 

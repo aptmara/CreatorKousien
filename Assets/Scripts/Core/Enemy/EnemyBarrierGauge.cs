@@ -6,7 +6,7 @@ using Game.Core.Events;
 namespace Game.Core.Enemy
 {
     /// <summary>
-    /// 敵のバリア管理（MonoBehaviour）。
+    /// 敵のバリア管理
     /// UpdateループでゲージをTime.deltaTime分増加させ、
     /// ApplyGaugeDamageで減算する。
     /// EventBusへは直接発行せず、コールバック経由でEnemyControllerに委ねる。
@@ -49,10 +49,10 @@ namespace Game.Core.Enemy
         /// </summary>
         /// <param name="enemyId">識別ID</param>
         /// <param name="maxGauge">最大ゲージ量</param>
-        public void Initialize(string enemyId, float maxGauge, float healRegenWaitTime, float healPower, GameObject barrierObject)
+        public void Initialize(string enemyId, float maxGauge, float healRegenWaitTime, float healPower, GameObject barrierObject, Action<float, float> OnGaugeChanged, Action OnGaugeBroken)
         {
 
-            bool hasBarrier = _barrierObject != null;
+            bool hasBarrier = barrierObject != null;
 
             _maxGauge = maxGauge;
             _currentGauge = hasBarrier ? maxGauge : 0.0f;
@@ -61,6 +61,9 @@ namespace Game.Core.Enemy
             _healPower = healPower;
             _barrierObject = barrierObject;
 
+            this.OnGaugeChanged = OnGaugeChanged;
+            this.OnGaugeBroken = OnGaugeBroken;
+
             ResetGauge();
             ResetHeal();
         }
@@ -68,7 +71,7 @@ namespace Game.Core.Enemy
         /// <summary>
         /// 更新処理、継続回復等はここで行われる
         /// </summary>
-        public void Update()
+        public void UpdateBarrier()
         {
             if (!_isActive) return;
 
@@ -89,7 +92,7 @@ namespace Game.Core.Enemy
         /// <param name="rawDamage">加工前のゲージダメージ量</param>
         public void ApplyGaugeDamage(float rawDamage)
         {
-            if (!_isActive && !_barrierObject) return;
+            if (!_isActive || !_barrierObject) return;
 
             // バリアにダメージを与える
             _currentGauge -= rawDamage;

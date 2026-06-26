@@ -62,6 +62,17 @@ namespace Game.Core.Enemy
         [Tooltip("敵の上昇にかかる秒数")]
         public float RiseDuration = 30.0f;
 
+        [Header("落下合計時間")]
+        [Tooltip("敵の落下にかかる秒数")]
+        public float DropDuration = 1.0f;
+
+        [Header("上昇カーブ")]
+        [Tooltip("敵の上昇カーブ")]
+        public AnimationCurve riseCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
+
+        [Header("落下カーブ")]
+        [Tooltip("敵の落下カーブ")]
+        public AnimationCurve dropCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
 
 
     }

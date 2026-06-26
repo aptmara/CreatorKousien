@@ -1,6 +1,7 @@
 // 制作者: 山内陽
 using System;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace Game.Core.Enemy
 {
@@ -38,11 +39,17 @@ namespace Game.Core.Enemy
         /// </summary>
         /// <param name="enemyId">EnemyDefinitionで定義したEnemyId</param>
         /// <param name="maxHp">最大HP</param>
-        public void Initialize(string enemyId, float maxHp)
+        public void Initialize(string enemyId, float maxHp, Action<float, float> OnHelthChange, Action OnDefeated)
         {
             _enemyId = enemyId;
             _maxHp = maxHp;
             _currentHp = maxHp;
+
+            this.OnDefeated = OnDefeated;
+            this.OnHealthChanged = OnHelthChange;
+
+            this.OnHealthChanged(_currentHp, _maxHp);
+
         }
 
         /// <summary>

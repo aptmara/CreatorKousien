@@ -19,16 +19,20 @@ MonoBehaviour:
     _spawnEnemies:
     - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
     - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
     _maxAliveEnemies: 3
     _minDistanceFromOtherEnemies: 3
-  - _hpRate: 1.5
-    _barrierRate: 1.5
+  - _hpRate: 1
+    _barrierRate: 1
     _spawnInterval: 1
     _spawnEnemies:
-    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-    _maxAliveEnemies: 7
+    - {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+    - {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+    _maxAliveEnemies: 3
     _minDistanceFromOtherEnemies: 5
   _undergroundOffset: 7
   _initialSpawnDelay: 2

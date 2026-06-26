@@ -10,30 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c359e2404c41384c91cd27762a269b0, type: 3}
-  m_Name: Enemy_01_Definition
+  m_Name: Enemy_02_Definition
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyDefinition
-  EnemyId: Enemy_01
-  EnemyBody: {fileID: 8030826446297109252, guid: d826fadafe92e9e4d8fa4002d2268303, type: 3}
-  MaxHp: 500
-  ExpRate: 1
-  DownDuration: 7
+  EnemyId: Enemy_02
+  EnemyBody: {fileID: 352193085779561977, guid: 9805557e075844e4a9d51a9e81c20bd7, type: 3}
+  MaxHp: 300
+  ExpRate: 0.8
+  DownDuration: 3.5
   HasBarrier: 1
-  MaxGauge: 250
+  MaxGauge: 50
   BarrierBody: {fileID: 180197807806133772, guid: 23a14d1624590fe49b83c3dd3bfc3c36, type: 3}
   AttackPower: 3
-  Attackinterval: 1
+  Attackinterval: 5
   HealRegenWaitTime: 7
   HealPower: 30
-  RiseDuration: 15
-  DropDuration: 1.2
+  RiseDuration: 11
+  DropDuration: 0.9
   riseCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 2
-      outSlope: 2
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -41,8 +41,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 0
-      outSlope: 0
+      inSlope: 2
+      outSlope: 2
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -56,18 +56,18 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
