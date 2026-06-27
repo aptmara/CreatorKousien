@@ -159,6 +159,11 @@ namespace Game.Gameplay.Collectibles
 
         [Header("Emission")]
         /// <summary>
+        /// 欠片の発生基準位置。未設定の場合はヒット位置を使う。
+        /// </summary>
+        [SerializeField] private Transform _emitOrigin;
+
+        /// <summary>
         /// 欠片を飛ばす中心位置。クリスタル本体からこの位置へ向かう方向を基準にする。
         /// </summary>
         [SerializeField] private ShardEmissionVector _emissionVector;
@@ -323,6 +328,29 @@ namespace Game.Gameplay.Collectibles
                 default:
                     return 1;
             }
+        }
+
+        /// <summary>
+        /// 欠片を実際に配置するワールド座標を作る。
+        /// </summary>
+        /// <param name="hitPoint">発生基準位置として使うヒット座標。</param>
+        /// <returns>ランダムな散らばりを加えたワールド座標。</returns>
+        private Vector3 CreateSpawnPosition(Vector3 hitPoint)
+        {
+            Vector3 basePosition = GetBasePosition(hitPoint);
+            Vector3 offset = UnityEngine.Random.insideUnitSphere * _spawnRadius;
+            offset.y = Mathf.Abs(offset.y);
+            return basePosition + offset;
+        }
+
+        /// <summary>
+        /// 欠片発生の基準位置を返す。
+        /// </summary>
+        /// <param name="fallbackPosition">EmitOrigin が未設定の場合に使う代替位置。</param>
+        /// <returns>EmitOrigin があればその位置、なければ fallbackPosition。</returns>
+        private Vector3 GetBasePosition(Vector3 fallbackPosition)
+        {
+            return _emitOrigin != null ? _emitOrigin.position : fallbackPosition;
         }
 
         /// <summary>
