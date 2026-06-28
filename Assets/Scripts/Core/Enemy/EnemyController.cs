@@ -69,7 +69,7 @@ namespace Game.Core.Enemy
         /// Awake後の動的生成（スポーン）でも呼び出せる。
         /// </summary>
         /// <param name="def">適用するEnemyDefinition</param>
-        public void Initialize(EnemyDefinition definition, SpawnSummary spawnSummary, EnemyHitReceiver bodyReceiver)
+        public string Initialize(EnemyDefinition definition, SpawnSummary spawnSummary)
         {
             _definition = definition;
             InstanceEnemyId = $"{definition.EnemyId}_{GetInstanceID()}";
@@ -142,7 +142,7 @@ namespace Game.Core.Enemy
             // 上昇開始
             _rising.StartRise(spawnSummary.TargetPos, spawnSummary.UndergroundOffset, transform);
 
-            bodyReceiver.Initialize(InstanceEnemyId);
+            return InstanceEnemyId;
         }
 
         public bool BarrierInitialize(EnemyDefinition definition, SpawnSummary spawnSummary, GameObject barrierObject)
