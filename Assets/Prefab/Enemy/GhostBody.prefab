@@ -168,7 +168,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimation
   _animator: {fileID: 180908112170821028}
   _maxHitAnimationTime: 2
-  _addHitAnimationTime: 0.5
+  _addHitAnimationTime: 1
 --- !u!114 &234419528233336464
 MonoBehaviour:
   m_ObjectHideFlags: 0
