@@ -1,4 +1,5 @@
 // 制作者: 山内陽
+using System;
 using System.Collections.Generic;
 using Game.Core.Events;
 using Game.Gameplay.Collectibles;
@@ -13,6 +14,8 @@ namespace Game.Core.Enemy
     {
         [Tooltip("実行時に親のEnemyControllerから自動取得されるユニークなID。")]
         private string _enemyId;
+
+        public Action OnHitAction;
 
         private void Start()
         {
@@ -97,6 +100,7 @@ namespace Game.Core.Enemy
             float bodyDamage = baseDamage * speedFactor * _bodyDamageMultiplier;
 
             EventBus.Publish(new EnemyHitBatchEvent(_enemyId, 1, bodyDamage, hitPosition, transform));
+            if (OnHitAction != null) OnHitAction.Invoke();
 
             if (_despawnItemOnHit)
             {

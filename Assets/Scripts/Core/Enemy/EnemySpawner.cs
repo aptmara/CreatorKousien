@@ -181,16 +181,18 @@ namespace Game.Core.Enemy
                 Destroy(enemyGo);
                 return;
             }
-            if (!body.TryGetComponent(out EnemyHitReceiver bodyReceiver))
+            if (!body.TryGetComponent(out EnemyBodyController bodyController))
             {
                 Debug.LogWarning("[EnemySpawner] EnemyHitReceiver が付与されていないため生成を中止します。", body);
                 // Bodyが正しく生成されなかった場合親ごと削除
                 Destroy(enemyGo);
                 return;
             }
-            // 先にBodyのみ初期化
+            // 生成した敵を初期化
             EnemyController.SpawnSummary spawnSummary = new EnemyController.SpawnSummary(targetPos, _undergroundOffset, _currentHpRate, _currentBarrierRate);
-            controller.Initialize(definition, spawnSummary, bodyReceiver);
+            string enemyId = controller.Initialize(definition, spawnSummary);
+            // ボディを初期化
+            bodyController.Initialize(enemyId);
 
             // バリアが存在する場合初期化
             if (definition.HasBarrier)
