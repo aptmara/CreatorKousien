@@ -81,7 +81,7 @@ namespace Game.Data.Collectibles
                 for(int i = 0; i < max;i++)
                 _shardEmitter.Emitter(_emitVector,_gizmo._emissionAngle,EmissionPower,_shard);
             }
-            _currentScaleCount = 0.00001f;
+            _currentScaleCount = MaxScaleCount;
         }
     }
 
