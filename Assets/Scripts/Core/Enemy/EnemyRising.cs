@@ -59,7 +59,7 @@ namespace Game.Core.Enemy
         /// 初期化。インスタンス生成後に必ず呼ぶ。
         /// </summary>
         /// <param name="riseDuration">敵が上るのにかかる秒数</param>
-        public void Initialize(float riseDuration, float dropDuration, AnimationCurve riseCurve, AnimationCurve dropCurve)
+        public void Initialize(float riseDuration, float dropDuration, float breakDuration, AnimationCurve riseCurve, AnimationCurve dropCurve, AnimationCurve breakCurve)
         {
             if (_riseCoroutine != null) StopCoroutine(_riseCoroutine);
             if (_dropCoroutine!= null) StopCoroutine(_dropCoroutine);
