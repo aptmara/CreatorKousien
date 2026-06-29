@@ -41,6 +41,9 @@ namespace Game.Core.Enemy
         [Tooltip("バリアの実体として生成されるオブジェクト、バリア系のプレファブを設定する")]
         public GameObject BarrierBody;
 
+        [Header("バリア破壊時の最大値減少率")]
+        [Tooltip("バリアが破壊された時に減る最大値の割合")]
+        public float barrierBreakMaxLossRate = 0.7f;
 
         [Header("攻撃力")]
         [Tooltip("防衛ラインに対する攻撃力")]
@@ -66,6 +69,10 @@ namespace Game.Core.Enemy
         [Tooltip("敵の落下にかかる秒数")]
         public float DropDuration = 1.0f;
 
+        [Header("ずり落ち合計時間")]
+        [Tooltip("バリア破壊時のずり落ちにかかる秒数")]
+        public float BarrierBreakDuration = 0.5f;
+
         [Header("上昇カーブ")]
         [Tooltip("敵の上昇カーブ")]
         public AnimationCurve riseCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
@@ -73,6 +80,10 @@ namespace Game.Core.Enemy
         [Header("落下カーブ")]
         [Tooltip("敵の落下カーブ")]
         public AnimationCurve dropCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
+
+        [Header("ずり落ちカーブ")]
+        [Tooltip("バリア破壊時のずり落ちカーブ")]
+        public AnimationCurve barrierBreakCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
 
 
     }

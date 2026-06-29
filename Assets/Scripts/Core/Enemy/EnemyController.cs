@@ -105,7 +105,8 @@ namespace Game.Core.Enemy
                 null,
                 (current, max) =>
                 EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max)),
-                HandleGaugeBroken
+                HandleGaugeBroken,
+                definition.barrierBreakMaxLossRate
         );
 
             // 敵攻撃処理初期化
@@ -134,7 +135,7 @@ namespace Game.Core.Enemy
                 gameObject.AddComponent<EnemyRising>();
             }
 
-            _rising.Initialize(definition.RiseDuration, definition.DropDuration, _definition.riseCurve, _definition.dropCurve);
+            _rising.Initialize(definition.RiseDuration, definition.DropDuration, definition.BarrierBreakDuration, definition.riseCurve, definition.dropCurve, definition.barrierBreakCurve);
             _rising.OnEnemyReachedGoal = HandleRose;
             _rising.OnLeftReachedGoal = HandleRoseLeft;
             _rising.OnEnemyDroped = HandleDroped;
@@ -162,7 +163,9 @@ namespace Game.Core.Enemy
                 definition.HealRegenWaitTime, definition.HealPower * spawnSummary.BarrierRate,
                 barrierObject,
                 (current, max) => EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max)),
-                HandleGaugeBroken
+                HandleGaugeBroken,
+                definition.barrierBreakMaxLossRate
+
             );
 
             // 実体オブジェクトを初期化

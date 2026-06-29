@@ -14,8 +14,14 @@ namespace Game.Core.Enemy
     /// </summary>
     public class EnemyBarrierGauge
     {
-        private float _maxGauge;
+        // 基本の最大ゲージ
+        private float _defaultMaxGauge;
+        // 動的に変化するゲージ最大値
+        private float _dynamicMaxGauge;
+        // 現在のゲージ残量
         private float _currentGauge;
+        private float _barrierBreakMaxLossRate;
+
         private float _healPower;
         private bool _isActive;
         private bool _isHeal;
@@ -24,14 +30,13 @@ namespace Game.Core.Enemy
         private GameObject _barrierObject = null;
 
         /// <summary>0.0〜1.0 の正規化ゲージ量（UI用）</summary>
-        public float Ratio => _maxGauge > 0f ? _currentGauge / _maxGauge : 0f;
+        public float Ratio => _defaultMaxGauge > 0f ? _currentGauge / _defaultMaxGauge : 0f;
 
         /// <summary>現在のゲージ量（生値）</summary>
         public float CurrentGauge => _currentGauge;
 
         /// <summary>最大ゲージ量（生値）</summary>
-        public float MaxGauge => _maxGauge;
-
+        public float MaxGauge => _defaultMaxGauge;
         /// <summary>
         /// ApplyGaugeDamageによりゲージが0以下になった際に発火するコールバック。
         /// EnemyControllerがダウン遷移を行う。
@@ -49,12 +54,14 @@ namespace Game.Core.Enemy
         /// </summary>
         /// <param name="enemyId">識別ID</param>
         /// <param name="maxGauge">最大ゲージ量</param>
-        public void Initialize(string enemyId, float maxGauge, float healRegenWaitTime, float healPower, GameObject barrierObject, Action<float, float> OnGaugeChanged, Action OnGaugeBroken)
+        public void Initialize(string enemyId, float maxGauge, float healRegenWaitTime, float healPower, GameObject barrierObject, Action<float, float> OnGaugeChanged, Action OnGaugeBroken, float barrierBreakMaxLossRate)
         {
 
             bool hasBarrier = barrierObject != null;
 
-            _maxGauge = maxGauge;
+            _defaultMaxGauge = maxGauge;
+            _dynamicMaxGauge = _defaultMaxGauge;
+            _barrierBreakMaxLossRate = barrierBreakMaxLossRate;
             _currentGauge = hasBarrier ? maxGauge : 0.0f;
             _isActive = hasBarrier;
             _maxHealWaitTime = healRegenWaitTime;
@@ -98,12 +105,13 @@ namespace Game.Core.Enemy
             _currentGauge -= rawDamage;
             _currentGauge = Mathf.Max(0f, _currentGauge);
 
-            OnGaugeChanged?.Invoke(_currentGauge, _maxGauge);
+            OnGaugeChanged?.Invoke(_currentGauge, _defaultMaxGauge);
             // 回復待機する
             WaitHeal();
 
             if (_currentGauge <= 0f)
             {
+                _dynamicMaxGauge *= _barrierBreakMaxLossRate;
                 _isActive = false;
                 OnGaugeBroken?.Invoke();
                 _barrierObject?.SetActive(false);
@@ -111,14 +119,14 @@ namespace Game.Core.Enemy
         }
 
         /// <summary>
-        /// ゲージを0にリセットする。ダウン後の復帰時に使用。
+        /// ゲージをリセットする。ダウン後の復帰時に使用。
         /// </summary>
         public void ResetGauge()
         {
             if (!_barrierObject) return;
 
-            _currentGauge = _maxGauge;
-            OnGaugeChanged?.Invoke(_currentGauge, _maxGauge);
+            _currentGauge = _dynamicMaxGauge;
+            OnGaugeChanged?.Invoke(_currentGauge, _defaultMaxGauge);
             _barrierObject.SetActive(true);
             ResetHeal();
         }
@@ -130,8 +138,8 @@ namespace Game.Core.Enemy
         public void GaugeHeal(float healValue)
         {
             _currentGauge += healValue;
-            _currentGauge = Mathf.Min(_maxGauge, _currentGauge);
-            OnGaugeChanged?.Invoke(_currentGauge, _maxGauge);
+            _currentGauge = Mathf.Min(_dynamicMaxGauge, _currentGauge);
+            OnGaugeChanged?.Invoke(_currentGauge, _defaultMaxGauge);
         }
 
         public void UpdateHealInterval()
