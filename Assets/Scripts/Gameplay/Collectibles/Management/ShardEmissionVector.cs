@@ -136,5 +136,10 @@ namespace Game.Gameplay.Collectibles
                 : Vector3.right;
             return Vector3.Cross(direction, axis).normalized;
         }
+        public float GetAngle()
+        {
+            return _emissionAngle;
+        }
     }
+
 }
