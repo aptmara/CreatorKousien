@@ -592,7 +592,6 @@ namespace Game.Gameplay.Collectibles
         private void ReturnToPool(CollectibleObject shard)
         {
             _registry.Unregister(shard);
-            shard.transform.localScale = Vector3.one;
             _pool.Return(shard);
         }
 

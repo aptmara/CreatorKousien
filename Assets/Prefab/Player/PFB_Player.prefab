@@ -1155,9 +1155,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   _probeUpOffset: 0.5
-  _probeDistance: 1.5
+  _probeDistance: 5
   _rideHeight: 1
-  _spring: 120
+  _spring: 400
   _damper: 22
 --- !u!114 &5479731356637537643
 MonoBehaviour:
@@ -1190,7 +1190,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.PlayerPunchController
   _playerController: {fileID: 9115182017574714161}
   _attachmentController: {fileID: 2483846165279528381}
-  _punchLockDuration: 1.1
+  _inputReader: {fileID: 1265893493383323021}
+  _requireTarget: 0
+  _rayMaxDistance: 5
+  _rayMask:
+    serializedVersion: 2
+    m_Bits: 512
+  _rayOriginHeight: 0.5
+  _cooldown: 1
+  _rayRadius: 1.5
 --- !u!1 &5870560623095878439
 GameObject:
   m_ObjectHideFlags: 0
