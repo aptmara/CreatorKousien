@@ -28,6 +28,7 @@ namespace Game.Gameplay.Collectibles
 
         private Dictionary<int, GameObject> _visualCache = new Dictionary<int, GameObject>();
         private GameObject _currentVisual;
+        private Vector3 _initialScale;
 
         public string Id => _data != null ? _data.Id : string.Empty;
 
@@ -38,6 +39,7 @@ namespace Game.Gameplay.Collectibles
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
+            _initialScale = transform.localScale;
         }
 
         /// <summary>
@@ -164,6 +166,7 @@ namespace Game.Gameplay.Collectibles
             CanBeCollectedByPlayer = true;
             _rigidbody.linearVelocity = Vector3.zero;
             _rigidbody.angularVelocity = Vector3.zero;
+            transform.localScale = _initialScale;
 
             // プール返却時に見た目も非表示にリセット
             if (_currentVisual != null)

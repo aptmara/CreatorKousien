@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Alpha_FieldData
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Stage.FieldData
   _fieldTilt: -25
-  _crystalPrefab: {fileID: 4969973644305817149, guid: 2863baaac17e84141b1a2b33ea4c5326, type: 3}
-  _crystalLocalPosition: {x: 0, y: 0.8, z: 17}
+  _crystalPrefab: {fileID: 642422931910411503, guid: 60559645fda4a1e4284b7babef22041d, type: 3}
+  _crystalLocalPosition: {x: 0, y: 3, z: 27}

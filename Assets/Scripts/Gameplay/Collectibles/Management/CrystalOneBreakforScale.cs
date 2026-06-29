@@ -6,7 +6,7 @@ using Game.Gameplay.Collectibles;
 
 namespace Game.Data.Collectibles
 {
-    public class CrystalOneBreakforScale : MonoBehaviour
+    public class CrystalOneBreakforScale : MonoBehaviour, ICrystalBreakable
     {
         // サイズによる欠片生成量
         [Serializable]
@@ -41,6 +41,13 @@ namespace Game.Data.Collectibles
         [SerializeField]private float _currentScaleCount;
 
         private Vector3 _emitVector;
+
+
+        public void Break(Vector3 hitPoint, Vector3 hitDirection)
+        {
+            Emits();
+        }
+
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
