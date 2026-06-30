@@ -3,7 +3,7 @@
  * 
  * 内容：敵がフィールドまで上昇する処理
  * 
- * 
+ * 追加実装 : 落下、ずり落ちを追加
  */
 using System;
 using System.Collections;
@@ -25,16 +25,23 @@ namespace Game.Core.Enemy
         //　敵の開始地点
         private Vector3 _startPosition;
 
+        // ずり落ちステータス
+        float _breakDropStart = 0.0f;
+        float _breakDropTarget = 0.0f;
+        float _breakDropDistance = 0.2f;
+
         [Tooltip("上昇にかかる時間(調整中)")]
         [SerializeField] private float _riseDuration = 1.5f;
-        [Tooltip("上昇にかかる時間(調整中)")]
+        [Tooltip("落下にかかる時間(調整中)")]
         [SerializeField] private float _dropDuration = 5.0f;
+        [Tooltip("ずり落ちにかかる時間(調整中)")]
+        [SerializeField] private float _barrierBreakDuration = 5.0f;
 
-        [Tooltip("上昇の際の動き(調整中)")]
+        [Tooltip("上昇の際の動き")]
         [SerializeField] private AnimationCurve _riseCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
-        [Tooltip("ずり落ちの際の動き(調整中)")]
-        [SerializeField] private AnimationCurve _downCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        [Tooltip("ずり落ちの際の動き")]
+        [SerializeField] private AnimationCurve _barrierBreakCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
         [Tooltip("落下の際の動き")]
         [SerializeField] private AnimationCurve _dropCurve = AnimationCurve.Linear(0, 0, 1, 1);
@@ -47,13 +54,17 @@ namespace Game.Core.Enemy
 
         public Action OnEnemyDroped;
 
-        // 進行度
-        float _elapsed = 0.0f;
+        // 進行時間
+        float _elapsedTime = 0.0f;
+        // 落下進行時間
+        float _dropElapsedTime = 0.0f;
+        // バリア破壊ずり落ち時間
+        float _breakDropElapsedTime = 0.0f;
 
-
-
+        // 各コルーチン
         Coroutine _riseCoroutine = null;
         Coroutine _dropCoroutine = null;
+        Coroutine _barrierBreakCoroutine = null;
 
         /// <summary>
         /// 初期化。インスタンス生成後に必ず呼ぶ。
@@ -63,13 +74,19 @@ namespace Game.Core.Enemy
         {
             if (_riseCoroutine != null) StopCoroutine(_riseCoroutine);
             if (_dropCoroutine!= null) StopCoroutine(_dropCoroutine);
+            if (_barrierBreakCoroutine != null) StopCoroutine(_barrierBreakCoroutine);
             _riseCoroutine = null;
             _dropCoroutine = null;
+            _barrierBreakCoroutine = null;
+            // 値の設定
             _riseDuration = riseDuration;
             _dropDuration = dropDuration;
-            if(riseCurve != null) _riseCurve = riseCurve;
+            _barrierBreakDuration = breakDuration;
+            _riseCurve = riseCurve;
+            _dropCurve = dropCurve;
+            _barrierBreakCurve = breakCurve;
 
-            if(dropCurve != null)_dropCurve = dropCurve;
+            
         }
 
         /// <summary>
@@ -83,20 +100,26 @@ namespace Game.Core.Enemy
             // 上昇目標と目標までの距離から初期位置設定
             _startPosition = _targetPosition + Vector3.down * startYOffset;
             enemyTransform.position = _startPosition;
-            _elapsed = 0.0f;
+            _elapsedTime = 0.0f;
             // 上昇開始
             _riseCoroutine = StartCoroutine(RiseRoutine(enemyTransform));
         }
 
+
+        /// <summary>
+        /// 上昇のコルーチン
+        /// </summary>
+        /// <param name="enemyTransform"></param>
+        /// <returns>コルーチン用の戻り値 </returns>
         private IEnumerator RiseRoutine(Transform enemyTransform)
         {
 
             // カーブも考慮した目標地点までの滑らかな動き
-            while (_elapsed < 1.0f)
+            while (_elapsedTime < 1.0f)
             {
-                _elapsed += Time.deltaTime / _riseDuration;
-                _elapsed = Mathf.Clamp(_elapsed, 0.0f, 1.0f);
-                float t = _elapsed;
+                _elapsedTime += Time.deltaTime / _riseDuration;
+                _elapsedTime = Mathf.Clamp(_elapsedTime, 0.0f, 1.0f);
+                float t = _elapsedTime;
                 float curveT = _riseCurve.Evaluate(t);
                 curveT = Mathf.Clamp(curveT, 0.0f, 1.0f);
                 //-イージングにより位置の更新
@@ -109,29 +132,77 @@ namespace Game.Core.Enemy
             OnEnemyReachedGoal();
         }
 
+        /// <summary>
+        /// 落下を開始する
+        /// </summary>
+        /// <param name="enemyTransform"></param>
         public void DropStart(Transform enemyTransform)
         {
-            if(_riseCoroutine != null) StopCoroutine(_riseCoroutine);
+            float currentValue;
+
+            if (_barrierBreakCoroutine != null)
+            {
+                StopCoroutine(_barrierBreakCoroutine);
+                float finalCurve = _barrierBreakCurve.Evaluate(_breakDropElapsedTime);
+                finalCurve = Mathf.Clamp(finalCurve, 0.0f, 1.0f);
+                currentValue = Mathf.Lerp(_breakDropTarget, _breakDropStart, finalCurve);
+                _dropElapsedTime = ValueToCurveTime(currentValue, _dropCurve);
+            }
+            else
+            {
+                StopCoroutine(_riseCoroutine);
+                currentValue = _riseCurve.Evaluate(_elapsedTime);
+                currentValue = Mathf.Clamp(currentValue, 0.0f, 1.0f);
+                _dropElapsedTime = ValueToCurveTime(currentValue, _dropCurve);
+            }
+            // 落下中だったら抜ける
+            if (_dropCoroutine != null) return;
+
             _riseCoroutine = null;
+            _barrierBreakCoroutine = null;
             // 現在の進行度の値を上昇カーブから見た進行度から落下カーブから見た進行度に変換する
-            float currentValue = _riseCurve.Evaluate(_elapsed);
-            _elapsed = ValueToCurveTime(currentValue, _dropCurve);
-            float newValue = _dropCurve.Evaluate(_elapsed);
-            Debug.Log("newValue = " + newValue + " oldValue = " + currentValue ); 
+            float newValue = _dropCurve.Evaluate(_dropElapsedTime);
             // 落下開始
             _dropCoroutine = StartCoroutine(DropRoutine(enemyTransform));
         }
 
+        /// <summary>
+        /// バリア破壊時のずり落ちを開始する
+        /// </summary>
+        /// <param name="_enemyTransform">トランスフォーム</param>
+        public void BreakDrop(Transform _enemyTransform)
+        {
+            if(_riseCoroutine !=null) StopCoroutine(_riseCoroutine);
+            if(_barrierBreakCoroutine != null) StopCoroutine(_barrierBreakCoroutine);
+
+            // 現在の値を取得
+            float currentValue = _riseCurve.Evaluate(_elapsedTime);
+
+            // 移動後の値を決定
+            _breakDropStart = currentValue;
+            _breakDropTarget = Mathf.Max(currentValue - _breakDropDistance, 0.0f);
+
+            _breakDropElapsedTime = 0.0f;
+            _barrierBreakCoroutine = StartCoroutine(BreakDropRoutine(transform));
+
+            OnLeftReachedGoal();
+        }
+
+        /// <summary>
+        /// 落下用コルーチン
+        /// </summary>
+        /// <param name="enemyTransform">移動させる敵のトランスフォーム</param>
+        /// <returns>コルーチン用の戻り値</returns>
         private IEnumerator DropRoutine(Transform enemyTransform)
         {
 
-            while (_elapsed > 0.0f)
+            while (_dropElapsedTime < 1.0f)
             {
-                _elapsed -= Time.deltaTime / _dropDuration;
-                _elapsed = Mathf.Clamp(_elapsed, 0.0f, 1.0f);
-                float curveT = _dropCurve.Evaluate(_elapsed);
+                _dropElapsedTime += Time.deltaTime / _dropDuration;
+                _dropElapsedTime = Mathf.Clamp(_dropElapsedTime, 0.0f, 1.0f);
+                float curveT = _dropCurve.Evaluate(_dropElapsedTime);
                 curveT = Mathf.Clamp(curveT, 0.0f, 1.0f);
-                //-イージングにより位置の更新
+                // 値が1から0に落ちるカーブを使用するため、ターゲットからスタートに向けてLeapする
                 enemyTransform.position = Vector3.Lerp(_startPosition, _targetPosition, curveT);
                 yield return null;
             }
@@ -141,7 +212,44 @@ namespace Game.Core.Enemy
             OnEnemyDroped();
         }
 
+        /// <summary>
+        /// バリア破壊時ずり落ちコルーチン
+        /// </summary>
+        /// <param name="enemyTransform">移動する敵のトランスフォーム</param>
+        /// <returns>コルーチン用の戻り値</returns>
+        private IEnumerator BreakDropRoutine(Transform enemyTransform)
+        {
+            while(_breakDropElapsedTime < 1.0f)
+            {
+                _breakDropElapsedTime += Time.deltaTime / _barrierBreakDuration;
+                _breakDropElapsedTime = Mathf.Clamp(_breakDropElapsedTime, 0.0f, 1.0f);
 
+                float curveT = _barrierBreakCurve.Evaluate(_breakDropElapsedTime);
+                curveT = Mathf.Clamp(curveT, 0.0f, 1.0f);
+                // 値が1から0に落ちるカーブを使用するため、ターゲットからスタートに向けてLeapする
+                curveT = Mathf.Lerp(_breakDropTarget, _breakDropStart, curveT);
+                //-イージングにより位置の更新
+                enemyTransform.position = Vector3.Lerp(_startPosition, _targetPosition, curveT);
+                yield return null;
+            }
+
+            // 現在の値を取得
+            float finalCurve = _barrierBreakCurve.Evaluate(_breakDropElapsedTime);
+            finalCurve = Mathf.Clamp(finalCurve, 0.0f, 1.0f);
+            finalCurve = Mathf.Lerp(_breakDropTarget, _breakDropStart, finalCurve);
+            _elapsedTime = ValueToCurveTime(finalCurve, _riseCurve);
+            _barrierBreakCoroutine = null;
+
+            _riseCoroutine = StartCoroutine(RiseRoutine(enemyTransform));
+        }
+
+
+        /// <summary>
+        /// カーブの範囲内の値からその値が手に入る時間を逆算する
+        /// </summary>
+        /// <param name="value">カーブから取得できる値</param>
+        /// <param name="curve">使用するカーブ</param>
+        /// <returns>指定された値が手に入る時間</returns>
         private float ValueToCurveTime(float value, AnimationCurve curve)
         {
             float minValue = 0.0f;
@@ -154,9 +262,18 @@ namespace Game.Core.Enemy
             return (minValue + maxValue) / 2.0f;
         }
 
-
-
-
+        /// <summary>
+        /// カーブの時間範囲を受け取り、指定された値の存在する時間範囲を絞る
+        /// ※全然二分探索でも良かったかも
+        /// </summary>
+        /// <param name="outMinPoint">値が存在する最低範囲</param>
+        /// <param name="outMaxPoint">値が存在する最高範囲</param>
+        /// <param name="value">カーブの値</param>
+        /// <param name="findCount">何分割するか</param>
+        /// <param name="curve">確認するカーブ</param>
+        /// <param name="findMinPoint">探索最低範囲</param>
+        /// <param name="findMaxPoint">探索最大範囲</param>
+        /// <returns>探索が成功したかどうか</returns>
         private bool FindValueRangeByStepping(out float outMinPoint, out float outMaxPoint, float value, int findCount, AnimationCurve curve, float findMinPoint, float findMaxPoint)
         {
 
@@ -190,31 +307,30 @@ namespace Game.Core.Enemy
                 float nextPoint = currentPoint + step;
                 float currentValue = curve.Evaluate(currentPoint);
                 float nextValue = curve.Evaluate(nextPoint);
+
+                float minValue = Mathf.Min(currentValue, nextValue);
+                float maxValue = Mathf.Max(currentValue, nextValue);
+
+                float minPoint = Mathf.Min(currentPoint, nextPoint);
+                float maxPoint = Mathf.Max(currentPoint, nextPoint);
+
+                if (minValue <= value && value <= maxValue)
+                {
+                    outMinPoint = minPoint;
+                    outMaxPoint = maxPoint;
+                    return true;
+                }
+
+                if(i == findCount - 1)
+                {
+                    Debug.Log("Value = " + value + "MaxValue = " + maxValue);
+                }
                 
-                if(isFowerdFind)
-                {
-                    // 前方向に探索、範囲内か確認
-                    if(currentValue <= value && value <= nextValue )
-                    {
-                        outMinPoint = currentPoint;
-                        outMaxPoint = nextPoint;
-                        return true;
-                    }
-                }
-                else
-                {
-                    // 後方向に探索している場合小さくなっていくため符号や戻り値が逆になる
-                    if(currentValue >= value && value >= nextValue)
-                    {
-                        outMaxPoint = currentPoint;
-                        outMinPoint = nextPoint;
-                        return true;
-                    }
-                }
             }
             // 探索中見つからなかった場合失敗を返す
             outMinPoint = findMinPoint;
             outMaxPoint = findMaxPoint;
+
             Debug.Log("探索失敗！");
             return false;
         }
