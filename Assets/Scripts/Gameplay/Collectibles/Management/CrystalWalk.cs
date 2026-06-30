@@ -5,6 +5,7 @@
 //             プレイヤーの殴りで壊せるクリスタルの共通インターフェース ICrystalBreakable を追加しました
 using Game.Gameplay.Collectibles;
 using Game.Gameplay.Stage;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -42,9 +43,10 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     private CrystalShardEmitter _emitter;
     [Tooltip("欠片の散らばり角度(度)")]
     [SerializeField] private float _spreadAngle = 25.0f;
-    [Header("欠片の発射数")]
-    [SerializeField] public int shardCount;
-
+    [Header("欠片の基礎発射数")]
+    [SerializeField] public int shardBaseCount;
+    [Header("実際に出る数")]
+    [SerializeField] public int curShardCount;
     [Header("欠片の発射力")]
     [Tooltip("欠片の発射力。大きいほど遠くへ飛ぶ")]
     [SerializeField] public float power;
@@ -112,6 +114,8 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         {
             _modelBaseLocalPos = _model.localPosition;
         }
+
+        curShardCount = shardBaseCount;
     }
 
     // Update is called once per frame
@@ -203,7 +207,6 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
                 _model.localPosition = _modelBaseLocalPos;
             }
         }
-
     }
 
 
@@ -304,7 +307,7 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
             outward = outward.sqrMagnitude > 0.0001f ? outward.normalized : Vector3.up;
             Vector3 spawnPos = hitPoint + outward * _emitOffset;
 
-            for (int i = 0; i < shardCount; i++)
+            for (int i = 0; i < curShardCount; i++)
                 _emitter.EmitFromHit(spawnPos, dir, _spreadAngle, power, _shard);
         }
         _currentHitStop = _hitStop;
@@ -326,4 +329,14 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
 
         Destroy(effect, 2.0f);
     }
+
+    public void Multiply(float multiply)
+    {
+        curShardCount = (int)(curShardCount * multiply);
+    }
+    public void InitShardCount()
+    {
+        curShardCount = shardBaseCount;
+    }
+
 }
