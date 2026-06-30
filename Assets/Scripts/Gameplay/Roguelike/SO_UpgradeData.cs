@@ -1,11 +1,15 @@
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-// 強化ID、表示名、最大レベル、効果SOを所持
+// file   : SO_UpgradeData.cs
+// brief  : 強化ID、表示名、最大レベル、効果SOを所持
 //
+// auther : Shohei Takitani
+// date   : 2026/06/30 - begin.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using NUnit.Framework;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
+using System.Collections.Generic;
 
 [CreateAssetMenu(fileName = "SO_UpgradeData", menuName = "Scriptable Objects/SO_UpgradeData")]
 public class SO_UpgradeData : ScriptableObject
@@ -25,5 +29,8 @@ public class SO_UpgradeData : ScriptableObject
     public int MaxLevel => _maxLevel;
 
     public void Apply()
+    {
+
+    }
 
 }

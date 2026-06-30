@@ -558,12 +558,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1972656258}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ed1b234fe9678f840a7151f00e5a69f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::S_RoguelikeEffectApplier
-  _canvas: {fileID: 0}
+  _canvas: {fileID: 1511859090}
   _back: {fileID: 0}
   _text: {fileID: 0}
   _images: []
