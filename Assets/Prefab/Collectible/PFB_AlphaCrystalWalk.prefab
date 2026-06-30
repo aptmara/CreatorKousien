@@ -125,13 +125,13 @@ MonoBehaviour:
   _shakeAmplitude: 0.1
   _emitter: {fileID: 8110819778900283661}
   _spreadAngle: 40
-  shardCount: 20
+  shardCount: 60
   power: 350
   _shard:
   - Data: {fileID: 11400000, guid: c5bea3e5375a6f54486a91623f955ecb, type: 2}
     Weight: 1
   VFX: {fileID: 2890516327077821158, guid: e4dde6909f46524458f9cfd790e79510, type: 3}
-  _scale: {x: 4, y: 4, z: 4}
+  _scale: {x: 6, y: 6, z: 6}
   _fieldData: {fileID: 0}
   _fieldCenter: {fileID: 0}
   _emitOffset: 1.5
