@@ -34,6 +34,7 @@ namespace Game.Gameplay.Combo
         public float RemainingDuration => _remainingDuration;
         public float MaxDuration => _maxDuration;
 
+        public MoneyData moneyData { get; set; } 
         /// <summary>
         /// 猶予時間の残り割合
         /// </summary>
@@ -93,6 +94,7 @@ namespace Game.Gameplay.Combo
 
             if (_remainingDuration <= 0f)
             {
+                moneyData.AddMoney(_currentCombo);
                 ResetCombo();
             }
             else

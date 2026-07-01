@@ -9,23 +9,25 @@ public class MoneyData : ScriptableObject
 
     public int moneyOnHand;
 
-    [SerializeField,Range(0.0f,1.0f),Tooltip("コンボボーナスでかかる割合")]
+    [SerializeField,Range(0.0f,1.0f),Tooltip("コンボボーナスがかかる割合")]
     private float _moneyMagni;
 
-    void Initialize()
+    public void Initialize()
     {
         moneyOnHand = _initMoeny;
     }
 
-    void AddMoney(int Combo)
+    public void AddMoney(int Combo)
     {
         int addValue = 0;
-        addValue += (int)((float)Combo * (1.0f + (float)Combo / 10.0f * _moneyMagni));
+        addValue += (int)(Combo + (Combo * _moneyMagni));
         moneyOnHand+= addValue;
-        Debug.Log("Money On Hand : " + moneyOnHand);
+        Debug.Log("Money On Hand : " + moneyOnHand +
+            "\nComboVal : " + Combo +
+            "\nAddVal : " + (Combo * _moneyMagni));
     }
 
-    void SubtractMoney(int subVal)
+    public void SubtractMoney(int subVal)
     {
         moneyOnHand -= subVal;
         Debug.Log("Money On Hand : " + moneyOnHand);
