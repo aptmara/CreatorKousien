@@ -1,7 +1,6 @@
 using Game.Core.Events;
 using Unity.Mathematics;
 using UnityEngine;
-using static UnityEngine.InputSystem.PlayerInput;
 
 
 namespace Game.Core.DefenceLine
@@ -31,8 +30,8 @@ namespace Game.Core.DefenceLine
 
         private void OnDisable()
         {
-            EventBus.Subscribe<DefLineHitReactionEvent>(OnPlayHitReaction);
-            EventBus.Subscribe<DefLineBreakReactionEvent>(OnPlayBreakReaction);
+            EventBus.Unsubscribe<DefLineHitReactionEvent>(OnPlayHitReaction);
+            EventBus.Unsubscribe<DefLineBreakReactionEvent>(OnPlayBreakReaction);
         }
 
         // 呼び出し処理、現在はイベントで実装している。
@@ -60,7 +59,10 @@ namespace Game.Core.DefenceLine
         protected virtual void PlayBreakReaction(BreakReactionData data)
         {
             // 初期では自身の描画を停止
-            GetComponent<Renderer>().enabled = false;
+            if (TryGetComponent<Renderer>(out var rendererComponent))
+            {
+                rendererComponent.enabled = false;
+            }
         }
     }
 }

@@ -13,37 +13,39 @@ MonoBehaviour:
   m_Name: Enemy_02_Definition
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyDefinition
   EnemyId: Enemy_02
-  EnemyBody: {fileID: 352193085779561977, guid: 9805557e075844e4a9d51a9e81c20bd7, type: 3}
+  EnemyBody: {fileID: 8324395216365602149, guid: 1a3a65d6c2f7f8f4abc40b7ed610fd4a, type: 3}
   MaxHp: 300
   ExpRate: 0.8
   DownDuration: 3.5
-  HasBarrier: 1
+  HasBarrier: 0
   MaxGauge: 50
   BarrierBody: {fileID: 180197807806133772, guid: 23a14d1624590fe49b83c3dd3bfc3c36, type: 3}
-  AttackPower: 3
-  Attackinterval: 5
+  barrierBreakMaxLossRate: 0.7
+  AttackPower: 1
+  Attackinterval: 0.5
   HealRegenWaitTime: 7
   HealPower: 30
-  RiseDuration: 11
+  RiseDuration: 6.5
   DropDuration: 0.9
+  BarrierBreakDuration: 0.8
   riseCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
@@ -55,19 +57,61 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
-      inSlope: 1
-      outSlope: 1
-      tangentMode: 34
+      value: 1.00093
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
+      time: 0.6343099
+      value: 0.5010447
+      inSlope: -1.489193
+      outSlope: -1.489193
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.19497961
+    - serializedVersion: 3
       time: 1
-      value: 1
-      inSlope: 1
-      outSlope: 1
-      tangentMode: 34
+      value: -0.0009651184
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  barrierBreakCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1.00093
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.6343099
+      value: 0.5010447
+      inSlope: -1.489193
+      outSlope: -1.489193
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.19497961
+    - serializedVersion: 3
+      time: 1
+      value: -0.0009651184
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0

@@ -34,6 +34,11 @@ namespace Game.Gameplay.Combo
         public float RemainingDuration => _remainingDuration;
         public float MaxDuration => _maxDuration;
 
+        // 寺田
+        public MoneyData moneyData { get; set; }
+        public SceneEventChannel EventChannel { get; set; }
+        public float multiRatio { get; set; }
+
         /// <summary>
         /// 猶予時間の残り割合
         /// </summary>
@@ -93,6 +98,7 @@ namespace Game.Gameplay.Combo
 
             if (_remainingDuration <= 0f)
             {
+                moneyData.AddMoney(_currentCombo);
                 ResetCombo();
             }
             else
@@ -106,6 +112,8 @@ namespace Game.Gameplay.Combo
         /// </summary>
         public void ResetCombo()
         {
+            float multiValue = _currentCombo / multiRatio;
+            EventChannel?.ExecuteEvent(multiValue);
             _currentCombo = 0;
             _remainingDuration = 0f;
             OnComboReset?.Invoke();

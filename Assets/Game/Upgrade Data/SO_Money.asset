@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MoneyData
   _initMoeny: 100
   moneyOnHand: 0
-  _moneyMagni: 0
+  _moneyMagni: 0.1

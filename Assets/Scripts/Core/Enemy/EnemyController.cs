@@ -296,6 +296,7 @@ namespace Game.Core.Enemy
         /// </summary>
         private void TransitionToDown()
         {
+            _rising.BreakDrop(transform);
             _stateManager.TransitionTo(EnemyState.Down);
             _barrierGauge.SetActive(false);
 

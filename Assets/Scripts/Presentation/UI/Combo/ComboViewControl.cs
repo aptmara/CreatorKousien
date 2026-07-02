@@ -25,6 +25,14 @@ namespace Game.Presentation.UI.Combo
         [Tooltip("猶予時間の上限ルール設定")]
         [SerializeField] private ComboManager.DurationLimitMode _limitMode = ComboManager.DurationLimitMode.ClampToMax;
 
+        // 寺田
+        [SerializeField,Tooltip("コンボをお金に変換")]
+        MoneyData _moneyData;
+        [SerializeField,Tooltip("コンボボーナス適用")]
+        SceneEventChannel _sceneEventChannel;
+        [SerializeField, Tooltip("コンボボーナス倍率"),Range(0.0f,1.0f)]
+        float _multiRatio;
+
         [Header("--- UI References ---")]
         [Tooltip("コンボテキストを表示するオブジェクトのRectTransform")]
         [SerializeField] private RectTransform _comboTextRect;
@@ -64,6 +72,11 @@ namespace Game.Presentation.UI.Combo
             _comboManager.OnComboUpdated += HandleComboUpdated;
             _comboManager.OnComboReset += HandleComboReset;
 
+            _moneyData?.Initialize();
+            _comboManager.moneyData = _moneyData;
+            _comboManager.multiRatio = _multiRatio;
+            _comboManager.EventChannel = _sceneEventChannel;
+            
             // 初期状態は非表示
             SetTextActive(false);
         }

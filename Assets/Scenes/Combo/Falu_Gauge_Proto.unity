@@ -1225,6 +1225,9 @@ MonoBehaviour:
   _addDurationPerHit: 0.1
   _maxDuration: 1
   _limitMode: 0
+  _moneyData: {fileID: 11400000, guid: ed79cb34a0ad631409cafd0e16aac641, type: 2}
+  _sceneEventChannel: {fileID: 11400000, guid: 58e1728789289fa47b441403e4650359, type: 2}
+  _multiRatio: 0
   _comboTextRect: {fileID: 698986948}
   _comboTextBase: {fileID: 698986953}
   _comboTextFill: {fileID: 2139066455}
