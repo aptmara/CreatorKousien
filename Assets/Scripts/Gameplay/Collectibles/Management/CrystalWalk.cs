@@ -73,6 +73,8 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     [SerializeField] private CrystalShardEmitter.WeightedShardData[] _shard;
     [SerializeField] private GameObject VFX;
     [SerializeField] private Vector3 _scale;
+    // 寺田
+    [SerializeField]private SceneEventChannel _channel;
 
     [Header("フィールドの傾き")]
     [SerializeField] private FieldData _fieldData;
@@ -112,6 +114,15 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         }
         float exactSegment = initT * pathSegments.Count;
         _lastSegmentIndex = Mathf.FloorToInt(exactSegment);
+
+        if(_channel != null)
+            _channel.OnExecuteFloat += Multiply;
+    }
+
+    private void OnDisable()
+    {
+        if(_channel != null)
+            _channel.OnExecuteFloat -= Multiply;
     }
 
     void Update()

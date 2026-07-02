@@ -59,11 +59,11 @@ namespace Game.Gameplay.Collectibles
 
         private void Awake()
         {
-            _eventChannel.OnExecuteResultRequest += SpawnCollectibles;
+            _eventChannel.OnExecuteInt += SpawnCollectibles;
         }
         private void OnDisable()
         {
-            _eventChannel.OnExecuteResultRequest -= SpawnCollectibles;
+            _eventChannel.OnExecuteInt -= SpawnCollectibles;
         }
 
         private void Update()
