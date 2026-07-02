@@ -10,11 +10,16 @@ using System;
 [CreateAssetMenu(fileName = "SceneEventChannel", menuName = "Scriptable Objects/SceneEventChannel")]
 public class SceneEventChannel : ScriptableObject
 {
-    public event Action<int> OnExecuteResultRequest;
+    public event Action<int> OnExecuteInt;
+    public event Action<float> OnExecuteFloat;
 
     public void ExecuteEvent(int val)
     {
-        OnExecuteResultRequest?.Invoke(val);
+        OnExecuteInt?.Invoke(val);
     }
 
+    public void ExecuteEvent(float val)
+    {
+        OnExecuteFloat?.Invoke(val);
+    }
 }

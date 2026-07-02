@@ -28,6 +28,10 @@ namespace Game.Presentation.UI.Combo
         // 寺田
         [SerializeField,Tooltip("コンボをお金に変換")]
         MoneyData _moneyData;
+        [SerializeField,Tooltip("コンボボーナス適用")]
+        SceneEventChannel _sceneEventChannel;
+        [SerializeField, Tooltip("コンボボーナス倍率"),Range(0.0f,1.0f)]
+        float _multiRatio;
 
         [Header("--- UI References ---")]
         [Tooltip("コンボテキストを表示するオブジェクトのRectTransform")]
@@ -70,7 +74,9 @@ namespace Game.Presentation.UI.Combo
 
             _moneyData?.Initialize();
             _comboManager.moneyData = _moneyData;
-
+            _comboManager.multiRatio = _multiRatio;
+            _comboManager.EventChannel = _sceneEventChannel;
+            
             // 初期状態は非表示
             SetTextActive(false);
         }

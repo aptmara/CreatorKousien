@@ -113,11 +113,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41be434445eb05647a769c3d6d368243, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrystalWalk
-  centerPos: {x: 0, y: 1, z: 18}
-  rightPos: {x: 19, y: 1, z: 5}
-  leftPos: {x: -19, y: 1, z: 5}
-  rightControllPos: {x: 22, y: 1, z: 19}
-  leftControllPos: {x: -22, y: 1, z: 19}
+  startPosition: {fileID: 0}
+  _startPositionWaitTime: 1
+  pathSegments: []
+  _autoReverseLoop: 1
   startCount: 0
   maxCount: 25
   _hitStop: 0.7
@@ -125,13 +124,15 @@ MonoBehaviour:
   _shakeAmplitude: 0.1
   _emitter: {fileID: 8110819778900283661}
   _spreadAngle: 40
-  shardCount: 60
+  shardBaseCount: 0
+  curShardCount: 0
   power: 350
   _shard:
   - Data: {fileID: 11400000, guid: c5bea3e5375a6f54486a91623f955ecb, type: 2}
     Weight: 1
   VFX: {fileID: 2890516327077821158, guid: e4dde6909f46524458f9cfd790e79510, type: 3}
   _scale: {x: 6, y: 6, z: 6}
+  _channel: {fileID: 0}
   _fieldData: {fileID: 0}
   _fieldCenter: {fileID: 0}
   _emitOffset: 1.5

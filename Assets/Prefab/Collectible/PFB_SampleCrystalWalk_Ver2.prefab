@@ -621,6 +621,7 @@ MonoBehaviour:
     Weight: 1
   VFX: {fileID: 2890516327077821158, guid: e4dde6909f46524458f9cfd790e79510, type: 3}
   _scale: {x: 4, y: 1, z: 1}
+  _channel: {fileID: 11400000, guid: 58e1728789289fa47b441403e4650359, type: 2}
   _fieldData: {fileID: 0}
   _fieldCenter: {fileID: 0}
   _emitOffset: 1.5
