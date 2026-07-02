@@ -77,7 +77,6 @@ public class S_UpgradeSelectionUI : MonoBehaviour
 
         ClearCards();
 
-        Debug.Log("onClick");
         if(_panelRoot != null)
         {
             _panelRoot.SetActive(false);
