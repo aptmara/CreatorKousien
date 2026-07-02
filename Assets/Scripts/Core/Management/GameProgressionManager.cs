@@ -23,6 +23,7 @@ namespace Game.Core.Management
 
         [Header("--- シーン名設定 ---")]
         [SerializeField] private string _roguelikeSceneName = "Roguelike";
+        [SerializeField] private string _resultSceneName = "Result";
 
         [Header("--- ウェーブ設定定義アセット ---")]
         [SerializeField] private EnemySpawnerDefinition _spawnerDefinition;
@@ -34,6 +35,8 @@ namespace Game.Core.Management
         private int _currentWaveIndex = 0;
         private int _totalEnemiesInCurrentWave = 0;
         private int _defeatedEnemiesInCurrentWave = 0;
+
+        public GameResultSummary ResultSummary { get; private set; }
 
         public GameProgressionState CurrentState => _currentState;
         public int CurrentWaveIndex => _currentWaveIndex + 1;
@@ -85,12 +88,14 @@ namespace Game.Core.Management
         {
             // エネミーの撃破イベントを購読
             EventBus.Subscribe<EnemyDefeatedEvent>(OnEnemyDefeated);
+            EventBus.Subscribe<DefLineBreakReactionEvent>(OnDefenseLineBroken);
         }
 
         private void OnDisable()
         {
             // エネミーの撃破イベントの購読解除
             EventBus.Unsubscribe<EnemyDefeatedEvent>(OnEnemyDefeated);
+            EventBus.Unsubscribe<DefLineBreakReactionEvent>(OnDefenseLineBroken);
         }
 
         /// <summary>
@@ -140,7 +145,7 @@ namespace Game.Core.Management
                 if (_currentWaveIndex + 1 >= _spawnerDefinition.WaveDatas.Count)
                 {
                     // 最終ウェーブクリア -> ゲームクリア状態へ遷移
-                    HandleGameClear();
+                    HandleGameResult(isClear: true);
                 }
                 else
                 {
@@ -148,6 +153,13 @@ namespace Game.Core.Management
                     HandleWaveClear();
                 }
             }
+        }
+
+        private void OnDefenseLineBroken(DefLineBreakReactionEvent ev)
+        {
+            if (_currentState != GameProgressionState.Battle) return;
+            Debug.Log("[Progression] 防衛ラインのバリア崩壊を検知。ゲームオーバー処理を開始するぜよ。");
+            HandleGameResult(isClear: false);
         }
 
         /// <summary>
@@ -168,10 +180,10 @@ namespace Game.Core.Management
             Cursor.visible = true;
 
             // ローグライクシーンの加算ロード
-            StartCoroutine(LoadRoguelikeSceneRoutine());
+            StartCoroutine(LoadSceneAdditiveRoutine(_roguelikeSceneName));
         }
 
-        private void HandleGameClear()
+        private void HandleGameResult(bool isClear)
         {
             _currentState = GameProgressionState.Result;
 
@@ -180,24 +192,40 @@ namespace Game.Core.Management
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
 
-            Debug.Log("[Progression] ★★★ 全ウェーブ完全走破！ゲームクリアだぜよ！ ★★★");
+            // 現状の防衛ラインの残りHPをシーンから取得
+            var gauge = Object.FindFirstObjectByType<Core.DefenceLine.DefenseLineGauge>();
+            float currentHp = gauge != null ? gauge.CurrentHP : 0f;
+
+            // リザルト画面に渡す全データをパッキング
+            ResultSummary = new GameResultSummary(isClear, _currentWaveIndex, currentHp);
+
+            Debug.Log($"[Progression] 勝敗決定 - Clear: {isClear}, 最終ウェーブ: {_currentWaveIndex + 1}. リザルト画面をロードします。");
+            StartCoroutine(LoadSceneAdditiveRoutine(_resultSceneName));
         }
 
         /// <summary>
         /// ローグライクシーンの加算ロード
         /// </summary>
         /// <returns></returns>
-        private IEnumerator LoadRoguelikeSceneRoutine()
+        private IEnumerator LoadSceneAdditiveRoutine(string sceneName)
         {
             // 重複ロード防止
-            Scene existingScene = SceneManager.GetSceneByName(_roguelikeSceneName);
+            Scene existingScene = SceneManager.GetSceneByName(sceneName);
             if (existingScene.IsValid() && existingScene.isLoaded)
             {
                 yield break;
             }
 
             // Additiveロード
-            AsyncOperation op = SceneManager.LoadSceneAsync(_roguelikeSceneName, LoadSceneMode.Additive);
+            AsyncOperation op = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+            if (op == null)
+            {
+                Debug.LogError($"[Progression] シーン '{sceneName}' のロードに失敗。Build Profiles を確認してちょ。");
+                Time.timeScale = 1f;
+                _currentState = GameProgressionState.Battle;
+                yield break;
+            }
+
             while (!op.isDone)
             {
                 yield return null;
@@ -239,12 +267,6 @@ namespace Game.Core.Management
 
                 // 次のウェーブを開始
                 StartBattleWave(_currentWaveIndex);
-            }
-            else
-            {
-                // フォールバック
-                _currentState = GameProgressionState.Result;
-                Debug.Log("[Progression] すべてのウェーブをクリアしたぜよ！\nゲームクリア状態へ遷移するぜよ！");
             }
         }
     }
