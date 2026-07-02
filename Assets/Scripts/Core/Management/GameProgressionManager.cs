@@ -31,6 +31,14 @@ namespace Game.Core.Management
         [Header("--- 参照 ---")]
         [SerializeField] private EnemySpawner _enemySpawner;
 
+        [Header("--- クリア演出・猶予設定 ---")]
+        [Tooltip("最後の敵を倒してから、コンボや弾が当たり切るまでの猶予時間 (秒)")]
+        [SerializeField] private float _clearDelayDuration = 2.0f;
+
+        [Tooltip("クリアした瞬間の時間の進み方 (例 0.1f: 10%のスローモーション)")]
+        [Range(0.01f, 1f)]
+        [SerializeField] private float _slowMotionTimeScale = 0.2f;
+
         private GameProgressionState _currentState = GameProgressionState.Setup;
         private int _currentWaveIndex = 0;
         private int _totalEnemiesInCurrentWave = 0;
@@ -106,6 +114,7 @@ namespace Game.Core.Management
         {
             _currentState = GameProgressionState.Battle;
             Time.timeScale = 1f;    // ポーズ解除
+            Time.fixedDeltaTime = 0.02f * Time.timeScale;
 
             if (_spawnerDefinition == null || waveIndex >= _spawnerDefinition.WaveDatas.Count)
             {
@@ -145,12 +154,12 @@ namespace Game.Core.Management
                 if (_currentWaveIndex + 1 >= _spawnerDefinition.WaveDatas.Count)
                 {
                     // 最終ウェーブクリア -> ゲームクリア状態へ遷移
-                    HandleGameResult(isClear: true);
+                    StartCoroutine(AnimateWaveClearRoutine(isFinalWave: true));
                 }
                 else
                 {
                     // ウェーブクリア -> ローグライクフェーズへ遷移
-                    HandleWaveClear();
+                    StartCoroutine(AnimateWaveClearRoutine(isFinalWave: false));
                 }
             }
         }
@@ -160,6 +169,35 @@ namespace Game.Core.Management
             if (_currentState != GameProgressionState.Battle) return;
             Debug.Log("[Progression] 防衛ラインのバリア崩壊を検知。ゲームオーバー処理を開始するぜよ。");
             HandleGameResult(isClear: false);
+        }
+
+        /// <summary>
+        /// ウェーブを全滅させたあとに弾が当たり切る猶予を作る最強の非同期演出ルーチン
+        /// </summary>
+        /// <param name="isFinalWave"></param>
+        private IEnumerator AnimateWaveClearRoutine(bool isFinalWave)
+        {
+            // 一時的に状態を逃がす
+            _currentState = GameProgressionState.Setup;
+
+            Debug.Log($"[Progression] 最後の敵の撃破を検知！ 弾の着弾猶予として {_clearDelayDuration} 秒間スローモーション演出を行うぜよ。");
+
+            // 1. 画面を一瞬スローモーション
+            Time.timeScale = _slowMotionTimeScale;
+            Time.fixedDeltaTime = 0.02f * Time.timeScale;
+
+            // 2. コンボが切れるまでの時間を実時間で待機
+            yield return new WaitForSecondsRealtime(_clearDelayDuration);
+
+            // 3. 猶予が終了したら、進行処理へ
+            if (isFinalWave)
+            {
+                HandleGameResult(isClear: true);
+            }
+            else
+            {
+                HandleWaveClear();
+            }
         }
 
         /// <summary>
