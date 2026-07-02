@@ -6,6 +6,9 @@ using System;
 
 namespace Game.Core.DefenceLine
 {
+    /// <summary>
+    /// 防衛ラインのHPゲージを管理するコンポーネント
+    /// </summary>
     public class DefenseLineGauge : MonoBehaviour
     {
         public Action OnGaugeBroken;
@@ -13,6 +16,8 @@ namespace Game.Core.DefenceLine
         // 将来用にフラグを保持
         bool _isBroken = false;
         float _gaugeHP = 30.0f;
+
+        public float CurrentHP => _gaugeHP;
 
         private void OnEnable()
         {
@@ -23,8 +28,6 @@ namespace Game.Core.DefenceLine
         {
             EventBus.Unsubscribe<RuleBarrierAttackEvent>(OnBarrierHitBatch);
         }
-
-        // Start is called once before the first execution of Update after the MonoBehaviour is created
 
         private void Initialized(float gaugeHP)
         {
@@ -45,11 +48,12 @@ namespace Game.Core.DefenceLine
             _gaugeHP = Mathf.Max(_gaugeHP, 0.0f);
 
             Debug.Log("防衛ライン残りHP" + _gaugeHP);
+
             // 被弾後の残HPに応じて処理を行う
             if (_gaugeHP <= 0.0f)
             {
                 // バリアが破壊されたことを返す
-                // OnGaugeBroken();
+                OnGaugeBroken?.Invoke();
 
                 // オブジェクトに破壊リアクションを返す
                 EventBus.Publish(new DefLineBreakReactionEvent());
