@@ -1,102 +1,97 @@
-// 描画している線上をcrystalが練り歩きます
-// 2026/6/29
-// 山本郁也
-// 2026/6/29 - Fieldの傾きに対応するように修正、統合を行いました！浅野勇生
-//             プレイヤーの殴りで壊せるクリスタルの共通インターフェース ICrystalBreakable を追加しました
 using Game.Gameplay.Collectibles;
 using Game.Gameplay.Stage;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
 
 public class CrystalWalk : MonoBehaviour, ICrystalBreakable
 {
-    public Vector3 centerPos;
-    public Vector3 rightPos;
-    public Vector3 leftPos;
-    public Vector3 rightControllPos;
-    public Vector3 leftControllPos;
+    // --- 【ここを追加】セグメントごとの移動モード ---
+    public enum SegmentMode
+    {
+        Bezier, // ベジェ曲線（制御点を使用する）
+        Linear  // 直線（制御点を無視して真っ直ぐ進む）
+    }
+
+    [System.Serializable]
+    public class PathSegment
+    {
+        [Tooltip("この区間の移動モード（直線かベジェ曲線か）")]
+        public SegmentMode mode = SegmentMode.Bezier;
+
+        [Tooltip("そこへ向かうためのベジェ制御点（直線モードの場合は未設定でOK）")]
+        public Transform controlPosition;
+
+        [Tooltip("目標とする中継地点")]
+        public Transform targetPosition;
+
+        [Tooltip("この中継地点に到達したときの待機時間（秒）。0なら止まらず通過。")]
+        public float waitTime = 0.0f;
+    }
+
+    [Header("移動経路の設定")]
+    [Tooltip("スタート地点の座標")]
+    public Transform startPosition;
+
+    [Tooltip("スタート地点（始点）に戻ってきたときの待機時間（秒）")]
+    [SerializeField] private float _startPositionWaitTime = 1.0f;
+
+    [Tooltip("経由する中継地点と制御点のリスト（何個でも追加可能）")]
+    public List<PathSegment> pathSegments = new List<PathSegment>();
+
+    [Tooltip("終点に達した後、自動的に逆再生してスタートに戻るか")]
+    [SerializeField] private bool _autoReverseLoop = true;
+
+    private float _currentWaitTime = 0.0f;
+    private int _lastSegmentIndex = -1;
+    private bool _isReturning = false;
 
     private int segmentCount = 32;
 
-    [Header("スタート位置(0秒or最大の半分の時間推奨)")]
-    [SerializeField]
-    public float startCount;
-    [Header("一周にかかる時間(秒)")]
-    [SerializeField]
-    public float maxCount;
+    [Header("スタート位置(秒)")]
+    [SerializeField] public float startCount;
+    [Header("一周（あるいは片道）にかかる時間(秒)")]
+    [SerializeField] public float maxCount;
     private float _currentCount;
-    private float _baseCount;
+
     [Header("ヒットストップ")]
     [SerializeField] private float _hitStop = 0.5f;
     private float _currentHitStop = 0.0f;
 
     [Header("殴られた時の揺れ")]
-    [Tooltip("揺らす見た目")]
     [SerializeField] private Transform _model;
-    [Tooltip("揺れ幅")]
     [SerializeField] private float _shakeAmplitude = 0.1f;
     private Vector3 _modelBaseLocalPos;
 
     [Header("欠片関連")]
-    [SerializeField]
-    private CrystalShardEmitter _emitter;
-    [Tooltip("欠片の散らばり角度(度)")]
+    [SerializeField] private CrystalShardEmitter _emitter;
     [SerializeField] private float _spreadAngle = 25.0f;
-    [Header("欠片の基礎発射数")]
     [SerializeField] public int shardBaseCount;
-    [Header("実際に出る数")]
     [SerializeField] public int curShardCount;
-    [Header("欠片の発射力")]
-    [Tooltip("欠片の発射力。大きいほど遠くへ飛ぶ")]
     [SerializeField] public float power;
-    [Header("欠片の種類と重み")]
-    [SerializeField] public CrystalShardEmitter.WeightedShardData[] _shard;
-    [Header("欠片の発生エフェクト")]
+    [SerializeField] private CrystalShardEmitter.WeightedShardData[] _shard;
     [SerializeField] private GameObject VFX;
-    [Tooltip("欠片の発生エフェクトの大きさ")]
     [SerializeField] private Vector3 _scale;
 
     [Header("フィールドの傾き")]
-    [Tooltip("経路を傾けるために参照する FieldData(SO)。未設定なら実行時の FieldContext を使用")]
     [SerializeField] private FieldData _fieldData;
 
-
     [Header("欠片のあつまる中心")]
-    [Tooltip("欠片が集まる中心の Transform。未設定ならワールド原点(0,0,0)")]
     [SerializeField] private Transform _fieldCenter;
-    [Tooltip("欠片を殴られた点からどれだけ外へ出すか")]
     [SerializeField] private float _emitOffset = 1.5f;
-    [Tooltip("発射方向に足す上向きの強さ(大きいほど高く打ち上がる)")]
     [SerializeField] private float _upBias = 1.5f;
 
-    // フィールド中心のワールド座標
     private Vector3 FieldCenter => _fieldCenter != null ? _fieldCenter.position : Vector3.zero;
 
+    public void Break(Vector3 hitPoint, Vector3 hitDirection) => Emits(hitPoint);
 
-    // ICrystalBreakable インターフェースの実装
-    public void Break(Vector3 hitPoint, Vector3 hitDirection)
-    {
-        Emits(hitPoint);
-    }
-
-
-    /// <summary>
-    /// 経路に適用するフィールドの傾き回転。
-    /// SO が設定されていればその傾き角を、なければ実行時の FieldContext を参照する。
-    /// </summary>
     private Quaternion FieldRotation
     {
         get
         {
-            if (_fieldData != null)
-            {
-                return Quaternion.Euler(_fieldData.FieldTilt, 0f, 0f);
-            }
-            if (FieldContext.IsReady)
-            {
-                return FieldContext.Rotation;
-            }
+            if (_fieldData != null) return Quaternion.Euler(_fieldData.FieldTilt, 0f, 0f);
+            if (FieldContext.IsReady) return FieldContext.Rotation;
             return Quaternion.identity;
         }
     }
@@ -104,71 +99,87 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     void Start()
     {
         _currentCount = startCount;
-        _baseCount = maxCount / 4.0f;
-        if(_scale.x <= 0.0f || _scale.y <= 0.0f || _scale.z <= 0.0f)
-        {
-            _scale = new Vector3(1, 1, 1);
-        }
-
-        if (_model != null)
-        {
-            _modelBaseLocalPos = _model.localPosition;
-        }
-
+        if (_scale.x <= 0.0f || _scale.y <= 0.0f || _scale.z <= 0.0f) _scale = Vector3.one;
+        if (_model != null) _modelBaseLocalPos = _model.localPosition;
         curShardCount = shardBaseCount;
+
+        float initT = Mathf.Clamp01(_currentCount / maxCount);
+        if (_autoReverseLoop)
+        {
+            initT *= 2f;
+            _isReturning = initT > 1f;
+            if (_isReturning) initT = 2f - initT;
+        }
+        float exactSegment = initT * pathSegments.Count;
+        _lastSegmentIndex = Mathf.FloorToInt(exactSegment);
     }
 
-    // Update is called once per frame
     void Update()
     {
-        // 水平面上で算出した経路上の点
-        Vector3 flatPoint;
-        if(_currentCount < maxCount / 4.0f)
+        if (pathSegments == null || pathSegments.Count == 0) return;
+
+        // 1. 一時停止（待機）タイマーの処理
+        if (_currentWaitTime > 0.0f)
         {
-            flatPoint =
-            CalculateQuadraticBezierPoint(
-                (_currentCount)/_baseCount,
-                centerPos,
-                leftControllPos,
-                leftPos);
-        }
-        else if(_currentCount > maxCount / 4.0f && _currentCount <= maxCount / 2.0f)
-        {
-            flatPoint =
-            CalculateQuadraticBezierPoint(
-                (_currentCount - (_baseCount)) / _baseCount,
-                leftPos,
-                leftControllPos,
-                centerPos);
-        }
-        else if(_currentCount > maxCount / 2.0f && _currentCount <= 3.0f * maxCount/ 4.0f)
-        {
-            flatPoint =
-            CalculateQuadraticBezierPoint(
-                (_currentCount - (_baseCount * 2.0f)) / _baseCount,
-                centerPos,
-                rightControllPos,
-                rightPos);
-        }
-        else if(_currentCount > 3.0f * maxCount / 4.0f)
-        {
-            flatPoint =
-            CalculateQuadraticBezierPoint(
-                (_currentCount - (_baseCount * 3.0f)) / _baseCount,
-                rightPos,
-                rightControllPos,
-                centerPos);
-        }
-        else
-        {
-            flatPoint = Vector3.zero;
+            _currentWaitTime -= Time.deltaTime;
+            UpdateModelShake();
+            return;
         }
 
-        // フィールドの傾きを反映してワールド座標に変換(斜め移動)
+        // 現在の正規化時間 (0.0 ～ 1.0)
+        float totalT = Mathf.Clamp01(_currentCount / maxCount);
+
+        bool nextIsReturning = _isReturning;
+        if (_autoReverseLoop)
+        {
+            totalT *= 2f;
+            nextIsReturning = totalT > 1f;
+            if (nextIsReturning) totalT = 2f - totalT;
+        }
+
+        // 現在のセグメントインデックスを計算
+        float exactSegment = totalT * pathSegments.Count;
+        int currentSegmentIndex = Mathf.FloorToInt(exactSegment);
+        if (currentSegmentIndex >= pathSegments.Count) currentSegmentIndex = pathSegments.Count - 1;
+
+        // セグメント（経由地）の切り替わり、または折り返しを検知
+        if (_lastSegmentIndex != -1 && (currentSegmentIndex != _lastSegmentIndex || nextIsReturning != _isReturning))
+        {
+            float targetWaitTime = 0f;
+
+            if (currentSegmentIndex == 0 && !nextIsReturning && _isReturning)
+            {
+                targetWaitTime = _startPositionWaitTime;
+            }
+            else if (_isReturning && currentSegmentIndex != _lastSegmentIndex)
+            {
+                targetWaitTime = pathSegments[currentSegmentIndex].waitTime;
+            }
+            else
+            {
+                targetWaitTime = pathSegments[_lastSegmentIndex].waitTime;
+            }
+
+            _lastSegmentIndex = currentSegmentIndex;
+            _isReturning = nextIsReturning;
+
+            if (targetWaitTime > 0.0f)
+            {
+                _currentWaitTime = targetWaitTime;
+                return;
+            }
+        }
+
+        _lastSegmentIndex = currentSegmentIndex;
+        _isReturning = nextIsReturning;
+
+        // パス上の座標計算
+        Vector3 flatPoint = EvaluatePath(totalT);
         Vector3 worldPoint = FieldRotation * flatPoint;
         Vector3 moveDir = worldPoint - transform.position;
         gameObject.transform.position = worldPoint;
 
+        // 時間進行とヒットストップ処理
         if (_currentHitStop > 0.0f)
         {
             _currentHitStop -= Time.deltaTime;
@@ -181,24 +192,23 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
 
         if (_currentHitStop <= 0.0f) _currentHitStop = 0.0f;
 
-        if (Keyboard.current.spaceKey.wasPressedThisFrame)
-        {
-            Emits(transform.position);
-        }
+        if (Keyboard.current.spaceKey.wasPressedThisFrame) Emits(transform.position);
 
-        Vector3 fieldUp = FieldRotation * Vector3.up;   // 床に合わせた上向き
-
+        Vector3 fieldUp = FieldRotation * Vector3.up;
         if (moveDir.sqrMagnitude > 0.0001f)
         {
             transform.rotation = Quaternion.LookRotation(moveDir.normalized, fieldUp);
         }
 
-        // 殴られた時の揺れ
+        UpdateModelShake();
+    }
+
+    private void UpdateModelShake()
+    {
         if (_model != null)
         {
             if (_currentHitStop > 0f)
             {
-                // 残り時間で減衰
                 float k = _currentHitStop / Mathf.Max(0.0001f, _hitStop);
                 _model.localPosition = _modelBaseLocalPos + UnityEngine.Random.insideUnitSphere * _shakeAmplitude * k;
             }
@@ -209,57 +219,70 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         }
     }
 
+    private Vector3 EvaluatePath(float t)
+    {
+        int totalSegments = pathSegments.Count;
+        float exactSegment = t * totalSegments;
+        int index = Mathf.FloorToInt(exactSegment);
+
+        if (index >= totalSegments) index = totalSegments - 1;
+        float localT = exactSegment - index;
+
+        Vector3 p0 = (index == 0) ? startPosition.position : pathSegments[index - 1].targetPosition.position;
+        Vector3 p2 = pathSegments[index].targetPosition.position;
+
+        // --- 【ここを修正】モードに応じて計算を分岐 ---
+        if (pathSegments[index].mode == SegmentMode.Linear)
+        {
+            // 直線モードなら、単に始点と終点を線形補間するだけ（制御点は参照しない）
+            return Vector3.Lerp(p0, p2, localT);
+        }
+        else
+        {
+            // ベジェモードなら、制御点を使って2次ベジェ計算
+            Vector3 p1 = pathSegments[index].controlPosition != null ? pathSegments[index].controlPosition.position : p0;
+            return CalculateQuadraticBezierPoint(localT, p0, p1, p2);
+        }
+    }
 
     private void OnDrawGizmos()
     {
-        if (centerPos == null ||
-            rightPos == null ||
-            leftPos == null ||
-            leftControllPos == null ||
-            rightControllPos == null)
-        {
-            return;
-        }
+        if (pathSegments == null || pathSegments.Count == 0 || startPosition == null) return;
 
         Gizmos.color = Color.green;
+        Vector3 previousPoint = FieldRotation * startPosition.position;
 
-        Vector3 previousPoint = FieldRotation * leftPos;
-
-        for (int i = 1; i <= segmentCount; i++)
+        for (int index = 0; index < pathSegments.Count; index++)
         {
-            float t = (float)i / segmentCount;
+            if (pathSegments[index].targetPosition == null) continue;
 
-            Vector3 currentPoint = FieldRotation * CalculateQuadraticBezierPoint(
-                t,
-                leftPos,
-                leftControllPos,
-                centerPos
-            );
+            Vector3 p0 = (index == 0) ? startPosition.position : pathSegments[index - 1].targetPosition.position;
+            Vector3 p2 = pathSegments[index].targetPosition.position;
 
-            Gizmos.DrawLine(previousPoint, currentPoint);
+            // --- 【ここを修正】ギズモ描画もモードに対応 ---
+            if (pathSegments[index].mode == SegmentMode.Linear)
+            {
+                // 直線なら1本の線を描くだけでいいのでループ不要
+                Vector3 currentPoint = FieldRotation * p2;
+                Gizmos.DrawLine(previousPoint, currentPoint);
+                previousPoint = currentPoint;
+            }
+            else
+            {
+                // ベジェなら細かく分割して曲線を描画
+                if (pathSegments[index].controlPosition == null) continue;
+                Vector3 p1 = pathSegments[index].controlPosition.position;
 
-            previousPoint = currentPoint;
+                for (int i = 1; i <= segmentCount; i++)
+                {
+                    float t = (float)i / segmentCount;
+                    Vector3 currentPoint = FieldRotation * CalculateQuadraticBezierPoint(t, p0, p1, p2);
+                    Gizmos.DrawLine(previousPoint, currentPoint);
+                    previousPoint = currentPoint;
+                }
+            }
         }
 
-        previousPoint = FieldRotation * centerPos;
-
-        for (int i = 1; i <= segmentCount; i++)
-        {
-            float t = (float)i / segmentCount;
-
-            Vector3 currentPoint = FieldRotation * CalculateQuadraticBezierPoint(
-                t,
-                centerPos,
-                rightControllPos,
-                rightPos
-            );
-
-            Gizmos.DrawLine(previousPoint, currentPoint);
-
-            previousPoint = currentPoint;
-        }
-
-        // 欠片の集まる中心(シアン)と発射方向(マゼンタ)の確認用
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(FieldCenter, 0.5f);
 
@@ -272,19 +295,10 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         }
     }
 
-    private Vector3 CalculateQuadraticBezierPoint(
-        float t,
-        Vector3 p0,
-        Vector3 p1,
-        Vector3 p2
-    )
+    private Vector3 CalculateQuadraticBezierPoint(float t, Vector3 p0, Vector3 p1, Vector3 p2)
     {
         float u = 1.0f - t;
-
-        return
-            u * u * p0 +
-            2.0f * u * t * p1 +
-            t * t * p2;
+        return u * u * p0 + 2.0f * u * t * p1 + t * t * p2;
     }
 
     [ContextMenu("DEBUG: Emit Shards")]
@@ -294,15 +308,12 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     {
         if (_emitter != null)
         {
-            // 水平方向だけ「中心へ」向ける
             Vector3 toCenter = FieldCenter - transform.position;
             Vector3 horizontal = Vector3.ProjectOnPlane(toCenter, Vector3.up);
             horizontal = horizontal.sqrMagnitude > 0.0001f ? horizontal.normalized : Vector3.zero;
 
-            // 水平(中心へ) + 上向き = 上に弾けて中心側へ飛ぶ
             Vector3 dir = (horizontal + Vector3.up * _upBias).normalized;
 
-            // 発生位置: クリスタル中心から外へ押し出す
             Vector3 outward = hitPoint - transform.position;
             outward = outward.sqrMagnitude > 0.0001f ? outward.normalized : Vector3.up;
             Vector3 spawnPos = hitPoint + outward * _emitOffset;
@@ -314,38 +325,19 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         PlayEffect(hitPoint, _scale.x);
     }
 
-
     public void PlayEffect(Vector3 position, float size)
     {
         GameObject effect = Instantiate(VFX, position, Quaternion.identity);
-
         ParticleSystem[] particles = effect.GetComponentsInChildren<ParticleSystem>();
-
         foreach (ParticleSystem particle in particles)
         {
             var main = particle.main;
             main.startSizeMultiplier *= size;
         }
-
         Destroy(effect, 2.0f);
     }
 
-    // 現在数に倍率をかける
-    public void Multiply(float multiply)
-    {
-        curShardCount = (int)(curShardCount * multiply);
-    }
-
-    // 基礎数に倍率をかける
-    public void BaseMultiply(float multiply)
-    {
-        curShardCount = (int)(shardBaseCount * multiply);
-    }
-
-    // 現在数を基礎数に戻す
-    public void InitShardCount()
-    {
-        curShardCount = shardBaseCount;
-    }
-
+    public void Multiply(float multiply) => curShardCount = (int)(curShardCount * multiply);
+    public void BaseMultiply(float multiply) => curShardCount = (int)(shardBaseCount * multiply);
+    public void InitShardCount() => curShardCount = shardBaseCount;
 }
