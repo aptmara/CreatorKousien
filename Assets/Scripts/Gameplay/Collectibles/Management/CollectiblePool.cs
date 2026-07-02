@@ -4,6 +4,7 @@
 //
 // Description  : CollectibleObjectの事前生成と貸出・返却を管理するPool。
 // Created      : 2026-05-06
+// Updated      : 2026-07-02 (全てのアイテムの強制回収を実装)
 // ================================================================================
 
 using UnityEngine;
@@ -17,14 +18,28 @@ namespace Game.Gameplay.Collectibles
     /// </summary>
     public class CollectiblePool : MonoBehaviour
     {
+        public static CollectiblePool Instance { get; private set; }
+
         [Header("Pool Settings")]
         [Tooltip("プールするアイテムの実体Prefab")]
         [SerializeField] private CollectibleObject _prefab;
 
         [Tooltip("ゲーム開始時に事前生成する数")]
-        [SerializeField] private int _initialPoolSize = 50;
+        [SerializeField] private int _initialPoolSize = 300;
 
         private Queue<CollectibleObject> _pool = new Queue<CollectibleObject>();
+
+        private List<CollectibleObject> _activeInField = new List<CollectibleObject>();
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
+        }
 
         private void Start()
         {
@@ -63,20 +78,53 @@ namespace Game.Gameplay.Collectibles
 
             CollectibleObject obj = _pool.Dequeue();
             obj.gameObject.SetActive(true);
+
+            if (!_activeCollectiblesContains(obj))
+            {
+                _uiActiveItems.Add(obj);
+            }
             return obj;
         }
+
+        // 管理用
+        private List<CollectibleObject> _uiActiveItems = new List<CollectibleObject>();
 
         /// <summary>
         /// オブジェクトをPoolへ返却します。
         /// </summary>
         public void Return(CollectibleObject obj)
         {
+            if (obj == null) return;
+
             obj.ResetState();
+            _uiControllerRemove(obj);
 
             if (!_pool.Contains(obj))
             {
                 _pool.Enqueue(obj);
             }
+        }
+
+        private void _uiActiveItemsAdd(CollectibleObject obj) => _uiActiveItems.Add(obj);
+        private void _uiControllerRemove(CollectibleObject obj) => _uiActiveItems.Remove(obj);
+        private bool _activeCollectiblesContains(CollectibleObject obj) => _uiActiveItems.Contains(obj);
+
+        /// <summary>
+        /// 現在フィールド上に散らばっている全てのアイテムを強制回収する
+        /// </summary>
+        public void ClearAllActiveItemsInField()
+        {
+            Debug.Log($"[CollectiblePool] フィールド上の自由移動アイテムを一括クリーンアップします。対象数: {_uiActiveItems.Count}");
+
+            CollectibleObject[] targets = _uiActiveItems.ToArray();
+            for (int i = targets.Length - 1; i >= 0; i--)
+            {
+                if (targets[i] != null && targets[i].gameObject.activeInHierarchy)
+                {
+                    targets[i].Despawn();
+                }
+            }
+            _uiActiveItems.Clear();
         }
     }
 }

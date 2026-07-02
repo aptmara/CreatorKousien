@@ -1,5 +1,5 @@
 // ================================================================================
-// File         : CollectibleData.cs
+// File         : CollectibleObject.cs
 // Author       : Iwai Shogo
 //
 // Description  : 収集物の各種パラメータを定義するScriptableObject。
@@ -20,8 +20,13 @@ namespace Game.Gameplay.Collectibles
     [RequireComponent(typeof(Rigidbody), typeof(Collider))]
     public class CollectibleObject : MonoBehaviour
     {
+        [Header("--- データ ---")]
         [Tooltip("このオブジェクトのマスターデータ")]
         [SerializeField] private CollectibleData _data;
+
+        [Header("--- 落下自動回収設定 ---")]
+        [Tooltip("このY座標を下回ったら、自動でプールへ戻すデッドライン")]
+        [SerializeField] private float _fallDeadLineY = -20f;
 
         private Rigidbody _rigidbody;
         private Action<CollectibleObject> _returnAction;
@@ -40,6 +45,16 @@ namespace Game.Gameplay.Collectibles
         {
             _rigidbody = GetComponent<Rigidbody>();
             _initialScale = transform.localScale;
+        }
+
+        private void FixedUpdate()
+        {
+            // アイテムがステージ外へ落下した場合は自動クリーンアップ
+            if (transform.position.y < _fallDeadLineY)
+            {
+                Debug.Log($"[Collectible] アイテム '{name}' がデッドラインを下回ったため自動回収されました。");
+                Despawn();
+            }
         }
 
         /// <summary>
