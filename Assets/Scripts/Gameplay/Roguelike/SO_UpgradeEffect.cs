@@ -7,8 +7,7 @@
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "SO_UpgradeEffect", menuName = "Scriptable Objects/SO_UpgradeEffect")]
-public class SO_UpgradeEffect : ScriptableObject
+public abstract class SO_UpgradeEffect : ScriptableObject
 {
-    
+    public abstract void Apply(UpgradeApplyContext context, int level);
 }
