@@ -1,23 +1,101 @@
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 // file   : S_RoguelikeResultController.cs
-// brief  : 
+// brief  : シーンで選ばれた強化をSO_UpgradeRuntimeStateに記録
+//          同時に、PlayerFacade.ApplyUpgrade()で実ステータスへ即時反映する
 //
 // auther : Shohei Takitani
 // date   : 2026/06/30 - begin.
+//          2026/07/02 - GameProgressionManagerに合わせる
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using Game.Gameplay.Player;
+using Game.Core.Management;
 
 public class S_RoguelikeResultController : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    //____________________________________
+    // variables
+
+    [Header("Runtime State")]
+    [Tooltip("取得済み強化とレベルを保存するSO")]
+    [SerializeField] private SO_UpgradeRuntimeState _upgradeRuntimeState;
+
+    [Header("Player")]
+    [Tooltip("実ステータス適応先、シーン内のPlayerFacadeを指定")]
+    [SerializeField] private PlayerFacade _playerFacade;
+
+    [Header("Event")]
+    [Tooltip("ローグライクシーン終了イベント")]
+    [SerializeField] private SO_RoguelikeEndEvent _roguelikeEndEvent;
+
+
+
+    //____________________________________
+    // public functions
+
+    /// <summary>
+    /// 選択された強化を取得済みリストに反映する関数
+    /// </summary>
+    /// <param name="selectedCard">選択された強化データ</param>
+    public void SelectUpgrade(SO_UpgradeCardData selectedCard)
     {
-        
+        if(selectedCard == null)
+        {
+            Debug.LogWarning("[S_RoguelikeResultController] 選択された強化がnullです。");
+            return;
+        }
+
+        _upgradeRuntimeState.AddOrLevelUp(selectedCard);
+
+
+        if(_playerFacade == null)
+        {
+            Debug.LogError("[S_RoguelikeResultController] PlayerFacadeが未設定です。");
+            return;
+        }
+
+        if(selectedCard.SourceUpgrade == null)
+        {
+            Debug.LogWarning($"[S_RoguelikeResultController] {selectedCard.DisplayName}にSourceUpgradeが設定されていません。");
+            return;
+        }
+
+        _playerFacade.ApplyUpgrade(selectedCard.SourceUpgrade);
     }
 
-    // Update is called once per frame
-    void Update()
+    /// <summary>
+    /// ローグライクシーンを終了する
+    /// </summary>
+    public void FinishRoguelikeScene()
     {
-        
+        if(_roguelikeEndEvent != null)
+        {
+            _roguelikeEndEvent.Raise();
+        }
+        // ゲーム進行マネージャーにローグライク終了を通知
+        if (Game.Core.Management.GameProgressionManager.Instance != null)
+        {
+            Game.Core.Management.GameProgressionManager.Instance.CompleteRoguelikeSequence();
+        }
+        else
+        {
+            Debug.LogError("[S_RoguelikeResultController] GameProgressionManager.Instanceが見つかりません。");
+        }
+
     }
+
+
+    private void Awake()
+    {
+        if(_playerFacade == null)
+        {
+            _playerFacade = FindFirstObjectByType<PlayerFacade>();
+            if(_playerFacade == null)
+            {
+                Debug.LogError("[S_RoguelikeResultController] PlayerFacadeが見つかりません。");
+            }
+        }
+    }
+
 }
