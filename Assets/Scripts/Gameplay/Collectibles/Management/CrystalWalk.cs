@@ -330,10 +330,19 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         Destroy(effect, 2.0f);
     }
 
+    // 現在数に倍率をかける
     public void Multiply(float multiply)
     {
         curShardCount = (int)(curShardCount * multiply);
     }
+
+    // 基礎数に倍率をかける
+    public void BaseMultiply(float multiply)
+    {
+        curShardCount = (int)(shardBaseCount * multiply);
+    }
+
+    // 現在数を基礎数に戻す
     public void InitShardCount()
     {
         curShardCount = shardBaseCount;
