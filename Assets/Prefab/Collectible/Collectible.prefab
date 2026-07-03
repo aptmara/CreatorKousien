@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 6387654242037428932}
   - component: {fileID: 2139515936200401590}
   - component: {fileID: -854799001704299}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Collectible
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -147,6 +147,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Collectibles.CollectibleObject
   _data: {fileID: 0}
+  _fallDeadLineY: -20
 --- !u!114 &2139515936200401590
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -177,3 +178,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b172afb0eb15a546b0485820fbd6312, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CollectableGravity
+  _gravity: 9.8

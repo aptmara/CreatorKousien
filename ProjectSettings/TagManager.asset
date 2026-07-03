@@ -17,8 +17,8 @@ TagManager:
   - Player
   - PlayerBoundary
   - Crystal
-  - 
-  - 
+  - Collectible
+  - CollectibleSpawning
   - 
   - 
   - 
