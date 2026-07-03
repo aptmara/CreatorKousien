@@ -42,6 +42,8 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     private readonly List<S_UpgradeCard> _spawnedCards = new();
     private readonly Dictionary<S_UpgradeCard, SO_UpgradeCardData> _cardToData = new();
 
+    public MoneyData MoneyData { get; set; }
+
 #if UNITY_EDITOR
     private void Update()
     {
@@ -148,6 +150,9 @@ public class S_UpgradeSelectionUI : MonoBehaviour
 
     private void OnCardSelected(SO_UpgradeCardData selectedCard)
     {
+        // 所持金を減らす
+//        MoneyData.SubtractMoney(10);
+
         _resultController.SelectUpgrade(selectedCard);
 
         // 選択したカードのみ表示を更新

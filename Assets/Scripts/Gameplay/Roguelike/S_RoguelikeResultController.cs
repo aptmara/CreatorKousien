@@ -79,7 +79,6 @@ public class S_RoguelikeResultController : MonoBehaviour
         }
 
         _playerFacade.ApplyUpgrade(selectedCard.SourceUpgrade);
-        Debug.Log($"[Debug] ApplyUpgrade後 MoveSpeedMultiplier = {_playerFacade.RuntimeData?.MoveSpeedMultiplier}");
     }
 
     /// <summary>
