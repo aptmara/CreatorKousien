@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Game.Presentation.UI
+namespace Game.Presentation.UI.Title
 {
     /// <summary>
     /// タイトル画面の看板UIを、上から落下して展開する演出を制御する。
