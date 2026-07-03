@@ -1198,7 +1198,7 @@ MonoBehaviour:
     m_Bits: 512
   _rayOriginHeight: 0.5
   _cooldown: 1
-  _rayRadius: 1.5
+  _rayRadius: 2.5
 --- !u!1 &5870560623095878439
 GameObject:
   m_ObjectHideFlags: 0
