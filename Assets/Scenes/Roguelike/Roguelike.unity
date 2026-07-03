@@ -286,6 +286,7 @@ MonoBehaviour:
   _panelRoot: {fileID: 1113188341}
   _exitButton: {fileID: 2122145297}
   _backGround: {fileID: 280133138533333906, guid: 9a04e90fc9bb88c439ee030e4c81a0ef, type: 3}
+  _moneyData: {fileID: 11400000, guid: ed79cb34a0ad631409cafd0e16aac641, type: 2}
   _cardidateCount: 3
 --- !u!114 &705193399
 MonoBehaviour:
