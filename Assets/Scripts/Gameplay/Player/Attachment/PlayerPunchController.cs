@@ -45,6 +45,7 @@ namespace Game.Gameplay.Player
         private bool _isPunching;
         private float _nextPunchTime;
         private ICrystalBreakable _pendingTarget;
+        private Vector3 _pendingHitPoint;
 
         // --- SphereCast デバッグ表示用 ---
         private Vector3 _dbgOrigin;
@@ -72,10 +73,16 @@ namespace Game.Gameplay.Player
             if (!pressed)
                 return;
 
+            // 押した瞬間にターゲットを確定して保持する
+            // (アニメの当たり判定時に再キャストすると、動くクリスタルや向きのズレで外すため)
+            bool hasTarget = TryRaycastCrystal(out _, out ICrystalBreakable target);
+
             // 空振り禁止: 前方にクリスタルが無ければ殴らない
-            if (_requireTarget && !TryRaycastCrystal(out _, out _))
+            if (_requireTarget && !hasTarget)
                 return;
 
+            _pendingTarget = target;
+            _pendingHitPoint = _dbgHitPoint;
             _nextPunchTime = Time.time + _cooldown;
             StartPunch();
         }
@@ -90,6 +97,7 @@ namespace Game.Gameplay.Player
                 return false;
 
             _pendingHitAction = onHit;
+            _pendingTarget = null;
             return StartPunch();
         }
 
@@ -134,11 +142,12 @@ namespace Game.Gameplay.Player
                 return;
             }
 
-            // 新方式: 前方Rayで当たったクリスタルを壊す
-            if (TryRaycastCrystal(out RaycastHit hit, out ICrystalBreakable breakable))
+            // 新方式: 押した瞬間に捕まえたターゲットを壊す(再キャストしない)
+            if (_pendingTarget != null)
             {
                 Vector3 dir = AimTransform.forward;
-                breakable.Break(hit.point, dir);
+                _pendingTarget.Break(_pendingHitPoint, dir);
+                _pendingTarget = null;
             }
         }
 
@@ -168,6 +177,7 @@ namespace Game.Gameplay.Player
 
             _activePunchAnimator = null;
             _pendingHitAction = null;
+            _pendingTarget = null;
             _isPunching = false;
         }
 
@@ -184,12 +194,38 @@ namespace Game.Gameplay.Player
         private bool TryRaycastCrystal(out RaycastHit hit, out ICrystalBreakable breakable)
         {
             breakable = null;
+            hit = default;
 
             Transform aim = AimTransform;
-            Ray ray = new Ray(aim.position + aim.up * _rayOriginHeight, aim.forward);
+            Vector3 origin = aim.position + aim.up * _rayOriginHeight;
+            Ray ray = new Ray(origin, aim.forward);
 
             // 球の中心が止まる距離を取得するために SphereCast を使う
             bool isHit = Physics.SphereCast(ray, _rayRadius, out hit, _rayMaxDistance, _rayMask, QueryTriggerInteraction.Ignore);
+
+            if (isHit)
+                breakable = hit.collider.GetComponentInParent<ICrystalBreakable>();
+
+
+            if (breakable == null)
+            {
+                Collider[] overlaps = Physics.OverlapSphere(origin, _rayRadius, _rayMask, QueryTriggerInteraction.Ignore);
+                foreach (Collider col in overlaps)
+                {
+                    ICrystalBreakable b = col.GetComponentInParent<ICrystalBreakable>();
+                    if (b != null)
+                    {
+                        breakable = b;
+                        _dbgHitPoint = col.ClosestPoint(origin);
+                        _dbgLength = Vector3.Distance(origin, _dbgHitPoint);
+                        _dbgDir = ray.direction;
+                        _dbgHit = true;
+                        _dbgValid = true;
+                        return true;
+                    }
+                }
+            }
+
 
             // デバッグ表示用に保持
             _dbgOrigin = ray.origin;
@@ -199,10 +235,6 @@ namespace Game.Gameplay.Player
             _dbgHit = isHit;
             _dbgValid = true;
 
-            if (!isHit)
-                return false;
-
-            breakable = hit.collider.GetComponentInParent<ICrystalBreakable>();
             return breakable != null;
         }
 

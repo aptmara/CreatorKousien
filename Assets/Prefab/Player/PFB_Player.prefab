@@ -851,7 +851,7 @@ GameObject:
   - component: {fileID: 4379990280986034882}
   m_Layer: 7
   m_Name: PFB_Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1198,7 +1198,7 @@ MonoBehaviour:
     m_Bits: 512
   _rayOriginHeight: 0.5
   _cooldown: 1
-  _rayRadius: 1.5
+  _rayRadius: 2.5
 --- !u!1 &5870560623095878439
 GameObject:
   m_ObjectHideFlags: 0
