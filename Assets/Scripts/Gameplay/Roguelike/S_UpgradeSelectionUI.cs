@@ -33,6 +33,7 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     [SerializeField] private GameObject _panelRoot;
     [SerializeField] private Button _exitButton;
     [SerializeField] private Image _backGround;
+    [SerializeField] private MoneyData _moneyData;
 
 
     [Header("設定")]
@@ -42,7 +43,7 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     private readonly List<S_UpgradeCard> _spawnedCards = new();
     private readonly Dictionary<S_UpgradeCard, SO_UpgradeCardData> _cardToData = new();
 
-    public MoneyData MoneyData { get; set; }
+
 
 #if UNITY_EDITOR
     private void Update()
@@ -150,15 +151,29 @@ public class S_UpgradeSelectionUI : MonoBehaviour
 
     private void OnCardSelected(SO_UpgradeCardData selectedCard)
     {
+        // 現在のレベルを取得
+        int nowLevel = _upgradeRuntimeState.GetLevel(selectedCard);
+        // 減らす量を計算
+        float subMoney = (float)selectedCard.Cost * (selectedCard.CostMagni * (float)nowLevel);
+
+        // お金が足りなければ処理しない
+        int nowMoney = _moneyData.moneyOnHand;
+        if (nowMoney < subMoney)
+        {
+            return;
+        }
+
+
         // 所持金を減らす
-//        MoneyData.SubtractMoney(10);
+        _moneyData.SubtractMoney((int)subMoney);
+
 
         _resultController.SelectUpgrade(selectedCard);
 
         // 選択したカードのみ表示を更新
         int newLevel = _upgradeRuntimeState.GetLevel(selectedCard);
 
-        foreach(var card in _spawnedCards)
+        foreach (var card in _spawnedCards)
         {
             if(_cardToData.TryGetValue(card, out var data) && data == selectedCard)
             {

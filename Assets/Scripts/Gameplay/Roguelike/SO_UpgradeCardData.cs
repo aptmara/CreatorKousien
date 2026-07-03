@@ -13,6 +13,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using Game.Data.Player;
 using UnityEngine.UIElements;
+using Unity.VisualScripting;
 
 [CreateAssetMenu(fileName = "SO_UpgradeCardData", menuName = "Scriptable Objects/SO_UpgradeCardData")]
 public class SO_UpgradeCardData : ScriptableObject
@@ -20,12 +21,17 @@ public class SO_UpgradeCardData : ScriptableObject
     //____________________________________
     // variables
 
-    [Header("基本の情報")]
-    [Tooltip("カード識別用ID(SourceUpgrade.Idと揃える運用？)")]
-//    [SerializeField] private string _upgradeId;
-    [SerializeField] private string _displayName;
-    [TextArea(2, 5)]
-    [SerializeField] private string _description;
+    //    [Header("基本の情報")]
+    //    [Tooltip("カード識別用ID(SourceUpgrade.Idと揃える運用？)")]
+    //    [SerializeField] private string _upgradeId;
+    //    [SerializeField] private string _displayName;
+    //    [TextArea(2, 5)]
+    //    [SerializeField] private string _description;
+
+
+    [Header("適応する実データ")]
+    [Tooltip("選択時にPlayerFacade.ApplyUpgrade()へ渡す実際の効果データ(あさーののSO)")]
+    [SerializeField] private Game.Data.Player.UpgradeData _sourceUpgrade;
 
     [Header("レベル")]
     [Tooltip("同じ強化を選べる最大回数(表示上のLv上限)")]
@@ -37,18 +43,23 @@ public class SO_UpgradeCardData : ScriptableObject
     [Header("分類")]
     [SerializeField] private UpgradeCategory _category;
 
-    [Header("適応する実データ")]
-    [Tooltip("選択時にPlayerFacade.ApplyUpgrade()へ渡す実際の効果データ(あさーののSO)")]
-    [SerializeField] private Game.Data.Player.UpgradeData _sourceUpgrade;
+    [Header("コスト")]
+    [SerializeField] private int _cost = 10;
+    [SerializeField] private float _costMagni = 1.2f;
 
 
+    // Id/DisplayName/DiscriptionをUpgradeDataから取得
     public string UpgradeId => _sourceUpgrade != null ? _sourceUpgrade.Id : string.Empty;
-    public string DisplayName => _displayName;
-    public string Description => _description;
+    public string DisplayName => _sourceUpgrade != null ? _sourceUpgrade.DisplayName : string.Empty;
+    public string Description => _sourceUpgrade != null ? _sourceUpgrade.Description : string.Empty;
+
+
     public int MaxLevel => _maxLevel;
     public Sprite Icon => _icon;
     public UpgradeCategory Category => _category;
     public Game.Data.Player.UpgradeData SourceUpgrade => _sourceUpgrade;
+    public int Cost => _cost;
+    public float CostMagni => _costMagni;
 
 
 
@@ -63,7 +74,7 @@ public class SO_UpgradeCardData : ScriptableObject
     /// <returns></returns>
     public string GetEffectText(int level)
     {
-        string result = _description;
+        string result = Description;
 
         if(_sourceUpgrade == null || _sourceUpgrade.Modifiers == null)
         {
