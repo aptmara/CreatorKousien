@@ -28,6 +28,17 @@ namespace Game.Gameplay.Collectibles
         [Tooltip("このY座標を下回ったら、自動でプールへ戻すデッドライン")]
         [SerializeField] private float _fallDeadLineY = -20f;
 
+
+        [Header("--- 生成直後のすり抜け(対プレイヤー) ---")]
+        [Tooltip("スポーン時のレイヤー")]
+        [SerializeField] private string _spawnLayer = "CollectibleSpawning";
+        [Tooltip("通常のレイヤー")]
+        [SerializeField] private string _normalLayer = "Collectible";
+        [Tooltip("生成直後にプレイヤーのコライダーをすり抜ける時間(秒)")]
+        [SerializeField, Min(0f)] private float _passThroughDuration = 0.4f;
+
+
+
         private Rigidbody _rigidbody;
         private Action<CollectibleObject> _returnAction;
 
@@ -93,6 +104,8 @@ namespace Game.Gameplay.Collectibles
 
             _rigidbody.linearVelocity = velocity;
             _rigidbody.angularVelocity = angularVelocity;
+
+            BeginSpawnPassThrough();
         }
 
         private void UpdateVisual()
@@ -173,6 +186,8 @@ namespace Game.Gameplay.Collectibles
         /// </summary>
         public void ResetState()
         {
+            CancelInvoke(nameof(EndSpawnPassThrough));
+
             if (_rigidbody == null)
             {
                 _rigidbody = GetComponent<Rigidbody>();
@@ -218,6 +233,51 @@ namespace Game.Gameplay.Collectibles
         public CollectibleData GetCollectableData()
         {
             return _data;
+        }
+
+
+        /// <summary>
+        /// 生成直後のすり抜け時間が経過したら、通常のレイヤーに戻す
+        /// </summary>
+        private void EndSpawnPassThrough()
+        {
+            int normal = LayerMask.NameToLayer(_normalLayer);
+            if (normal >= 0)
+            {
+                SetLayerRecursively(gameObject, normal);
+            }
+        }
+
+
+        /// <summary>
+        /// 指定したGameObjectとその子オブジェクトすべてのレイヤーを再帰的に設定する
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="newLayer"></param>
+        private static void SetLayerRecursively(GameObject obj, int newLayer)
+        {
+            obj.layer = newLayer;
+            foreach (Transform child in obj.transform)
+            {
+                SetLayerRecursively(child.gameObject, newLayer);
+            }
+        }
+
+
+        /// <summary>
+        /// 生成直後にプレイヤーのコライダーをすり抜けるためのレイヤー設定を行う
+        /// </summary>
+        private void BeginSpawnPassThrough()
+        {
+            int spawn = LayerMask.NameToLayer(_spawnLayer);
+            if (spawn < 0)
+            {
+                return;
+            }
+
+            SetLayerRecursively(gameObject, spawn);
+            CancelInvoke(nameof(EndSpawnPassThrough));
+            Invoke(nameof(EndSpawnPassThrough), _passThroughDuration);
         }
     }
 }
