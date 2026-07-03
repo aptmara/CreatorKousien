@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2a3c5f2810ed92943a6023652a22eb00, type: 3}
-  m_Name: CARD_002_MoveSpeedUp
+  m_Name: CARD_003_DropUp
   m_EditorClassIdentifier: Assembly-CSharp::SO_UpgradeCardData
-  _displayName: MoveSpeedUp
-  _description: Player MoveSpeed Up.
+  _displayName: DropUp
+  _description: Drop item increace
   _maxLevel: 5
-  _icon: {fileID: 21300000, guid: 4bd1ac909794f40428dc3f86966cb5bb, type: 3}
-  _category: 0
-  _sourceUpgrade: {fileID: 11400000, guid: 3eb356ae382577446ad0902736a6f86d, type: 2}
+  _icon: {fileID: 0}
+  _category: 1
+  _sourceUpgrade: {fileID: 0}

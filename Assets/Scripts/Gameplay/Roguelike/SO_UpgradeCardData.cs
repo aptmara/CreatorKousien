@@ -22,7 +22,7 @@ public class SO_UpgradeCardData : ScriptableObject
 
     [Header("基本の情報")]
     [Tooltip("カード識別用ID(SourceUpgrade.Idと揃える運用？)")]
-    [SerializeField] private string _upgradeId;
+//    [SerializeField] private string _upgradeId;
     [SerializeField] private string _displayName;
     [TextArea(2, 5)]
     [SerializeField] private string _description;
@@ -42,7 +42,7 @@ public class SO_UpgradeCardData : ScriptableObject
     [SerializeField] private Game.Data.Player.UpgradeData _sourceUpgrade;
 
 
-    public string UpgradeId => _upgradeId;
+    public string UpgradeId => _sourceUpgrade != null ? _sourceUpgrade.Id : string.Empty;
     public string DisplayName => _displayName;
     public string Description => _description;
     public int MaxLevel => _maxLevel;

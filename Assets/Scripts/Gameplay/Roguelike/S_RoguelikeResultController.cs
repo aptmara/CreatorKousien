@@ -30,6 +30,23 @@ public class S_RoguelikeResultController : MonoBehaviour
     [SerializeField] private SO_RoguelikeEndEvent _roguelikeEndEvent;
 
 
+    //____________________________________
+    // basic functions
+
+    private void Awake()
+    {
+        if (_playerFacade == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            _playerFacade = player.GetComponent<PlayerFacade>();
+            if (_playerFacade == null)
+            {
+                Debug.LogError("[S_RoguelikeResultController] PlayerFacadeが見つかりません。");
+            }
+        }
+    }
+
+
 
     //____________________________________
     // public functions
@@ -86,16 +103,6 @@ public class S_RoguelikeResultController : MonoBehaviour
     }
 
 
-    private void Awake()
-    {
-        if(_playerFacade == null)
-        {
-            _playerFacade = FindFirstObjectByType<PlayerFacade>();
-            if(_playerFacade == null)
-            {
-                Debug.LogError("[S_RoguelikeResultController] PlayerFacadeが見つかりません。");
-            }
-        }
-    }
+
 
 }
