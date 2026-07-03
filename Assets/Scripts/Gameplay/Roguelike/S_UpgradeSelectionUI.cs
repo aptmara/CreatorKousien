@@ -11,6 +11,8 @@ using UnityEngine;
 using System.Collections.Generic;
 using Game.Core.Events;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 
 public class S_UpgradeSelectionUI : MonoBehaviour
 {
@@ -40,6 +42,15 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     private readonly List<S_UpgradeCard> _spawnedCards = new();
     private readonly Dictionary<S_UpgradeCard, SO_UpgradeCardData> _cardToData = new();
 
+#if UNITY_EDITOR
+    private void Update()
+    {
+        if (Keyboard.current.tKey.wasPressedThisFrame)
+        {
+            OpenSelection();
+        }
+    }
+#endif
 
     //____________________________________
     // public function
@@ -70,6 +81,9 @@ public class S_UpgradeSelectionUI : MonoBehaviour
 
             SpawnCard(picked);
         }
+
+        // 背景
+        Instantiate(_backGround, _panelRoot.transform).transform.SetAsFirstSibling();
     }
 
     public void OnFinishButtonPressed()
@@ -85,7 +99,11 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         _resultController.FinishRoguelikeScene();
     }
 
-
+    private void Start()
+    {
+        _panelRoot.SetActive(false);
+        OpenSelection();
+    }
 
     //____________________________________
     // private function
@@ -94,13 +112,14 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     {
         EventBus.Subscribe<UpgradeSelectionRequestedEvent>(
             OnUpgradeSelectionRequested);
-
-        CreateCanvasChild();
+        _exitButton.onClick.AddListener(OnFinishButtonPressed);
+        Debug.Log("RoguelikeEnable");
+        //CreateCanvasChild();
     }
 
     private void OnDisable()
     {
-        EventBus.Subscribe<UpgradeSelectionRequestedEvent>(
+        EventBus.Unsubscribe<UpgradeSelectionRequestedEvent>(
             OnUpgradeSelectionRequested);
         _exitButton.onClick.RemoveListener(OnFinishButtonPressed);
     }
@@ -165,11 +184,11 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         // カード生成
         S_UpgradeCard card = Instantiate(_cardPrefab, _cardParent);
         RectTransform cardRect = card.GetComponent<RectTransform>();
-        cardRect.anchoredPosition = new Vector2(-400.0f, 0);
+        cardRect.anchoredPosition = new Vector2(-600.0f, 0);
 
         Button exit = Instantiate(_exitButton, _cardParent);
         RectTransform buttonRect = exit.GetComponent<RectTransform>();
-        buttonRect.anchoredPosition = new Vector2(500.0f, -300.0f);
+        buttonRect.anchoredPosition = new Vector2(700.0f, -450.0f);     // 画面端基準にしたい
 
         exit.onClick.AddListener(OnFinishButtonPressed);
     }
