@@ -112,7 +112,7 @@ namespace Game.Gameplay.Combo
         /// </summary>
         public void ResetCombo()
         {
-            float multiValue = _currentCombo / multiRatio;
+            float multiValue = 1.0f + _currentCombo * multiRatio;
             EventChannel?.ExecuteEvent(multiValue);
             _currentCombo = 0;
             _remainingDuration = 0f;

@@ -333,6 +333,7 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
                 _emitter.EmitFromHit(spawnPos, dir, _spreadAngle, power, _shard);
         }
         _currentHitStop = _hitStop;
+        InitShardCount();
         PlayEffect(hitPoint, _scale.x);
     }
 
