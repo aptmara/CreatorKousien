@@ -10,6 +10,7 @@
 // - 5/12 回転量の大元作成 - 滝谷
 // - 5/24 移動関連2パターン作り切り替えれるように修正 - 浅野
 // - 6/19 PlayerRuntimeDataを参照、移動速度をステータスに基づいて変化させる機能の追加 - 浅野
+// - 7/5  プレイヤーの回転挙動を修正 - 浅野
 // ------------------------------------------------------------
 using UnityEngine;
 using Game.Gameplay.Player.Progression;
@@ -57,9 +58,13 @@ namespace Game.Gameplay.Player
         [Tooltip("移動の基準となるカメラ(未設定時は自動取得)")]
         [SerializeField] private Camera _mainCamera;
 
-        private Rigidbody _rigidbody;       ///< プレイヤーのRigidbodyコンポーネント
+
+
+        private Rigidbody _rigidbody;           ///< プレイヤーのRigidbodyコンポーネント
 
         private PlayerRuntimeData _runtimeData; ///< プレイヤーのランタイムデータ（ステータスなど）
+
+        private Vector3 _desiredFaceDir;        ///< 向きたい方向
 
         private Vector3 Up => FieldContext.IsReady ? FieldContext.Up : Vector3.up;   ///< フィールドの上方向
 
@@ -197,23 +202,38 @@ namespace Game.Gameplay.Player
             Vector3 vel = _rigidbody.linearVelocity;
             float alongUp = Vector3.Dot(vel, up);
 
-            if (moveInput.sqrMagnitude < 0.01f)
-            {
-                _rigidbody.linearVelocity = up * alongUp;
-                return;
-            }
-
             // カメラの向きを「フィールド面」に投影
             Vector3 cameraForward = Vector3.ProjectOnPlane(_mainCamera.transform.forward, up).normalized;
             Vector3 cameraRight = Vector3.ProjectOnPlane(_mainCamera.transform.right, up).normalized;
 
-            Vector3 targetDirection = (cameraForward * moveInput.y + cameraRight * moveInput.x).normalized;
-            _rigidbody.linearVelocity = targetDirection * moveSpeed + up * alongUp;
+            bool hasInput = moveInput.sqrMagnitude >= 0.01f;
 
-            // 進行方向へ、床のupを使って向く
-            Quaternion targetRotation = Quaternion.LookRotation(targetDirection, up);
-            Quaternion nextRotation = Quaternion.RotateTowards(_rigidbody.rotation, targetRotation, autoRotationSpeed * Time.fixedDeltaTime);
-            _rigidbody.MoveRotation(nextRotation);
+            if (hasInput)
+            {
+                // 入力方向を「向きたい方向」として記憶
+                _desiredFaceDir = (cameraForward * moveInput.y + cameraRight * moveInput.x).normalized;
+
+                // 移動は入力中のみ
+                _rigidbody.linearVelocity = _desiredFaceDir * moveSpeed + up * alongUp;
+            }
+            else
+            {
+                // 入力が無いときは水平移動だけ止める
+                _rigidbody.linearVelocity = up * alongUp;
+            }
+
+            // 手を開いている状態なら向ききる挙動をしない
+            bool completeAfterRelease = !isAttachmentShrunk;
+
+            bool shouldRotate = _desiredFaceDir.sqrMagnitude > 0.001f && (hasInput || completeAfterRelease);
+
+            // 向きたい方向がある場合は自動回転する
+            if (shouldRotate)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(_desiredFaceDir, up);
+                Quaternion nextRotation = Quaternion.RotateTowards(_rigidbody.rotation, targetRotation, autoRotationSpeed * Time.fixedDeltaTime);
+                _rigidbody.MoveRotation(nextRotation);
+            }
         }
     }
 }

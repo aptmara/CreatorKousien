@@ -6,7 +6,8 @@
 // Created	: 2026-05-06
 //
 // Notes	:
-// - 5/6 ベース作成
+// - 5/6  ベース作成
+// - 7/5  プレイヤーの挙動に応じて歩きアニメーションを変化させる機能の追加 - 浅野
 // ------------------------------------------------------------
 using UnityEngine;
 
@@ -41,8 +42,10 @@ namespace Game.Gameplay.Player
         [SerializeField] private PlayerAttachmentController _attachmentController;
 
 
-        private bool _canMove = true;       ///< プレイヤーが移動可能かどうかを示すフラグ
-        private bool _isAttachmentShrunk;   ///< アタッチメントの拡大縮小状態を示すフラグ
+        private bool _canMove = true;                           ///< プレイヤーが移動可能かどうかを示すフラグ
+        private bool _isAttachmentShrunk;                       ///< アタッチメントの拡大縮小状態を示すフラグ
+
+        public bool IsAttachmentShrunk => _isAttachmentShrunk;  ///< アタッチメントの拡大縮小状態を取得するプロパティ
 
 
         // 関数処理

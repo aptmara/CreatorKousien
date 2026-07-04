@@ -9,6 +9,7 @@
 // - プレイヤーのパンチを管理するクラスを作成
 // - インタラクト入力でいつでも殴れるように改修。ヒット判定は前方Ray。
 //   壊す処理はアニメイベント(PunchHit)のタイミングで ICrystalBreakable.Break を呼ぶ。
+// - 7/5 プレイヤーのパンチのアニメ実装
 // ------------------------------------------------------------
 using System;
 using UnityEngine;
@@ -40,6 +41,11 @@ namespace Game.Gameplay.Player
         [Tooltip("殴りの当たり判定の太さ(半径)。大きいほど当てやすい")]
         [SerializeField, Min(0f)] private float _rayRadius = 1.0f;
 
+
+        [Tooltip("本体(Visual)のアニメーション制御")]
+        [SerializeField] private PlayerAnimationController _playerAnimationController;
+
+
         private AttachmentPunchAnimator _activePunchAnimator;
         private Action _pendingHitAction;   // レガシー(クリスタル駆動)用
         private bool _isPunching;
@@ -54,6 +60,10 @@ namespace Game.Gameplay.Player
         private Vector3 _dbgHitPoint;
         private bool _dbgHit;
         private bool _dbgValid;
+
+
+
+
 
         /// <summary>
         /// 毎フレーム、インタラクト入力を見て殴りを起動する
@@ -111,6 +121,8 @@ namespace Game.Gameplay.Player
 
             _playerController.SetCanMove(false);
             _attachmentController.SetPunchForceLarge(true);
+
+            _playerAnimationController?.PlayPunch();
 
             _activePunchAnimator = _attachmentController.CurrentAttachment.GetComponentInChildren<AttachmentPunchAnimator>();
 
