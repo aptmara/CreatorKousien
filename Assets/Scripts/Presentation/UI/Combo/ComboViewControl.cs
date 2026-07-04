@@ -76,7 +76,7 @@ namespace Game.Presentation.UI.Combo
             _comboManager.moneyData = _moneyData;
             _comboManager.multiRatio = _multiRatio;
             _comboManager.EventChannel = _sceneEventChannel;
-            
+
             // 初期状態は非表示
             SetTextActive(false);
         }
@@ -127,7 +127,7 @@ namespace Game.Presentation.UI.Combo
             string textString = $"{currentCombo}";// Combo!";
             if (_comboTextBase != null) _comboTextBase.text = textString;
             if (_comboTextFill != null) _comboTextFill.text = textString;
-            
+
 
             // 登録されているすべての演出パターンを一斉更新
             foreach (var feedback in _activeFeedbacks)
@@ -139,6 +139,9 @@ namespace Game.Presentation.UI.Combo
 
                 feedback.OnUpdate(currentCombo, durationRatio);
             }
+
+            // コンボ変化イベントを発行
+            EventBus.Publish(new ComboChangedEvent(currentCombo, durationRatio));
         }
 
         private void HandleComboReset()
@@ -156,6 +159,9 @@ namespace Game.Presentation.UI.Combo
 
                 feedback.OnReset();
             }
+
+            // コンボ変化イベントを発行
+            EventBus.Publish(new ComboChangedEvent(0, 0f));
         }
 
         /// <summary>

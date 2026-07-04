@@ -257,8 +257,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Management.GameProgressionManager
   _roguelikeSceneName: Roguelike
+  _resultSceneName: Result
   _spawnerDefinition: {fileID: 11400000, guid: f14a04607d1020d4c9a6e8adde6d5a6e, type: 2}
   _enemySpawner: {fileID: 0}
+  _clearDelayDuration: 2
+  _slowMotionTimeScale: 0.2
 --- !u!1 &806947044
 GameObject:
   m_ObjectHideFlags: 0
@@ -289,10 +292,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.VFX.EnemyHitVfxPresenter
   _hitVfxOffset: {x: 0, y: 3, z: 0}
-  _hitVfxPrefab: {fileID: 1864611851940328768, guid: 77a743b411eebee478ac34148b3f9f20, type: 3}
+  _hitVfxPrefab: {fileID: 7450204837871267800, guid: 8023fa6d5fbc2424e8834726e079bec3, type: 3}
   _poolSize: 20
   _effectIntervalPerEnemy: 0.08
   _lifeTime: 1
+  _baseScale: 1
+  _growthPerCombo: 0.14
+  _maxScale: 4
 --- !u!4 &806947046
 Transform:
   m_ObjectHideFlags: 0
