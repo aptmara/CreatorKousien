@@ -312,5 +312,22 @@ namespace Game.Core.Events
     {
         // 現状は「何か変わった」だけを伝える空イベント
     }
+
+
+    /// <summary>
+    /// コンボ数の変化通知。ComboViewControlが発行する。
+    /// VFXなどが購読してコンボ数に応じた演出を行う。
+    /// </summary>
+    public readonly struct ComboChangedEvent
+    {
+        public readonly int CurrentCombo;
+        public readonly float DurationRatio;
+
+        public ComboChangedEvent(int currentCombo, float durationRatio)
+        {
+            CurrentCombo = currentCombo;
+            DurationRatio = durationRatio;
+        }
+    }
 }
 

@@ -88,7 +88,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _AddPrecomputedVelocity: 0
-    - _Alpha: 0.598
+    - _Alpha: 1
     - _AlphaClip: 0
     - _AlphaToMask: 0
     - _Blend: 0
@@ -107,18 +107,18 @@ Material:
     - _DissolveSoftness: 0.426
     - _DstBlend: 0
     - _DstBlendAlpha: 0
-    - _EdgeFade: 0.51
+    - _EdgeFade: 0.95
     - _EdgeNoiseStrength: 0.294
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _Metallic: 0
-    - _NoiseScale: 0.5
-    - _NoiseStrength: 0.665
+    - _NoiseScale: 0.13
+    - _NoiseStrength: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.005
-    - _Puffiness: 0.262
+    - _Puffiness: 0.585
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _Smoothness: 0.5
@@ -127,8 +127,8 @@ Material:
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 1
-    - _Turbulence: 0.558
-    - _WarpStrength: 2
+    - _Turbulence: 0.713
+    - _WarpStrength: 0
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 0
