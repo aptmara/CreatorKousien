@@ -45,6 +45,10 @@ namespace Game.Gameplay.Player
         [Tooltip("本体(Visual)のアニメーション制御")]
         [SerializeField] private PlayerAnimationController _playerAnimationController;
 
+        [Tooltip("表情(BlendShape)の制御")]
+        [SerializeField] private PlayerFaceController _faceController;
+
+
 
         private AttachmentPunchAnimator _activePunchAnimator;
         private Action _pendingHitAction;   // レガシー(クリスタル駆動)用
@@ -124,6 +128,11 @@ namespace Game.Gameplay.Player
 
             _playerAnimationController?.PlayPunch();
 
+            if (_faceController == null)
+                Debug.LogWarning("PlayerPunchController: FaceController is not assigned. Punch face will not be set.");
+            else
+                _faceController?.SetFace("Punch");
+
             _activePunchAnimator = _attachmentController.CurrentAttachment.GetComponentInChildren<AttachmentPunchAnimator>();
 
             if (_activePunchAnimator == null)
@@ -186,6 +195,8 @@ namespace Game.Gameplay.Player
 
             _playerController.SetCanMove(true);
             _attachmentController.SetPunchForceLarge(false);
+
+            _faceController?.ResetFace();
 
             _activePunchAnimator = null;
             _pendingHitAction = null;

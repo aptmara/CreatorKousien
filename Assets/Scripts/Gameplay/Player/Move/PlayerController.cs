@@ -41,9 +41,13 @@ namespace Game.Gameplay.Player
         [Tooltip("アタッチメントのコントローラー")]
         [SerializeField] private PlayerAttachmentController _attachmentController;
 
+        [Tooltip("表情(BlendShape)の制御")]
+        [SerializeField] private PlayerFaceController _faceController;
+
 
         private bool _canMove = true;                           ///< プレイヤーが移動可能かどうかを示すフラグ
         private bool _isAttachmentShrunk;                       ///< アタッチメントの拡大縮小状態を示すフラグ
+        private bool _prevSpreadFace;                           ///< 前フレームの表情状態を保持するフラグ
 
         public bool IsAttachmentShrunk => _isAttachmentShrunk;  ///< アタッチメントの拡大縮小状態を取得するプロパティ
 
@@ -95,6 +99,7 @@ namespace Game.Gameplay.Player
                 }
             }
 
+            UpdateSpreadFace();
 
             if (_useAutoRotationMove)
             {
@@ -106,6 +111,34 @@ namespace Game.Gameplay.Player
                 _motor.Rotate(input.LookDirection, _isAttachmentShrunk);
             }
         }
+
+
+        private void UpdateSpreadFace()
+        {
+            if (_faceController == null)
+            {
+                return;
+            }
+
+            // ----- アタッチメントの拡大縮小状態に応じて表情を更新 -----
+            bool spreading = _isAttachmentShrunk;
+
+            if (spreading == _prevSpreadFace)
+                return;
+
+            _prevSpreadFace = spreading;
+
+            // ----- 表情の更新 -----
+            if (spreading)
+            {
+                _faceController.SetHeldFace("Spread");
+            }
+            else
+            {
+                _faceController.ClearHeldFace();
+            }
+        }
+
 
         /// <summary>
         /// プレイヤーの移動可否を設定する関数

@@ -64,13 +64,18 @@ namespace Game.Gameplay.Player
             //    これでカメラのほう向けるぜよ
             Vector3 right = yawRot * Vector3.right;
             Vector3 toCam = (_camera.transform.position - transform.position).normalized;
-            Vector3 toCamOnPlane = Vector3.ProjectOnPlane(toCam, right).normalized;
+            //Vector3 toCamOnPlane = Vector3.ProjectOnPlane(toCam, right).normalized;
 
-            // worldUp から 「カメラ方向」までの角度を求める
-            float pitch = Vector3.SignedAngle(worldUp, toCamOnPlane, right);
+            //// worldUp から 「カメラ方向」までの角度を求める
+            //float pitch = Vector3.SignedAngle(worldUp, toCamOnPlane, right);
+            //if (_invert)
+            //    pitch = -pitch;
+            //pitch = Mathf.Clamp(pitch * _strength, -_maxTiltAngle, _maxTiltAngle);
+
+            float elevation = Mathf.Asin(Mathf.Clamp(Vector3.Dot(toCam, worldUp), -1f, 1f)) * Mathf.Rad2Deg;
             if (_invert)
-                pitch = -pitch;
-            pitch = Mathf.Clamp(pitch * _strength, -_maxTiltAngle, _maxTiltAngle);
+                elevation = -elevation;
+            float pitch = Mathf.Clamp(elevation * _strength, -_maxTiltAngle, _maxTiltAngle);
 
             Quaternion target = Quaternion.AngleAxis(pitch, right) * yawRot;
 
