@@ -192,5 +192,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b0ff27d9e1e35140957f6f728868003, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBodyPose
-  _dropDuration: 0
+  _dropDuration: 0.3
   _dropRot: {x: -180, y: 0, z: 0}

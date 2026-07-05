@@ -34,33 +34,31 @@ namespace Game.Core.Enemy
         float _damageDropTarget = 0.0f;
         float _damageDropDistance = 0.02f;
 
-        [Tooltip("上昇にかかる時間(調整中)")]
-        [SerializeField] private float _riseDuration = 1.5f;
-        [Tooltip("落下にかかる時間(調整中)")]
-        [SerializeField] private float _dropDuration = 5.0f;
-        [Tooltip("ずり落ちにかかる時間(調整中)")]
-        [SerializeField] private float _barrierBreakDuration = 5.0f;
-        [Tooltip("被弾ずり落ちにかかる時間(調整中)")]
-        [SerializeField] private float _damageDropDuration = 0.02f;
+        // 上昇にかかる時間
+        private float _riseDuration = 1.5f;
+        // 落下にかかる時間
+        private float _dropDuration = 5.0f;
+        // ずり落ちにかかる時間(調整中)
+        private float _breakDropDuration = 5.0f;
+        // 被弾ずり落ちにかかる時間(調整中)
+        private float _damageDropDuration = 0.02f;
 
-        [Tooltip("上昇の際の動き")]
-        [SerializeField] private AnimationCurve _riseCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        // 上昇の際の動き
+        private AnimationCurve _riseCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        // 落下の際の動き
+        private AnimationCurve _dropCurve = AnimationCurve.Linear(0, 0, 1, 1);
+        // ずり落ちの際の動き
+        private AnimationCurve _breakDropCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        // 被ダメージ時の動き
+        private AnimationCurve _damageDropCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
-        [Tooltip("ずり落ちの際の動き")]
-        [SerializeField] private AnimationCurve _barrierBreakCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-
-        [Tooltip("被ダメージ時の動き")]
-        [SerializeField] private AnimationCurve _damageDropCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-
-        [Tooltip("落下の際の動き")]
-        [SerializeField] private AnimationCurve _dropCurve = AnimationCurve.Linear(0, 0, 1, 1);
 
         // ゴールに到達した際のコールバック
         public Action OnEnemyReachedGoal;
 
         // 何らかの方法でゴールから引きはがされた際のコールバック
         public Action OnLeftReachedGoal;
-
+        // 落下しきった時のコールバック
         public Action OnEnemyDroped;
 
         // 進行時間
@@ -75,7 +73,7 @@ namespace Game.Core.Enemy
         // 各コルーチン
         Coroutine _riseCoroutine = null;
         Coroutine _dropCoroutine = null;
-        Coroutine _barrierBreakCoroutine = null;
+        Coroutine _breakDropCoroutine = null;
         Coroutine _damageDropCoroutine = null;
 
 
@@ -89,19 +87,19 @@ namespace Game.Core.Enemy
         {
             if (_riseCoroutine != null) StopCoroutine(_riseCoroutine);
             if (_dropCoroutine!= null) StopCoroutine(_dropCoroutine);
-            if (_barrierBreakCoroutine != null) StopCoroutine(_barrierBreakCoroutine);
+            if (_breakDropCoroutine != null) StopCoroutine(_breakDropCoroutine);
             _riseCoroutine = null;
             _dropCoroutine = null;
-            _barrierBreakCoroutine = null;
+            _breakDropCoroutine = null;
             // 値の設定
             _riseDuration = riseDuration;
             _dropDuration = dropDuration;
-            _barrierBreakDuration = breakDuration;
+            _breakDropDuration = breakDuration;
             _damageDropDuration = damageDuration;
 
             _riseCurve = riseCurve;
             _dropCurve = dropCurve;
-            _barrierBreakCurve = breakCurve;
+            _breakDropCurve = breakCurve;
             _damageDropCurve = damageCurve;
 
             _breakDropDistance = breakDropDistance;
@@ -159,10 +157,10 @@ namespace Game.Core.Enemy
         {
             float currentValue;
 
-            if (_barrierBreakCoroutine != null)
+            if (_breakDropCoroutine != null)
             {
-                StopCoroutine(_barrierBreakCoroutine);
-                float finalCurve = _barrierBreakCurve.Evaluate(_breakDropElapsedTime);
+                StopCoroutine(_breakDropCoroutine);
+                float finalCurve = _breakDropCurve.Evaluate(_breakDropElapsedTime);
                 finalCurve = Mathf.Clamp(finalCurve, 0.0f, 1.0f);
                 currentValue = Mathf.Lerp(_breakDropTarget, _breakDropStart, finalCurve);
                 _dropElapsedTime = ValueToCurveTime(currentValue, _dropCurve, 12);
@@ -178,7 +176,7 @@ namespace Game.Core.Enemy
             if (_dropCoroutine != null) return;
 
             _riseCoroutine = null;
-            _barrierBreakCoroutine = null;
+            _breakDropCoroutine = null;
             // 現在の進行度の値を上昇カーブから見た進行度から落下カーブから見た進行度に変換する
             float newValue = _dropCurve.Evaluate(_dropElapsedTime);
             // 落下開始
@@ -192,7 +190,7 @@ namespace Game.Core.Enemy
         public void BreakDrop(Transform _enemyTransform)
         {
             if(_riseCoroutine !=null) StopCoroutine(_riseCoroutine);
-            if(_barrierBreakCoroutine != null) StopCoroutine(_barrierBreakCoroutine);
+            if(_breakDropCoroutine != null) StopCoroutine(_breakDropCoroutine);
 
             // 現在の値を取得
             float currentValue = _riseCurve.Evaluate(_elapsedTime);
@@ -202,7 +200,7 @@ namespace Game.Core.Enemy
             _breakDropTarget = Mathf.Max(currentValue - _breakDropDistance, 0.0f);
 
             _breakDropElapsedTime = 0.0f;
-            _barrierBreakCoroutine = StartCoroutine(BreakDropRoutine(transform));
+            _breakDropCoroutine = StartCoroutine(BreakDropRoutine(transform));
 
             OnLeftReachedGoal();
         }
@@ -213,7 +211,7 @@ namespace Game.Core.Enemy
         /// <param name="_enemyTransform">トランスフォーム</param>
         public void DamageDrop(Transform _enemyTransform)
         {
-            if (_barrierBreakCoroutine != null) return;
+            if (_breakDropCoroutine != null) return;
 
             if (_riseCoroutine != null) StopCoroutine(_riseCoroutine);
             if (_damageDropCoroutine != null) StopCoroutine(_damageDropCoroutine);
@@ -299,10 +297,10 @@ namespace Game.Core.Enemy
         {
             while (_breakDropElapsedTime < 1.0f)
             {
-                _breakDropElapsedTime += Time.deltaTime / _barrierBreakDuration;
+                _breakDropElapsedTime += Time.deltaTime / _breakDropDuration;
                 _breakDropElapsedTime = Mathf.Clamp(_breakDropElapsedTime, 0.0f, 1.0f);
 
-                float curveT = _barrierBreakCurve.Evaluate(_breakDropElapsedTime);
+                float curveT = _breakDropCurve.Evaluate(_breakDropElapsedTime);
                 curveT = Mathf.Clamp(curveT, 0.0f, 1.0f);
                 // 値が1から0に落ちるカーブを使用するため、ターゲットからスタートに向けてLeapする
                 curveT = Mathf.Lerp(_breakDropTarget, _breakDropStart, curveT);
@@ -312,11 +310,11 @@ namespace Game.Core.Enemy
             }
 
             // 現在の値を取得
-            float finalCurve = _barrierBreakCurve.Evaluate(_breakDropElapsedTime);
+            float finalCurve = _breakDropCurve.Evaluate(_breakDropElapsedTime);
             finalCurve = Mathf.Clamp(finalCurve, 0.0f, 1.0f);
             finalCurve = Mathf.Lerp(_breakDropTarget, _breakDropStart, finalCurve);
             _elapsedTime = ValueToCurveTime(finalCurve, _riseCurve, 12);
-            _barrierBreakCoroutine = null;
+            _breakDropCoroutine = null;
 
             _riseCoroutine = StartCoroutine(RiseRoutine(enemyTransform));
         }
@@ -416,7 +414,7 @@ namespace Game.Core.Enemy
         {
             if (_riseCoroutine != null) StopCoroutine(_riseCoroutine);
             if (_dropCoroutine != null) StopCoroutine(_dropCoroutine);
-            if (_barrierBreakCoroutine != null) StopCoroutine(_barrierBreakCoroutine);
+            if (_breakDropCoroutine != null) StopCoroutine(_breakDropCoroutine);
         }
     }
 }
