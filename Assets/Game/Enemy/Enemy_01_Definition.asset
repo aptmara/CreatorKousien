@@ -17,7 +17,7 @@ MonoBehaviour:
   MaxHp: 500
   ExpRate: 1
   DownDuration: 7
-  HasBarrier: 1
+  HasBarrier: 0
   MaxGauge: 250
   BarrierBody: {fileID: 180197807806133772, guid: 23a14d1624590fe49b83c3dd3bfc3c36, type: 3}
   barrierBreakMaxLossRate: 0.7

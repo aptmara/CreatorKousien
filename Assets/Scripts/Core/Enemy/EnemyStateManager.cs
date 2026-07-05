@@ -16,6 +16,8 @@ namespace Game.Core.Enemy
         Down,
         /// <summary>死体蹴り状態: HPへのダメージを受け付けないがコンボを受け付ける
         OverHit,
+        /// <summary>
+        Drop,
         /// <summary>撃破済み：一切の状態遷移・ダメージを受け付けない</summary>
         Defeated,
     }
@@ -49,7 +51,7 @@ namespace Game.Core.Enemy
         public bool CanReceiveBodyDamage => CurrentState == EnemyState.Down || CurrentState == EnemyState.Normal;
 
         /// <summary>コンボを受け付けられるか（）</summary>
-        public bool CanReceiveBodyCombo => CurrentState == EnemyState.Down || CurrentState == EnemyState.Normal || CurrentState == EnemyState.OverHit;
+        public bool CanReceiveBodyCombo => CurrentState == EnemyState.Down || CurrentState == EnemyState.Normal || CurrentState == EnemyState.OverHit || CurrentState == EnemyState.Drop;
 
         /// <summary>攻撃可能か(Attack状態のみ)）</summary>
         public bool CanAttackDefenceLine => IsRose;

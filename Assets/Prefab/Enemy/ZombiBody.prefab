@@ -83,6 +83,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 725b184d2fae6684f84ada0fae3af288, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3699580084391280425}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 725b184d2fae6684f84ada0fae3af288, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1508460088435983056}
   m_SourcePrefab: {fileID: 100100000, guid: 725b184d2fae6684f84ada0fae3af288, type: 3}
 --- !u!1 &8324395216365602149 stripped
 GameObject:
@@ -177,3 +180,17 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0.2, z: 0}
+--- !u!114 &1508460088435983056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8324395216365602149}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b0ff27d9e1e35140957f6f728868003, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyBodyPose
+  _dropDuration: 0
+  _dropRot: {x: -180, y: 0, z: 0}
