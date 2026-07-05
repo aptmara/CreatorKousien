@@ -619,7 +619,7 @@ MonoBehaviour:
   _shard:
   - Data: {fileID: 11400000, guid: c5bea3e5375a6f54486a91623f955ecb, type: 2}
     Weight: 1
-  VFX: {fileID: 2890516327077821158, guid: e4dde6909f46524458f9cfd790e79510, type: 3}
+  VFX: {fileID: 4148052385838451594, guid: 16d7e6146392f494abd0b5e58383d213, type: 3}
   _scale: {x: 4, y: 1, z: 1}
   _channel: {fileID: 11400000, guid: 58e1728789289fa47b441403e4650359, type: 2}
   _fieldData: {fileID: 0}

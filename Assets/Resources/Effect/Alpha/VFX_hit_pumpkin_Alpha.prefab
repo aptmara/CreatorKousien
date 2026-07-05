@@ -9807,7 +9807,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3650702431418665317}
   m_Layer: 0
-  m_Name: VFX_hit_pumpkin
+  m_Name: VFX_hit_pumpkin_Alpha
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
