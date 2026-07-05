@@ -73,17 +73,34 @@ namespace Game.Core.Enemy
         [Tooltip("バリア破壊時のずり落ちにかかる秒数")]
         public float BarrierBreakDuration = 0.5f;
 
+        [Header("ダメージずり落ち合計時間")]
+        [Tooltip("被ダメージ時のずり落ちにかかる秒数")]
+        public float DamageDropDuration = 0.2f;
+
         [Header("上昇カーブ")]
         [Tooltip("敵の上昇カーブ")]
-        public AnimationCurve riseCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
+        public AnimationCurve RiseCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
 
         [Header("落下カーブ")]
         [Tooltip("敵の落下カーブ")]
-        public AnimationCurve dropCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
+        public AnimationCurve DropCurve = AnimationCurve.EaseInOut(0.0f, 1.0f, 1.0f, 0.0f);
 
         [Header("ずり落ちカーブ")]
         [Tooltip("バリア破壊時のずり落ちカーブ")]
-        public AnimationCurve barrierBreakCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
+        public AnimationCurve BarrierBreakCurve = AnimationCurve.EaseInOut(0.0f, 1.0f, 1.0f, 0.0f);
+
+        [Header("ダメージずり落ちカーブ")]
+        [Tooltip("被ダメージ時のずり落ちカーブ")]
+        public AnimationCurve DamageDropCurve = AnimationCurve.EaseInOut(0.0f, 1.0f, 1.0f, 0.0f);
+
+        [Header("ダメージずり落ちカーブ")]
+        [Tooltip("被ダメージ時のずり落ちカーブ")]
+        public float BreakDropDistance = 0.2f;
+
+
+        [Header("ダメージずり落ちカーブ")]
+        [Tooltip("被ダメージ時のずり落ちカーブ")]
+        public float DamageDropDistance = 0.015f;
 
 
     }

@@ -68,6 +68,16 @@ namespace Game.Core.Events
         }
     }
 
+    public readonly struct EnemyDropEvent
+    {
+        public readonly string EnemyId;
+
+        public EnemyDropEvent(string enemyId)
+        {
+            EnemyId = enemyId;
+        }
+    }
+
     public readonly struct EnemyGaugeBrokenEvent
     {
         public readonly string EnemyId;

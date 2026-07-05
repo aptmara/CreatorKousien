@@ -87,6 +87,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bc82b5c27bc02c74888996e356b5eabd, type: 3}
       insertIndex: -1
       addedObject: {fileID: 234419528233336464}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bc82b5c27bc02c74888996e356b5eabd, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8288746209038331805}
   m_SourcePrefab: {fileID: 100100000, guid: bc82b5c27bc02c74888996e356b5eabd, type: 3}
 --- !u!1 &6303239717055165911 stripped
 GameObject:
@@ -181,3 +184,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71fa6540b0f3d294abbeac213ab6ae93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBodyController
+--- !u!114 &8288746209038331805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6303239717055165911}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b0ff27d9e1e35140957f6f728868003, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyBodyPose
+  _dropDuration: 0.5
+  _dropRot: {x: 0, y: 90, z: -180}

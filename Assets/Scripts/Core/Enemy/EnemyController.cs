@@ -54,6 +54,7 @@ namespace Game.Core.Enemy
         private EnemyBarrierGauge _barrierGauge;
         private EnemyRising _rising;
         private EnemyAttack _enemyAttack;
+        private EnemyHoldCounter _holdCounter;
         private Coroutine _downTimerCoroutine;
 
         [Header("演出設定")]
@@ -125,6 +126,8 @@ namespace Game.Core.Enemy
             Vector3 _currentPos = this.gameObject.transform.position;
             _currentPos.y = 0.0f;
 
+            _holdCounter = new EnemyHoldCounter();
+            _holdCounter.Initialize(0.35f, 0.07f, HandleHoldEnd);
 
             // 上昇初期化
             // Risingのみコルーチンを使用しているため、
@@ -135,7 +138,9 @@ namespace Game.Core.Enemy
                 gameObject.AddComponent<EnemyRising>();
             }
 
-            _rising.Initialize(definition.RiseDuration, definition.DropDuration, definition.BarrierBreakDuration, definition.riseCurve, definition.dropCurve, definition.barrierBreakCurve);
+            _rising.Initialize(definition.RiseDuration, definition.DropDuration, definition.BarrierBreakDuration, definition.DamageDropDuration,
+                               definition.RiseCurve, definition.DropCurve, definition.BarrierBreakCurve, definition.DamageDropCurve,
+                               definition.BreakDropDistance, definition.DamageDropDistance);
             _rising.OnEnemyReachedGoal = HandleRose;
             _rising.OnLeftReachedGoal = HandleRoseLeft;
             _rising.OnEnemyDroped = HandleDroped;
@@ -190,6 +195,8 @@ namespace Game.Core.Enemy
         {
             _barrierGauge.UpdateBarrier();
             _enemyAttack.UpdateAttack();
+
+            if (_stateManager.CurrentState == EnemyState.OverHit) _holdCounter.UpdateHold();
         }
 
         // ─────────────────────────────────────────
@@ -205,9 +212,9 @@ namespace Game.Core.Enemy
         private void OnEnemyHitBatch(EnemyHitBatchEvent ev)
         {
             if (_definition == null || ev.EnemyId != InstanceEnemyId) return;
-
+            if (_stateManager.CurrentState == EnemyState.OverHit) _holdCounter.AddHit();
             _health.ApplyBodyDamage(ev.BodyDamage);
-
+            _rising.DamageDrop(transform);
         }
 
         /// <summary>
@@ -239,10 +246,12 @@ namespace Game.Core.Enemy
         }
 
         /// <summary>
-        /// HP0到達時の処理。落下状態へ遷移し、Risingを落下させる。
+        /// HP0到達時の処理。踏ん張り状態へ遷移し、攻撃がやむまでしばらく耐える。
         /// </summary>
         private void HandleDefeated()
         {
+            _stateManager.TransitionTo(EnemyState.OverHit);
+
             if (_downTimerCoroutine != null)
             {
                 StopCoroutine(_downTimerCoroutine);
@@ -250,11 +259,22 @@ namespace Game.Core.Enemy
             }
 
             _barrierGauge.SetActive(false);
+            _rising.MoveStop();
+            _holdCounter.StartCount(0.35f);
 
-            _stateManager.TransitionTo(EnemyState.OverHit);
-
-            _rising.DropStart(transform);
         }
+
+        /// <summary>
+        /// 踏ん張り終了時の処理。落下状態へ遷移し、Risingを落下させる。
+        /// </summary>
+        private void HandleHoldEnd()
+        {
+            // ステートを遷移し落下
+            _stateManager.TransitionTo(EnemyState.Down);
+            _rising.DropStart(transform);
+            EventBus.Publish(new EnemyDropEvent(InstanceEnemyId));
+        }
+
 
 
         /// <summary>
