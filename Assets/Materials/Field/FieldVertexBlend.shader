@@ -13,8 +13,11 @@ Shader "Custom/URP/FieldMaskBlend"
         [Header(Mask  white is path)]
         _MaskTex ("道マスク (白=道)", 2D) = "black" {}
         _FieldSize ("フィールドのサイズ XZ", Vector) = (112, 50, 0, 0)
-        _Blur ("グラデーションの幅", Range(0, 0.1)) = 0.02
-        _Edge ("境界のコントラスト", Range(0.001, 1)) = 1.0
+        _Blur ("境目のぼかし幅", Range(0, 0.03)) = 0.008
+        _Edge ("境目のなじみ幅", Range(0.001, 1)) = 0.35
+        _PathSpread ("道の広がり (草側へ浸食)", Range(0, 0.4)) = 0.15
+        _NoiseScale ("浸食ノイズの細かさ", Range(0.2, 10)) = 2.0
+        _NoiseStrength ("浸食ノイズの強さ", Range(0, 0.5)) = 0.25
     }
 
     SubShader
@@ -65,6 +68,9 @@ Shader "Custom/URP/FieldMaskBlend"
                 float4 _FieldSize;
                 float  _Blur;
                 float  _Edge;
+                float _PathSpread;
+                float _NoiseScale;
+                float _NoiseStrength;
             CBUFFER_END
 
             Varyings vert (Attributes IN)
@@ -80,6 +86,34 @@ Shader "Custom/URP/FieldMaskBlend"
                 OUT.fogFactor   = ComputeFogFactor(p.positionCS.z);
                 return OUT;
             }
+
+
+            // ----- ノイズ関数 -----
+
+            // 2Dの座標から0～1の擬似乱数を生成する
+            float Hash21(float2 p)
+            {
+                p = frac(p * float2(234.34, 435.345));
+                p += dot(p, p + 34.345);
+                return frac(p.x * p.y);
+            }
+
+
+            // ワールドXZ用のバリューノイズ
+            float ValueNoise(float2 p)
+            {
+                float2 i = floor(p);
+                float2 f = frac(p);
+                f = f * f * (3.0 - 2.0 * f);
+                float a = Hash21(i);
+                float b = Hash21(i + float2(1.0, 0.0));
+                float c = Hash21(i + float2(0.0, 1.0));
+                float d = Hash21(i + float2(1.0, 1.0));
+                return lerp(lerp(a, b, f.x), lerp(c, d, f.x), f.y);
+            }
+
+
+
 
             // マスクをぼかしてグレーの中間帯を作る(5x5 box blur)
             float SampleMaskBlurred(float2 uv, float blur)
@@ -105,7 +139,19 @@ Shader "Custom/URP/FieldMaskBlend"
                 half3 path  = SAMPLE_TEXTURE2D(_PathTex,  sampler_PathTex,  pUV).rgb * _PathColor.rgb;
 
                 half m = SampleMaskBlurred(IN.maskUV, _Blur);
-                half blend = smoothstep(0.5 - _Edge * 0.5, 0.5 + _Edge * 0.5, m);
+
+                // ワールド座標ベースのノイズ(2オクターブ)で境目を揺らす
+                float noise = ValueNoise(IN.positionWS.xz * _NoiseScale) * 0.7
+                            + ValueNoise(IN.positionWS.xz * _NoiseScale * 3.7) * 0.3;
+
+                // 境目の帯(0<m<1)の中だけノイズを効かせる
+                half band = saturate(m * (1.0 - m) * 4.0);
+                half mNoisy = m + (noise - 0.5) * _NoiseStrength * band;
+
+                // しきい値を0.5より下げる → 細い道が消えず、道が草側へ浸食する
+                half th = 0.5 - _PathSpread;
+                half w  = _Edge * 0.5;
+                half blend = smoothstep(th - w, th + w, mNoisy);
                 half3 albedo = lerp(grass, path, blend);
 
                 float3 N = normalize(IN.normalWS);
