@@ -97,23 +97,41 @@ namespace Game.Core.Enemy
                 return false;
             }
 
-            _nextHitTimes[itemId] = Time.time + Mathf.Max(0f, _sameItemCooldown);
+            float cooldown = collectible.SameItemCooldown;
+            _nextHitTimes[itemId] = Time.time + Mathf.Max(0f, cooldown);
 
             float baseDamage = Mathf.Max(1f, collectible.DamageAmount);
             float speedFactor = Mathf.Max(1f, hitSpeed);
             float gaugeDamage = baseDamage * speedFactor * _gaugeDamageMultiplier;
 
-            EventBus.Publish(new BarrierHitBatchEvent(_enemyId, 1, gaugeDamage, hitPosition, transform));
-
-            if (_despawnItemOnHit)
+            // とげ玉のバリア特攻パラメータ計算
+            var itemData = collectible.GetCollectableData();
+            if (itemData != null && itemData.Type == Game.Data.Collectibles.CollectibleType.Toge)
             {
-               collectible.Despawn();
+                gaugeDamage = itemData.BarrierDamageAmount * speedFactor * _gaugeDamageMultiplier;
+            }
+
+            EventBus.Publish(new BarrierHitBatchEvent(_enemyId, 1, gaugeDamage, hitPosition, transform, itemData));
+
+            // グミの場合は消滅させずに跳ね返らせる
+            bool shouldDespawn = _despawnItemOnHit;
+            if (itemData != null && itemData.Type == Game.Data.Collectibles.CollectibleType.Gummy)
+            {
+                shouldDespawn = false;
+            }
+
+            if (shouldDespawn)
+            {
+                collectible.Despawn();
             }
             else
             {
                 Rigidbody rb = collectible.GetComponent<Rigidbody>();
-                Vector3 newVel = rb.linearVelocity * _onHitAcceleration;
-                rb.linearVelocity = newVel;
+                if (rb != null)
+                {
+                    Vector3 newVel = rb.linearVelocity * _onHitAcceleration;
+                    rb.linearVelocity = newVel;
+                }
             }
 
             return true;
