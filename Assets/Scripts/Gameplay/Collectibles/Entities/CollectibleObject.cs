@@ -8,6 +8,7 @@
 
 using UnityEngine;
 using Game.Data.Collectibles;
+using Game.Core.Events;
 using System;
 using System.Collections.Generic;
 
@@ -38,17 +39,20 @@ namespace Game.Gameplay.Collectibles
         [SerializeField, Min(0f)] private float _passThroughDuration = 0.4f;
 
 
-
         private Rigidbody _rigidbody;
         private Action<CollectibleObject> _returnAction;
+        private GameObject _currentVisual;
 
         private Dictionary<int, GameObject> _visualCache = new Dictionary<int, GameObject>();
-        private GameObject _currentVisual;
         private Vector3 _initialScale;
 
-        public string Id => _data != null ? _data.Id : string.Empty;
+        // --- 特殊効果用のランタイム変数 ---
+        private int _currentBounceCount = 0;
 
+        public string Id => _data != null ? _data.Id : string.Empty;
         public float DamageAmount => _data != null ? _data.DamageAmount : 0f;
+
+        public float SameItemCooldown => _data != null ? _data.SameItemCooldown : 0.25f;
 
         public bool CanBeCollectedByPlayer { get; private set; } = true;
 
@@ -63,7 +67,6 @@ namespace Game.Gameplay.Collectibles
             // アイテムがステージ外へ落下した場合は自動クリーンアップ
             if (transform.position.y < _fallDeadLineY)
             {
-                Debug.Log($"[Collectible] アイテム '{name}' がデッドラインを下回ったため自動回収されました。");
                 Despawn();
             }
         }
@@ -87,7 +90,77 @@ namespace Game.Gameplay.Collectibles
             _data = data;
             _returnAction = returnAction;
             CanBeCollectedByPlayer = canBeCollectedByPlayer;
+            _currentBounceCount = 0;
+
             UpdateVisual();
+            ApplySpecialPhysics();
+        }
+
+        /// <summary>
+        /// アイテムのタイプに応じて物理特性を適用
+        /// </summary>
+        private void ApplySpecialPhysics()
+        {
+            if (_data == null) return;
+
+            Collider col = GetComponent<Collider>();
+            if (col != null)
+            {
+                // グミ且つPhysicsMaterialが設定されていれば適用
+                if (_data.Type == CollectibleType.Gummy && _data.GummyPhysicsMaterial != null)
+                {
+                    col.material = _data.GummyPhysicsMaterial;
+                }
+                else
+                {
+                    col.material = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// エネミーに衝突した際、このアイテム固有の技を発生させる。
+        /// EnemyHitReceiverから呼び出されます。
+        /// </summary>
+        public bool ExecuteHitImpact(string enemyId, float bodyDamage, Vector3 hitPosition, Transform enemyTransform)
+        {
+            if (_data == null) return false;
+
+            // 1. グミの最大連鎖数チェック
+            if (_data.Type == CollectibleType.Gummy)
+            {
+                if (_currentBounceCount >= _data.MaxBounceChainCount)
+                {
+                    Despawn();
+                    return false;
+                }
+                _currentBounceCount++;
+            }
+
+            // 2. イベントを発行
+            EventBus.Publish(new EnemyHitBatchEvent(enemyId, 1, bodyDamage, hitPosition, enemyTransform, _data));
+
+            // 3. 十字架専用ロジック
+            if (_data.Type == CollectibleType.Cross)
+            {
+                SpawnCrossLaser(hitPosition);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 十字架レーザーを画面右側の同じ高さに生成する。
+        /// </summary>
+        private void SpawnCrossLaser(Vector3 hitPosition)
+        {
+            if (_data.LaserPrefab == null) return;
+
+            Vector3 spawnPosition = new Vector3(15f, hitPosition.y, hitPosition.z);
+            GameObject laserObj = Instantiate(_data.LaserPrefab, spawnPosition, Quaternion.LookRotation(Vector3.left));
+
+            // レーザーの生存期間は任意で設定（例: 1.5秒）
+            Destroy(laserObj, 1.5f);
         }
 
         /// <summary>
@@ -170,11 +243,6 @@ namespace Game.Gameplay.Collectibles
             {
                 return null;
             }
-
-            // 物理演算と当たり判定を無効化（ブレード内での大爆発を防ぐため）
-//            if (_rigidbody != null) _rigidbody.isKinematic = true;
-//            Collider col = GetComponent<Collider>();
-//            if (col != null) col.enabled = false;
 
             // 自分自身（this）を渡しつつデータ化
             return new HeldItem(_data, this);

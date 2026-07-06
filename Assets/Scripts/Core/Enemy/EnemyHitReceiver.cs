@@ -1,8 +1,9 @@
 // 制作者: 山内陽
+using Game.Core.Events;
+using Game.Data.Collectibles;
+using Game.Gameplay.Collectibles;
 using System;
 using System.Collections.Generic;
-using Game.Core.Events;
-using Game.Gameplay.Collectibles;
 using UnityEngine;
 
 namespace Game.Core.Enemy
@@ -33,10 +34,6 @@ namespace Game.Core.Enemy
         [SerializeField]
         [Tooltip("CollectibleData.DamageAmountと衝突速度に掛ける本体ダメージ倍率。")]
         private float _bodyDamageMultiplier = 2.5f;
-
-        [SerializeField]
-        [Tooltip("同じアイテムから連続ヒットを受け付けない秒数。")]
-        private float _sameItemCooldown = 0.25f;
 
         [SerializeField]
         [Tooltip("命中したアイテムをPoolへ戻すか。")]
@@ -93,16 +90,27 @@ namespace Game.Core.Enemy
                 return false;
             }
 
-            _nextHitTimes[itemId] = Time.time + Mathf.Max(0f, _sameItemCooldown);
+            float cooldown = collectible.SameItemCooldown;
+            _nextHitTimes[itemId] = Time.time + Mathf.Max(0f, cooldown);
 
             float baseDamage = Mathf.Max(1f, collectible.DamageAmount);
             float speedFactor = Mathf.Max(1f, hitSpeed);
             float bodyDamage = baseDamage * speedFactor * _bodyDamageMultiplier;
 
-            EventBus.Publish(new EnemyHitBatchEvent(_enemyId, 1, bodyDamage, hitPosition, transform));
+            bool isHitProcessed = collectible.ExecuteHitImpact(_enemyId, bodyDamage, hitPosition, transform);
+
+            if (!isHitProcessed) return false;
+
             if (OnHitAction != null) OnHitAction.Invoke();
 
-            if (_despawnItemOnHit)
+            var data = collectible.GetCollectableData();
+            bool shouldDespawn = _despawnItemOnHit;
+            if (data != null && data.Type == CollectibleType.Gummy)
+            {
+                shouldDespawn = false;
+            }
+
+            if (shouldDespawn)
             {
                 collectible.Despawn();
             }
