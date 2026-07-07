@@ -11,6 +11,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Game.Core.Events;
 using Game.Core.Enemy;
+using Game.Gameplay.Cameras;
+using Game.Gameplay.Shop;
 
 namespace Game.Core.Management
 {
@@ -31,6 +33,11 @@ namespace Game.Core.Management
         [Header("--- 参照 ---")]
         [SerializeField] private EnemySpawner _enemySpawner;
 
+        [Header("--- ショップ演出関連の参照 ---")]
+        [SerializeField] private CameraRigController _cameraRigController;
+        [SerializeField] private ShopVehicleController _shopVehicleController;
+        [SerializeField] private ShopCinematicCameraController _shopCinematicCameraController;
+
         [Header("--- クリア演出・猶予設定 ---")]
         [Tooltip("最後の敵を倒してから、コンボや弾が当たり切るまでの猶予時間 (秒)")]
         [SerializeField] private float _clearDelayDuration = 2.0f;
@@ -43,9 +50,9 @@ namespace Game.Core.Management
         private int _currentWaveIndex = 0;
         private int _totalEnemiesInCurrentWave = 0;
         private int _defeatedEnemiesInCurrentWave = 0;
+        private bool _isCameraWorkFinished = false;
 
         public GameResultSummary ResultSummary { get; private set; }
-
         public GameProgressionState CurrentState => _currentState;
         public int CurrentWaveIndex => _currentWaveIndex + 1;
 
@@ -58,9 +65,29 @@ namespace Game.Core.Management
             }
             Instance = this;
 
+            // 自動参照取得のセーフティ
+            // Enemy Spawner
             if (_enemySpawner == null)
             {
                 _enemySpawner = Object.FindFirstObjectByType<EnemySpawner>();
+            }
+
+            // Camera Rig Controller
+            if (_cameraRigController == null)
+            {
+                _cameraRigController = Object.FindFirstObjectByType<CameraRigController>();
+            }
+
+            // Shop Vehicle Controller
+            if (_shopVehicleController == null)
+            {
+                _shopVehicleController = Object.FindFirstObjectByType<ShopVehicleController>();
+            }
+
+            // Shop Cinematic Camera Controller
+            if (_shopCinematicCameraController == null)
+            {
+
             }
         }
 
@@ -97,6 +124,12 @@ namespace Game.Core.Management
             // エネミーの撃破イベントを購読
             EventBus.Subscribe<EnemyDefeatedEvent>(OnEnemyDefeated);
             EventBus.Subscribe<DefLineBreakReactionEvent>(OnDefenseLineBroken);
+
+            // 演出カメラからの完了通知イベントを購読
+            if (_shopCinematicCameraController != null)
+            {
+                _shopCinematicCameraController.OnCompleteCameraWork += HandleCameraWorkComplete;
+            }
         }
 
         private void OnDisable()
@@ -104,6 +137,18 @@ namespace Game.Core.Management
             // エネミーの撃破イベントの購読解除
             EventBus.Unsubscribe<EnemyDefeatedEvent>(OnEnemyDefeated);
             EventBus.Unsubscribe<DefLineBreakReactionEvent>(OnDefenseLineBroken);
+
+            // 演出カメラからの完了通知イベントを購読解除
+            if (_shopCinematicCameraController != null)
+            {
+                _shopCinematicCameraController.OnCompleteCameraWork -= HandleCameraWorkComplete;
+            }
+        }
+
+        private void HandleCameraWorkComplete()
+        {
+            // カメラの回り込み完了合図を受け取ったらフラグをONに
+            _isCameraWorkFinished = true;
         }
 
         /// <summary>
@@ -196,8 +241,20 @@ namespace Game.Core.Management
             }
             else
             {
-                HandleWaveClear();
+                // 屋台演出へ繋ぐ
+                yield return StartCoroutine(ShopPresentationSequenceRoutine());
             }
+        }
+
+        /// <summary>
+        /// 等速復帰、カメラ乗っ取り、屋台爆走、カメラズーム完了を待機する演出
+        /// </summary>
+        private IEnumerator ShopPresentationSequenceRoutine()
+        {
+            Debug.Log("[Progression] ショップ登場演出シーケンスを開始するぜよ！");
+
+            // 1. スローモーションを解除
+            Time.timeScale = 1f;
         }
 
         /// <summary>
