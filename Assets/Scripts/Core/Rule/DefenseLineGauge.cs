@@ -15,7 +15,7 @@ namespace Game.Core.DefenceLine
 
         // 将来用にフラグを保持
         bool _isBroken = false;
-        float _gaugeHP = 30.0f;
+        [SerializeField] float _gaugeHP = 80.0f;
 
         public float CurrentHP => _gaugeHP;
 
