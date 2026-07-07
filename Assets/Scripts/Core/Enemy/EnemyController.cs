@@ -1,5 +1,6 @@
 // 制作者: 山内陽
 using Game.Core.Events;
+using Game.Data.Collectibles;
 using Game.Presentation.UI;
 using System.Collections;
 using System.Threading;
@@ -56,6 +57,14 @@ namespace Game.Core.Enemy
         private EnemyAttack _enemyAttack;
         private EnemyHoldCounter _holdCounter;
         private Coroutine _downTimerCoroutine;
+        private bool _isFrozen;
+        private float _freezeRemainingTime;
+        private int _freezeRemainingHitDurability;
+        private float _freezeBreakDamage;
+        private float _poisonRemainingTime;
+        private float _poisonTickTimer;
+        private float _poisonTickDamage;
+        private const float PoisonTickInterval = 1f;
 
         [Header("演出設定")]
         [Tooltip("撃破後、敵オブジェクトを消すまでの遅延時間（秒）。0の場合は即座に消す。")]
@@ -193,6 +202,7 @@ namespace Game.Core.Enemy
 
         private void Update()
         {
+            UpdateStatusAilments();
             _barrierGauge.UpdateBarrier();
             _enemyAttack.UpdateAttack();
 
@@ -212,6 +222,19 @@ namespace Game.Core.Enemy
         private void OnEnemyHitBatch(EnemyHitBatchEvent ev)
         {
             if (_definition == null || ev.EnemyId != InstanceEnemyId) return;
+            CollectibleData itemData = ev.ItemDataRaw as CollectibleData;
+            ApplyStatusAilment(itemData);
+
+            if (_isFrozen)
+            {
+                _freezeRemainingHitDurability -= Mathf.Max(1, ev.HitCount);
+                if (_freezeRemainingHitDurability <= 0)
+                {
+                    _health.ApplyBodyDamage(_freezeBreakDamage);
+                    ClearFreezeStatus();
+                }
+            }
+
             if (_stateManager.CurrentState == EnemyState.OverHit) _holdCounter.AddHit();
             _health.ApplyBodyDamage(ev.BodyDamage);
             _rising.DamageDrop(transform);
@@ -346,6 +369,74 @@ namespace Game.Core.Enemy
             }
 
             _downTimerCoroutine = null;
+        }
+
+        private void ApplyStatusAilment(CollectibleData itemData)
+        {
+            if (itemData == null)
+            {
+                return;
+            }
+
+            if (itemData.Type == CollectibleType.Poison)
+            {
+                _poisonRemainingTime = Mathf.Max(_poisonRemainingTime, itemData.PoisonDuration);
+                float poisonMinDamage = Mathf.Min(itemData.PoisonMinDamage, itemData.PoisonMaxDamage);
+                float poisonMaxDamage = Mathf.Max(itemData.PoisonMinDamage, itemData.PoisonMaxDamage);
+                _poisonTickDamage = Random.Range(poisonMinDamage, poisonMaxDamage);
+                if (_poisonTickTimer <= 0f)
+                {
+                    _poisonTickTimer = PoisonTickInterval;
+                }
+            }
+            else if (itemData.Type == CollectibleType.Ice)
+            {
+                float freezeProbability = Mathf.Clamp(itemData.FreezeProbability, 0f, 100f);
+                if (Random.value * 100f <= freezeProbability)
+                {
+                    _isFrozen = true;
+                    _freezeRemainingTime = Mathf.Max(_freezeRemainingTime, itemData.FreezeDuration);
+                    _freezeRemainingHitDurability = Mathf.Max(_freezeRemainingHitDurability, itemData.FreezeHitDurability);
+                    _freezeBreakDamage = Mathf.Max(_freezeBreakDamage, itemData.FreezeBreakDamage);
+                    _enemyAttack.SetActiv(false);
+                }
+            }
+        }
+
+        private void UpdateStatusAilments()
+        {
+            if (_poisonRemainingTime > 0f)
+            {
+                _poisonRemainingTime = Mathf.Max(0f, _poisonRemainingTime - Time.deltaTime);
+                _poisonTickTimer -= Time.deltaTime;
+                if (_poisonTickTimer <= 0f)
+                {
+                    _poisonTickTimer += PoisonTickInterval;
+                    _health.ApplyBodyDamage(_poisonTickDamage);
+                }
+            }
+            else
+            {
+                _poisonTickTimer = PoisonTickInterval;
+            }
+
+            if (_isFrozen)
+            {
+                _freezeRemainingTime = Mathf.Max(0f, _freezeRemainingTime - Time.deltaTime);
+                if (_freezeRemainingTime <= 0f)
+                {
+                    ClearFreezeStatus();
+                }
+            }
+        }
+
+        private void ClearFreezeStatus()
+        {
+            _isFrozen = false;
+            _freezeRemainingTime = 0f;
+            _freezeRemainingHitDurability = 0;
+            _freezeBreakDamage = 0f;
+            _enemyAttack.SetActiv(_stateManager.CanAttackDefenceLine);
         }
     }
 }
