@@ -6,8 +6,9 @@
 // Created      : 2026-07-07
 // ================================================================================
 
-using UnityEngine;
+using Game.Gameplay.Stage;
 using System;
+using UnityEngine;
 
 namespace Game.Gameplay.Shop
 {
@@ -85,7 +86,8 @@ namespace Game.Gameplay.Shop
                 _vehicleController.CurrentState == ShopVehicleController.VehicleState.Braking)
             {
                 // 停止・ブレーキ
-                Vector3 targetCameraPos = midPoint + _finalAngleOffsetFromCenter;
+                Vector3 rotatedOffset = FieldContext.Rotation * _finalAngleOffsetFromCenter;
+                Vector3 targetCameraPos = midPoint + rotatedOffset;
 
                 // 目標の固定位置へ
                 _mainCameraTransform.position = Vector3.SmoothDamp(
@@ -99,12 +101,13 @@ namespace Game.Gameplay.Shop
                 Vector3 lookDir = (midPoint - _mainCameraTransform.position).normalized;
                 if (lookDir != Vector3.zero)
                 {
-                    Quaternion targetRot = Quaternion.LookRotation(lookDir);
+                    Vector3 fieldUp = FieldContext.Rotation * Vector3.up;
+                    Quaternion targetRot = Quaternion.LookRotation(lookDir, fieldUp);
                     _mainCameraTransform.rotation = Quaternion.Slerp(_mainCameraTransform.rotation, targetRot, Time.deltaTime * _rotationSmoothSpeed);
                 }
 
                 // カメラの座標が目標に近づき同じ構図になった瞬間検知
-                if (!_notifiedDone && Vector3.Distance(_mainCameraTransform.position, targetCameraPos) < 0.05f)
+                if (!_notifiedDone && Vector3.Distance(_mainCameraTransform.position, targetCameraPos) < 0.15f)
                 {
                     _notifiedDone = true;
                     OnCameraWorkComplete();
@@ -112,7 +115,12 @@ namespace Game.Gameplay.Shop
             }
             else
             {
-                Vector3 targetCameraPos = new Vector3(midPoint.x, _mainCameraTransform.position.y, midPoint.z - 10f);
+                // プレイヤーと屋台の中間点を追従
+                Vector3 fieldForward = FieldContext.Rotation * Vector3.forward;
+                Vector3 fieldUp = FieldContext.Rotation * Vector3.up;
+
+                // 中間地点から傾いた床の手前側にカメラを引き離す
+                Vector3 targetCameraPos = midPoint - (fieldForward * 10f) + (fieldUp * 5f);
 
                 _mainCameraTransform.position = Vector3.SmoothDamp(
                     _mainCameraTransform.position,

@@ -6,10 +6,11 @@
 // Created      : 2026-07-07
 // ================================================================================
 
-using UnityEngine;
+using Game.Gameplay.Stage;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Game.Gameplay.Shop
 {
@@ -164,11 +165,10 @@ namespace Game.Gameplay.Shop
             }
 
             Vector3 targetPos = waypoints[_currentWaypointIndex].position;
-            targetPos.y = transform.position.y;
 
             MoveAndRotateTowards(targetPos);
 
-            if (Vector3.Distance(transform.position, targetPos) < 0.5f)
+            if (Vector3.Distance(transform.position, targetPos) < 0.8f)
             {
                 _currentWaypointIndex++;
                 if (_currentWaypointIndex >= waypoints.Count)
@@ -189,13 +189,15 @@ namespace Game.Gameplay.Shop
 
             // プレイヤーの源氏愛知を動的に追従した停止目標ポイントを計算
             // プレイヤーの向いている方向や位置に応じてオフセットを掛ける
-            _dynamicStopPosition = _playerTarget.position + _stopOffsetFromPlayer;
-            _dynamicStopPosition.y = transform.position.y;
+            Quaternion fieldRot = FieldContext.Rotation;
+            Vector3 rotatedOffset = fieldRot * _stopOffsetFromPlayer;
+
+            _dynamicStopPosition = _playerTarget.position + rotatedOffset;
 
             MoveAndRotateTowards(_dynamicStopPosition);
 
             // 停止位置に近づいたら急ブレーキステートに移行
-            if (Vector3.Distance(transform.position, _dynamicStopPosition) < 0.8f)
+            if (Vector3.Distance(transform.position, _dynamicStopPosition) < 1.0f)
             {
                 transform.position = _dynamicStopPosition;
                 _currentState = VehicleState.Braking;
@@ -205,11 +207,14 @@ namespace Game.Gameplay.Shop
 
         private void MoveAndRotateTowards(Vector3 targetPos)
         {
-            Vector3 dir = (targetPos - transform.position).normalized;
-            if (dir.sqrMagnitude > 0.001f)
+            Vector3 diff = targetPos - transform.position;
+            Vector3 fieldUp = FieldContext.Rotation * Vector3.up;
+
+            Vector3 projectedDir = Vector3.ProjectOnPlane(diff, fieldUp).normalized;
+
+            if (projectedDir.sqrMagnitude > 0.001f)
             {
-                // カートゥーン風に急旋回をかける
-                Quaternion targetRot = Quaternion.LookRotation(dir, Vector3.up);
+                Quaternion targetRot = Quaternion.LookRotation(projectedDir, fieldUp);
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * _turnSpeed);
             }
 
