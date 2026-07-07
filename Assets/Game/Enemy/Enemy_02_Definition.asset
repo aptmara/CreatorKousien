@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyDefinition
   EnemyId: Enemy_02
   EnemyBody: {fileID: 8324395216365602149, guid: 1a3a65d6c2f7f8f4abc40b7ed610fd4a, type: 3}
-  MaxHp: 300
+  MaxHp: 350
   ExpRate: 0.8
   DownDuration: 3.5
-  HasBarrier: 0
-  MaxGauge: 50
+  HasBarrier: 1
+  MaxGauge: 300
   BarrierBody: {fileID: 180197807806133772, guid: 23a14d1624590fe49b83c3dd3bfc3c36, type: 3}
   barrierBreakMaxLossRate: 0.7
   AttackPower: 1
@@ -98,6 +98,15 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0
       outWeight: 0
+    - serializedVersion: 3
+      time: 0.33926126
+      value: 0.3110488
+      inSlope: -1.3974444
+      outSlope: -1.3974444
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
       value: 0

@@ -128,5 +128,5 @@ MonoBehaviour:
   _minimumHitSpeed: 1
   _gaugeDamageMultiplier: 8
   _sameItemCooldown: 0.25
-  _despawnItemOnHit: 0
+  _despawnItemOnHit: 1
   _onHitAcceleration: 1.8

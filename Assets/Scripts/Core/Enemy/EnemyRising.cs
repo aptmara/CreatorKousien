@@ -282,8 +282,6 @@ namespace Game.Core.Enemy
             _elapsedTime = ValueToCurveTime(finalCurve, _riseCurve, 5);
             _damageDropCoroutine = null;
 
-            Debug.Log("OldValue" + finalCurve + "Value" + _riseCurve.Evaluate(_elapsedTime));
-
             _riseCoroutine = StartCoroutine(RiseRoutine(enemyTransform));
         }
 
