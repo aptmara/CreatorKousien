@@ -5,6 +5,7 @@
 // Author	: [浅野 勇生]
 // Created	: 2026-05-06
 // Updated	: 2026-06-02 (固定カメラ・Ortho / Persp動的切り替え対応)
+// Updated  : 2026-07-07 (ショップ演出用の一時無効化フラグを拡張)
 //
 // Notes	:
 // - 5/6: ベース作成
@@ -19,6 +20,9 @@ namespace Game.Gameplay.Cameras
     /// </summary>
     public class CameraRigController : MonoBehaviour
     {
+        // 演出モード中かどうかを管理するフラグ
+        private bool _isCinematicMode = false;
+
         public enum ProjectionMode
         {
             Orthographic,
@@ -113,10 +117,37 @@ namespace Game.Gameplay.Cameras
         }
 
         /// <summary>
+        /// 外部から、通常の追従・固定処理を一時停止させるための関数
+        /// </summary>
+        public void SetCinematicModeActive(bool active)
+        {
+            _isCinematicMode = active;
+
+            if (!active)
+            {
+                _currentVelocity = Vector3.zero;
+
+                _focusTarget = null;
+                _focusTimer = 0f;
+            }
+            else
+            {
+                // 演出モードに入るときに、SmoothDamp の内部速度などをリセットする
+                _currentVelocity = Vector3.zero;
+            }
+        }
+
+        /// <summary>
         /// カメラの位置と回転を更新する
         /// </summary>
         private void LateUpdate()
         {
+            // 演出カメラワークが作動している間は通常のカメラ固定・追従処理をスキップ
+            if (_isCinematicMode)
+            {
+                return;
+            }
+
             if (_targetTransform == null)
             {
                 return;
