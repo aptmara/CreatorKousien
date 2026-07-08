@@ -6,9 +6,10 @@
 // Created	: 2026-05-06
 //
 // Notes	:
-// - 5/6: ベース作成
+// - 5/6 : ベース作成
 // - 5/24: アタッチメントの拡大縮小機能の作成
 // - 6/19: PlayerRuntimeDataを参照、アタッチメントのサイズをステータスに基づいて変化させる機能の追加
+// - 7/8 : エフェクト出てから腕出す感じで作ってみる！
 // ------------------------------------------------------------
 using UnityEngine;
 using Game.Gameplay.Player.Progression;
@@ -40,6 +41,22 @@ namespace Game.Gameplay.Player
         [SerializeField] private float _scaleSpeed = 12f;
 
 
+        [Header("開閉設定")]
+        [Tooltip("開閉を切り替えられる最短間隔(連打対策)")]
+        [SerializeField] private float _toggleCooldown = 0.3f;
+
+        [Tooltip("エフェクトを見せてから腕が大きくなり始めるまでの溜め時間")]
+        [SerializeField] private float _expandDelay = 0.05f;
+
+        [Tooltip("出現エフェクトを出す位置(左手)")]
+        [SerializeField] private Transform _startVfxPointL;
+
+        [Tooltip("出現エフェクトを出す位置(右手)")]
+        [SerializeField] private Transform _startVfxPointR;
+
+
+        private float _nextToggleTime;                  ///< 次に開閉を切り替えられる時間
+        private float _expandStartTime;                 ///< 腕が大きくなり始める時刻
 
         private PhysicalAttachment _currentAttachment;  ///< 現在装備しているアタッチメント
 
@@ -86,7 +103,8 @@ namespace Game.Gameplay.Player
 
             // 基準スケール（通常 or 縮小）に強化倍率を掛けたものを目標にする
             bool forceLarge = _forceLargeByPunch || Time.time < _forceLargeUntil;
-            Vector3 baseScale = (_isShrunkInternal || forceLarge) ? _shrinkScale : _normalScale;
+            bool expandReady = Time.time >= _expandStartTime;
+            Vector3 baseScale = ((_isShrunkInternal && expandReady) || forceLarge) ? _shrinkScale : _normalScale;
             _targetScale = baseScale * upgradeScale;
 
             _currentAttachment.transform.localScale = Vector3.Lerp(
@@ -135,7 +153,39 @@ namespace Game.Gameplay.Player
         /// <param name="shrunk">拡大縮小状態のフラグ</param>
         public void SetShrunk(bool shrunk)
         {
+            // 状態が変わらないなら何もしない
+            if (shrunk == _isShrunkInternal)
+            {
+                return;
+            }
+
+            // クールダウン中は切り替えを受け付けない
+            if (Time.time < _nextToggleTime)
+            {
+                return;
+            }
+
             _isShrunkInternal = shrunk;
+            _nextToggleTime = Time.time + _toggleCooldown;
+
+            // 開く方向なら、先にエフェクトを見せて腕の拡大は溜め時間だけ遅らせる
+            if (shrunk)
+            {
+                _expandStartTime = Time.time + _expandDelay;
+                PlayAuraStart();
+            }
+        }
+
+
+        /// <summary>
+        /// アタッチメントの出現エフェクトの再生
+        /// </summary>
+        private void PlayAuraStart()
+        {
+            if (_currentAttachment != null && _currentAttachment.TryGetComponent<BigHandAuraController>(out var aura))
+            {
+                // aura.PlayStartEffect(_startVfxPointL, _startVfxPointR);
+            }
         }
 
 
