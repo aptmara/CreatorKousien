@@ -53,6 +53,10 @@ namespace Game.Core.Management
         private int _defeatedEnemiesInCurrentWave = 0;
         private bool _isCameraWorkFinished = false;
 
+        // カメラの固定画角を保持しておく変数
+        private Vector3 _savedBattleCameraPosition;
+        private Quaternion _savedBattleCameraRotation;
+
         public GameResultSummary ResultSummary { get; private set; }
         public GameProgressionState CurrentState => _currentState;
         public int CurrentWaveIndex => _currentWaveIndex + 1;
@@ -231,6 +235,14 @@ namespace Game.Core.Management
         {
             Debug.Log("[Progression] ショップ登場演出シーケンスを開始するぜよ！");
 
+            // バトル固定画角を退避
+            if (Camera.main != null)
+            {
+                _savedBattleCameraPosition = Camera.main.transform.position;
+                _savedBattleCameraRotation = Camera.main.transform.rotation;
+                Debug.Log($"<color=green>[Progression] バトル終了時の正常なカメラ画角をマネージャーに完全退避したぜよ！ Pos: {_savedBattleCameraPosition}</color>");
+            }
+
             // 1. スローモーションを解除
             Time.timeScale = 1f;
             Time.fixedDeltaTime = 0.02f;
@@ -270,12 +282,11 @@ namespace Game.Core.Management
             _shopVehicleController.LaunchShopSequence(playerTransform);
 
             // 4. 屋台が完全停止し、且つカメラのアングルが一致するまで待機
-            while (!_isCameraWorkFinished || _shopVehicleController.CurrentState != ShopVehicleController.VehicleState.Stationary)
+            while (!_shopCinematicCameraController.IsCameraWorkFinished)
             {
                 // プレイヤーを屋台の方向に向かせる
                 Vector3 rawToShop = _shopVehicleController.transform.position - playerTransform.position;
                 Vector3 fieldUp = FieldContext.Rotation * Vector3.up;
-
                 Vector3 flatToShop = Vector3.ProjectOnPlane(rawToShop, fieldUp).normalized;
 
                 if (flatToShop.sqrMagnitude > 0.001f)
@@ -331,6 +342,15 @@ namespace Game.Core.Management
         {
             Debug.Log("[Progression] ローグライク強化終了。屋台退出ぜよ！");
 
+            Time.timeScale = 1f;
+            Time.fixedDeltaTime = 0.02f;
+
+            // 通常のカメラの画角に戻す
+            if (_shopCinematicCameraController != null )
+            {
+                _shopCinematicCameraController.StopCinematicAndReturn(_savedBattleCameraPosition, _savedBattleCameraRotation);
+            }
+
             // 屋台を右の畦道へ走らせる
             if (_shopVehicleController != null)
             {
@@ -347,9 +367,17 @@ namespace Game.Core.Management
                 yield return new WaitUntil(() => _shopVehicleController.CurrentState == ShopVehicleController.VehicleState.Inactive);
             }
 
-            // 演出用カメラをOFFにし、既存のカメラの制御権をONに戻す
-            if (_shopCinematicCameraController != null) _shopCinematicCameraController.StopCinematic();
+            // 演出が終わったら通常カメラを再始動
             if (_cameraRigController != null) _cameraRigController.SetCinematicModeActive(false);
+
+            // 屋台が完全にはけたらプレイヤーの操作禁止を解除
+            var playerFacade = Object.FindFirstObjectByType<Gameplay.Player.PlayerFacade>();
+            Transform playerTransform = playerFacade != null ? playerFacade.transform : null;
+            if (playerTransform != null)
+            {
+                var playerInput = playerTransform.GetComponentInChildren<MonoBehaviour>();
+                if (playerInput != null) playerInput.enabled = true;
+            }
 
             // ウェーブカウントをインクリメント
             _currentWaveIndex++;

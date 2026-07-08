@@ -47,6 +47,8 @@ namespace Game.Gameplay.Shop
         [SerializeField] private float _turnSpeed = 10f;
         [Tooltip("プレイヤーのどれくらい手前に停止するか")]
         [SerializeField] private Vector3 _stopOffsetFromPlayer = new Vector3(-2.5f, 0f, 0f);
+        [Tooltip("プレイヤーの原点が足元ではなく中心にある場合の高さの補正")]
+        [SerializeField] private float _playerHeightOffset = -1.91f;
         [Tooltip("移動の緩急をつけるカーブ")]
         [SerializeField] private AnimationCurve _accelerationCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
@@ -110,9 +112,22 @@ namespace Game.Gameplay.Shop
         /// </summary>
         public void DismissShopSequence()
         {
-            if (_currentState != VehicleState.Stationary) return;
+            if (_currentState != VehicleState.Stationary && _currentState != VehicleState.Braking)
+            {
+                return;
+            }
+
+            _currentSquashY = 0f;
+            _brakeSquashVelocity = 0f;
+            if (_distortion != null)
+            {
+                _distortion.SquashY = 0f;
+            }
+
             _currentState = VehicleState.Exiting;
             _currentWaypointIndex = 0;
+
+            Debug.Log("[ShopVehicleController] 命令を了解！右のあぜ道へ向けて爆走退出するぜよ！");
         }
 
         private void Update()
@@ -192,7 +207,8 @@ namespace Game.Gameplay.Shop
             Quaternion fieldRot = FieldContext.Rotation;
             Vector3 rotatedOffset = fieldRot * _stopOffsetFromPlayer;
 
-            _dynamicStopPosition = _playerTarget.position + rotatedOffset;
+            Vector3 fieldUp = fieldRot * Vector3.up;
+            _dynamicStopPosition = _playerTarget.position + rotatedOffset + (fieldUp * _playerHeightOffset);
 
             MoveAndRotateTowards(_dynamicStopPosition);
 

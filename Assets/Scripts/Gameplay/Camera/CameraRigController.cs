@@ -122,7 +122,15 @@ namespace Game.Gameplay.Cameras
         public void SetCinematicModeActive(bool active)
         {
             _isCinematicMode = active;
-            if (active)
+
+            if (!active)
+            {
+                _currentVelocity = Vector3.zero;
+
+                _focusTarget = null;
+                _focusTimer = 0f;
+            }
+            else
             {
                 // 演出モードに入るときに、SmoothDamp の内部速度などをリセットする
                 _currentVelocity = Vector3.zero;

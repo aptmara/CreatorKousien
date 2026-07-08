@@ -14,7 +14,7 @@ namespace Game.Core.Events
             Capacity = capacity;
         }
     }
-
+    
     public readonly struct PayloadReleasedEvent
     {
         public readonly int PayloadCount;

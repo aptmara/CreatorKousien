@@ -28,6 +28,8 @@ namespace Game.Gameplay.Shop
         [SerializeField] private float _zoomPositionSmoothTime = 0.4f;
         [Tooltip("カメラが目標回転を向くときの滑らかさ")]
         [SerializeField] private float _rotationSmoothSpeed = 5f;
+        [Tooltip("通常画角へ戻るときの移動の滑らかさ")]
+        [SerializeField] private float _returnSmoothTime = 0.4f;
 
         [Header("--- 最後のドアップの固定画角設定 ---")]
         [Tooltip("プレイヤーと屋台の中間地点から、カメラをどの相対位置に配置するか")]
@@ -38,11 +40,21 @@ namespace Game.Gameplay.Shop
         private ShopVehicleController _vehicleController;
 
         private bool _isActive = false;
+        private bool _isReturning = false;
         private Vector3 _posVelocity;
         private bool _notifiedDone = false;
 
+        // 元のカメラ位置と回転を保存する変数
+        private Vector3 _targetReturnPosition;
+        private Quaternion _targetReturnRotation;
+
         // カメラワークが完了したことを外部に伝えるイベント
         public event Action OnCompleteCameraWork;
+
+        // 元の画角に戻り切ったことを伝えるイベント
+        public event Action OnCompleteReturnCamera;
+
+        public bool IsCameraWorkFinished => _notifiedDone;
 
         private void Start()
         {
@@ -50,6 +62,7 @@ namespace Game.Gameplay.Shop
             {
                 _mainCameraTransform = Camera.main.transform;
             }
+            Debug.Log($"[ShopCinematicCamera] Start時のメインカメラ名: {(_mainCameraTransform != null ? _mainCameraTransform.name : "NULL")}");
         }
 
         /// <summary>
@@ -62,21 +75,73 @@ namespace Game.Gameplay.Shop
             _vehicleController = vehicle;
 
             _isActive = true;
+            _isReturning = false;
             _notifiedDone = false;
             _posVelocity = Vector3.zero;
+
+            Debug.Log("[ShopCinematicCamera] 演出カメラ起動。プレイヤーと屋台の追従を開始ぜよ。");
         }
 
         /// <summary>
         /// 演出カメラワークを終了し、通常カメラに戻す準備をする
         /// </summary>
-        public void StopCinematic()
+        public void StopCinematicAndReturn(Vector3 originPos, Quaternion originRot)
         {
-            _isActive = false;
+            if (_mainCameraTransform == null && Camera.main != null)
+            {
+                _mainCameraTransform = Camera.main.transform;
+            }
+
+            _targetReturnPosition = originPos;
+            _targetReturnRotation = originRot;
+
+            Debug.Log($"<color=yellow>[ShopCinematicCamera] 確実なバトル座標への復帰を開始！ 目標Pos: {_targetReturnPosition}, 目標Rot: {_targetReturnRotation.eulerAngles}</color>");
+
+            _isReturning = true;
+            _posVelocity = Vector3.zero;
         }
 
         private void LateUpdate()
         {
-            if (!_isActive || _mainCameraTransform == null || _playerTransform == null || _shopVehicleTransform == null) return;
+            if (!_isActive || _mainCameraTransform == null) return;
+
+            // 元の通常画角へのイージング
+            if (_isReturning)
+            {
+                // 保存しておいた元の座標へ滑らかに戻す
+                _mainCameraTransform.position = Vector3.SmoothDamp(
+                    _mainCameraTransform.position,
+                    _targetReturnPosition,
+                    ref _posVelocity,
+                    _returnSmoothTime
+                );
+
+                // 回転
+                _mainCameraTransform.rotation = Quaternion.Slerp(
+                     _mainCameraTransform.rotation,
+                     _targetReturnRotation,
+                     Time.deltaTime * _rotationSmoothSpeed
+                );
+
+                Debug.Log($"[ShopCinematicCamera] 復帰中... 現在地: {_mainCameraTransform.position} -> 目標: {_targetReturnPosition} (残り距離: {Vector3.Distance(_mainCameraTransform.position, _targetReturnPosition)})");
+
+                // 元に戻ったら通常カメラに制御を返す
+                if (Vector3.Distance(_mainCameraTransform.position, _targetReturnPosition) < 0.02f)
+                {
+                    _mainCameraTransform.position = _targetReturnPosition;
+                    _mainCameraTransform.rotation = _targetReturnRotation;
+
+                    _isActive = false;
+                    _isReturning = false;
+
+                    Debug.Log("<color=green>[ShopCinematicCamera] ぴたっと元の通常画角への復帰が完了したぜよ！</color>");
+                    OnCompleteReturnCamera?.Invoke();   // 復帰完了通知
+                }
+
+                return;
+            }
+
+            if (_playerTransform == null || _shopVehicleTransform == null) return;
 
             // 1. 常にプレイヤーと屋台の中心地点を動的計算
             Vector3 midPoint = (_playerTransform.position + _shopVehicleTransform.position) * 0.5f;

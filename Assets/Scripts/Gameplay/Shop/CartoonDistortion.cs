@@ -85,6 +85,12 @@ namespace Game.Gameplay.Shop
                 if (_originalVertices == null) return;
             }
 
+            // クランプ処理
+            float safeSquashY = Mathf.Max(SquashY, -0.95f);
+            float scaleDiv = Mathf.Sqrt(1f + safeSquashY);
+
+            if (scaleDiv < 0.01f) scaleDiv = 1f;
+
             // 頂点変形マトリクスの適用
             for (int i = 0; i < _originalVertices.Length; i++)
             {
@@ -93,21 +99,15 @@ namespace Game.Gameplay.Shop
 
                 // 1. 平行四辺形シアー変形
                 // 高さが高い頂点ほどずらす
-                modified.x += orig.y * ShearX;
+                float safeShearX = Mathf.Clamp(ShearX, -3f, 3f);
+                modified.x += orig.y * safeShearX;
 
                 // 2. スクワッシュ & ストレッチ
-                if (SquashY != 0f)
+                if (safeSquashY != 0f)
                 {
-                    // SquashY > 0 なら縦長
-                    // SquashY < 0 なら平潰れ
-                    modified.y *= (1f + SquashY);
-
-                    float scaleDiv = Mathf.Sqrt(1f + SquashY);
-                    if (scaleDiv > 0.001f)
-                    {
-                        modified.x /= scaleDiv;
-                        modified.z /= scaleDiv;
-                    }
+                    modified.y *= (1f + safeSquashY);
+                    modified.x /= scaleDiv;
+                    modified.z /= scaleDiv;
                 }
 
                 _modifiedVertices[i] = modified;
