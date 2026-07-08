@@ -83,7 +83,10 @@ namespace Game.Core.Enemy
             if (!_isActive) return;
 
             UpdateHealInterval();
-            if(_isHeal) GaugeHeal(_healPower * Time.deltaTime);
+            if (_isHeal && _currentGauge < _dynamicMaxGauge)
+            {
+                GaugeHeal(_healPower * Time.deltaTime);
+            }
         }
         /// <summary>
         /// MAXチェックを一時停止/再開する。

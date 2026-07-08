@@ -15,15 +15,16 @@ namespace Game.Core.Enemy
     {
         [Tooltip("実行時に親のEnemyControllerから自動取得されるユニークなID。")]
         private string _enemyId;
+        private EnemyController _controller;
 
         public Action OnHitAction;
 
         private void Start()
         {
-            var controller = GetComponentInParent<EnemyController>();
-            if (controller != null)
+            _controller = GetComponentInParent<EnemyController>();
+            if (_controller != null)
             {
-                _enemyId = controller.InstanceEnemyId;
+                _enemyId = _controller.InstanceEnemyId;
             }
         }
 
@@ -100,6 +101,11 @@ namespace Game.Core.Enemy
             bool isHitProcessed = collectible.ExecuteHitImpact(_enemyId, bodyDamage, hitPosition, transform);
 
             if (!isHitProcessed) return false;
+
+            if (_controller != null)
+            {
+                _controller.OnBodyHit(bodyDamage);
+            }
 
             if (OnHitAction != null) OnHitAction.Invoke();
 

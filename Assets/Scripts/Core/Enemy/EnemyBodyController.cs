@@ -2,50 +2,93 @@ using Game.Core.Enemy;
 using UnityEngine;
 using Game.Core.Events;
 using Unity.Mathematics;
+using System.Collections;
 
-public class EnemyBodyController : MonoBehaviour
+namespace Game.Core.Enemy
 {
-    EnemyAnimation _animation;
-    EnemyHitReceiver _receiver;
-    EnemyBodyPose _pose;
-    string _enemyID;
-
-
-    private void OnEnable()
+    public class EnemyBodyController : MonoBehaviour
     {
-        EventBus.Subscribe<EnemyDropEvent>(OnDropBatch);
-    }
+        EnemyHitReceiver _receiver;
+        string _enemyID;
 
-    private void OnDisable()
-    {
-        EventBus.Unsubscribe<EnemyDropEvent>(OnDropBatch);
-    }
+        [Header("Animation")]
+        [SerializeField] private Animator _animator;
+        [Tooltip("ヒット時に増加するアニメーション継続時間の最大値")]
+        [SerializeField] private float _maxHitAnimationTime;
+        [Tooltip("1ヒットでのアニメーション継続時間の増加量")]
+        [SerializeField] private float _addHitAnimationTime;
+        float _hitAnimationTime;
 
-    public void Initialize(string enemyID)
-    {
-        _enemyID = enemyID;
+        [Header("Pose")]
+        [SerializeField] float _dropDuration = 1.0f;
+        [SerializeField] Vector3 _dropRot;
+        Coroutine _dropPoseCoroutine;
+        float _elapsedTime;
+        Quaternion _startRot;
 
-        // 各要素を取得
-        _animation = GetComponent<EnemyAnimation>();
-        _receiver = GetComponent<EnemyHitReceiver>();
-        _pose = GetComponent<EnemyBodyPose>();
+        private void OnEnable()
+        {
+            var controller = GetComponentInParent<EnemyController>();
+            if (controller != null)
+            {
+                controller.OnDropStarted += OnDropStarted;
+            }
+        }
 
+        private void OnDisable()
+        {
+            var controller = GetComponentInParent<EnemyController>();
+            if (controller != null)
+            {
+                controller.OnDropStarted -= OnDropStarted;
+            }
+        }
 
-        // リカバリーを初期化
-        _receiver.Initialize(enemyID);
-        _receiver.OnHitAction = HandleHitDamage;
-    }
+        public void Initialize(string enemyID)
+        {
+            _enemyID = enemyID;
+            _receiver = GetComponent<EnemyHitReceiver>();
+            if (_receiver != null)
+            {
+                _receiver.Initialize(enemyID);
+                _receiver.OnHitAction = HandleHitDamage;
+            }
+        }
 
-    void HandleHitDamage()
-    {
-        // アニメーションを再生
-        _animation.bodyHit();
-    }
+        private void Update()
+        {
+            if (_animator == null) return;
+            if (_hitAnimationTime > 0.0f)
+            {
+                _hitAnimationTime -= Time.deltaTime;
+                _hitAnimationTime = Mathf.Max(_hitAnimationTime, 0.0f);
+            }
+            _animator.SetFloat("HitTime", _hitAnimationTime);
+        }
 
-    void OnDropBatch(EnemyDropEvent dropEvent)
-    {
-        if (dropEvent.EnemyId != _enemyID) return;
+        void HandleHitDamage()
+        {
+            _hitAnimationTime += _addHitAnimationTime;
+            _hitAnimationTime = Mathf.Min(_hitAnimationTime, _maxHitAnimationTime);
+            if (_animator != null) _animator.SetTrigger("HitAnimeEvent");
+        }
 
-        _pose.DropPose(transform);
+        void OnDropStarted()
+        {
+            _elapsedTime = 0.0f;
+            _startRot = transform.rotation;
+            if (_dropPoseCoroutine != null) StopCoroutine(_dropPoseCoroutine);
+            _dropPoseCoroutine = StartCoroutine(DropRoutine());
+        }
+
+        private IEnumerator DropRoutine()
+        {
+            while (_elapsedTime <= 1.0f)
+            {
+                _elapsedTime += Time.deltaTime / _dropDuration;
+                transform.rotation = Quaternion.Euler(Vector3.Lerp(_startRot.eulerAngles, _dropRot, _elapsedTime));
+                yield return null;
+            }
+        }
     }
 }

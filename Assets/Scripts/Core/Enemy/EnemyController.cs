@@ -15,8 +15,6 @@ namespace Game.Core.Enemy
     ///   出力: EventBus へ各種イベントを発行（EnemyGaugeChangedEvent, EnemyHealthChangedEvent,
     ///         EnemyGaugeBrokenEvent, EnemyDownStartedEvent, EnemyDefeatedEvent, EnemyAttackFiredEvent）
     /// </summary>
-    [RequireComponent(typeof(EnemyAttackGauge))]
-    [RequireComponent(typeof(BarrierController))]
     public class EnemyController : MonoBehaviour
     {
         /// <summary>
@@ -57,7 +55,11 @@ namespace Game.Core.Enemy
         private EnemyHoldCounter _holdCounter;
         private Coroutine _downTimerCoroutine;
 
-        [Header("演出設定")]
+        public event System.Action<float, float> OnHealthChanged;
+        public event System.Action<float, float> OnGaugeChanged;
+        public event System.Action OnDownStarted;
+        public event System.Action OnDropStarted;
+        public event System.Action OnDefeated;
         [Tooltip("撃破後、敵オブジェクトを消すまでの遅延時間（秒）。0の場合は即座に消す。")]
         [SerializeField, Min(0f)] private float _destroyDelay = 0f;
 
@@ -85,12 +87,15 @@ namespace Game.Core.Enemy
                 gameObject.AddComponent<EnemyWorldStatusView>();
             }
             // TODO 敵オブジェクトの高さを決定できるようにする
-            statusView.Initialize(InstanceEnemyId, new Vector3(0.0f, 3.6f, 1.5f));
+            statusView.Initialize(InstanceEnemyId, new Vector3(0.0f, 3.6f, 1.5f), definition.HasBarrier);
 
             // HP管理初期化
             _health = new EnemyHealth();
             _health.Initialize(InstanceEnemyId, definition.MaxHp * spawnSummary.HPRate,
-                (current, max) => EventBus.Publish(new EnemyHealthChangedEvent(InstanceEnemyId, current, max)),
+                (current, max) => {
+                    EventBus.Publish(new EnemyHealthChangedEvent(InstanceEnemyId, current, max));
+                    OnHealthChanged?.Invoke(current, max);
+                },
                 HandleDefeated
             );
             
@@ -104,8 +109,10 @@ namespace Game.Core.Enemy
                 definition.HealRegenWaitTime,
                 definition.HealPower * spawnSummary.BarrierRate,
                 null,
-                (current, max) =>
-                EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max)),
+                (current, max) => {
+                    EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max));
+                    OnGaugeChanged?.Invoke(current, max);
+                },
                 HandleGaugeBroken,
                 definition.barrierBreakMaxLossRate
         );
@@ -117,7 +124,12 @@ namespace Game.Core.Enemy
 
             // 初期HP・ゲージをUIに通知
             EventBus.Publish(new EnemyHealthChangedEvent(InstanceEnemyId, definition.MaxHp, definition.MaxHp));
-            EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, 0f, definition.MaxGauge));
+            OnHealthChanged?.Invoke(definition.MaxHp, definition.MaxHp);
+            if (definition.HasBarrier)
+            {
+                EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, 0f, definition.MaxGauge));
+                OnGaugeChanged?.Invoke(0f, definition.MaxGauge);
+            }
 
             Debug.Log($"[EnemyController] {InstanceEnemyId} 初期化完了。HP={definition.MaxHp * spawnSummary.HPRate}," +
                       $" MaxGauge={definition.MaxGauge * spawnSummary.BarrierRate}, BarrierActive={definition.HasBarrier}");
@@ -154,9 +166,9 @@ namespace Game.Core.Enemy
         public bool BarrierInitialize(EnemyDefinition definition, SpawnSummary spawnSummary, GameObject barrierObject)
         {
 
-            if (!barrierObject.TryGetComponent(out EnemyBirrerReceiver barrierReceiver))
+            if (!barrierObject.TryGetComponent(out EnemyBarrierReceiver barrierReceiver))
             {
-                Debug.LogWarning("[EnemySpawner] EnemyHitReceiver が付与されていないためバリアの生成を中止します。", barrierObject);
+                Debug.LogWarning("[EnemySpawner] EnemyBarrierReceiver が付与されていないためバリアの生成を中止します。", barrierObject);
                 Destroy(barrierObject);
                 return false;
             }
@@ -167,7 +179,10 @@ namespace Game.Core.Enemy
                 definition.MaxGauge * spawnSummary.BarrierRate,
                 definition.HealRegenWaitTime, definition.HealPower * spawnSummary.BarrierRate,
                 barrierObject,
-                (current, max) => EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max)),
+                (current, max) => {
+                    EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max));
+                    OnGaugeChanged?.Invoke(current, max);
+                },
                 HandleGaugeBroken,
                 definition.barrierBreakMaxLossRate
 
@@ -181,14 +196,10 @@ namespace Game.Core.Enemy
 
         private void OnEnable()
         {
-            EventBus.Subscribe<EnemyHitBatchEvent>(OnEnemyHitBatch);
-            EventBus.Subscribe<BarrierHitBatchEvent>(OnBarrierHitBatch);
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<EnemyHitBatchEvent>(OnEnemyHitBatch);
-            EventBus.Unsubscribe<BarrierHitBatchEvent>(OnBarrierHitBatch);
         }
 
         private void Update()
@@ -204,30 +215,23 @@ namespace Game.Core.Enemy
         // ─────────────────────────────────────────
 
         /// <summary>
-        /// EnemyHitBatchEventを受信し、現在の状態に応じてダメージをルーティングする。
-        /// Normal時: ゲージダメージを適用。
-        /// Down時: 本体ダメージを適用。
-        /// Defeated時: 無視。
+        /// EnemyHitReceiverから直接呼ばれ、現在の状態に応じてダメージをルーティングする。
         /// </summary>
-        private void OnEnemyHitBatch(EnemyHitBatchEvent ev)
+        public void OnBodyHit(float bodyDamage)
         {
-            if (_definition == null || ev.EnemyId != InstanceEnemyId) return;
+            if (_definition == null) return;
             if (_stateManager.CurrentState == EnemyState.OverHit) _holdCounter.AddHit();
-            _health.ApplyBodyDamage(ev.BodyDamage);
+            _health.ApplyBodyDamage(bodyDamage);
             _rising.DamageDrop(transform);
         }
 
         /// <summary>
-        /// BarrierHitBatchEventを受信し、現在の状態に応じてダメージをルーティングする。
-        /// Normal時: ゲージダメージを適用。
-        /// Down時: 本体ダメージを適用。
-        /// Defeated時: 無視。
+        /// EnemyBarrierReceiverから直接呼ばれ、現在の状態に応じてダメージをルーティングする。
         /// </summary>
-        private void OnBarrierHitBatch(BarrierHitBatchEvent ev)
+        public void OnBarrierHit(float gaugeDamage)
         {
-            if (_definition == null || ev.EnemyId != InstanceEnemyId) return;
-
-            _barrierGauge.ApplyGaugeDamage(ev.GaugeDamage);
+            if (_definition == null) return;
+            _barrierGauge.ApplyGaugeDamage(gaugeDamage);
         }
 
 
@@ -272,7 +276,7 @@ namespace Game.Core.Enemy
             // ステートを遷移し落下
             _stateManager.TransitionTo(EnemyState.Down);
             _rising.DropStart(transform);
-            EventBus.Publish(new EnemyDropEvent(InstanceEnemyId));
+            OnDropStarted?.Invoke();
         }
 
 
@@ -284,6 +288,7 @@ namespace Game.Core.Enemy
         {
             _stateManager.TransitionTo(EnemyState.Defeated);
             EventBus.Publish(new EnemyDefeatedEvent(InstanceEnemyId));
+            OnDefeated?.Invoke();
             Debug.Log($"[EnemyController] {InstanceEnemyId} 撃破！");
 
             Destroy(gameObject, _destroyDelay);
@@ -321,6 +326,7 @@ namespace Game.Core.Enemy
             _barrierGauge.SetActive(false);
 
             EventBus.Publish(new EnemyDownStartedEvent(InstanceEnemyId, _definition.DownDuration));
+            OnDownStarted?.Invoke();
 
             // 既存タイマーがあれば停止してから再スタート
             if (_downTimerCoroutine != null) StopCoroutine(_downTimerCoroutine);
@@ -346,6 +352,128 @@ namespace Game.Core.Enemy
             }
 
             _downTimerCoroutine = null;
+        }
+    }
+
+    // ─────────────────────────────────────────
+    // 統合された純粋クラス群
+    // ─────────────────────────────────────────
+
+    public class EnemyAttack
+    {
+        float _maxAttackInterval;
+        float _attackInterval;
+        float _attackPower;
+        bool _isActiv;
+
+        public void Initialize(float attackPower, float attackInterval, bool isActiv)
+        {
+            _maxAttackInterval = attackInterval;
+            _attackInterval = _maxAttackInterval;
+            _attackPower = attackPower;
+            _isActiv = isActiv;
+        }
+
+        public void UpdateAttack()
+        {
+            if (!_isActiv) return;
+            _attackInterval -= Time.deltaTime;
+            if (_attackInterval <= 0.0f)
+            {
+                _attackInterval = _maxAttackInterval;
+                Attack();
+            }
+        }
+
+        public void SetActiv(bool activ) => _isActiv = activ;
+
+        void Attack()
+        {
+            EventBus.Publish(new RuleBarrierAttackEvent(_attackPower));
+        }
+    }
+
+    public class EnemyHoldCounter
+    {
+        int _enemyHitCounter = 0;
+        float _enemyHitTimer = 0.0f;
+        float _addHoldDuration = 0.0f;
+        float _maxHoldDuration = 0.0f;
+        System.Action OnHoldEnd;
+
+        public void Initialize(float maxHoldDuration, float addHoldDuration, System.Action OnHoldEnd)
+        {
+            _maxHoldDuration = maxHoldDuration;
+            _addHoldDuration = addHoldDuration;
+            this.OnHoldEnd = OnHoldEnd;
+        }
+
+        public void StartCount(float defaultDuration)
+        {
+            _enemyHitTimer = defaultDuration;
+            _enemyHitCounter = 0;
+        }
+
+        public void UpdateHold()
+        {
+            if (_enemyHitTimer <= 0.0f) return;
+            _enemyHitTimer -= Time.deltaTime;
+            if(_enemyHitTimer <= 0.0f)
+            {
+                OnHoldEnd?.Invoke();
+                ResetHit();
+            }
+        }
+
+        public void ResetHit()
+        {
+            _enemyHitCounter = 0;
+            _enemyHitTimer = 0.0f;
+        }
+
+        public void AddHit()
+        {
+            _enemyHitCounter++;
+            _enemyHitTimer += _addHoldDuration;
+            _enemyHitTimer = Mathf.Clamp(_enemyHitTimer, 0.0f, _maxHoldDuration);
+        }
+    }
+
+    public enum EnemyState
+    {
+        Normal,
+        Down,
+        OverHit,
+        Drop,
+        Defeated,
+    }
+
+    public class EnemyStateManager
+    {
+        public EnemyState CurrentState { get; private set; } = EnemyState.Normal;
+        private bool IsRose = false;
+        public event System.Action<EnemyState> OnStateChanged;
+        public bool IsDown => CurrentState == EnemyState.Down;
+        public bool IsDefeated => CurrentState == EnemyState.Defeated;
+        public bool CanReceiveGaugeDamage => CurrentState == EnemyState.Normal;
+        public bool CanReceiveBodyDamage => CurrentState == EnemyState.Down || CurrentState == EnemyState.Normal;
+        public bool CanReceiveBodyCombo => CurrentState == EnemyState.Down || CurrentState == EnemyState.Normal || CurrentState == EnemyState.OverHit || CurrentState == EnemyState.Drop;
+        public bool CanAttackDefenceLine => IsRose;
+
+        public void SetRose(bool a_isRised)
+        {
+            if (IsDefeated) return;
+            IsRose = a_isRised;
+        }
+
+        public void TransitionTo(EnemyState newState)
+        {
+            if (CurrentState == EnemyState.Defeated) return;
+            if (CurrentState == newState) return;
+
+            var prev = CurrentState;
+            CurrentState = newState;
+            OnStateChanged?.Invoke(newState);
         }
     }
 }

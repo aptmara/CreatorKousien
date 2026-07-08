@@ -200,7 +200,7 @@ namespace Game.Core.Enemy
             _breakDropTarget = Mathf.Max(currentValue - _breakDropDistance, 0.0f);
 
             _breakDropElapsedTime = 0.0f;
-            _breakDropCoroutine = StartCoroutine(BreakDropRoutine(transform));
+            _breakDropCoroutine = StartCoroutine(BreakDropRoutine(_enemyTransform));
 
             OnLeftReachedGoal();
         }
@@ -224,7 +224,7 @@ namespace Game.Core.Enemy
             _damageDropTarget = Mathf.Max(currentValue - _damageDropDistance, 0.0f);
 
             _damageDropElapsedTime = 0.0f;
-            _damageDropCoroutine = StartCoroutine(DamageDropRoutine(transform));
+            _damageDropCoroutine = StartCoroutine(DamageDropRoutine(_enemyTransform));
 
 
             OnLeftReachedGoal();
