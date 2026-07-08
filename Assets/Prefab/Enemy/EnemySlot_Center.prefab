@@ -127,7 +127,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyHitReceiver
   _minimumHitSpeed: 0.5
   _bodyDamageMultiplier: 3
-  _sameItemCooldown: 0.2
   _despawnItemOnHit: 1
 --- !u!1 &8990543758482931198
 GameObject:
@@ -138,8 +137,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2232749689525218959}
-  - component: {fileID: 1009506114021455173}
-  - component: {fileID: 3478285891699174855}
   - component: {fileID: 7243863264921088458}
   - component: {fileID: 1807098853613361509}
   m_Layer: 0
@@ -165,31 +162,6 @@ Transform:
   - {fileID: 2599179025614089883}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1009506114021455173
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8990543758482931198}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7c3e431e464f0e148ab2cc43c18642f1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyAttackGauge
---- !u!114 &3478285891699174855
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8990543758482931198}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a969eb88586cb684c940001ea1d240ec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.BarrierController
-  _damageReductionRate: 0.5
 --- !u!114 &7243863264921088458
 MonoBehaviour:
   m_ObjectHideFlags: 0

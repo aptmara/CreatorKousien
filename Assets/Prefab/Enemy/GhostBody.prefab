@@ -83,13 +83,7 @@ PrefabInstance:
       addedObject: {fileID: 180908112170821028}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bc82b5c27bc02c74888996e356b5eabd, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7870172566780348275}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bc82b5c27bc02c74888996e356b5eabd, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 234419528233336464}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bc82b5c27bc02c74888996e356b5eabd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8288746209038331805}
   m_SourcePrefab: {fileID: 100100000, guid: bc82b5c27bc02c74888996e356b5eabd, type: 3}
 --- !u!1 &6303239717055165911 stripped
 GameObject:
@@ -110,7 +104,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyHitReceiver
   _minimumHitSpeed: 0.5
   _bodyDamageMultiplier: 3
-  _sameItemCooldown: 0.2
   _despawnItemOnHit: 1
 --- !u!136 &-7210167404398091934
 CapsuleCollider:
@@ -157,21 +150,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &7870172566780348275
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6303239717055165911}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c3a4985fbfc99334686a09c5a519b32b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimation
-  _animator: {fileID: 180908112170821028}
-  _maxHitAnimationTime: 2
-  _addHitAnimationTime: 1
 --- !u!114 &234419528233336464
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -184,17 +162,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71fa6540b0f3d294abbeac213ab6ae93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBodyController
---- !u!114 &8288746209038331805
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6303239717055165911}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b0ff27d9e1e35140957f6f728868003, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyBodyPose
+  _animator: {fileID: 180908112170821028}
+  _maxHitAnimationTime: 2
+  _addHitAnimationTime: 1
   _dropDuration: 0.5
   _dropRot: {x: 0, y: 90, z: -180}

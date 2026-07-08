@@ -1,6 +1,4 @@
-
-
-// 制作者: 山内陽
+// 制作者: 越智晴彦
 using System.Collections.Generic;
 using Game.Core.Events;
 using Game.Gameplay.Collectibles;
@@ -11,19 +9,25 @@ namespace Game.Core.Enemy
     /// <summary>
     /// 自由移動アイテムの衝突を敵へのHitBatchEventへ変換する受け口。
     /// </summary>
-    public class BaseHitRecovery : MonoBehaviour
+    public sealed class EnemyBarrierReceiver : MonoBehaviour
     {
-
         [Tooltip("実行時に親のEnemyControllerから自動取得されるユニークなID。")]
         private string _enemyId;
+        private EnemyController _controller;
 
         private void Start()
         {
-            var controller = GetComponentInParent<EnemyController>();
-            if (controller != null)
+            _controller = GetComponentInParent<EnemyController>();
+            if (_controller != null)
             {
-                _enemyId = controller.InstanceEnemyId;
+                _enemyId = _controller.InstanceEnemyId;
             }
+        }
+
+        public void Initialize(string enemyID)
+        {
+            _enemyId = enemyID;
+            Debug.Log("バリア初期化完了 EnemyID =" + _enemyId);
         }
 
         [SerializeField]
@@ -31,8 +35,8 @@ namespace Game.Core.Enemy
         private float _minimumHitSpeed = 0.75f;
 
         [SerializeField]
-        [Tooltip("CollectibleData.DamageAmountと衝突速度に掛ける本体ダメージ倍率。")]
-        private float _bodyDamageMultiplier = 2.5f;
+        [Tooltip("CollectibleData.DamageAmountと衝突速度に掛けるゲージダメージ倍率。")]
+        private float _gaugeDamageMultiplier = 8.0f;
 
         [SerializeField]
         [Tooltip("同じアイテムから連続ヒットを受け付けない秒数。")]
@@ -40,7 +44,13 @@ namespace Game.Core.Enemy
 
         [SerializeField]
         [Tooltip("命中したアイテムをPoolへ戻すか。")]
-        private bool _despawnItemOnHit = false;
+        private bool _despawnItemOnHit = true;
+
+        [SerializeField]
+        [Tooltip("バリアがダメージを受けた際の加速補正")]
+        private float _onHitAcceleration = 3.0f;
+
+
 
         private readonly Dictionary<int, float> _nextHitTimes = new Dictionary<int, float>();
 
@@ -75,7 +85,7 @@ namespace Game.Core.Enemy
         /// <param name="hitSpeed">衝突速度</param>
         /// <param name="hitPosition">命中位置</param>
         /// <returns>命中として処理した場合はtrue</returns>
-        private bool ApplyCollectibleHit(CollectibleObject collectible, float hitSpeed, Vector3 hitPosition)
+        public bool ApplyCollectibleHit(CollectibleObject collectible, float hitSpeed, Vector3 hitPosition)
         {
             if (collectible == null || hitSpeed < _minimumHitSpeed)
             {
@@ -88,39 +98,47 @@ namespace Game.Core.Enemy
                 return false;
             }
 
-            _nextHitTimes[itemId] = Time.time + Mathf.Max(0f, _sameItemCooldown);
+            float cooldown = collectible.SameItemCooldown;
+            _nextHitTimes[itemId] = Time.time + Mathf.Max(0f, cooldown);
 
-            float damage = ComputeDamage(collectible, hitSpeed);
+            float baseDamage = Mathf.Max(1f, collectible.DamageAmount);
+            float speedFactor = Mathf.Max(1f, hitSpeed);
+            float gaugeDamage = baseDamage * speedFactor * _gaugeDamageMultiplier;
 
-            ApplyDamageRequest(1, damage, hitPosition);
+            // とげ玉のバリア特攻パラメータ計算
+            var itemData = collectible.GetCollectableData();
+            if (itemData != null && itemData.Type == Game.Data.Collectibles.CollectibleType.Toge)
+            {
+                gaugeDamage = itemData.BarrierDamageAmount * speedFactor * _gaugeDamageMultiplier;
+            }
 
-            if (_despawnItemOnHit)
+            if (_controller != null)
+            {
+                _controller.OnBarrierHit(gaugeDamage);
+            }
+
+            // グミの場合は消滅させずに跳ね返らせる
+            bool shouldDespawn = _despawnItemOnHit;
+            if (itemData != null && itemData.Type == Game.Data.Collectibles.CollectibleType.Gummy)
+            {
+                shouldDespawn = false;
+            }
+
+            if (shouldDespawn)
             {
                 collectible.Despawn();
+            }
+            else
+            {
+                Rigidbody rb = collectible.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    Vector3 newVel = rb.linearVelocity * _onHitAcceleration;
+                    rb.linearVelocity = newVel;
+                }
             }
 
             return true;
         }
-
-
-        protected virtual float ComputeDamage(CollectibleObject collectible, float hitSpeed)
-        {
-            float baseDamage = Mathf.Max(1f, collectible.DamageAmount);
-            float speedFactor = Mathf.Max(1f, hitSpeed);
-
-            return baseDamage * speedFactor * _bodyDamageMultiplier;
-        }
-
-
-        protected virtual void ApplyDamageRequest(int hitCount, float damage, Vector3 hitPosition)
-        {
-            EventBus.Publish(new EnemyHitBatchEvent(_enemyId, 1, damage, hitPosition, transform));
-        }
-
     }
-
 }
-
-
-
-

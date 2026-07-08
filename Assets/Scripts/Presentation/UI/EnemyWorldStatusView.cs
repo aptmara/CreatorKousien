@@ -22,10 +22,19 @@ namespace Game.Presentation.UI
             }
         }
 
-        public void Initialize(string enemyID, Vector3 worldOffset)
+        private bool _hasBarrier;
+
+        public void Initialize(string enemyID, Vector3 worldOffset, bool hasBarrier)
         {
             _targetEnemyId = enemyID;
             _worldOffset = worldOffset;
+            _hasBarrier = hasBarrier;
+
+            // 初期化時にUIを生成（バリア有無が確定した後）
+            if (_uiElements.Count == 0)
+            {
+                BuildAllViews();
+            }
         }
 
         [SerializeField]
@@ -55,6 +64,11 @@ namespace Game.Presentation.UI
 
         private void Awake()
         {
+            _mainCamera = Camera.main;
+        }
+
+        private void BuildAllViews()
+        {
             // 子オブジェクトからすべてのHitReceiverを取得して、それぞれにUIを付ける
             var hitReceivers = GetComponentsInChildren<Game.Core.Enemy.EnemyHitReceiver>();
             if (hitReceivers != null && hitReceivers.Length > 0)
@@ -71,24 +85,30 @@ namespace Game.Presentation.UI
                 Transform target = renderer != null ? renderer.transform : transform;
                 BuildView(target);
             }
-
-            _mainCamera = Camera.main;
         }
 
         private void OnEnable()
         {
-            EventBus.Subscribe<EnemyHealthChangedEvent>(OnHealthChanged);
-            EventBus.Subscribe<EnemyGaugeChangedEvent>(OnGaugeChanged);
-            EventBus.Subscribe<EnemyDownStartedEvent>(OnDownStarted);
-            EventBus.Subscribe<EnemyDefeatedEvent>(OnDefeated);
+            var controller = GetComponentInParent<Game.Core.Enemy.EnemyController>();
+            if (controller != null)
+            {
+                controller.OnHealthChanged += OnHealthChanged;
+                controller.OnGaugeChanged += OnGaugeChanged;
+                controller.OnDownStarted += OnDownStarted;
+                controller.OnDefeated += OnDefeated;
+            }
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<EnemyHealthChangedEvent>(OnHealthChanged);
-            EventBus.Unsubscribe<EnemyGaugeChangedEvent>(OnGaugeChanged);
-            EventBus.Unsubscribe<EnemyDownStartedEvent>(OnDownStarted);
-            EventBus.Unsubscribe<EnemyDefeatedEvent>(OnDefeated);
+            var controller = GetComponentInParent<Game.Core.Enemy.EnemyController>();
+            if (controller != null)
+            {
+                controller.OnHealthChanged -= OnHealthChanged;
+                controller.OnGaugeChanged -= OnGaugeChanged;
+                controller.OnDownStarted -= OnDownStarted;
+                controller.OnDefeated -= OnDefeated;
+            }
         }
 
         private void LateUpdate()
@@ -136,12 +156,24 @@ namespace Game.Presentation.UI
             canvasRect.sizeDelta = _canvasSize;
 
             var hpSlider = CreateSlider("HpBar", canvasRect, new Vector2(0f, 12f), new Color(0.1f, 0.85f, 0.25f, 1f));
-            var gaugeSlider = CreateSlider("GaugeBar", canvasRect, new Vector2(0f, -12f), new Color(1f, 0.8f, 0.1f, 1f));
+            Slider gaugeSlider = null;
+            Image gaugeFillImage = null;
+
+            if (_hasBarrier)
+            {
+                gaugeSlider = CreateSlider("GaugeBar", canvasRect, new Vector2(0f, -12f), new Color(1f, 0.8f, 0.1f, 1f));
+                gaugeFillImage = gaugeSlider.fillRect.GetComponent<Image>();
+                gaugeSlider.value = 0f;
+                Debug.Log($"[EnemyWorldStatusView] ゲージUIを生成しました！ target={target.name}");
+            }
+            else
+            {
+                Debug.Log($"[EnemyWorldStatusView] バリアが無いためゲージUIの生成をスキップしました。 target={target.name}");
+            }
+
             var hpFillImage = hpSlider.fillRect.GetComponent<Image>();
-            var gaugeFillImage = gaugeSlider.fillRect.GetComponent<Image>();
 
             hpSlider.value = 1f;
-            gaugeSlider.value = 0f;
 
             _uiElements.Add(new StatusUIElement
             {
@@ -205,45 +237,37 @@ namespace Game.Presentation.UI
             return slider;
         }
 
-        private void OnHealthChanged(EnemyHealthChangedEvent ev)
+        private void OnHealthChanged(float current, float max)
         {
-            if (ev.EnemyId != _targetEnemyId)
-            {
-                return;
-            }
-
+            float ratio = max > 0f ? current / max : 0f;
             foreach (var element in _uiElements)
             {
-                if (element.HpSlider != null) element.HpSlider.value = ev.Ratio;
+                if (element.HpSlider != null) element.HpSlider.value = ratio;
                 if (element.HpFillImage != null)
                 {
-                    element.HpFillImage.color = ev.Ratio > 0.5f
-                        ? Color.Lerp(new Color(0.95f, 0.75f, 0.1f), new Color(0.1f, 0.85f, 0.25f), (ev.Ratio - 0.5f) * 2f)
-                        : Color.Lerp(new Color(0.9f, 0.15f, 0.15f), new Color(0.95f, 0.75f, 0.1f), ev.Ratio * 2f);
+                    element.HpFillImage.color = ratio > 0.5f
+                        ? Color.Lerp(new Color(0.95f, 0.75f, 0.1f), new Color(0.1f, 0.85f, 0.25f), (ratio - 0.5f) * 2f)
+                        : Color.Lerp(new Color(0.9f, 0.15f, 0.15f), new Color(0.95f, 0.75f, 0.1f), ratio * 2f);
                 }
             }
         }
 
-        private void OnGaugeChanged(EnemyGaugeChangedEvent ev)
+        private void OnGaugeChanged(float current, float max)
         {
-            if (ev.EnemyId != _targetEnemyId)
-            {
-                return;
-            }
-
+            float ratio = max > 0f ? current / max : 0f;
+            Debug.Log($"[EnemyWorldStatusView] OnGaugeChanged! current={current}, max={max}, ratio={ratio}");
             foreach (var element in _uiElements)
             {
-                if (element.GaugeSlider != null) element.GaugeSlider.value = ev.Ratio;
+                if (element.GaugeSlider != null) 
+                {
+                    element.GaugeSlider.value = ratio;
+                    Debug.Log($"[EnemyWorldStatusView] ゲージスライダーの値を更新しました: {ratio}");
+                }
             }
         }
 
-        private void OnDownStarted(EnemyDownStartedEvent ev)
+        private void OnDownStarted()
         {
-            if (ev.EnemyId != _targetEnemyId)
-            {
-                return;
-            }
-
             foreach (var element in _uiElements)
             {
                 if (element.GaugeFillImage != null)
@@ -253,16 +277,13 @@ namespace Game.Presentation.UI
             }
         }
 
-        private void OnDefeated(EnemyDefeatedEvent ev)
+        private void OnDefeated()
         {
-            if (ev.EnemyId == _targetEnemyId)
+            foreach (var element in _uiElements)
             {
-                foreach (var element in _uiElements)
+                if (element.Canvas != null)
                 {
-                    if (element.Canvas != null)
-                    {
-                        element.Canvas.gameObject.SetActive(false);
-                    }
+                    element.Canvas.gameObject.SetActive(false);
                 }
             }
         }
