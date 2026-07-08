@@ -7,6 +7,8 @@
 // ================================================================================
 
 using UnityEngine;
+using System.Collections.Generic;
+using System.Xml;
 
 namespace Game.Gameplay.Shop
 {
@@ -14,11 +16,17 @@ namespace Game.Gameplay.Shop
     /// 屋台モデルのメッシュ頂点を動的に操作し、カートゥーン風の演出をするクラス
     /// </summary>
     [ExecuteAlways]
-    [RequireComponent(typeof(MeshFilter))]
     public class CartoonDistortion : MonoBehaviour
     {
-        [Header("--- コンポーネント参照 ---")]
-        [SerializeField] private MeshFilter _targetMeshFilter;
+        // 内部でメッシュごとのデータを管理するための構造体
+        private struct MeshData
+        {
+            public MeshFilter filter;
+            public Mesh originalMesh;
+            public Mesh instancedMesh;
+            public Vector3[] originalVertices;
+            public Vector3[] modifiedVertices;
+        }
 
         [Header("--- カートゥーン変形パラメータ ---")]
         [Tooltip("前方への傾き度合い(走るときにプラス、バックでマイナス)")]
@@ -27,112 +35,130 @@ namespace Game.Gameplay.Shop
         [Tooltip("縦方向の引き延ばし倍率")]
         [Range(-1f, 2f)] public float SquashY = 0f;
 
-        private Mesh _originalMesh;
-        private Mesh _instancedMesh;
-        private Vector3[] _originalVertices;
-        private Vector3[] _modifiedVertices;
-
-        // エディタ上でのパラメータ変更を反映するための変数
-        private float _lastShearX;
-        private float _lastShearY;
+        private List<MeshData> _meshDataList = new List<MeshData>();
+        private bool _isInitialized = false;
 
         private void Awake()
         {
-            SetupMesh();
+            SetupAllMesh();
         }
 
-        private void SetupMesh()
+        /// <summary>
+        /// 自分自身とこのオブジェクトから全てのMeshFilterを集めて初期化する
+        /// </summary>
+        private void SetupAllMesh()
         {
-            if (_targetMeshFilter == null)
-            {
-                _targetMeshFilter = GetComponent<MeshFilter>();
-            }
+            ClearInstancedMeshes();
 
-            if (_targetMeshFilter != null && _targetMeshFilter.sharedMesh != null)
-            {
-                // 既にインスタンス化している場合はリターン
-                if (_instancedMesh != null && _targetMeshFilter.sharedMesh == _instancedMesh)
-                {
-                    return;
-                }
+            _meshDataList.Clear();
 
-                // 元のメッシュデータを退避
-                _originalMesh = _targetMeshFilter.sharedMesh;
-                _originalVertices = _originalMesh.vertices;
+            // 自身を含む全ての子オブジェクトから MeshFilter を取得
+            MeshFilter[] filters = GetComponentsInChildren<MeshFilter>(true);
+
+            foreach (var filter in filters)
+            {
+                if (filter == null || filter.sharedMesh == null) continue;
+
+                MeshData data = new MeshData();
+                data.filter = filter;
+                data.originalMesh = filter.sharedMesh;
+                data.originalVertices = data.originalMesh.vertices;
 
                 // 実行時書き換え用のインスタンスメッシュを生成
-                _instancedMesh = Instantiate(_originalMesh);
-                _modifiedVertices = new Vector3[_originalVertices.Length];
-                _targetMeshFilter.mesh = _instancedMesh;
+                data.instancedMesh = Instantiate(data.originalMesh);
+                data.modifiedVertices = new Vector3[data.originalVertices.Length];
+
+                if (Application.isPlaying)
+                {
+                    filter.mesh = data.instancedMesh;
+                }
+                else
+                {
+                    filter.sharedMesh = data.instancedMesh;
+                }
+
+                _meshDataList.Add(data);
             }
-            else
-            {
-                Debug.LogError($"[{nameof(CartoonDistortion)}] MeshFilterまたはMeshが見つからないぜよ！");
-            }
+
+            _isInitialized = _meshDataList.Count > 0;
         }
 
         private void LateUpdate()
         {
-            ApplyDistortion();
+            ApplyDistortionToAll();
         }
 
-        private void ApplyDistortion()
+        private void ApplyDistortionToAll()
         {
             // メッシュの初期化が外れていた場合
-            if (_originalVertices == null || _instancedMesh == null)
+            if (!_isInitialized || _meshDataList.Count == 0)
             {
-                SetupMesh();
-                if (_originalVertices == null) return;
+                SetupAllMesh();
+                if (!_isInitialized) return;
             }
 
             // クランプ処理
             float safeSquashY = Mathf.Max(SquashY, -0.95f);
             float scaleDiv = Mathf.Sqrt(1f + safeSquashY);
-
             if (scaleDiv < 0.01f) scaleDiv = 1f;
+            float safeShearX = Mathf.Clamp(ShearX, -3f, 3f);
 
-            // 頂点変形マトリクスの適用
-            for (int i = 0; i < _originalVertices.Length; i++)
+            // 全てのメッシュに対して頂点変形マトリクスの適用
+            for (int m = 0; m < _meshDataList.Count; m++)
             {
-                Vector3 orig = _originalVertices[i];
-                Vector3 modified = orig;
+                MeshData data = _meshDataList[m];
 
-                // 1. 平行四辺形シアー変形
-                // 高さが高い頂点ほどずらす
-                float safeShearX = Mathf.Clamp(ShearX, -3f, 3f);
-                modified.x += orig.y * safeShearX;
+                if (data.filter == null || data.instancedMesh == null) continue;
 
-                // 2. スクワッシュ & ストレッチ
-                if (safeSquashY != 0f)
+                for (int i = 0; i < data.originalVertices.Length; i++)
                 {
-                    modified.y *= (1f + safeSquashY);
-                    modified.x /= scaleDiv;
-                    modified.z /= scaleDiv;
+                    Vector3 orig = data.originalVertices[i];
+                    Vector3 modified = orig;
+
+                    // 1. 平行四辺形シアー変形
+                    modified.x += orig.y * safeShearX;
+
+                    // 2. スクワッシュ & ストレッチ
+                    if (safeSquashY != 0f)
+                    {
+                        modified.y *= (1f + safeSquashY);
+                        modified.x /= scaleDiv;
+                        modified.z /= scaleDiv;
+                    }
+
+                    data.modifiedVertices[i] = modified;
                 }
 
-                _modifiedVertices[i] = modified;
+                // 各メッシュを更新
+                data.instancedMesh.vertices = data.modifiedVertices;
+                data.instancedMesh.RecalculateBounds();
+                data.instancedMesh.RecalculateNormals();
             }
+        }
 
-            // メッシュの更新
-            _instancedMesh.vertices = _modifiedVertices;
-            _instancedMesh.RecalculateBounds();
-            _instancedMesh.RecalculateNormals();
+        private void ClearInstancedMeshes()
+        {
+            foreach (var data in _meshDataList)
+            {
+                if (data.filter != null && data.originalMesh != null)
+                {
+                    if (!Application.isPlaying)
+                    {
+                        data.filter.sharedMesh = data.originalMesh;
+                    }
+                }
+
+                if (data.instancedMesh != null)
+                {
+                    if (Application.isPlaying) Destroy(data.instancedMesh);
+                    else DestroyImmediate(data.instancedMesh);
+                }
+            }
         }
 
         private void OnDestroy()
         {
-            if (_targetMeshFilter != null && _originalMesh != null)
-            {
-                _targetMeshFilter.mesh = _originalMesh;
-            }
-            if (Application.isPlaying)
-            {
-                Destroy(_instancedMesh);
-            }
-            else
-            {
-                DestroyImmediate(_instancedMesh);
-            }
+            ClearInstancedMeshes();
         }
     }
 }

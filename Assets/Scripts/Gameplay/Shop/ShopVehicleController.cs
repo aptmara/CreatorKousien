@@ -19,6 +19,8 @@ namespace Game.Gameplay.Shop
     /// </summary>
     public class ShopVehicleController : MonoBehaviour
     {
+        public event Action OnBrakeAnimationComplete;
+
         /// <summary>
         /// 屋台の状態を示すステート
         /// </summary>
@@ -69,6 +71,7 @@ namespace Game.Gameplay.Shop
         private Vector3 _lastPosition;
         private float _brakeSquashVelocity = 0f;
         private float _currentSquashY = 0f;
+        private bool _isBrakeAnimationPlaying = false;
 
         public VehicleState CurrentState => _currentState;
 
@@ -117,17 +120,78 @@ namespace Game.Gameplay.Shop
                 return;
             }
 
-            _currentSquashY = 0f;
-            _brakeSquashVelocity = 0f;
-            if (_distortion != null)
+            StartCoroutine(DismissAnimationRoutine());
+        }
+
+        /// <summary>
+        /// 退出時のカートゥーン演出
+        /// </summary>
+        private IEnumerator DismissAnimationRoutine()
+        {
+            // 位置リセット
+            _lastPosition = transform.position;
+            Vector3 basePosition = transform.position;
+
+            // phase 1: 1回目の小ジャンプ (0.2s)
+            // ----------------------------------------------------------------
+            float dur1 = 0.2f;
+            float elaps1 = 0f;
+            while (elaps1 < dur1)
             {
-                _distortion.SquashY = 0f;
+                elaps1 += Time.deltaTime;
+                float t = elaps1 / dur1;
+                float height = Mathf.Sin(t * Mathf.PI) * 0.4f;
+                transform.position = basePosition + (FieldContext.Rotation * Vector3.up * height);
+
+                // 空中にいるときは少し縦伸び
+                _distortion.SquashY = height * 0.5f;
+                yield return null;
             }
 
+            // 着地で一瞬潰す
+            _distortion.SquashY = -0.2f;
+            yield return new WaitForSeconds(0.05f);
+
+            // phase 2: 2回目の大ジャンプ (0.25s)
+            // ----------------------------------------------------------------
+            float dur2 = 0.25f;
+            float elaps2 = 0f;
+            while (elaps2 < dur2)
+            {
+                elaps2 += Time.deltaTime;
+                float t = elaps2 / dur2;
+                float height = Mathf.Sin(t * Mathf.PI) * 0.8f;
+                transform.position = basePosition + (FieldContext.Rotation * Vector3.up * height);
+
+                _distortion.SquashY = height * 0.6f;
+                yield return null;
+            }
+
+            // 着地リセット & 潰す
+            transform.position = basePosition;
+            _distortion.SquashY = -0.3f;
+
+            // phase 3: 一瞬溜める予備動作
+            // ----------------------------------------------------------------
+            float durBrake = 0.15f;
+            float elapsBrake = 0f;
+            while (elapsBrake < durBrake)
+            {
+                elapsBrake += Time.deltaTime;
+                float t = elapsBrake / durBrake;
+
+                _distortion.ShearX = Mathf.Lerp(0f, -0.6f, t);
+                _distortion.SquashY = Mathf.Lerp(-0.3f, -0.2f, t);
+                yield return null;
+            }
+
+            // phase 4: 爆走退出開始ぜよ！
+            // ----------------------------------------------------------------
+
+            // 本来のハケ移動ステートへ移行
             _currentState = VehicleState.Exiting;
             _currentWaypointIndex = 0;
-
-            Debug.Log("[ShopVehicleController] 命令を了解！右のあぜ道へ向けて爆走退出するぜよ！");
+            _lastPosition = transform.position;
         }
 
         private void Update()
@@ -136,7 +200,18 @@ namespace Game.Gameplay.Shop
 
             // 毎フレーム、物理的な移動速度を計算してシアーにフィードバック
             Vector3 deltaMove = transform.position - _lastPosition;
-            float currentFrameSpeed = deltaMove.magnitude / Time.deltaTime;
+
+            float currentFrameSpeed = 0f;
+            if (Time.deltaTime > 0f)
+            {
+                currentFrameSpeed = deltaMove.magnitude / Time.deltaTime;
+
+                if (float.IsNaN(currentFrameSpeed) || float.IsInfinity(currentFrameSpeed))
+                {
+                    currentFrameSpeed = 0f;
+                }
+            }
+
             _lastPosition = transform.position;
 
             switch (_currentState)
@@ -152,7 +227,10 @@ namespace Game.Gameplay.Shop
                     break;
 
                 case VehicleState.Braking:
-                    HandleBrakingOscillation();
+                    if (!_isBrakeAnimationPlaying)
+                    {
+                        StartCoroutine(BrakeAnimationRoutine());
+                    }
                     break;
 
                 case VehicleState.Stationary:
@@ -202,7 +280,6 @@ namespace Game.Gameplay.Shop
                 return;
             }
 
-            // プレイヤーの源氏愛知を動的に追従した停止目標ポイントを計算
             // プレイヤーの向いている方向や位置に応じてオフセットを掛ける
             Quaternion fieldRot = FieldContext.Rotation;
             Vector3 rotatedOffset = fieldRot * _stopOffsetFromPlayer;
@@ -256,39 +333,85 @@ namespace Game.Gameplay.Shop
         private void ApplyRunningDistortion(float speed)
         {
             // 走っているときは、速度に比例してシアーさせる
+            if (speed > _moveSpeed * 2f)
+            {
+                Debug.LogWarning($"[VehicleWarning] 速度が異常値になっとるぜよ！ Speed: {speed}");
+            }
+
             float speedRatio = Mathf.Clamp01(speed / _moveSpeed);
-            _distortion.ShearX = speedRatio * _maxCruiseShear;
+            _distortion.ShearX = speedRatio * -_maxCruiseShear;
             _distortion.SquashY = 0f;
         }
 
         private void TriggerBrakeImpact()
         {
-            // 急ブレーキの瞬間シアーをリセット
-            _distortion.ShearX = 0f;
-            _currentSquashY = _maxBrakeSquash;
-            _brakeSquashVelocity = _springStiffness * 0.5f;
+            _currentState = VehicleState.Braking;
         }
 
-        private void HandleBrakingOscillation()
+        /// <summary>
+        /// 前傾縦伸び -> 平べったく(反動) -> 通常に戻る -> 終了
+        /// </summary>
+        private IEnumerator BrakeAnimationRoutine()
         {
-            // 調和振動子による、ブレーキ後の減衰バネ振動の計算
-            float springForce = -_springStiffness * _currentSquashY;
-            float dampingForce = -_springDamping * _brakeSquashVelocity;
+            _isBrakeAnimationPlaying = true;
 
-            _brakeSquashVelocity += (springForce + dampingForce) * Time.deltaTime;
-            _currentSquashY += _brakeSquashVelocity * Time.deltaTime;
-
-            _distortion.SquashY = _currentSquashY;
-
-            // 振動がほぼ収まったら、完全に静止状態へ移行
-            if (Mathf.Abs(_currentSquashY) < 0.01f && Mathf.Abs(_brakeSquashVelocity) < 0.01f)
+            // phase 1: 前傾しながら縦伸び (0s ~ 0.15s)
+            float duration1 = 0.15f;
+            float elapsed1 = 0f;
+            while (elapsed1 < duration1)
             {
-                _currentSquashY = 0f;
-                _distortion.SquashY = 0f;
-                _currentState = VehicleState.Stationary;
+                elapsed1 += Time.deltaTime;
+                float t = elapsed1 / duration1;
 
-                Debug.Log("[ShopVehicleController] 屋台がプレイヤー前でピタッと完全停止したぜよ！");
+                _distortion.ShearX = Mathf.Lerp(0f, 0.6f, t);
+                _distortion.SquashY = Mathf.Lerp(0f, 0.5f, t);
+                yield return null;
             }
+
+            // phase 2: 反動でぺちゃんこになる (0.15s ~ 0.35s)
+            float duration2 = 0.20f;
+            float elapsed2 = 0f;
+            while (elapsed2 < duration2)
+            {
+                elapsed2 += Time.deltaTime;
+                float t = elapsed2 / duration2;
+
+                _distortion.ShearX = Mathf.Lerp(0.6f, -0.2f, t);
+                _distortion.SquashY = Mathf.Lerp(0.5f, -0.4f, t);
+                yield return null;
+            }
+
+            // phase 3: 通常サイズに戻る (0.35s ~ 0.5s)
+            float duration3 = 0.15f;
+            float elapsed3 = 0f;
+            while (elapsed3 < duration3)
+            {
+                elapsed3 += Time.deltaTime;
+                float t = elapsed3 / duration3;
+
+                // 通常形状へ戻す
+                _distortion.ShearX = Mathf.Lerp(-0.2f, 0f, t);
+                _distortion.SquashY = Mathf.Lerp(-0.4f, 0f, t);
+                yield return null;
+            }
+
+            // 完全に初期値にリセット
+            _distortion.ShearX = 0f;
+            _distortion.SquashY = 0f;
+
+            Debug.Log("[VehicleBrake] カートゥーン急ブレーキ演出が完璧に終了ぜよ！");
+
+            // ステートを停止中に変更
+            _currentState = VehicleState.Stationary;
+            _isBrakeAnimationPlaying = false;
+
+            // イベント発火
+            OnBrakeAnimationComplete?.Invoke();
+        }
+
+        private void OnDisable()
+        {
+            Debug.Log($"[VehicleDisable] ShopVehicleController が非アクティブ化されました！その時の値 -> SquashY: {_distortion.SquashY}, ShearX: {_distortion.ShearX}", this);
         }
     }
 }

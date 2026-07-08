@@ -240,7 +240,6 @@ namespace Game.Core.Management
             {
                 _savedBattleCameraPosition = Camera.main.transform.position;
                 _savedBattleCameraRotation = Camera.main.transform.rotation;
-                Debug.Log($"<color=green>[Progression] バトル終了時の正常なカメラ画角をマネージャーに完全退避したぜよ！ Pos: {_savedBattleCameraPosition}</color>");
             }
 
             // 1. スローモーションを解除
@@ -281,10 +280,11 @@ namespace Game.Core.Management
             _shopCinematicCameraController.StartCinematic(playerTransform, _shopVehicleController);
             _shopVehicleController.LaunchShopSequence(playerTransform);
 
-            // 4. 屋台が完全停止し、且つカメラのアングルが一致するまで待機
-            while (!_shopCinematicCameraController.IsCameraWorkFinished)
+            // 4. 屋台のブレーキ振動 & カメラワークが完了するまで待機
+            while (!_shopCinematicCameraController.IsCameraWorkFinished ||
+                   _shopVehicleController.CurrentState != ShopVehicleController.VehicleState.Stationary)
             {
-                // プレイヤーを屋台の方向に向かせる
+                // プレイヤーを屋台の方向に向かせるロジック
                 Vector3 rawToShop = _shopVehicleController.transform.position - playerTransform.position;
                 Vector3 fieldUp = FieldContext.Rotation * Vector3.up;
                 Vector3 flatToShop = Vector3.ProjectOnPlane(rawToShop, fieldUp).normalized;
