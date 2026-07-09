@@ -26,7 +26,7 @@ namespace Game.Core.Enemy
         float _elapsedTime;
         Quaternion _startRot;
 
-        private void OnEnable()
+        private void Start()
         {
             var controller = GetComponentInParent<EnemyController>();
             if (controller != null)
@@ -35,7 +35,7 @@ namespace Game.Core.Enemy
             }
         }
 
-        private void OnDisable()
+        private void OnDestroy()
         {
             var controller = GetComponentInParent<EnemyController>();
             if (controller != null)
