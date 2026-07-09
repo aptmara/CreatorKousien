@@ -19,6 +19,7 @@ namespace Game.Gameplay.Player
         private static readonly int WalkAnimSpeedHash = Animator.StringToHash("WalkAnimSpeed");     ///< AnimatorのWalkSpeedパラメータのハッシュ値
         private static readonly int ShrunkBlendHash = Animator.StringToHash("ShrunkBlend");         ///< AnimatorのShrunkBlendパラメータのハッシュ値
         private static readonly int PunchHash = Animator.StringToHash("Punch");                     ///< AnimatorのPunchトリガーのハッシュ値
+        private static readonly int ClearHash = Animator.StringToHash("Clear");                     ///< AnimatorのClearトリガーのハッシュ値
 
         [Header("アニメーション設定")]
         [Tooltip("Animatorコンポーネント")]
@@ -109,6 +110,21 @@ namespace Game.Gameplay.Player
 
             _animator.ResetTrigger(PunchHash);
             _animator.SetTrigger(PunchHash);
+        }
+
+
+        /// <summary>
+        /// クリアアニメーションを再生する
+        /// </summary>
+        public void PlayClear()
+        {
+            if (_animator == null)
+            {
+                return;
+            }
+
+            _animator.ResetTrigger(ClearHash);
+            _animator.SetTrigger(ClearHash);
         }
     }
 

@@ -341,9 +341,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Player.PlayerAttachmentController
   _attachmentPrefab: {fileID: 2866212151138946041, guid: 2ed8d690fdd51de4c9df47a2053aaf7d, type: 3}
   _attachmentSocket: {fileID: 1983259960502521287}
-  _normalScale: {x: 0, y: 0, z: 0}
+  _normalScale: {x: 0.6, y: 0.6, z: 0.6}
   _shrinkScale: {x: 1.25, y: 1.8, z: 1.25}
-  _scaleSpeed: 5
+  _scaleSpeed: 8
   _toggleCooldown: 0.3
   _expandDelay: 0.05
   _startVfxPointL: {fileID: 6620565584449791324}
