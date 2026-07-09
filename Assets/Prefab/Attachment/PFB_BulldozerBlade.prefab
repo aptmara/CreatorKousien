@@ -185,7 +185,7 @@ MonoBehaviour:
   _leftSocket: {fileID: 2589267518726250195}
   _rightSocket: {fileID: 2487036043134785124}
   _modelRoot: {fileID: 0}
-  _visibleThreshold: 0.95
+  _visibleThreshold: 0.8
   _finishLifeTime: 1
   _loopDelay: 0
   _effectScale: 7

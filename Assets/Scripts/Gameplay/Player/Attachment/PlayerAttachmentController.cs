@@ -98,14 +98,22 @@ namespace Game.Gameplay.Player
                 return;
             }
 
-            // 強化によるサイズ倍率（RuntimeData未注入時は1.0として扱う）
+            // 強化によるサイズ倍率
             float upgradeScale = _runtimeData != null ? _runtimeData.AttachmentScaleMultiplier : 1f;
 
-            // 基準スケール（通常 or 縮小）に強化倍率を掛けたものを目標にする
             bool forceLarge = _forceLargeByPunch || Time.time < _forceLargeUntil;
             bool expandReady = Time.time >= _expandStartTime;
-            Vector3 baseScale = ((_isShrunkInternal && expandReady) || forceLarge) ? _shrinkScale : _normalScale;
-            _targetScale = baseScale * upgradeScale;
+
+            bool useExpandedScale = (_isShrunkInternal && expandReady) || forceLarge;
+
+            // 入力中または強制拡大中は大きいスケール、未入力時はベース縮小スケール
+            Vector3 baseScale = useExpandedScale ? _shrinkScale : _normalScale;
+
+            // 入力していない時だけ強化倍率を乗せない。
+            // 入力中/強制拡大中は腕強化を反映する。
+            float finalScaleMultiplier = useExpandedScale ? upgradeScale : 1f;
+
+            _targetScale = baseScale * finalScaleMultiplier;
 
             _currentAttachment.transform.localScale = Vector3.Lerp(
                     _currentAttachment.transform.localScale,

@@ -4,6 +4,8 @@
 //
 // Description  : ゲーム全体の進行状態を管理するマネージャー
 // Created      : 2026-07-02
+//
+// Notes        : クリア演出追加しました! - Asano 2026-07-09
 // ================================================================================
 
 using Game.Core.Enemy;
@@ -14,6 +16,7 @@ using Game.Gameplay.Stage;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Game.Presentation.GameClearCinematic;
 
 namespace Game.Core.Management
 {
@@ -46,6 +49,11 @@ namespace Game.Core.Management
         [Tooltip("クリアした瞬間の時間の進み方 (例 0.1f: 10%のスローモーション)")]
         [Range(0.01f, 1f)]
         [SerializeField] private float _slowMotionTimeScale = 0.2f;
+
+
+        [Header("--- クリア演出関連の参照 ---")]
+        [SerializeField] private GameClearCinematicController _gameClearCinematicController;
+
 
         private GameProgressionState _currentState = GameProgressionState.Setup;
         private int _currentWaveIndex = 0;
@@ -95,6 +103,12 @@ namespace Game.Core.Management
             {
                 var cams = Object.FindObjectsByType<ShopCinematicCameraController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
                 if (cams.Length > 0) _shopCinematicCameraController = cams[0];
+            }
+
+            // Game Clear Cinematic Controller
+            if (_gameClearCinematicController == null)
+            {
+                _gameClearCinematicController = Object.FindFirstObjectByType<GameClearCinematicController>();
             }
         }
 
@@ -209,6 +223,36 @@ namespace Game.Core.Management
             _currentState = GameProgressionState.Setup;
             Debug.Log($"[Progression] 最後の敵の撃破を検知！ 弾の着弾猶予として {_clearDelayDuration} 秒間スローモーション演出を行うぜよ。");
 
+
+            // --- 最終ウェーブクリア時の処理 ---
+            if (isFinalWave)
+            {
+                // 最終ウェーブクリア時は、ゲームクリア演出を再生する
+                if (_gameClearCinematicController != null)
+                {
+                    yield return StartCoroutine(_gameClearCinematicController.PlayRoutine());
+                }
+                else
+                {
+                    // ゲームクリア演出が設定されていない場合は、スローモーション猶予だけ行う
+                    Time.timeScale = _slowMotionTimeScale;
+                    Time.fixedDeltaTime = 0.02f * Time.timeScale;
+
+                    yield return new WaitForSecondsRealtime(_clearDelayDuration);
+
+                    Time.timeScale = 1f;
+                    Time.fixedDeltaTime = 0.02f;
+                }
+
+                // 最終ウェーブクリア後は、ゲームクリア状態へ遷移
+                HandleGameResult(isClear: true);
+                yield break;
+            }
+
+
+
+            // --- 通常のウェーブクリア時の処理 ---
+
             // 1. 画面を一瞬スローモーション
             Time.timeScale = _slowMotionTimeScale;
             Time.fixedDeltaTime = 0.02f * Time.timeScale;
@@ -217,15 +261,8 @@ namespace Game.Core.Management
             yield return new WaitForSecondsRealtime(_clearDelayDuration);
 
             // 3. 猶予が終了したら、進行処理へ
-            if (isFinalWave)
-            {
-                HandleGameResult(isClear: true);
-            }
-            else
-            {
-                // 屋台演出へ繋ぐ
-                yield return StartCoroutine(ShopPresentationSequenceRoutine());
-            }
+            // 屋台演出へ繋ぐ
+            yield return StartCoroutine(ShopPresentationSequenceRoutine());
         }
 
         /// <summary>
