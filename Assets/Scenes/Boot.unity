@@ -149,7 +149,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Infrastructure.Bootstrap.PrototypeSceneFlowController
   _gameplayShellScene: GameplayShell
-  _stageScene: Falu_combo_bonus
+  _stageScene: Stage
   _uiScene: Falu_Gauge_Proto
   _debugScene: DebugOverlay
   _cameraConfig: {fileID: 11400000, guid: aa330ccda141b004cb12309afff5dbbb, type: 2}
