@@ -382,6 +382,7 @@ MonoBehaviour:
   _upgradeRuntimeState: {fileID: 11400000, guid: 92fac92d5c2060646b8ef9eae07812fd, type: 2}
   _playerFacade: {fileID: 0}
   _roguelikeEndEvent: {fileID: 11400000, guid: 3d809566aa7fe4b449e4b4cb526d749a, type: 2}
+  _cameraSetUp: {fileID: 705193400}
 --- !u!114 &705193400
 MonoBehaviour:
   m_ObjectHideFlags: 0

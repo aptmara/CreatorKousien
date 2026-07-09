@@ -67,6 +67,13 @@ public class S_CameraSetUp : MonoBehaviour
 
     }
 
+    public void SceneEnd()
+    {
+        Destroy(_backUICam.gameObject);
+        Destroy(_middleCam.gameObject);
+        Destroy(_frontUICam.gameObject);
+    }
+
     private void AssignCameraToCanvas(Canvas canvas, Camera targetCam)
     {
         if(canvas.renderMode != RenderMode.ScreenSpaceCamera)
