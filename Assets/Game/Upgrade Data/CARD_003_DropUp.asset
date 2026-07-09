@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a3c5f2810ed92943a6023652a22eb00, type: 3}
   m_Name: CARD_003_DropUp
   m_EditorClassIdentifier: Assembly-CSharp::SO_UpgradeCardData
-  _displayName: DropUp
-  _description: Drop item increace
+  _sourceUpgrade: {fileID: 11400000, guid: 6e66dea60e4b11f42bec6c13bd82ca6d, type: 2}
   _maxLevel: 5
   _icon: {fileID: 0}
   _category: 1
-  _sourceUpgrade: {fileID: 0}
+  _cost: 10
+  _costMagni: 1.2

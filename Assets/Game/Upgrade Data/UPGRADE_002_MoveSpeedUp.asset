@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
   Id: 2
   DisplayName: MoveSpeedUp
-  Description: 10%Up!!
+  Description: Move Speed 10% Up!!
   Modifiers:
   - TargetStat: 1
     Operation: 1

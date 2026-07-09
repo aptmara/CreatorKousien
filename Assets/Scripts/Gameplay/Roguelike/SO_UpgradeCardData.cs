@@ -81,12 +81,12 @@ public class SO_UpgradeCardData : ScriptableObject
             return result;
         }
 
-        foreach(var modifier in _sourceUpgrade.Modifiers)
-        {
-            string line = BuildModifierLine(modifier, level);
-            if (string.IsNullOrEmpty(line)) continue;
-            result += "\n" + line;
-        }
+        //foreach(var modifier in _sourceUpgrade.Modifiers)
+        //{
+        //    string line = BuildModifierLine(modifier, level);
+        //    if (string.IsNullOrEmpty(line)) continue;
+        //    result += "\n" + line;
+        //}
 
         return result;
     }
@@ -98,7 +98,7 @@ public class SO_UpgradeCardData : ScriptableObject
 
     private string BuildModifierLine(StatModifier modifier, int level)
     {
-        string statName = GetStatDisplayName(modifier.TargetStat);
+        string statName = Description;
         float totalValue = CalclateTotalValue(modifier, level);
         string valueText = FormatValue(modifier.Operation, totalValue);
 
