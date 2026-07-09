@@ -34,6 +34,7 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     [SerializeField] private Button _exitButton;
     [SerializeField] private Image _backGround;
     [SerializeField] private MoneyData _moneyData;
+    [SerializeField] private Image _upgradeBoard;
 
 
     [Header("設定")]
@@ -85,8 +86,12 @@ public class S_UpgradeSelectionUI : MonoBehaviour
             SpawnCard(picked);
         }
 
+        // ボード
+        Instantiate(_upgradeBoard, _panelRoot.transform).transform.SetAsFirstSibling();
+
         // 背景
-        Instantiate(_backGround, _panelRoot.transform).transform.SetAsFirstSibling();
+        Canvas backCanvas = GameObject.Find("Canvas_Back")?.GetComponent<Canvas>();
+        Instantiate(_backGround, backCanvas.transform).transform.SetAsFirstSibling();
     }
 
     public void OnFinishButtonPressed()

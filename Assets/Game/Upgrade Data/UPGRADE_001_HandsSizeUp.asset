@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
   Id: 2
   DisplayName: HandsSizeUp
-  Description: 
+  Description: 654654646
   Modifiers:
   - TargetStat: 0
     Operation: 0
