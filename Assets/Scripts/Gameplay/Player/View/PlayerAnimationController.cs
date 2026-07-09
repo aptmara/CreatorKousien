@@ -126,6 +126,25 @@ namespace Game.Gameplay.Player
             _animator.ResetTrigger(ClearHash);
             _animator.SetTrigger(ClearHash);
         }
+
+
+        /// <summary>
+        /// プレイヤーをIdle状態に戻す
+        /// </summary>
+        public void PlayIdle()
+        {
+            if (_animator == null)
+            {
+                return;
+            }
+
+            _animator.ResetTrigger(PunchHash);
+            _animator.ResetTrigger(ClearHash);
+            _animator.SetFloat(SpeedHash, 0f);
+            _animator.SetFloat(WalkAnimSpeedHash, 1f);
+
+            _animator.CrossFade("Idle", 0.1f);
+        }
     }
 
 }

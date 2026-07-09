@@ -150,7 +150,7 @@ namespace Game.Gameplay.Player
 
             if (!_canMove)
             {
-                _motor.Move(Vector2.zero, false); // 移動を停止させる
+                _motor.StopMove();
             }
         }
 

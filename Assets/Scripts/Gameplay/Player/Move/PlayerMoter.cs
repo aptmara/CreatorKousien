@@ -235,5 +235,23 @@ namespace Game.Gameplay.Player
                 _rigidbody.MoveRotation(nextRotation);
             }
         }
+
+
+
+        public void StopMove()
+        {
+            // 移動を停止する
+            if (_rigidbody == null)
+            {
+                return;
+            }
+
+            Vector3 up = Up;
+            Vector3 velocity = _rigidbody.linearVelocity;
+            float alongUp = Vector3.Dot(velocity, up);
+
+            _rigidbody.linearVelocity = up * alongUp;
+            _rigidbody.angularVelocity = Vector3.zero;
+        }
     }
 }

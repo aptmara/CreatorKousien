@@ -4,10 +4,13 @@
 //
 // Description  : 加算ロードされたリザルトシーン全体の進行とイベントを統括する
 // Created      : 2026-07-02
+//
+// Notes        : ゲームクリア時のボタン押下時のリトライフローを実装します！ - 2026/07/09  Asano
 // ================================================================================
 
 using UnityEngine;
 using Game.Core.Management;
+using UnityEngine.SceneManagement;
 
 namespace Game.Presentation.UI.Result
 {
@@ -20,6 +23,10 @@ namespace Game.Presentation.UI.Result
         [Header("--- 制御対象UIへの参照 ---")]
         [SerializeField] private ResultUIController _uiController;
 
+        [Header("--- クリア時のボタン押下でロードするシーン ---")]
+        [SerializeField] private string _titleSceneName = "Title";
+
+
         void Start()
         {
             if (_uiController == null) _uiController = GetComponentInChildren<ResultUIController>();
@@ -30,20 +37,42 @@ namespace Game.Presentation.UI.Result
                 GameResultSummary data = GameProgressionManager.Instance.ResultSummary;
 
                 // UIクラスに対して、表示情報の更新と演出切り替えを委譲
-                _uiController.SetupResultView(data, OnRetryButtonClicked);
+                _uiController.SetupResultView(data, OnGameClearTitleButtonClicked, OnGameOverRetryButtonClicked);
             }
             else
             {
                 Debug.LogWarning("[Result] プレイデータ(ResultSummary)が見つかりません。デバッグ起動用の仮表示ぜよ。。。");
-                _uiController.SetupResultView(new GameResultSummary(true, 2, 30f), OnRetryButtonClicked);
+                _uiController.SetupResultView(
+                    new GameResultSummary(true, 2, 30f),
+                    OnGameClearTitleButtonClicked,
+                    OnGameOverRetryButtonClicked);
             }
         }
 
-        private void OnRetryButtonClicked()
-        {
-            Debug.Log("[Result] リトライ要求！再起動フロー実行ぜよ。");
 
-            // クリーンアップはマネージャーに委譲
+        /// <summary>
+        /// ゲームクリア時のタイトルへ戻るボタン押下時の処理
+        /// </summary>
+        private void OnGameClearTitleButtonClicked()
+        {
+            Debug.Log("[Result] タイトルへ戻るぜよ");
+
+            Time.timeScale = 1f;
+            Time.fixedDeltaTime = 0.02f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
+            SceneManager.LoadScene(_titleSceneName, LoadSceneMode.Single);
+        }
+
+
+        /// <summary>
+        /// ゲームオーバー時のリトライボタン押下時の処理
+        /// </summary>
+        private void OnGameOverRetryButtonClicked()
+        {
+            Debug.Log("[Result] リトライ要求ぜよ");
+
             GameResetManager.TriggerFullReset();
         }
     }
