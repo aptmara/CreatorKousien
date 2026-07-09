@@ -29,6 +29,8 @@ public class S_RoguelikeResultController : MonoBehaviour
     [Tooltip("ローグライクシーン終了イベント")]
     [SerializeField] private SO_RoguelikeEndEvent _roguelikeEndEvent;
 
+    [Tooltip("終了時呼び出し")]
+    [SerializeField] private S_CameraSetUp _cameraSetUp;
 
     //____________________________________
     // basic functions
@@ -86,6 +88,8 @@ public class S_RoguelikeResultController : MonoBehaviour
     /// </summary>
     public void FinishRoguelikeScene()
     {
+        _cameraSetUp?.SceneEnd();
+
         if(_roguelikeEndEvent != null)
         {
             _roguelikeEndEvent.Raise();
