@@ -91,6 +91,8 @@ namespace Game.Presentation.GameClearCinematic
                 _playerController.SetCanMove(false);
             }
 
+            _playerAnimationController?.PlayIdle();
+
             // プレイヤーのアニメーションをクリア状態に設定
             yield return StartCoroutine(PlaySlowMotionPart(cameraTransform));
             yield return StartCoroutine(PlayPlayerZoomPart(cameraTransform));
