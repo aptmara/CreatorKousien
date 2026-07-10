@@ -15,8 +15,8 @@ EditorBuildSettings:
     path: Assets/Scenes/GameplayShell.unity
     guid: 415e201eeb64fd247a7984009a6c5d57
   - enabled: 1
-    path: Assets/Scenes/Stage_Prototype_01.unity
-    guid: 7f91f60bafa491c4ca427d6fdf74061e
+    path: Assets/Scenes/Stage.unity
+    guid: 9f0232278e1390c43931d080e2cb854c
   - enabled: 1
     path: Assets/Scenes/UI_HUD.unity
     guid: c78b4ef46c3b50e41ba33bbeefd38003
@@ -26,9 +26,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Combo/Falu_Gauge_Proto.unity
     guid: 0095f0bcaf05d4a4398aeb5c32a7e9f1
-  - enabled: 1
-    path: Assets/Scenes/Combo/Falu_combo_bonus.unity
-    guid: 68ebb23693f36534aa272d2a7357600f
   - enabled: 1
     path: Assets/Scenes/Roguelike/Roguelike.unity
     guid: 01bd6769c4caa744ab4468f11752ac15
