@@ -72,5 +72,13 @@ namespace Game.Presentation.GameOverCinematic
         public float TargetLineWidth = 4.0f;
         [Tooltip("門の中心からどれだけ奥まで進んだら消滅させるか")]
         public float DisappearDepth = 4.0f;
+
+        [Header("--- 砂煙エフェクト設定 ---")]
+        [Tooltip("エフェクトのプレハブ")]
+        public ParticleSystem CartoonDustPrefab;
+        [Tooltip("砂煙を発生させる位置")]
+        public float DustEffectDistance = 2.0f;
+        [Tooltip("煙の発生源 (横幅)")]
+        public float DustEffectWidth = 10.0f;
     }
 }

@@ -86,16 +86,19 @@ MonoBehaviour:
   DoorCloseDuration: 0.2
   MaxOpenAngle: 110
   BaseDoorKeepOpenDuration: 4
-  PlayerReviveDelay: 1
-  TransitionResultDelay: 2.5
-  DummyEnemyPrefab: {fileID: 6303239717055165911, guid: 16caa6b4ec9d58940b3c1fedd71a6d7b, type: 3}
-  DummyEnemyCount: 30
+  PlayerReviveDelay: 2
+  TransitionResultDelay: 2
+  DummyEnemyPrefab: {fileID: 6303239717055165911, guid: a3e310d186d228442b35da9d22c6c805, type: 3}
+  DummyEnemyCount: 50
   BaseEnemySpeed: 12
   SpeedVariation: 3
   MaxStartDelay: 0.6
   EnemyVisualYOffset: 3
   SpawnLineDistance: 20
-  SpawnLineWidth: 20
+  SpawnLineWidth: 32
   TargetLineDistance: -20
-  TargetLineWidth: 2
-  DisappearDepth: 6
+  TargetLineWidth: 4
+  DisappearDepth: 25
+  CartoonDustPrefab: {fileID: 8476163074117621257, guid: 2a2c09b2383248e478f687115d980e15, type: 3}
+  DustEffectDistance: 4
+  DustEffectWidth: 30

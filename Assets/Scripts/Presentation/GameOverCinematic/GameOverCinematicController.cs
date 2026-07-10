@@ -166,6 +166,25 @@ namespace Game.Presentation.GameOverCinematic
                 // 2. 敵を一斉に門の奥へ走らせる
                 float rushElapsed = 0f;
 
+                // 煙エフェクトを動的に生成
+                ParticleSystem activeDust = null;
+                if (_settings.CartoonDustPrefab != null)
+                {
+                    // 門の手前に沿った位置に煙を配置
+                    Vector3 dustPos = gateCenter
+                                    - (gateForward * _settings.DustEffectDistance)
+                                    + (gateUp * _settings.EnemyVisualYOffset);
+
+                    activeDust = Instantiate(_settings.CartoonDustPrefab, dustPos, Quaternion.LookRotation(gateForward, gateUp));
+
+                    // 煙の形状を適用
+                    var shape = activeDust.shape;
+                    shape.shapeType = ParticleSystemShapeType.Box;
+                    shape.scale = new Vector3(_settings.DustEffectWidth, 1f, 1f);
+
+                    activeDust.Play();
+                }
+
                 while (rushElapsed < _settings.BaseDoorKeepOpenDuration)
                 {
                     rushElapsed += Time.deltaTime;
@@ -207,6 +226,13 @@ namespace Game.Presentation.GameOverCinematic
                         }
                     }
                     yield return null;
+                }
+
+                // なだれ込み時間が終わったら煙エフェクトを止める
+                if (activeDust != null)
+                {
+                    activeDust.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+                    Destroy(activeDust.gameObject, 2f);
                 }
 
                 // 残った敵の片付け
