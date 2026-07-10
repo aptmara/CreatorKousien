@@ -1,9 +1,16 @@
 // 制作者: 山内陽
 using Game.Core.Events;
 using Game.Presentation.UI;
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.UI;
+
 
 namespace Game.Core.Enemy
 {
@@ -28,7 +35,7 @@ namespace Game.Core.Enemy
             public float HPRate;
             public float BarrierRate;
 
-            public SpawnSummary(Vector3 targetPos, float undergroundOffset, float hpRate, float barrierRate)  
+            public SpawnSummary(Vector3 targetPos, float undergroundOffset, float hpRate, float barrierRate)
             {
                 TargetPos = targetPos;
                 UndergroundOffset = undergroundOffset;
@@ -53,6 +60,7 @@ namespace Game.Core.Enemy
         private EnemyRising _rising;
         private EnemyAttack _enemyAttack;
         private EnemyHoldCounter _holdCounter;
+        private EnemyDebuffManager _debuffManager;
         private Coroutine _downTimerCoroutine;
 
         public event System.Action<float, float> OnHealthChanged;
@@ -92,14 +100,15 @@ namespace Game.Core.Enemy
             // HP管理初期化
             _health = new EnemyHealth();
             _health.Initialize(InstanceEnemyId, definition.MaxHp * spawnSummary.HPRate,
-                (current, max) => {
+                (current, max) =>
+                {
                     EventBus.Publish(new EnemyHealthChangedEvent(InstanceEnemyId, current, max));
                     OnHealthChanged?.Invoke(current, max);
                 },
                 HandleDefeated
             );
-            
-            
+
+
 
             // バリア初期化、 初期化しないのも大変なため、当たり判定オブジェクトが存在しない状態で初期化しておく
             _barrierGauge = new EnemyBarrierGauge();
@@ -109,7 +118,8 @@ namespace Game.Core.Enemy
                 definition.HealRegenWaitTime,
                 definition.HealPower * spawnSummary.BarrierRate,
                 null,
-                (current, max) => {
+                (current, max) =>
+                {
                     EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max));
                     OnGaugeChanged?.Invoke(current, max);
                 },
@@ -160,6 +170,8 @@ namespace Game.Core.Enemy
             // 上昇開始
             _rising.StartRise(spawnSummary.TargetPos, spawnSummary.UndergroundOffset, transform);
 
+            _debuffManager = new EnemyDebuffManager(HandleDamageOverTime, HandleFreeze, HandleFreezeEnd);
+
             return InstanceEnemyId;
         }
 
@@ -179,7 +191,8 @@ namespace Game.Core.Enemy
                 definition.MaxGauge * spawnSummary.BarrierRate,
                 definition.HealRegenWaitTime, definition.HealPower * spawnSummary.BarrierRate,
                 barrierObject,
-                (current, max) => {
+                (current, max) =>
+                {
                     EventBus.Publish(new EnemyGaugeChangedEvent(InstanceEnemyId, current, max));
                     OnGaugeChanged?.Invoke(current, max);
                 },
@@ -206,6 +219,7 @@ namespace Game.Core.Enemy
         {
             _barrierGauge.UpdateBarrier();
             _enemyAttack.UpdateAttack();
+            _debuffManager.UpdateDebuff();
 
             if (_stateManager.CurrentState == EnemyState.OverHit) _holdCounter.UpdateHold();
         }
@@ -220,9 +234,15 @@ namespace Game.Core.Enemy
         public void OnBodyHit(float bodyDamage)
         {
             if (_definition == null) return;
+            _debuffManager.AddHit();
             if (_stateManager.CurrentState == EnemyState.OverHit) _holdCounter.AddHit();
             _health.ApplyBodyDamage(bodyDamage);
             _rising.DamageDrop(transform);
+        }
+
+        public void OnAddDebuff(EnemyDebuffConfig _config)
+        {
+            _debuffManager.AddDebuff(_config);
         }
 
         /// <summary>
@@ -238,6 +258,21 @@ namespace Game.Core.Enemy
         // ─────────────────────────────────────────
         // コールバックハンドラ
         // ─────────────────────────────────────────
+
+        private void HandleDamageOverTime(float damage)
+        {
+            _health.ApplyBodyDamage(damage);
+        }
+
+        private void HandleFreeze(float freezeDuration)
+        {
+            _rising.StopMove();
+        }
+
+        private void HandleFreezeEnd()
+        {
+            _rising.ResumeMove();
+        }
 
         /// <summary>
         /// ゲージが0以下になった（プレイヤーが止めた）場合の処理。
@@ -263,7 +298,7 @@ namespace Game.Core.Enemy
             }
 
             _barrierGauge.SetActive(false);
-            _rising.MoveStop();
+            _rising.StopMove();
             _holdCounter.StartCount(0.35f);
 
         }
@@ -275,6 +310,7 @@ namespace Game.Core.Enemy
         {
             // ステートを遷移し落下
             _stateManager.TransitionTo(EnemyState.Down);
+            _rising.ResumeMove();
             _rising.DropStart(transform);
             OnDropStarted?.Invoke();
         }
@@ -418,7 +454,7 @@ namespace Game.Core.Enemy
         {
             if (_enemyHitTimer <= 0.0f) return;
             _enemyHitTimer -= Time.deltaTime;
-            if(_enemyHitTimer <= 0.0f)
+            if (_enemyHitTimer <= 0.0f)
             {
                 OnHoldEnd?.Invoke();
                 ResetHit();
@@ -476,4 +512,442 @@ namespace Game.Core.Enemy
             OnStateChanged?.Invoke(newState);
         }
     }
+
+    public class EnemyDebuffManager
+    {
+        // デバフ管理Map
+        private Dictionary<string, EnemyDebuffRuntime> _activeDebuffs = new Dictionary<string, EnemyDebuffRuntime>();
+        // コールバックハンドラ
+        private Action<float> _damageRequest;
+        private Action<float> _freezeRequest;
+        private Action _freezeEndRequest;
+
+        public EnemyDebuffManager(Action<float> damageRequest, Action<float> freezeRequest, Action freezeEndRequest)
+        {
+            _damageRequest = damageRequest;
+            _freezeRequest = freezeRequest;
+            _freezeEndRequest = freezeEndRequest;
+        }
+
+        public void AddHit()
+        {
+            foreach(var debuff in _activeDebuffs.Values.Reverse().ToList())
+            {
+                debuff.AddHit();
+            }
+        }
+
+        public void AddDebuff(EnemyDebuffConfig debuffConfig)
+        {
+            EnemyDebuffRuntime currentActivDebuff;
+            if (_activeDebuffs.TryGetValue(debuffConfig.DebuffType, out currentActivDebuff))
+            {
+                // 状態異常効果を加算する
+                currentActivDebuff.MergeDebuffEffect(debuffConfig);
+
+                // 追加された状態異常に応じて効果リクエストを送信
+                if (debuffConfig.UseFreeze)
+                {
+                    _freezeRequest.Invoke(0.8f);
+                }
+            }
+            else
+            {
+                // 新たに状態異常を追加する
+                EnemyDebuffRuntime data = new EnemyDebuffRuntime(debuffConfig, HandleDamageOverTime, HandleFreezeEnd, HandleFreezeBreak, HandleDebuffTimeOver);
+                _activeDebuffs[debuffConfig.DebuffType] = data;
+
+                Debug.Log(debuffConfig.DebuffType.ToString() + "を追加！");
+
+                // 追加された状態異常に応じて効果リクエストを送信
+                if(data.IsFreezeActive)
+                {
+                    _freezeRequest.Invoke(0.8f);
+                }
+            }
+
+        }
+        public void RemoveDebuff(string debuffKey)
+        {
+            // デバフの効果を解除する処理
+            _activeDebuffs.Remove(debuffKey);
+        }
+
+        public void RemoveAllDebuffs()
+        {
+            // すべてのデバフの効果を解除する
+            _activeDebuffs.Clear();
+        }
+        public bool HasDebuff(string debuffType)
+        {
+            return _activeDebuffs.ContainsKey(debuffType);
+        }
+
+        public void UpdateDebuff()
+        {
+            foreach(var debuff in _activeDebuffs.Values.Reverse().ToList())
+            {
+                debuff.Tick(Time.deltaTime);
+            }
+        }
+
+        private void HandleDamageOverTime(string debuffType)
+        {
+            // 対応するデバフを取得
+            EnemyDebuffRuntime data;
+            if (!_activeDebuffs.TryGetValue(debuffType, out data))
+            {
+                // 存在しなかったら抜ける
+                return;
+            }
+            // ダメージを適用
+            float rand =  UnityEngine.Random.Range(0.0f, 1.0f);
+            rand %= 1.0f;
+            float damage = Mathf.Lerp(data.OverTimeMinDamage, data.OverTimeMaxDamage, rand);
+            _damageRequest?.Invoke(damage);
+        }
+
+        private void HandleFreezeEnd(string debuffType)
+        {
+            // 現状行動制限系の処理があるか確認
+            if (IsFreeze()) return;
+            Debug.Log("行動解除リクエストを送るよ");
+            // 行動制限解除処理を送る
+            _freezeEndRequest?.Invoke();
+
+        }
+
+        private void HandleFreezeBreak(string debuffType)
+        {
+            // 対応するデバフを取得
+            EnemyDebuffRuntime data;
+            if (!_activeDebuffs.TryGetValue(debuffType, out data))
+            {
+                // 存在しなかったら抜ける
+                return;
+            }
+
+            // ダメージ要求を送る
+            float breakDamage = data.FreezeBreakDamage;
+            _damageRequest?.Invoke(breakDamage);
+
+            // 他に行動制限系の処理があるか確認
+            if (IsFreeze()) return;
+
+            // 行動制限解除処理を送る
+            _freezeEndRequest?.Invoke();
+
+        }
+
+        private void HandleDebuffTimeOver(string debuffType)
+        {
+            EnemyDebuffRuntime debuff;
+            // デバフ取得
+            if(!_activeDebuffs.TryGetValue(debuffType, out debuff))
+            {
+                return;
+            }
+
+            // 値を削除
+            _activeDebuffs.Remove(debuffType);
+            // 凍結解除
+            if (debuff.UseFreeze)
+            {
+                HandleFreezeEnd(debuffType);
+            }
+        }
+
+        private bool IsFreeze()
+        {
+            // 現状行動制限系の処理があるか確認
+            foreach (var debuff in _activeDebuffs.Values)
+            {
+                if (debuff.IsFreezeActive)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public class EnemyDebuffRuntime
+        {
+            // 共通デバフ項目
+            public string DebuffType { get; private set; }
+            public float Duration { get; private set; }
+
+            Action<string> OnDamageOverTime;
+            Action<string> OnFreezeEnd;
+            Action<string> OnFreezeBreak;
+            Action<string> OnDebuffTimeOver;
+
+            // デバフ要素ごとのステータス
+            // 継続ダメージ
+            public bool UseDamageOverTime { get; private set; }
+            //! 継続ダメージの継続時間
+            public float OverTimeDuration { get; private set; }
+            //! 継続ダメージの最大値
+            public float OverTimeMaxDamage { get; private set; }
+            //! 継続ダメージの最小値
+            public float OverTimeMinDamage { get; private set; }
+            //! 継続ダメージの間隔
+            public float OverTimeInterval { get; private set; }
+
+            public float OverTimeCounter { get; private set; }
+
+            // 行動制限
+            public bool UseFreeze { get; private set; }
+            //! 凍結時間
+            public float FreezeDuration { get; private set; } // 凍結時間
+                                                              //! 凍結解除に必要なヒット数
+            public float FreezeHitDurability { get; private set; } // 凍結解除に必要なヒット数
+
+            public int FreezeHitCount { get; private set; }// 現状のヒット数
+
+            //! 凍結解除時のダメージ
+            public float FreezeBreakDamage { get; private set; } // 凍結解除時のダメージ
+
+            public bool IsDebuffActive => Duration > 0.0f;
+            public bool IsDamageOverTimeActive => UseDamageOverTime && OverTimeDuration > 0.0f;
+            public bool IsFreezeActive => UseFreeze && FreezeDuration > 0.0f;
+
+            public EnemyDebuffRuntime(
+                EnemyDebuffConfig config,
+                Action<string> OnDamageOverTime,
+                Action<string> OnFreezeEnd,
+                Action<string> OnFreezeBreak,
+                Action<string> OnDebuffTimeOver
+             )
+            {
+                DebuffType = config.DebuffType;
+                Duration = config.Duration;
+
+                // 継続ダメージの初期化
+                UseDamageOverTime = config.UseDamageOverTime;
+                OverTimeDuration = config.OverTimeDuration;
+                OverTimeMaxDamage = config.OverTimeMaxDamage;
+                OverTimeMinDamage = config.OverTimeMinDamage;
+                OverTimeInterval = config.OverTimeInterval;
+                OverTimeCounter = OverTimeInterval;
+
+                // 行動制限の初期化
+                UseFreeze = config.UseFreeze;
+                FreezeDuration = config.FreezeDuration;
+                FreezeHitDurability = config.FreezeHitDurability;
+                FreezeBreakDamage = config.FreezeBreakDamage;
+                FreezeHitCount = 0;
+
+                this.OnDamageOverTime = OnDamageOverTime;
+                this.OnFreezeEnd = OnFreezeEnd;
+                this.OnFreezeBreak = OnFreezeBreak;
+                this.OnDebuffTimeOver = OnDebuffTimeOver;
+            }
+
+            public void MergeDebuffEffect(EnemyDebuffConfig debuff)
+            {
+                // デバフの種類が違う場合抜ける
+                if (debuff == null || debuff.DebuffType != this.DebuffType)
+                {
+                    if (debuff != null)
+                        Debug.LogWarning(debuff.DebuffType + "と" + this.DebuffType + "は異なるデバフのため、統合できません。");
+                    return;
+                }
+                // 継続ダメージの効果を加算する
+                if (debuff.UseDamageOverTime)
+                {
+                    MergeDamageOverTime(debuff.OverTimeDuration, debuff.OverTimeMaxDamage, debuff.OverTimeMinDamage, debuff.OverTimeInterval);
+                }
+                // 行動制限の効果を加算する
+                if (debuff.UseFreeze)
+                {
+                    MergeFreeze(debuff.FreezeDuration, debuff.FreezeHitDurability, debuff.FreezeBreakDamage);
+                }
+            }
+
+            public void Tick(float deltaTime)
+            {
+
+                if (IsDamageOverTimeActive)
+                {
+                    OverTimeDuration -= deltaTime;
+
+                    OverTimeCounter -= deltaTime;
+                    if(OverTimeDuration <= 0.0f)
+                    {
+                        UseDamageOverTime = false;
+
+                        TryNotifyDebuffExpired();
+                    }
+                    else if (OverTimeCounter < 0)
+                    {
+                        OverTimeCounter = OverTimeInterval;
+                        OnDamageOverTime(DebuffType);
+
+                    }
+
+                    
+
+                }
+
+                if (IsFreezeActive)
+                {
+                    FreezeDuration -= deltaTime;
+                    if (FreezeDuration <= 0)
+                    {
+                        UseFreeze = false;
+                        FreezeDuration = 0;
+                        FreezeHitCount = 0;
+                        OnFreezeEnd(DebuffType);
+
+                        TryNotifyDebuffExpired();
+                    }
+                }
+
+                Duration -= deltaTime;
+                if (Duration <= 0)
+                {
+                    if (UseFreeze)
+                    {
+                        UseFreeze = false;
+
+                        OnFreezeEnd(DebuffType);
+                    }
+                    OnDebuffTimeOver(DebuffType);
+                }
+            }
+
+            public void AddHit()
+            {
+                if (IsFreezeActive)
+                {
+                    FreezeHitCount++;
+
+                    if (FreezeHitCount >= FreezeHitDurability)
+                    {
+                        // 凍結解除
+                        UseFreeze = false;
+                        FreezeDuration = 0.0f;
+                        FreezeHitCount = 0;
+
+                        OnFreezeBreak(DebuffType);
+                        TryNotifyDebuffExpired();
+                    }
+
+                }
+            }
+
+            private void MergeFreeze(
+                float newFreezeDuration,
+                float newFreezeHitDurability,
+                float newFreezeBreakDamage
+                )
+            {
+                UseFreeze = true;
+                FreezeDuration = Mathf.Max(FreezeDuration, newFreezeDuration);
+                FreezeHitDurability = newFreezeHitDurability;
+                FreezeBreakDamage = newFreezeBreakDamage;
+            }
+
+            private void MergeDamageOverTime(
+                float newOverTimeDuration,
+                float newOverTimeMaxDamage,
+                float newOverTimeMinDamage,
+                float newOverTimeInterval
+                )
+            {
+                UseDamageOverTime = true;
+                // 継続時間は長い方にする
+                OverTimeDuration = Mathf.Max(newOverTimeDuration, OverTimeDuration);
+                OverTimeMaxDamage = newOverTimeMaxDamage;
+                OverTimeMinDamage = newOverTimeMinDamage;
+                OverTimeInterval = newOverTimeInterval;
+            }
+
+            private void　TryNotifyDebuffExpired()
+            {
+                if (!CheckDebuffEnd()) OnDebuffTimeOver(DebuffType);
+            }
+
+            private bool CheckDebuffEnd()
+            {
+                if (UseDamageOverTime) return true;
+
+                if(UseFreeze) return true;
+
+                return false;
+            }
+        }
+    }
+
+    public class EnemyDebuffConfig
+    {
+        Action<float> OnDamageRequest;
+        Action OnStopRequest;
+        Action OnColorRequest;
+
+        public EnemyDebuffConfig(string debuffType, float debuffDuration)
+        {
+            DebuffType = debuffType;
+            Duration = debuffDuration;
+
+            // 継続ダメージの初期化
+            UseDamageOverTime = false;
+            // 行動制限の初期化
+            UseFreeze = false;
+        }
+
+        // 共通デバフ項目
+        public string DebuffType { get; private set; }
+        public float Duration { get; set; }
+
+        // デバフ要素ごとのステータス
+        // 継続ダメージ
+        public bool UseDamageOverTime { get; private set; }
+        //! 継続ダメージの継続時間
+        public float OverTimeDuration { get; private set; }
+        //! 継続ダメージの最大値
+        public float OverTimeMaxDamage { get; private set; }
+        //! 継続ダメージの最小値
+        public float OverTimeMinDamage { get; private set; }
+        //! 継続ダメージの間隔
+        public float OverTimeInterval { get; private set; }
+
+        // 行動制限
+        public bool UseFreeze { get; private set; }
+        //! 凍結時間
+        public float FreezeDuration { get; private set; }
+        //! 凍結解除に必要なヒット数
+        public float FreezeHitDurability { get; private set; }
+        //! 凍結解除時のダメージ
+        public float FreezeBreakDamage { get; private set; }
+
+        public void InitDamageOverTime(
+            float overTimeDuration,
+            float overTimeMaxDamage,
+            float overTimeMinDamage,
+            float overTimeInterval
+        )
+        {
+            UseDamageOverTime = true;
+            OverTimeDuration = overTimeDuration;
+            OverTimeMaxDamage = overTimeMaxDamage;
+            OverTimeMinDamage = overTimeMinDamage;
+            OverTimeInterval = overTimeInterval;
+        }
+
+        public void InitFreeze(
+            float freezeDuration,
+            float freezeHitDurability,
+            float freezeBreakDamage
+        )
+        {
+            UseFreeze = true;
+            FreezeDuration = freezeDuration;
+            FreezeHitDurability = freezeHitDurability;
+            FreezeBreakDamage = freezeBreakDamage;
+        }
+
+    }
+
 }

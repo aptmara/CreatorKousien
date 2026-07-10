@@ -19,6 +19,17 @@ namespace Game.Core.Enemy
     /// </summary>
     public class EnemyRising : MonoBehaviour
     {
+        enum EnemyMoveState
+        {
+            Rise,
+            Drop,
+            BreakDrop,
+            Stop
+        }
+
+        EnemyMoveState _enemyMoveState = EnemyMoveState.Stop;
+        bool _isStopping = false;
+
         //　敵の目標地点
         private Vector3 _targetPosition;
 
@@ -113,6 +124,9 @@ namespace Game.Core.Enemy
         /// <param name="startYOffset">開始時に目標位置から下方向へ下げる距離（正値で下方向へ移動）。</param>
         public void StartRise(Vector3 targetPos, float startYOffset, Transform enemyTransform)
         {
+
+            // ステートを変更
+            _enemyMoveState = EnemyMoveState.Rise;
             _targetPosition = targetPos;
             // 上昇目標と目標までの距離から初期位置設定
             _startPosition = _targetPosition + Vector3.down * startYOffset;
@@ -146,7 +160,7 @@ namespace Game.Core.Enemy
             //-イージング処理完了後目標地点に位置を補正
             enemyTransform.position = _targetPosition;
             // コールバックを発行
-            OnEnemyReachedGoal();
+            OnEnemyReachedGoal?.Invoke();
         }
 
         /// <summary>
@@ -174,6 +188,8 @@ namespace Game.Core.Enemy
             }
             // 落下中だったら抜ける
             if (_dropCoroutine != null) return;
+            // ステートを変更
+            _enemyMoveState = EnemyMoveState.Drop;
 
             _riseCoroutine = null;
             _breakDropCoroutine = null;
@@ -189,8 +205,14 @@ namespace Game.Core.Enemy
         /// <param name="_enemyTransform">トランスフォーム</param>
         public void BreakDrop(Transform _enemyTransform)
         {
-            if(_riseCoroutine !=null) StopCoroutine(_riseCoroutine);
-            if(_breakDropCoroutine != null) StopCoroutine(_breakDropCoroutine);
+            if(_enemyMoveState != EnemyMoveState.Drop)
+            {
+                if (_riseCoroutine != null) StopCoroutine(_riseCoroutine);
+                if (_breakDropCoroutine != null) StopCoroutine(_breakDropCoroutine);
+            }
+
+            // ステートを変更
+            _enemyMoveState = EnemyMoveState.BreakDrop;
 
             // 現在の値を取得
             float currentValue = _riseCurve.Evaluate(_elapsedTime);
@@ -199,10 +221,11 @@ namespace Game.Core.Enemy
             _breakDropStart = currentValue;
             _breakDropTarget = Mathf.Max(currentValue - _breakDropDistance, 0.0f);
 
+
             _breakDropElapsedTime = 0.0f;
             _breakDropCoroutine = StartCoroutine(BreakDropRoutine(_enemyTransform));
 
-            OnLeftReachedGoal();
+            OnLeftReachedGoal?.Invoke();
         }
 
         /// <summary>
@@ -211,7 +234,7 @@ namespace Game.Core.Enemy
         /// <param name="_enemyTransform">トランスフォーム</param>
         public void DamageDrop(Transform _enemyTransform)
         {
-            if (_breakDropCoroutine != null) return;
+            if (_enemyMoveState == EnemyMoveState.BreakDrop) return;
 
             if (_riseCoroutine != null) StopCoroutine(_riseCoroutine);
             if (_damageDropCoroutine != null) StopCoroutine(_damageDropCoroutine);
@@ -227,7 +250,7 @@ namespace Game.Core.Enemy
             _damageDropCoroutine = StartCoroutine(DamageDropRoutine(_enemyTransform));
 
 
-            OnLeftReachedGoal();
+            OnLeftReachedGoal?.Invoke();
         }
 
         /// <summary>
@@ -251,7 +274,7 @@ namespace Game.Core.Enemy
 
             //-イージング処理完了後開始地点に位置を補正
             enemyTransform.position = _startPosition;
-            OnEnemyDroped();
+            OnEnemyDroped?.Invoke();
         }
 
         /// <summary>
@@ -282,7 +305,8 @@ namespace Game.Core.Enemy
             _elapsedTime = ValueToCurveTime(finalCurve, _riseCurve, 5);
             _damageDropCoroutine = null;
 
-            _riseCoroutine = StartCoroutine(RiseRoutine(enemyTransform));
+            RestartCoroutine();
+            //_riseCoroutine = StartCoroutine(RiseRoutine(enemyTransform));
         }
 
 
@@ -408,11 +432,35 @@ namespace Game.Core.Enemy
             return false;
         }
 
-        public void MoveStop()
+        public void StopMove()
         {
             if (_riseCoroutine != null) StopCoroutine(_riseCoroutine);
             if (_dropCoroutine != null) StopCoroutine(_dropCoroutine);
             if (_breakDropCoroutine != null) StopCoroutine(_breakDropCoroutine);
+            _isStopping = true;
+        }
+
+        private void RestartCoroutine()
+        {
+            if (_isStopping) return;
+            switch(_enemyMoveState)
+            {
+                case EnemyMoveState.Rise:
+                    _riseCoroutine = StartCoroutine(RiseRoutine(transform));
+                    break;
+                case EnemyMoveState.Drop:
+                    _dropCoroutine = StartCoroutine(DropRoutine(transform));
+                    break;
+                case EnemyMoveState.BreakDrop:
+                    _breakDropCoroutine = StartCoroutine(BreakDropRoutine(transform));
+                    break;
+            }
+        }
+
+        public void ResumeMove()
+        {
+            _isStopping = false;
+            RestartCoroutine();
         }
     }
 }

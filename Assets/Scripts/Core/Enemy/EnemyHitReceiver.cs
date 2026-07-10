@@ -108,8 +108,23 @@ namespace Game.Core.Enemy
             }
 
             if (OnHitAction != null) OnHitAction.Invoke();
+            // 状態異常があるある場合はデータを生成してコントローラーに追加
+            EnemyDebuffConfig config;
+            if(CreateDebuff(collectible.GetCollectableData(), out config))
+            {
+                _controller.OnAddDebuff(config);
+            }
+            else
+            {
+                // デバッグ用処理
+                EnemyDebuffConfig debugConfig = new EnemyDebuffConfig("Test", 10.0f);
+                debugConfig.InitFreeze(10.0f, 20.0f, 15000.0f);
+                debugConfig.InitDamageOverTime(3.0f, 2000.0f, 1000.0f, 1.0f);
 
-            var data = collectible.GetCollectableData();
+                _controller.OnAddDebuff(debugConfig);
+            }
+
+                var data = collectible.GetCollectableData();
             bool shouldDespawn = _despawnItemOnHit;
             if (data != null && data.Type == CollectibleType.Gummy)
             {
@@ -124,6 +139,48 @@ namespace Game.Core.Enemy
             return true;
         }
 
-        
+
+        /// <summary>
+        /// 小物の情報からデバフのコンフィグを生成する、デバフが存在しない場合はfalseを返す
+        /// </summary>
+        /// <param name="data">小物のデータ</param>
+        /// <param name="config">戻り値のデバフコンフィグ</param>
+        /// <returns></returns>
+        private bool CreateDebuff(CollectibleData data, out EnemyDebuffConfig config)
+        {
+            // コンフィグを初期化
+            config = new EnemyDebuffConfig(data.Type.ToString(), 0.0f);
+            bool hasDebuff = false;
+            // 小物の種類ごとにデバフ効果を追加
+            switch(data.Type)
+            {
+                case CollectibleType.Poison:
+                    config.Duration = Mathf.Max(config.Duration, data.PoisonDuration);
+                    config.InitDamageOverTime(data.PoisonDuration, data.PoisonMaxDamage, data.PoisonMinDamage, 1.0f);
+                    hasDebuff = true;
+                    break;
+
+                case CollectibleType.Ice:
+                    // 確率を判定する
+                    float random = UnityEngine.Random.Range(0.0f, 100.0f);
+                    if(random > data.FreezeProbability)
+                    {
+                        hasDebuff = false;
+                        break;
+                    }
+
+                    config.Duration = Mathf.Max(config.Duration, data.FreezeDuration);
+                    config.InitFreeze(data.FreezeDuration, data.FreezeHitDurability, data.FreezeBreakDamage);
+                    hasDebuff = true;
+                    break;
+
+                default: hasDebuff = false;
+                    break;
+            }
+
+            return hasDebuff;
+        }
+
     }
+
 }
