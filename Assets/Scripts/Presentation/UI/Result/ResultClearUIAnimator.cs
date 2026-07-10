@@ -168,27 +168,25 @@ namespace Game.Presentation.UI.Result
 
 
             // --- 左右の木を順番に表示するアニメーション ---
-            yield return PlayTreeInRoutine();
+            StartCoroutine(PlayTreeInRoutine());
 
+            // --- 魂をフェードで表示して、ふわふわ開始 ---
+            StartCoroutine(PlaySoulsAppearRoutine());
+
+
+            // --- 下のアイテムを順番に表示するアニメーション ---
+            StartCoroutine(PlayBottomItemsAppearRoutine());
+
+
+            yield return new WaitForSecondsRealtime(1.0f);
 
             // --- メインボードを表示するアニメーション ---
             yield return PlayMainBoardDropRoutine();
 
 
             // --- 小さいボードと猫を順番に表示するアニメーション ---
+            StartCoroutine(PlayCatAppearRoutine());
             yield return PlaySmallBoardAppearRoutine();
-
-
-            // --- 猫を表示するアニメーション ---
-            yield return PlayCatAppearRoutine();
-
-
-            // --- 魂をフェードで表示して、ふわふわ開始 ---
-            yield return PlaySoulsAppearRoutine();
-
-
-            // --- 下のアイテムを順番に表示するアニメーション ---
-            yield return PlayBottomItemsAppearRoutine();
 
 
             // --- タイトルに戻るボタンを有効化 ---
