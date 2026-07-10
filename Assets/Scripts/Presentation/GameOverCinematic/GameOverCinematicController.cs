@@ -157,7 +157,7 @@ namespace Game.Presentation.GameOverCinematic
             // phase 6: リザルトシーンへの加算ロード
             if (GameProgressionManager.Instance != null)
             {
-                GameProgressionManager.Instance.UpdateProgressionState(GameProgressionState.Result);
+                // GameProgressionManager.Instance.UpdateProgressionState(GameProgressionState.Result);
             }
             else
             {
