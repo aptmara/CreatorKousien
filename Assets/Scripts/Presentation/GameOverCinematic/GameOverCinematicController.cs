@@ -7,6 +7,7 @@
 // ================================================================================
 
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Game.Core.Events;
@@ -104,10 +105,121 @@ namespace Game.Presentation.GameOverCinematic
                 if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.Euler(0f, -currentAngle, 0f);
                 if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.Euler(0f, currentAngle, 0f);
                 yield return null;
+
             }
 
-            // ここでフィールドに残っている敵のターゲットを門の奥へ強制変更するとか、なだれ込ませる演出を挟む。(TODO)
-            yield return new WaitForSeconds(_settings.BaseDoorKeepOpenDuration);
+            // 敵のなだれ込み演出
+            if (_settings.DummyEnemyPrefab != null && _dustSpawnPoint != null)
+            {
+                Vector3 gateCenter = _dustSpawnPoint.position;
+
+                // デフォルトの方向
+                Vector3 gateForward = transform.forward;
+                Vector3 gateRight = transform.right;
+                Vector3 gateUp = transform.up;
+
+                var anchor = _dustSpawnPoint.GetComponentInParent<GameOverGateAnchor>();
+                if (anchor != null)
+                {
+                    gateForward = anchor.transform.forward;
+                    gateRight = anchor.transform.right;
+                    gateUp = anchor.transform.up;
+                }
+
+                List<Transform> enemyTransforms = new List<Transform>();
+                List<Vector3> enemyTargets = new List<Vector3>();
+                List<float> enemySpeeds = new List<float>();
+                List<float> enemyDelays = new List<float>();
+
+                // 1. 遠くの固定底辺ライン上にランダムで配置
+                for (int i = 0; i < _settings.DummyEnemyCount; i++)
+                {
+                    // スポーンライン上の横方向のランダム位置
+                    float spawnHorizontalRate = Random.Range(-0.5f, 0.5f);
+
+                    // 座標計算
+                    Vector3 spawnPos = gateCenter
+                                     - (gateForward * _settings.SpawnLineDistance)
+                                     + (gateRight * (spawnHorizontalRate * _settings.SpawnLineWidth))
+                                     + (gateUp * _settings.EnemyVisualYOffset);
+
+                    // 生成
+                    GameObject enemyObj = Instantiate(_settings.DummyEnemyPrefab, spawnPos, Quaternion.LookRotation(gateForward));
+
+                    if (enemyObj.TryGetComponent<Rigidbody>(out var enemyRb)) enemyRb.isKinematic = true;
+                    if (enemyObj.TryGetComponent<Collider>(out var enemyCol)) enemyCol.enabled = false;
+
+                    // 目標集結ライン上の通過点を計算
+                    float targetHorizontalRate = Random.Range(-0.5f, 0.5f);
+                    Vector3 finalTargetPos = gateCenter
+                                           + (gateForward * _settings.DisappearDepth)
+                                           + (gateRight * (targetHorizontalRate * _settings.TargetLineWidth))
+                                           + (gateUp * _settings.EnemyVisualYOffset);
+
+                    // Listに保存
+                    enemyTransforms.Add(enemyObj.transform);
+                    enemyTargets.Add(finalTargetPos);
+                    enemySpeeds.Add(_settings.BaseEnemySpeed + Random.Range(-_settings.SpeedVariation, _settings.SpeedVariation));
+                    enemyDelays.Add(Random.Range(0f, _settings.MaxStartDelay));
+                }
+
+                // 2. 敵を一斉に門の奥へ走らせる
+                float rushElapsed = 0f;
+
+                while (rushElapsed < _settings.BaseDoorKeepOpenDuration)
+                {
+                    rushElapsed += Time.deltaTime;
+
+                    for (int i = enemyTransforms.Count - 1; i >= 0; i--)
+                    {
+                        Transform enemyTrans = enemyTransforms[i];
+                        if (enemyTrans == null) continue;
+
+                        // ディレイ中は待機
+                        if (rushElapsed < enemyDelays[i])
+                        {
+                            Vector3 lookGate = (gateCenter - enemyTrans.position).normalized;
+                            if (lookGate.sqrMagnitude > 0.001f) enemyTrans.rotation = Quaternion.LookRotation(lookGate, gateUp);
+                            continue;
+                        }
+
+                        // 目的地に向かって前進
+                        Vector3 moveDir = (enemyTargets[i] - enemyTrans.position).normalized;
+                        enemyTrans.position += moveDir * enemySpeeds[i] * Time.deltaTime;
+
+                        if (moveDir.sqrMagnitude > 0.001f)
+                        {
+                            enemyTrans.rotation = Quaternion.LookRotation(moveDir);
+                        }
+
+                        // 削除ライン追従
+                        Vector3 relativePos = enemyTrans.position - gateCenter;
+                        float currentDepth = Vector3.Dot(relativePos, gateForward);
+
+                        if (currentDepth >= _settings.DisappearDepth)
+                        {
+                            Destroy(enemyTrans.gameObject);
+
+                            enemyTransforms.RemoveAt(i);
+                            enemyTargets.RemoveAt(i);
+                            enemySpeeds.RemoveAt(i);
+                            enemyDelays.RemoveAt(i);
+                        }
+                    }
+                    yield return null;
+                }
+
+                // 残った敵の片付け
+                foreach (var trans in enemyTransforms)
+                {
+                    if (trans != null) Destroy(trans.gameObject);
+                }
+            }
+            else
+            {
+                // プレハブが未設定の場合は、これまでのキープ時間だけ待機
+                yield return new WaitForSeconds(_settings.BaseDoorKeepOpenDuration);
+            }
 
             // phase 3: 門が勢いよく閉まる
             elapsed = 0f;
@@ -117,7 +229,7 @@ namespace Game.Presentation.GameOverCinematic
                 float rate = Mathf.Clamp01(elapsed / _settings.DoorCloseDuration);
                 float curveValue = _settings.DoorCloseCurve.Evaluate(rate);
 
-                float currentAngle = (1f - curveValue) * _settings.MaxOpenAngle;
+                float currentAngle = curveValue * _settings.MaxOpenAngle;
                 if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.Euler(0f, -currentAngle, 0f);
                 if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.Euler(0f, currentAngle, 0f);
                 yield return null;
@@ -133,16 +245,32 @@ namespace Game.Presentation.GameOverCinematic
 
             // phase 4: カメラを引き、プレイヤーを映す
             elapsed = 0f;
+
+            // プレイヤーの腰当たりの高さを注視点
+            Vector3 playerTargetPos = _playerController != null ? _playerController.transform.position : camStartPos;
+            Vector3 playerCameraTargetFocus = playerTargetPos + new Vector3(0f, 1.2f, 0f);
+
+            // プレイヤー空どれくらい離れた位置にカメラを配置するか
+            Vector3 focusCameraOffset = new Vector3(0f, 2.0f, -8.5f);
+            Vector3 camEndPos = playerTargetPos + focusCameraOffset;
+
+            // プレイヤーの方を向くようにカメラの回転を計算
+            Quaternion camEndRot = Quaternion.LookRotation(playerCameraTargetFocus - camEndPos);
+
             while (elapsed < _settings.ZoomOutDuration)
             {
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / _settings.ZoomOutDuration);
                 float easedT = t * t * (3f - 2f * t); // ease in-out
 
-                camTransform.position = Vector3.Lerp(_settings.CameraZoomPosition, camStartPos, easedT);
-                camTransform.rotation = Quaternion.Slerp(Quaternion.Euler(_settings.CameraZoomRotation), camStartRot, easedT);
+                camTransform.position = Vector3.Lerp(_settings.CameraZoomPosition, camEndPos, easedT);
+                camTransform.rotation = Quaternion.Slerp(Quaternion.Euler(_settings.CameraZoomRotation), camEndRot, easedT);
                 yield return null;
             }
+
+            // ずれないように固定
+            camTransform.position = camEndPos;
+            camTransform.rotation = camEndRot;
 
             yield return new WaitForSeconds(_settings.PlayerReviveDelay);
 
@@ -157,12 +285,25 @@ namespace Game.Presentation.GameOverCinematic
             // phase 6: リザルトシーンへの加算ロード
             if (GameProgressionManager.Instance != null)
             {
-                // GameProgressionManager.Instance.UpdateProgressionState(GameProgressionState.Result);
+                GameProgressionManager.Instance.GoToResult(isClear: false);
             }
             else
             {
                 // マネージャーがいない場合のフォールバック（直接加算シーンロードなど）
                 SceneManager.LoadScene("Result", LoadSceneMode.Additive);
+            }
+        }
+
+        /// <summary>
+        /// Stageシーンの門オブジェクトから地震を登録してもらうためのメソッド
+        /// </summary>
+        public void RegisterGate(GameOverGateAnchor gateAnchor)
+        {
+            if (gateAnchor != null)
+            {
+                _leftDoorHinge = gateAnchor.LeftDoorHinge;
+                _rightDoorHinge = gateAnchor.RightDoorHinge;
+                _dustSpawnPoint = gateAnchor.DustSpawnPoint;
             }
         }
     }

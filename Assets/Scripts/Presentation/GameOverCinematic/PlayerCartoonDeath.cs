@@ -40,6 +40,30 @@ namespace Game.Presentation.GameOverCinematic
         /// </summary>
         public void FlattenImmediately()
         {
+            // 物理挙動を停止
+            var rb = GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.isKinematic = true;
+            }
+
+            // CharacterControllerを無効化
+            var cc = GetComponent<CharacterController>();
+            if (cc != null)
+            {
+                cc.enabled = false;
+            }
+
+            // カメラの方向を向く
+            Vector3 lookDir = Vector3.back;
+
+            if (lookDir.sqrMagnitude > 0.001f)
+            {
+                transform.rotation = Quaternion.LookRotation(lookDir);
+            }
+
             // 縦を極限で潰す、横を少し広げる
             _modelTarget.localScale = new Vector3(_originalScale.x * 1.5f, _originalScale.y * 0.05f, _originalScale.z * 1.5f);
         }
