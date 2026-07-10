@@ -211,7 +211,7 @@ namespace Game.Core.Management
         {
             if (_currentState != GameProgressionState.Battle) return;
             Debug.Log("[Progression] 防衛ラインのバリア崩壊を検知。ゲームオーバー処理を開始するぜよ。");
-            HandleGameResult(isClear: false);
+            // HandleGameResult(isClear: false);
         }
 
         /// <summary>
@@ -429,6 +429,14 @@ namespace Game.Core.Management
                 // 次のウェーブを開始
                 StartBattleWave(_currentWaveIndex);
             }
+        }
+
+        /// <summary>
+        /// ゲームオーバー演出などが終了した後に、外部からリザルト画面へ遷移させるためのメソッド
+        /// </summary>
+        public void GoToResult(bool isClear)
+        {
+            HandleGameResult(isClear);
         }
 
         private void HandleGameResult(bool isClear)

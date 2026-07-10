@@ -39,10 +39,46 @@ namespace Game.Presentation.GameOverCinematic
 
         [Header("--- 演出タイミング ---")]
         [Tooltip("扉が開いてから閉まり切るまでのキープ時間 (敵がなだれ込む時間)")]
-        public float BaseDoorKeepOpenDuration = 2.0f;
+        public float BaseDoorKeepOpenDuration = 2.5f;
         [Tooltip("カメラが引き戻ってからプレイヤーがポンと復活するまでのディレイ")]
         public float PlayerReviveDelay = 0.5f;
         [Tooltip("プレイヤーが目を回してからリザルトに遷移するまでの待ち時間")]
         public float TransitionResultDelay = 2.5f;
+
+        [Header("--- 敵のなだれ込み設定 ---")]
+        [Tooltip("演出用に生成するダミー敵のプレハブ")]
+        public GameObject DummyEnemyPrefab;
+        [Tooltip("なだれ込ませる敵の総数")]
+        public int DummyEnemyCount = 20;
+
+        [Tooltip("基本の移動速度")]
+        public float BaseEnemySpeed = 12.0f;
+        [Tooltip("速度のランダムな揺らぎ幅")]
+        public float SpeedVariation = 3.0f;
+        [Tooltip("走り出すまでの最大ランダムディレイ (秒)")]
+        public float MaxStartDelay = 0.6f;
+
+        [Tooltip("敵の出現位置を上に浮かせる高さ")]
+        public float EnemyVisualYOffset = 1.0f;
+
+        [Header("--- なだれ込みルート設定 ---")]
+        [Tooltip("門からどのくらい離れた場所にスポーンラインを置くか")]
+        public float SpawnLineDistance = 15.0f;
+        [Tooltip("画面外のスポーンラインの横幅")]
+        public float SpawnLineWidth = 16.0f;
+        [Tooltip("門からどのくらい離れた場所に目標集結ラインを置くか")]
+        public float TargetLineDistance = 0.0f;
+        [Tooltip("目標集結ラインの横幅）")]
+        public float TargetLineWidth = 4.0f;
+        [Tooltip("門の中心からどれだけ奥まで進んだら消滅させるか")]
+        public float DisappearDepth = 4.0f;
+
+        [Header("--- 砂煙エフェクト設定 ---")]
+        [Tooltip("エフェクトのプレハブ")]
+        public ParticleSystem CartoonDustPrefab;
+        [Tooltip("砂煙を発生させる位置")]
+        public float DustEffectDistance = 2.0f;
+        [Tooltip("煙の発生源 (横幅)")]
+        public float DustEffectWidth = 10.0f;
     }
 }

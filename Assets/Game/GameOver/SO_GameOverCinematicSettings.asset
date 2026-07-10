@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84730288a24d3344bad8e5169056e7ac, type: 3}
+  m_Name: SO_GameOverCinematicSettings
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.GameOverCinematic.SO_GameOverCinematicSettings
+  CameraZoomPosition: {x: 0, y: 10, z: -10}
+  CameraZoomRotation: {x: -20, y: 0, z: 0}
+  ZoomInDuration: 1
+  ZoomOutDuration: 0.8
+  DoorOpenCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.70453817
+      value: 1.0210078
+      inSlope: 0.8150573
+      outSlope: 0.8150573
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  DoorOpenDuration: 0.4
+  DoorCloseCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.56381387
+      value: -0.008310072
+      inSlope: -0.6161213
+      outSlope: -0.6161213
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  DoorCloseDuration: 0.2
+  MaxOpenAngle: 110
+  BaseDoorKeepOpenDuration: 4
+  PlayerReviveDelay: 2
+  TransitionResultDelay: 2
+  DummyEnemyPrefab: {fileID: 6303239717055165911, guid: a3e310d186d228442b35da9d22c6c805, type: 3}
+  DummyEnemyCount: 50
+  BaseEnemySpeed: 12
+  SpeedVariation: 3
+  MaxStartDelay: 0.6
+  EnemyVisualYOffset: 3
+  SpawnLineDistance: 20
+  SpawnLineWidth: 32
+  TargetLineDistance: -20
+  TargetLineWidth: 4
+  DisappearDepth: 25
+  CartoonDustPrefab: {fileID: 8476163074117621257, guid: 2a2c09b2383248e478f687115d980e15, type: 3}
+  DustEffectDistance: 4
+  DustEffectWidth: 30
