@@ -1,4 +1,4 @@
-Shader "Custom/SH_Sway"
+Shader "Custom/SH_Sway_Lit"
 {
     Properties
     {
@@ -27,6 +27,8 @@ Shader "Custom/SH_Sway"
         [Toggle(_ALPHATEST_ON)] _AlphaClip ("Alpha Clip",Float) = 0
         _Cutoff ("Cutoff",Range(0,1)) = 0.5
 
+        [KeywordEnum(Lit,Toon,Smooth)] _LightingMode("Lighting Mode",Float) = 0
+
     }
 
     SubShader
@@ -49,7 +51,7 @@ Shader "Custom/SH_Sway"
             #pragma vertex vert
             #pragma fragment frag
             #pragma multi_compile _ _ALPHATEST_ON
-            
+            #pragma multi_compile _LIGHTINGMODE_LIT _LIGHTINGMODE_TOON _LIGHTINGMODE_SMOOTH
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -114,65 +116,45 @@ Shader "Custom/SH_Sway"
             half4 frag(Varyings IN) : SV_Target
             {
                 half4 tex = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv);
+                Light light = GetMainLight();
+                half3 normal = normalize(IN.normalWS);
+                half3 lightDir = normalize(light.direction);
+                half3 viewDir = normalize(IN.viewDirWS);
+                half ndl = saturate(dot(normal,lightDir));
+                half3 diffuse;
 
             #ifdef _ALPHATEST_ON
                 clip(tex.a - _Cutoff);
             #endif
 
-                half3 col = tex.rgb * _BaseColor;
-                half  lumi = dot(col,half3(0.2126,0.7152,0.722));
-                col = lerp(lumi.xxx,col, _Saturation);
+            #ifdef _LIGHTINGMODE_TOON
+               half shade = step(_ShadeThreshold,ndl);
 
-                Light light = GetMainLight();
+               diffuse = lerp(
+                   _ShadowColor.rgb,
+                   tex,
+                   shade
+                   );
+            #endif
 
-                // トゥーン陰
-                half3 normal = normalize(IN.normalWS);
-                half3 lightDir = normalize(light.direction);
-                half3 viewDir = normalize(IN.viewDirWS);
+            #ifdef _LIGHTINGMODE_LIT
+                diffuse = tex * ndl;
+            #endif
 
-
-                half ndl = saturate(dot(normal,lightDir));
-
+            #ifdef _LIGHTINGMODE_SMOOTH
                 half shade = smoothstep(
                     _ShadeThreshold - 0.05,
                     _ShadeThreshold + 0.05,
-                    ndl);
+                    ndl
+                    );
 
-                half3 diffuse =
-                    lerp(_ShadowColor.rgb,
-                        col,
+                    diffuse = lerp(
+                        _ShadowColor.rgb,
+                        tex,
                         shade
                         );
-
-                half3 halfDir = normalize(lightDir + viewDir);
-
-                half spec = pow(saturate(dot(normal,halfDir)),
-                        _SpecPower);
-
-                spec *= _SpecIntensity;
-
-                half3 specular =
-                    spec * _SpecColor.rgb;
-
-                half rim =
-                    1.0 - saturate(dot(normal,viewDir));
-
-                rim = pow(rim,_RimPower);
-
-                half3 rimLight =
-                    rim * _RimColor.rgb;
-
-                half3 emission =
-                    _EmissionColor.rgb *
-                    _EmissionStrength;
-
-                half3 color =
-                    diffuse +
-                    specular +
-                    rimLight +
-                    emission;
-
-                return half4(color,tex.a * _BaseColor.a);
+            #endif
+                return half4(diffuse,tex.a * _BaseColor.a);
             }
             ENDHLSL
         }
