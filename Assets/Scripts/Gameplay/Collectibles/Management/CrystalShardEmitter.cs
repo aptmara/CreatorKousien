@@ -3,6 +3,7 @@
 // Description  : 大小変更可能なクリスタルを殴った対象に応じて欠片を出す
 // author       : 山本郁也
 // data         : 2026/05/19
+// Updated      : 2026/07/11 (ドロップテーブル拡張) - Iwai Shogo  
 // ================================================================================
 
 using System;
@@ -12,8 +13,7 @@ using Game.Data.Collectibles;
 namespace Game.Gameplay.Collectibles
 {
     /// <summary>
-    /// Emits collectible shards when a crystal is hit.
-    /// The crystal itself is never resized, damaged, destroyed, or despawned.
+    /// ドロップテーブルを使って、クリスタルを殴った時に欠片を発生させるコンポーネント。
     /// </summary>
     public sealed class CrystalShardEmitter : MonoBehaviour
     {
@@ -104,6 +104,10 @@ namespace Game.Gameplay.Collectibles
         /// 欠片本体の取得に使う既存 Pool API。未設定ならシーン内から自動検索する。
         /// </summary>
         [SerializeField] private CollectiblePool _pool;
+
+        [Header("Drop Table Configuration")]
+        [Tooltip("このクリスタルが使用するドロップテーブルアセット")]
+        [SerializeField] private CollectibleTable _collectibleTable;
 
         /// <summary>
         /// 生成した欠片をアクティブ管理へ登録する既存 Registry API。未設定ならシーン内から自動検索する。
@@ -210,7 +214,7 @@ namespace Game.Gameplay.Collectibles
         }
 
         /// <summary>
-        /// 指定方向と重み付き欠片テーブルから欠片を 1 つ生成します。
+        ///  外から直接1発分の射出方向を指定して生成する。
         /// </summary>
         /// <param name="direction">欠片の基準移動方向です。</param>
         /// <param name="randomRange">基準方向へ加えるランダム方向の強さです。</param>
@@ -218,7 +222,10 @@ namespace Game.Gameplay.Collectibles
         /// <param name="shardTable">重み付き欠片データの配列です。</param>
         public void Emitter(Vector3 direction, float randomRange, float movementAmount, WeightedShardData[] shardTable)
         {
-            EmitOne(GetBasePosition(transform.position), direction, randomRange, movementAmount, shardTable);
+            CollectibleData data = GetSelectedCollectibleData();
+            if (data == null) return;
+
+            EmitOne(GetBasePosition(transform.position), direction, randomRange, movementAmount, data);
         }
 
         /// <summary>
@@ -245,16 +252,44 @@ namespace Game.Gameplay.Collectibles
         }
 
         /// <summary>
-        /// 指定位置と重み付き欠片テーブルから欠片を 1 つ生成します。
+        /// 重み付き生成用の既存オーバーロード
         /// </summary>
-        /// <param name="hitPoint">欠片の発生位置です。</param>
-        /// <param name="direction">欠片の基準移動方向です。</param>
-        /// <param name="randomRange">基準方向へ加えるランダム方向の強さです。</param>
-        /// <param name="movementAmount">欠片へ与える移動量です。</param>
-        /// <param name="shardTable">重み付き欠片データの配列です。</param>
         public void EmitFromHit(Vector3 hitPoint, Vector3 direction, float randomRange, float movementAmount, WeightedShardData[] shardTable)
         {
-            EmitOne(hitPoint, direction, randomRange, movementAmount, shardTable);
+            ResolveReferencesIfNeeded();
+            if (!CanUseSpawnApi()) return;
+
+            // 引数に重み付きデータがある場合はそちらを優先（既存の育成クリスタル等の互換用）
+            // なければ共通ドロップテーブルから取得
+            if (!TrySelectWeightedShardData(shardTable, out CollectibleData data))
+            {
+                data = GetSelectedCollectibleData();
+            }
+
+            if (data == null) return;
+
+            CollectibleObject shard = _pool.Get();
+            shard.transform.position = CreateSpawnPosition(hitPoint);
+            shard.transform.rotation = UnityEngine.Random.rotation;
+            shard.Initialize(data, ReturnToPool, _canBeCollectedByPlayer);
+            shard.SetInitialMotion(CreateWeightedVelocity(direction, randomRange, movementAmount), CreateAngularVelocity());
+
+            _registry.Register(shard);
+        }
+
+        private CollectibleData GetSelectedCollectibleData()
+        {
+            if (_collectibleTable != null)
+            {
+                return _collectibleTable.DetermineItem();
+            }
+
+            if (_shardData != null && _shardData.Length > 0)
+            {
+                return _shardData[UnityEngine.Random.Range(0, _shardData.Length)];
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -263,9 +298,14 @@ namespace Game.Gameplay.Collectibles
         /// <param name="power">初速に掛ける倍率。</param>
         private void EmitOne(float power)
         {
-            CollectibleObject shard = _pool.Get();
-            CollectibleData data = _shardData[UnityEngine.Random.Range(0, _shardData.Length)];
+            CollectibleData data = GetSelectedCollectibleData();
+            if (data == null)
+            {
+                Debug.LogWarning("[CrystalShardEmitter] 抽選されたCollectibleDataがありません。ドロップテーブルの設定を確認してください。");
+                return;
+            }
 
+            CollectibleObject shard = _pool.Get();
             shard.transform.position = _emissionVector.OriginPosition;
             shard.transform.rotation = UnityEngine.Random.rotation;
             shard.transform.localScale = Vector3.one * Mathf.Max(0.01f, _shardScale);
@@ -275,6 +315,8 @@ namespace Game.Gameplay.Collectibles
             _registry.Register(shard);
         }
 
+
+
         /// <summary>
         /// 重み付き欠片テーブルから抽選した欠片を 1 つ生成します。
         /// </summary>
@@ -283,20 +325,8 @@ namespace Game.Gameplay.Collectibles
         /// <param name="randomRange">基準方向へ加えるランダム方向の強さです。</param>
         /// <param name="movementAmount">欠片へ与える移動量です。</param>
         /// <param name="shardTable">重み付き欠片データの配列です。</param>
-        private void EmitOne(Vector3 hitPoint, Vector3 direction, float randomRange, float movementAmount, WeightedShardData[] shardTable)
+        private void EmitOne(Vector3 hitPoint, Vector3 direction, float randomRange, float movementAmount, CollectibleData data)
         {
-            ResolveReferencesIfNeeded();
-
-            if (!CanUseSpawnApi())
-            {
-                return;
-            }
-
-            if (!TrySelectWeightedShardData(shardTable, out CollectibleData data))
-            {
-                return;
-            }
-
             CollectibleObject shard = _pool.Get();
             shard.transform.position = CreateSpawnPosition(hitPoint);
             shard.transform.rotation = UnityEngine.Random.rotation;
@@ -463,6 +493,12 @@ namespace Game.Gameplay.Collectibles
                 return false;
             }
 
+            if (_collectibleTable == null && (_shardData == null || _shardData.Length == 0))
+            {
+                Debug.LogError("[CrystalShardEmitter] Both CollectibleTable and ShardData fallback are missing.", this);
+                return false;
+            }
+
             if (_shardData == null || _shardData.Length == 0)
             {
                 Debug.LogError("[CrystalShardEmitter] Shard data is missing.", this);
@@ -505,7 +541,7 @@ namespace Game.Gameplay.Collectibles
 
             if (shardTable == null || shardTable.Length == 0)
             {
-                Debug.LogError("[CrystalShardEmitter] Weighted shard data is missing.", this);
+                // Debug.LogError("[CrystalShardEmitter] Weighted shard data is missing.", this);
                 return false;
             }
 
