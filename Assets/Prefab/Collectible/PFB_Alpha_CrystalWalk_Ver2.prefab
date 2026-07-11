@@ -263,9 +263,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Collectibles.CrystalShardEmitter
   _pool: {fileID: 0}
+  _collectibleTable: {fileID: 11400000, guid: b35532d05e2eec54cbe79d863bfa2aeb, type: 2}
   _registry: {fileID: 0}
-  _shardData:
-  - {fileID: 11400000, guid: 94e9ae19b8865d2489f8111fcf489a3e, type: 2}
+  _shardData: []
   _canBeCollectedByPlayer: 1
   _shardScale: 1
   _amountMode: 0
@@ -608,7 +608,7 @@ MonoBehaviour:
   _autoReverseLoop: 1
   startCount: 0
   maxCount: 30
-  _hitStop: 0.5
+  _hitStop: 2
   _model: {fileID: 1805699065825904237}
   _shakeAmplitude: 0.1
   _emitter: {fileID: 7234920766954558165}
@@ -616,9 +616,6 @@ MonoBehaviour:
   shardBaseCount: 30
   curShardCount: 30
   power: 500
-  _shard:
-  - Data: {fileID: 11400000, guid: c5bea3e5375a6f54486a91623f955ecb, type: 2}
-    Weight: 1
   VFX: {fileID: 4148052385838451594, guid: 16d7e6146392f494abd0b5e58383d213, type: 3}
   _scale: {x: 4, y: 1, z: 1}
   _channel: {fileID: 11400000, guid: 58e1728789289fa47b441403e4650359, type: 2}

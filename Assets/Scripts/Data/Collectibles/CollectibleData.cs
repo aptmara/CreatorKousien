@@ -28,7 +28,7 @@ namespace Game.Data.Collectibles
     /// アイテム1種類あたりのマスターデータとして機能するScriptableObject。
     /// RuntimeでこのAsset自体を書き換えることは禁止されており、状態はHeldItemへコピーして使用します。
     /// </summary>
-    [CreateAssetMenu(fileName = "SO_Collectible_New", menuName = "Game/Collectible Data")]
+    [CreateAssetMenu(fileName = "SO_Collectible_New", menuName = "Game/Collectible/Collectible Data")]
     public class CollectibleData : ScriptableObject
     {
         [Header("--- Basic Infomation ---")]

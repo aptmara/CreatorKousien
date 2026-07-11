@@ -32,7 +32,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0, z: 0}
-  m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -148,6 +148,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Collectibles.CollectibleObject
   _data: {fileID: 0}
   _fallDeadLineY: -20
+  _spawnLayer: CollectibleSpawning
+  _normalLayer: Collectible
+  _passThroughDuration: 0.4
 --- !u!114 &2139515936200401590
 MonoBehaviour:
   m_ObjectHideFlags: 0

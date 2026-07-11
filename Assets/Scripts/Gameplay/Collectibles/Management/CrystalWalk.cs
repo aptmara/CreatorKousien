@@ -70,10 +70,8 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     [SerializeField] public int shardBaseCount;
     [SerializeField] public int curShardCount;
     [SerializeField] public float power;
-    [SerializeField] private CrystalShardEmitter.WeightedShardData[] _shard;
     [SerializeField] private GameObject VFX;
     [SerializeField] private Vector3 _scale;
-    // 寺田
     [SerializeField]private SceneEventChannel _channel;
 
     [Header("フィールドの傾き")]
@@ -330,7 +328,7 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
             Vector3 spawnPos = hitPoint + outward * _emitOffset;
 
             for (int i = 0; i < curShardCount; i++)
-                _emitter.EmitFromHit(spawnPos, dir, _spreadAngle, power, _shard);
+                _emitter.EmitFromHit(spawnPos, dir, _spreadAngle, power, null);
         }
         _currentHitStop = _hitStop;
         InitShardCount();

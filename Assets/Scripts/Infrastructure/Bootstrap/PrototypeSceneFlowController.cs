@@ -210,7 +210,7 @@ namespace Game.Infrastructure.Bootstrap
                 return;
             }
 
-            spawner.SpawnCollectibles(Mathf.Max(0, _initialCollectibleCount));
+            // spawner.SpawnCollectibles(Mathf.Max(0, _initialCollectibleCount));
         }
     }
 }

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20ec0d2562e843e40b4319909111f0f9, type: 3}
+  m_Name: SO_04_Ice
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Collectibles.CollectibleData
+  Id: 4
+  Type: 3
+  ViewPrefab: {fileID: 8775489147838489531, guid: 7cc4f33d52e2994489c6b4eb19e10279, type: 3}
+  Weight: 1
+  DamageAmount: 1
+  Attribute: None
+  Shape: Default
+  CapacityCost: 1
+  SameItemCooldown: 0.25
+  BarrierDamageAmount: 3
+  PoisonDuration: 5
+  PoisonMinDamage: 1
+  PoisonMaxDamage: 10
+  FreezeProbability: 100
+  FreezeDuration: 5
+  FreezeHitDurability: 20
+  FreezeBreakDamage: 30
+  LaserPrefab: {fileID: 0}
+  GummyPhysicsMaterial: {fileID: 0}
+  MaxBounceChainCount: 10
