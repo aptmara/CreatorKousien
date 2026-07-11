@@ -20,16 +20,30 @@ namespace Game.Gameplay.Player
     {
         // 変数宣言
         // ------------------------------------------------------------
-        private Rigidbody _rigidbody;           ///< 自身のリジットボディ
-        private Transform _targetSocket;        ///< 追従対象のソケット（Transform）
+        private Rigidbody _rigidbody;               ///< 自身のリジットボディ
+        private Transform _targetSocket;            ///< 追従対象のソケット（Transform）
 
-        private Rigidbody _playerRigidbody;     ///< プレイヤー本体のリジットボディ
-        private Vector3 _localSocketPosition;   ///< ソケットのローカル位置
-        private Quaternion _localSocketRotation; ///< ソケットのローカル回転
+        private Rigidbody _playerRigidbody;         ///< プレイヤー本体のリジットボディ
+        private Vector3 _localSocketPosition;       ///< ソケットのローカル位置
+        private Quaternion _localSocketRotation;    ///< ソケットのローカル回転
+
+        private bool _followEnabled = true;         ///< アタッチメントの追従を有効にするかどうかのフラグ
+
 
 
         // 関数処理
         // ------------------------------------------------------------
+
+        /// <summary>
+        /// アタッチメントの追従を有効にするかどうかを設定する関数
+        /// </summary>
+        /// <param name="enable">有効かどうか</param>
+        public void SetFollowEnabled(bool enable)
+        {
+            _followEnabled = enable;
+        }
+
+
 
         /// <summary>
         /// 初期化処理
@@ -70,7 +84,7 @@ namespace Game.Gameplay.Player
         /// </summary>
         private void FixedUpdate()
         {
-            if (_targetSocket == null || _playerRigidbody == null)
+            if (!_followEnabled || _targetSocket == null || _playerRigidbody == null)
             {
                 return;
             }

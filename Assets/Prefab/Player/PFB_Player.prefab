@@ -349,6 +349,10 @@ MonoBehaviour:
   _expandDelay: 0.05
   _startVfxPointL: {fileID: 6620565584449791324}
   _startVfxPointR: {fileID: 8668357924027660835}
+  _clearAttachmentPrefab: {fileID: 2606724481398714952, guid: 04586305c68c4ab4185c4a9aa7704ec9, type: 3}
+  _clearCloseDuration: 0.25
+  _clearSpawnOffset: {x: -2, y: 1.5, z: 0}
+  _clearAnimStartDelay: 0
 --- !u!114 &5232212859440975684
 MonoBehaviour:
   m_ObjectHideFlags: 0
