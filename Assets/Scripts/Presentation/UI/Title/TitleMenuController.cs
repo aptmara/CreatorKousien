@@ -7,7 +7,9 @@
 // ================================================================================
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace Game.Presentation.UI.Title
 {
@@ -16,8 +18,17 @@ namespace Game.Presentation.UI.Title
     /// </summary>
     public class TitleMenuController : MonoBehaviour
     {
+        // テラダ
+        [Header("====== 初期選択ボタン ======")]
+        [SerializeField] private Button _startButton;
+
         [Header("--- 遷移先のシーン ---")]
         [SerializeField] private string _bootSceneName = "Boot";
+
+        public void OnEnable()
+        {
+            EventSystem.current.SetSelectedGameObject(_startButton.gameObject);
+        }
 
         /// <summary>
         /// New Gameボタンが押されたときに呼び出す
