@@ -6,6 +6,11 @@ TagManager:
   tags:
   - Collectable
   - Floor
+  - Field_Center
+  - Field_LeftBack
+  - Field_LeftFront
+  - Field_RightBack
+  - Field_RightFront
   layers:
   - Default
   - TransparentFX
