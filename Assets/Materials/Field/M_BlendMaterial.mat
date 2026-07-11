@@ -29,18 +29,18 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _GrassTex:
         m_Texture: {fileID: 2800000, guid: c6d3dfb14834d2642842e5bc8bdf6c8a, type: 3}
-        m_Scale: {x: 10, y: 10}
-        m_Offset: {x: 0, y: 4.01}
+        m_Scale: {x: 0.1, y: 0.1}
+        m_Offset: {x: 0, y: -33.72}
     m_Ints: []
     m_Floats:
     - _BlendEnd: 0.912
     - _BlendStart: 0.83
     - _CliffTiling: 1
-    - _GrassTiling: 1
+    - _GrassTiling: 112
     - _NoiseScale: 4.92
     - _NoiseStrength: 0.027
     m_Colors:
     - _CliffColor: {r: 1, g: 1, b: 1, a: 1}
-    - _GrassColor: {r: 1, g: 0.9316037, b: 0.5896226, a: 1}
+    - _GrassColor: {r: 1, g: 0.9411765, b: 0.654902, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
