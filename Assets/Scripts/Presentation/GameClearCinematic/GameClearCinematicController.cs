@@ -48,6 +48,15 @@ namespace Game.Presentation.GameClearCinematic
         [SerializeField] private CanvasGroup _flashCanvasGroup;
 
 
+        [Header("プレイヤー表情コントローラー")]
+        [SerializeField] private PlayerFaceController _playerFaceController;
+
+
+        [Header("クリア時の表情")]
+        [SerializeField] private string _clearStartFaceName = "ClearStart";      ///< クリア開始時の表情名
+
+
+
         private float _noiseSeed;                                                ///< ノイズシード値
 
         private void Awake()
@@ -100,8 +109,18 @@ namespace Game.Presentation.GameClearCinematic
             yield return StartCoroutine(PlaySlowMotionPart(cameraTransform));
             yield return StartCoroutine(PlayPlayerZoomPart(cameraTransform));
 
+            // プレイヤーのアニメーションをクリア状態に設定
+            _playerController?.PrepareClearAttachmentAnimation();
+
+            // プレイヤーの表情をクリア開始時の表情に設定
+            if (!string.IsNullOrEmpty(_clearStartFaceName))
+            {
+                _playerFaceController?.SetFace(_clearStartFaceName);
+            }
+
+            // プレイヤーのアニメーションをクリア状態に設定
             _playerAnimationController?.PlayClear();
-            _playerController?.PlayClearAttachmentAnimation();
+            _playerController?.PlayPreparedClearAttachmentAnimation();
 
             yield return StartCoroutine(WaitKeepingPlayerFacingCamera(_settings.AfterClearAnimationDelay, cameraTransform));
 
@@ -431,6 +450,11 @@ namespace Game.Presentation.GameClearCinematic
             if (_playerAnimationController == null && _playerTransform != null)
             {
                 _playerAnimationController = _playerTransform.GetComponentInChildren<PlayerAnimationController>();
+            }
+
+            if (_playerFaceController == null && _playerTransform != null)
+            {
+                _playerFaceController = _playerTransform.GetComponentInChildren<PlayerFaceController>();
             }
         }
     }
