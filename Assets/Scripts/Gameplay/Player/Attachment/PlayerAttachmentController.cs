@@ -13,6 +13,7 @@
 // ------------------------------------------------------------
 using UnityEngine;
 using Game.Gameplay.Player.Progression;
+using System.Collections;
 
 namespace Game.Gameplay.Player
 {
@@ -55,6 +56,32 @@ namespace Game.Gameplay.Player
         [SerializeField] private Transform _startVfxPointR;
 
 
+        [Header("クリア演出")]
+        [Tooltip("クリア時の生成する専用の腕も出る")]
+        [SerializeField] private GameObject _clearAttachmentPrefab;
+
+        [Tooltip("既存の腕を閉じるのにかける時間")]
+        [SerializeField] private float _clearCloseDuration = 0.25f;
+
+        [Tooltip("クリア専用腕の生成オフセット")]
+        [SerializeField] private Vector3 _clearSpawnOffset = new Vector3(0f, 0.5f, -0.5f);
+
+        [Tooltip("クリア専用腕を出してからアニメ再生までの時間")]
+        [SerializeField] private float _clearAnimStartDelay = 1.0f;
+
+
+
+        private GameObject _clearAttachmentInstance;    ///< 生成したクリア専用腕
+
+        private Coroutine _clearRoutine;                ///< クリア演出コルーチン
+
+
+
+        private static readonly int ClearHash = Animator.StringToHash("Clear");     ///< クリア時のアニメーションのハッシュ値
+        private Animator _attachmentAnimator;                                       ///< アタッチメントのAnimatorコンポーネント
+        private bool _isClearPlaying;                                               ///< クリア時のアニメーション再生中かどうかのフラグ
+
+
         private float _nextToggleTime;                  ///< 次に開閉を切り替えられる時間
         private float _expandStartTime;                 ///< 腕が大きくなり始める時刻
 
@@ -93,7 +120,7 @@ namespace Game.Gameplay.Player
         /// </summary>
         private void Update()
         {
-            if (_currentAttachment == null)
+            if (_isClearPlaying || _currentAttachment == null)
             {
                 return;
             }
@@ -138,6 +165,7 @@ namespace Game.Gameplay.Player
             _currentAttachment = Instantiate(_attachmentPrefab, _attachmentSocket.position, _attachmentSocket.rotation);
             _currentAttachment.transform.localScale = _normalScale;         // 初期スケールを設定
             _targetScale = _normalScale;                                    // 目標スケールも初期スケールに設定
+            _attachmentAnimator = _currentAttachment.GetComponentInChildren<Animator>();
 
             // 2. 生成したアタッチメントに、追従先となるソケット（目印）を教える
             _currentAttachment.Initialize(_attachmentSocket);
@@ -152,6 +180,49 @@ namespace Game.Gameplay.Player
         public void SetRuntimeData(PlayerRuntimeData runtimeData)
         {
             _runtimeData = runtimeData;
+        }
+
+
+        /// <summary>
+        /// 既存の腕をとじる
+        /// </summary>
+        public void RetractAttachmentForClear()
+        {
+            if (_clearRoutine != null)
+            {
+                StopCoroutine(_clearRoutine);
+            }
+            _clearRoutine = StartCoroutine(RetractRoutine());
+        }
+
+
+        private IEnumerator RetractRoutine()
+        {
+            _isClearPlaying = true;
+
+            _forceLargeByPunch = false;
+            _forceLargeUntil = 0f;
+            _isShrunkInternal = false;
+
+            // 既存の腕を閉じてからしまう
+            if (_currentAttachment != null)
+            {
+                Vector3 startScale = _currentAttachment.transform.localScale;
+                float elapsed = 0f;
+
+                while (elapsed < _clearCloseDuration)
+                {
+                    elapsed += Time.unscaledDeltaTime;
+                    float k = Mathf.Clamp01(elapsed / _clearCloseDuration);
+                    _currentAttachment.transform.localScale = Vector3.Lerp(startScale, _normalScale, k);
+
+                    yield return null;
+                }
+
+                _currentAttachment.gameObject.SetActive(false);
+            }
+
+            _clearRoutine = null;
         }
 
 
@@ -185,6 +256,8 @@ namespace Game.Gameplay.Player
         }
 
 
+
+
         /// <summary>
         /// アタッチメントの出現エフェクトの再生
         /// </summary>
@@ -197,7 +270,6 @@ namespace Game.Gameplay.Player
         }
 
 
-
         /// <summary>
         /// プレイヤーが破棄されるとき、独立しているアタッチメントも一緒に破棄する
         /// </summary>
@@ -206,6 +278,11 @@ namespace Game.Gameplay.Player
             if (_currentAttachment != null)
             {
                 Destroy(_currentAttachment.gameObject);
+            }
+
+            if (_clearAttachmentInstance != null)
+            {
+                Destroy(_clearAttachmentInstance);
             }
         }
 
@@ -218,6 +295,53 @@ namespace Game.Gameplay.Player
         {
             _forceLargeUntil = Mathf.Max(_forceLargeUntil, Time.time + duration);
         }
+
+
+
+        /// <summary>
+        /// 腕のクリアアニメーション再生
+        /// </summary>
+        public void PlayClearAnimation()
+        {
+            if (_clearRoutine != null)
+            {
+                StopCoroutine(_clearRoutine);
+            }
+            _clearRoutine = StartCoroutine(ClearSpawnRoutine());
+        }
+
+
+
+        private IEnumerator ClearSpawnRoutine()
+        {
+            _isClearPlaying = true;
+
+            // 念のため既存腕が出てたらしまう
+            if (_currentAttachment != null && _currentAttachment.gameObject.activeSelf)
+            {
+                _currentAttachment.gameObject.SetActive(false);
+            }
+
+            if (_clearAttachmentPrefab != null && _attachmentSocket != null)
+            {
+                Vector3 spawnPos = _attachmentSocket.position + _attachmentSocket.rotation * _clearSpawnOffset;
+                _clearAttachmentInstance = Instantiate(_clearAttachmentPrefab, spawnPos, _attachmentSocket.rotation);
+
+                var animator = _clearAttachmentInstance.GetComponentInChildren<Animator>();
+
+                // 腕をしまいきる猶予として少し待つ
+                yield return new WaitForSecondsRealtime(_clearAnimStartDelay);
+
+                if (animator != null)
+                {
+                    animator.ResetTrigger(ClearHash);
+                    animator.SetTrigger(ClearHash);
+                }
+            }
+
+            _clearRoutine = null;
+        }
+
 
 
         /// <summary>

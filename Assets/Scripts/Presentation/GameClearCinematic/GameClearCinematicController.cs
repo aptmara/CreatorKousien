@@ -47,6 +47,7 @@ namespace Game.Presentation.GameClearCinematic
         [Header("白フラッシュ")]
         [SerializeField] private CanvasGroup _flashCanvasGroup;
 
+
         private float _noiseSeed;                                                ///< ノイズシード値
 
         private void Awake()
@@ -88,16 +89,19 @@ namespace Game.Presentation.GameClearCinematic
 
             if (_playerController != null)
             {
-                _playerController.SetCanMove(false);
+                _playerController.FreezePhysics();
             }
 
             _playerAnimationController?.PlayIdle();
+
+            _playerController?.RetractClearAttachment();
 
             // プレイヤーのアニメーションをクリア状態に設定
             yield return StartCoroutine(PlaySlowMotionPart(cameraTransform));
             yield return StartCoroutine(PlayPlayerZoomPart(cameraTransform));
 
             _playerAnimationController?.PlayClear();
+            _playerController?.PlayClearAttachmentAnimation();
 
             yield return StartCoroutine(WaitKeepingPlayerFacingCamera(_settings.AfterClearAnimationDelay, cameraTransform));
 

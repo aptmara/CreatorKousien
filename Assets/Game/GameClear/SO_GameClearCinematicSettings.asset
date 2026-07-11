@@ -32,7 +32,7 @@ MonoBehaviour:
     Duration: 0.15
     Alpha: 1
   _zoomDuration: 2
-  _playerCameraOffset: {x: 0, y: 2, z: -5}
-  _playerLookAtOffset: {x: 0, y: 1, z: 0}
+  _playerCameraOffset: {x: 0, y: 9, z: -8}
+  _playerLookAtOffset: {x: 0, y: 3, z: 0}
   _playerTurnSpeed: 8
-  _afterClearAnimationDelay: 2
+  _afterClearAnimationDelay: 3

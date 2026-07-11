@@ -11,10 +11,12 @@
 // - 5/24 移動関連2パターン作り切り替えれるように修正 - 浅野
 // - 6/19 PlayerRuntimeDataを参照、移動速度をステータスに基づいて変化させる機能の追加 - 浅野
 // - 7/5  プレイヤーの回転挙動を修正 - 浅野
+// - 7/11 プレイヤーがクリア時に勝手に移動するバグ修正 - 浅野
 // ------------------------------------------------------------
 using UnityEngine;
 using Game.Gameplay.Player.Progression;
 using Game.Gameplay.Stage;
+using UnityEngine.UI;
 
 namespace Game.Gameplay.Player
 {
@@ -237,7 +239,26 @@ namespace Game.Gameplay.Player
         }
 
 
+        /// <summary>
+        /// プレイヤーの物理挙動を停止する関数
+        /// </summary>
+        public void FreezePhysics()
+        {
+            if (_rigidbody == null)
+            {
+                return;
+            }
 
+            _rigidbody.linearVelocity = Vector3.zero;
+            _rigidbody.angularVelocity = Vector3.zero;
+            _rigidbody.isKinematic = true;
+        }
+
+
+
+        /// <summary>
+        /// プレイヤーの移動を停止する関数
+        /// </summary>
         public void StopMove()
         {
             // 移動を停止する

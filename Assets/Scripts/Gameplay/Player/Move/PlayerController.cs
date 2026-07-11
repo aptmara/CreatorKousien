@@ -154,6 +154,33 @@ namespace Game.Gameplay.Player
             }
         }
 
+
+        /// <summary>
+        /// アタッチメントを閉じる
+        /// </summary>
+        public void RetractClearAttachment()
+        {
+            if (_attachmentController != null)
+            {
+                _attachmentController.RetractAttachmentForClear();
+            }
+        }
+
+
+        /// <summary>
+        /// プレイヤーの物理演算を凍結する関数
+        /// </summary>
+        public void FreezePhysics()
+        {
+            _canMove = false;
+            _motor.FreezePhysics();
+        }
+
+
+        /// <summary>
+        /// カーソルのロック状態を設定する関数
+        /// </summary>
+        /// <param name="enable"></param>
         private void SetCursorLock(bool enable)
         {
             if (enable)
@@ -167,6 +194,18 @@ namespace Game.Gameplay.Player
                 Cursor.visible = true;
             }
 
+        }
+
+
+        /// <summary>
+        /// プレイヤーのアタッチメントのクリアアニメーション
+        /// </summary>
+        public void PlayClearAttachmentAnimation()
+        {
+            if (_attachmentController != null)
+            {
+                _attachmentController.PlayClearAnimation();
+            }
         }
     }
 }
