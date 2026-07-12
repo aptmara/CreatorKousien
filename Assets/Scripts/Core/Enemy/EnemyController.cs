@@ -223,6 +223,14 @@ namespace Game.Core.Enemy
             if (_stateManager.CurrentState == EnemyState.OverHit) _holdCounter.UpdateHold();
         }
 
+        /// <summary>
+        /// ギミックから即時に防衛ライン攻撃を発生させる。
+        /// </summary>
+        public void AttackNow()
+        {
+            _enemyAttack?.AttackNow();
+        }
+
         // ─────────────────────────────────────────
         // イベント受信
         // ─────────────────────────────────────────
@@ -428,9 +436,14 @@ namespace Game.Core.Enemy
 
         public void SetActiv(bool activ) => _isActiv = activ;
 
-        void Attack()
+        public void AttackNow()
         {
             EventBus.Publish(new RuleBarrierAttackEvent(_attackPower));
+        }
+
+        private void Attack()
+        {
+            AttackNow();
         }
     }
 

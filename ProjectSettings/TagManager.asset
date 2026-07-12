@@ -11,6 +11,7 @@ TagManager:
   - Field_LeftFront
   - Field_RightBack
   - Field_RightFront
+  - Enemy
   layers:
   - Default
   - TransparentFX

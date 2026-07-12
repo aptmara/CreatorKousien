@@ -14,6 +14,9 @@ namespace Game.Core.Enemy
         [Tooltip("ゲームシーン内でユニークな文字列。EventBusのフィルタリングに使用。")]
         public string EnemyId = "Enemy_01";
 
+        [Tooltip("有効にするとフィールド中央アンカーから出現するボスとして扱う。")]
+        public bool IsBoss = false;
+
         [Header("敵実体オブジェクト")]
         [Tooltip("敵の実体として生成されるオブジェクト、敵のプレファブを設定する")]
         public GameObject EnemyBody;

@@ -40,6 +40,11 @@ namespace Game.Gameplay.Collectibles
         [Tooltip("プレイヤーが触れた時に保持/回収できるか")]
         [SerializeField] private bool _canBeCollectedByPlayer = false;
 
+        [Header("高さ補正")]
+        [Tooltip("指定位置から下方向に地面を探し、地面からこの高さに収集物を出す")]
+        [SerializeField] private float _spawnHeightOffset = 0.5f;
+        [SerializeField] private LayerMask _spawnGroundMask = ~0;
+
         [SerializeField, Tooltip("SubScene連携用SO")]
         private SceneEventChannel _eventChannel;
 
@@ -93,6 +98,52 @@ namespace Game.Gameplay.Collectibles
         }
 
         /// <summary>
+        /// 指定位置を中心にアイテムを生成して、初期速度を与えます。
+        /// </summary>
+        public void SpawnCollectiblesAt(Vector3 position, int count)
+        {
+            if (!CanSpawn())
+            {
+                return;
+            }
+
+            position = GetHeightAdjustedPosition(position);
+            for (int i = 0; i < Mathf.Max(0, count); i++)
+            {
+                SpawnOne(position);
+            }
+        }
+
+        private Vector3 GetHeightAdjustedPosition(Vector3 position)
+        {
+            Vector3 origin = position + Vector3.up * 50f;
+            RaycastHit[] hits = Physics.RaycastAll(origin, Vector3.down, 100f,
+                _spawnGroundMask, QueryTriggerInteraction.Ignore);
+            bool found = false;
+            float groundY = float.MinValue;
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.collider.CompareTag("Enemy") || hit.collider.CompareTag("Player"))
+                {
+                    continue;
+                }
+
+                if (hit.point.y <= position.y + 0.1f && (!found || hit.point.y > groundY))
+                {
+                    found = true;
+                    groundY = hit.point.y;
+                }
+            }
+
+            if (found)
+            {
+                position.y = groundY + _spawnHeightOffset;
+            }
+
+            return position;
+        }
+
+        /// <summary>
         /// 1個のアイテムを生成し、自由に動く初期速度を与える。
         /// </summary>
         private void SpawnOne()
@@ -102,6 +153,22 @@ namespace Game.Gameplay.Collectibles
             CollectibleObject obj = _pool.Get();
 
             obj.transform.position = area.GetRandomPosition();
+            obj.transform.rotation = Random.rotation;
+            obj.Initialize(data, ReturnToPool, _canBeCollectedByPlayer);
+            obj.SetInitialMotion(CreateInitialVelocity(), Random.insideUnitSphere * Random.Range(2f, 8f));
+
+            _registry.Register(obj);
+        }
+
+        /// <summary>
+        /// 指定位置に1個のアイテムを生成する。
+        /// </summary>
+        private void SpawnOne(Vector3 position)
+        {
+            CollectibleData data = _spawnableData[Random.Range(0, _spawnableData.Length)];
+            CollectibleObject obj = _pool.Get();
+
+            obj.transform.position = position;
             obj.transform.rotation = Random.rotation;
             obj.Initialize(data, ReturnToPool, _canBeCollectedByPlayer);
             obj.SetInitialMotion(CreateInitialVelocity(), Random.insideUnitSphere * Random.Range(2f, 8f));
