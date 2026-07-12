@@ -124,8 +124,7 @@ namespace Game.Core.Enemy
                     OnGaugeChanged?.Invoke(current, max);
                 },
                 HandleGaugeBroken,
-                definition.barrierBreakMaxLossRate
-        );
+                definition.barrierBreakMaxLossRate);
 
             // 敵攻撃処理初期化
             _enemyAttack = new EnemyAttack();
@@ -242,7 +241,12 @@ namespace Game.Core.Enemy
 
         public void OnAddDebuff(EnemyDebuffConfig _config)
         {
-            _debuffManager.AddDebuff(_config);
+            // デバフを追加
+            if (_stateManager.CanAddDebuff)
+            {
+                // デバフを追加！
+                _debuffManager.AddDebuff(_config);
+            }
         }
 
         /// <summary>
@@ -297,6 +301,7 @@ namespace Game.Core.Enemy
                 _downTimerCoroutine = null;
             }
 
+            _debuffManager.RemoveAllDebuffs();
             _barrierGauge.SetActive(false);
             _rising.StopMove();
             _holdCounter.StartCount(0.35f);
@@ -309,7 +314,7 @@ namespace Game.Core.Enemy
         private void HandleHoldEnd()
         {
             // ステートを遷移し落下
-            _stateManager.TransitionTo(EnemyState.Down);
+            _stateManager.TransitionTo(EnemyState.Drop);
             _rising.ResumeMove();
             _rising.DropStart(transform);
             OnDropStarted?.Invoke();
@@ -495,6 +500,7 @@ namespace Game.Core.Enemy
         public bool CanReceiveBodyDamage => CurrentState == EnemyState.Down || CurrentState == EnemyState.Normal;
         public bool CanReceiveBodyCombo => CurrentState == EnemyState.Down || CurrentState == EnemyState.Normal || CurrentState == EnemyState.OverHit || CurrentState == EnemyState.Drop;
         public bool CanAttackDefenceLine => IsRose;
+        public bool CanAddDebuff => CurrentState == EnemyState.Normal || CurrentState == EnemyState.Down;
 
         public void SetRose(bool a_isRised)
         {
@@ -571,11 +577,22 @@ namespace Game.Core.Enemy
         {
             // デバフの効果を解除する処理
             _activeDebuffs.Remove(debuffKey);
+
+            // 解除後の状況に応じてコールバックを返す
+            if (!IsFreeze())
+            {
+                _freezeEndRequest.Invoke();
+            }
         }
 
         public void RemoveAllDebuffs()
         {
-            // すべてのデバフの効果を解除する
+            // すべてのデバフの効果を先に解除する
+            if(IsFreeze())
+            {
+                _freezeEndRequest.Invoke();
+            }
+
             _activeDebuffs.Clear();
         }
         public bool HasDebuff(string debuffType)
@@ -670,6 +687,7 @@ namespace Game.Core.Enemy
 
             return false;
         }
+
 
         public class EnemyDebuffRuntime
         {
