@@ -6,8 +6,8 @@
  * 更新履歴：
  * 5/30: 敵生成時、重なってスポーンしないように修正しました - 浅野
  *       自動で敵がスポーンするようにしました。
- *       
- *       
+ *
+ *
  * 6/24: データをSO化した！
  *       生成方法を空のゲームオブジェクトを出してコンポーネントつけて
  *       子オブジェクトに当たり判定用オブジェクトを生成する形に変更した！
@@ -15,6 +15,8 @@
  * 
  * 7/02: ゲームループ (バトル -> ローグライク) 対応の為、単一ウェーブ管理型へリファクタリング。
  *       ウェーブ進行管理を GameProgressionManager へ分離。 - Iwai a.k.a. ZEUS
+ *
+ * 7/11: ボスの追加 - Y_Akira
  */
 
 using System.Collections;
@@ -139,8 +141,14 @@ namespace Game.Core.Enemy
             EnemyDefinition definition = _currentSpawnEnemies[0];
             _currentSpawnEnemies.RemoveAt(0);
 
+            if (definition == null)
+            {
+                Debug.LogError("[EnemySpawner] スポーン対象の EnemyDefinition が null です。ウェーブ設定アセットを確認してください。");
+                return;
+            }
+
             // 目標位置計算
-            if (!TryGetSpawnTargetPosition(out Vector3 targetPos))
+            if (!TryGetSpawnTargetPosition(definition.IsBoss, out Vector3 targetPos))
             {
                 Debug.LogWarning("[EnemySpawner] 敵のスポーンに失敗しました。既存の敵と十分な距離を取れる位置が見つかりませんでした。");
                 return;
@@ -158,28 +166,21 @@ namespace Game.Core.Enemy
                 barrier = Instantiate(definition.BarrierBody, enemyGo.transform);
             }
 
-
-            // コンポーネントをアタッチ
             EnemyController controller = enemyGo.AddComponent<EnemyController>();
             enemyGo.AddComponent<EnemyRising>();
             enemyGo.AddComponent<EnemyWorldStatusView>();
 
             if (!body.TryGetComponent(out EnemyBodyController bodyController))
             {
-                Debug.LogWarning("[EnemySpawner] EnemyHitReceiver が付与されていないため生成を中止します。", body);
-                // Bodyが正しく生成されなかった場合親ごと削除
+                Debug.LogWarning("[EnemySpawner] EnemyBodyController が付与されていないため生成を中止します。", body);
                 Destroy(enemyGo);
                 return;
             }
 
-            // 生成した敵を初期化
             EnemyController.SpawnSummary spawnSummary = new EnemyController.SpawnSummary(targetPos, _undergroundOffset, _currentHpRate, _currentBarrierRate);
             string enemyId = controller.Initialize(definition, spawnSummary);
-
-            // ボディを初期化
             bodyController.Initialize(enemyId);
 
-            // バリアが存在する場合初期化
             if (definition.HasBarrier && barrier != null)
             {
                 controller.BarrierInitialize(definition, spawnSummary, barrier);
@@ -240,8 +241,13 @@ namespace Game.Core.Enemy
         /// </summary>
         /// <param name="targetPos">ターゲット位置</param>
         /// <returns>見つかったらtrueを返す</returns>
-        private bool TryGetSpawnTargetPosition(out Vector3 targetPos)
+        private bool TryGetSpawnTargetPosition(bool isBoss, out Vector3 targetPos)
         {
+            if (isBoss && TryGetCenterAnchorPosition(out targetPos))
+            {
+                return true;
+            }
+
             for (int i = 0; i < _maxSpawnPositionAttempts; i++)
             {
                 targetPos = CreateRandomTargetPosition();
@@ -250,6 +256,30 @@ namespace Game.Core.Enemy
                 {
                     return true;
                 }
+            }
+
+            targetPos = default;
+            return false;
+        }
+
+        private bool TryGetCenterAnchorPosition(out Vector3 targetPos)
+        {
+            try
+            {
+                GameObject center = GameObject.FindGameObjectWithTag("Field_Center");
+                if (center != null)
+                {
+                    Vector3 centerPosition = center.transform.position;
+                    Vector3 spawnBasePosition = _spawnBasePoint != null
+                        ? _spawnBasePoint.position
+                        : centerPosition;
+                    targetPos = new Vector3(centerPosition.x, spawnBasePosition.y, spawnBasePosition.z + 5.0f);
+                    return true;
+                }
+            }
+            catch (UnityException)
+            {
+                // タグが存在しない旧シーンでは通常のスポーンへフォールバックする。
             }
 
             targetPos = default;
