@@ -207,5 +207,23 @@ namespace Game.Gameplay.Player
                 _attachmentController.PlayClearAnimation();
             }
         }
+
+
+        /// <summary>
+        /// プレイヤーのアタッチメントのクリアアニメーションを準備する
+        /// </summary>
+        public void PrepareClearAttachmentAnimation()
+        {
+            _attachmentController?.PrepareClearAttachment();
+        }
+
+
+        /// <summary>
+        /// プレイヤーのアタッチメントのクリアアニメーションを再生する
+        /// </summary>
+        public void PlayPreparedClearAttachmentAnimation()
+        {
+            _attachmentController?.PlayPreparedClearAnimation();
+        }
     }
 }

@@ -352,5 +352,65 @@ namespace Game.Gameplay.Player
         {
             _forceLargeByPunch = forceLarge;
         }
+
+
+        /// <summary>
+        /// クリア演出の準備を行う
+        /// </summary>
+        public void PrepareClearAttachment()
+        {
+            // クリア演出の準備
+            if (_clearRoutine != null)
+            {
+                StopCoroutine(_clearRoutine);
+                _clearRoutine = null;
+            }
+
+            // クリア演出中フラグを立てる
+            _isClearPlaying = true;
+
+            if (_currentAttachment != null)
+            {
+                _currentAttachment.gameObject.SetActive(false);
+            }
+
+            // クリア専用腕の生成
+            if (_clearAttachmentInstance == null && _clearAttachmentPrefab != null && _attachmentSocket != null)
+            {
+                Vector3 spawnPos = _attachmentSocket.position + _attachmentSocket.rotation * _clearSpawnOffset;
+                _clearAttachmentInstance = Instantiate(_clearAttachmentPrefab, spawnPos, _attachmentSocket.rotation);
+            }
+
+            // クリア専用腕を非表示にする
+            if (_clearAttachmentInstance != null)
+            {
+                _clearAttachmentInstance.SetActive(false);
+            }
+        }
+
+
+        /// <summary>
+        /// クリア演出のアニメーションを再生する
+        /// </summary>
+        public void PlayPreparedClearAnimation()
+        {
+            if (_clearAttachmentInstance == null)
+            {
+                return;
+            }
+
+            _clearAttachmentInstance.SetActive(true);
+
+            // クリア専用腕を表示する
+            Animator animator = _clearAttachmentInstance.GetComponentInChildren<Animator>();
+            if (animator == null)
+            {
+                return;
+            }
+
+            animator.ResetTrigger(ClearHash);
+            animator.Play("Clear", 0, 0f);
+            animator.Update(0f);
+        }
     }
 }
