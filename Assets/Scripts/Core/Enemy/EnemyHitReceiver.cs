@@ -114,15 +114,6 @@ namespace Game.Core.Enemy
             {
                 _controller.OnAddDebuff(config);
             }
-            else
-            {
-                // デバッグ用処理
-                EnemyDebuffConfig debugConfig = new EnemyDebuffConfig("Test", 10.0f);
-                debugConfig.InitFreeze(10.0f, 20.0f, 15000.0f);
-                debugConfig.InitDamageOverTime(3.0f, 2000.0f, 1000.0f, 1.0f);
-
-                _controller.OnAddDebuff(debugConfig);
-            }
 
                 var data = collectible.GetCollectableData();
             bool shouldDespawn = _despawnItemOnHit;
