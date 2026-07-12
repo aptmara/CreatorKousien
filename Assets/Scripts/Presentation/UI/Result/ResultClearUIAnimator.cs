@@ -551,11 +551,15 @@ namespace Game.Presentation.UI.Result
 
 
         /// <summary>
-        /// 下のアイテムを順番に表示するアニメーションのコルーチン
+        /// 下のアイテムをすべて同時に表示する。
         /// </summary>
-        /// <returns></returns>
         private IEnumerator PlayBottomItemsAppearRoutine()
         {
+            if (_bottomItems == null || _bottomItems.Length == 0)
+            {
+                yield break;
+            }
+
             foreach (var item in _bottomItems)
             {
                 if (item == null)
@@ -563,9 +567,14 @@ namespace Game.Presentation.UI.Result
                     continue;
                 }
 
-                yield return PlayBottomItemAppearRoutine(item);
-                yield return new WaitForSecondsRealtime(_bottomItemInterval);
+                // 終了を待たず、全アイテムのアニメーションを同時に開始
+                StartCoroutine(PlayBottomItemAppearRoutine(item));
             }
+
+            // 全体のアニメーション終了を待つ
+            yield return new WaitForSecondsRealtime(
+                _bottomItemDuration + 0.1f
+            );
         }
 
 

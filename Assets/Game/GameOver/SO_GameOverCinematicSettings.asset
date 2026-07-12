@@ -12,10 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84730288a24d3344bad8e5169056e7ac, type: 3}
   m_Name: SO_GameOverCinematicSettings
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.GameOverCinematic.SO_GameOverCinematicSettings
+  GameOverPlayerPrefab: {fileID: 7568577002312605983, guid: efa72acb3143233468f377da19f043a1, type: 3}
+  GameOverPlayerSpawnOffset: {x: -3, y: -0.1, z: 0}
+  GameOverPlayerRevivedPositionOffset: {x: 0, y: 1, z: 0}
   CameraZoomPosition: {x: 0, y: 10, z: -10}
   CameraZoomRotation: {x: -20, y: 0, z: 0}
   ZoomInDuration: 1
   ZoomOutDuration: 0.8
+  PlayerCameraPositionOffset: {x: 0, y: -1.8, z: -7}
+  PlayerCameraFocusHeight: 1.5
+  PlayerScreenLeftAmount: 2.5
+  PlayerCameraFieldOfView: 35
   DoorOpenCurve:
     serializedVersion: 2
     m_Curve:
@@ -86,7 +93,7 @@ MonoBehaviour:
   DoorCloseDuration: 0.2
   MaxOpenAngle: 110
   BaseDoorKeepOpenDuration: 4
-  PlayerReviveDelay: 2
+  PlayerReviveDelay: 1
   TransitionResultDelay: 2
   DummyEnemyPrefab: {fileID: 6303239717055165911, guid: a3e310d186d228442b35da9d22c6c805, type: 3}
   DummyEnemyCount: 50
