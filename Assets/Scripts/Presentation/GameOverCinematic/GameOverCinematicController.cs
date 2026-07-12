@@ -4,6 +4,8 @@
 //
 // Description  : ゲームオーバー時の演出を制御するコントローラー。
 // Created      : 2026-07-09
+//
+// Note         : ゲームオーバー用プレイヤーモデルのPrefabを生成するような処理を追加します！ - Asano 2026-07-13
 // ================================================================================
 
 using System.Collections;
@@ -37,7 +39,14 @@ namespace Game.Presentation.GameOverCinematic
         private CameraRigController _cameraRig;
         private Camera _mainCamera;
         private PlayerController _playerController;
-        private PlayerCartoonDeath _playerCartoonDeath;
+
+        // ゲームプレイ時のプレイヤーオブジェクトの参照（演出中に非表示にするため）
+        private GameObject _realPlayerObject;
+
+        // ゲームオーバー演出用のプレイヤー
+        private GameObject _cinematicPlayerObject;
+        private PlayerCartoonDeath _cinematicPlayerDeath;
+
 
         private void OnEnable()
         {
@@ -62,12 +71,25 @@ namespace Game.Presentation.GameOverCinematic
 
             _mainCamera = Camera.main;
 
+            if (_mainCamera == null)
+            {
+                Debug.LogWarning("[GameOver] メインカメラが見つからないんぽ…");
+                yield break;
+            }
+
+            float cameraStartFieldOfView = _mainCamera.fieldOfView;
+
             var playerFacade = Object.FindFirstObjectByType<PlayerFacade>();
             if (playerFacade != null)
             {
+                _realPlayerObject = playerFacade.gameObject;
                 _playerController = playerFacade.GetComponent<PlayerController>();
-                _playerCartoonDeath = playerFacade.GetComponent<PlayerCartoonDeath>();
                 if (_playerController != null) _playerController.SetCanMove(false);
+            }
+            else
+            {
+                // せうご…お前の意志は俺が引き継ぐぜ…
+                Debug.LogWarning("[GameOver] 実プレイヤーが見つからないんぽ…");
             }
 
             Transform camTransform = _mainCamera.transform;
@@ -263,25 +285,49 @@ namespace Game.Presentation.GameOverCinematic
 
             // TODO: 閉まった瞬間カメラシェイクとかあっても良いかも
 
+
             // 扉が閉まるのと同時に、プレイヤーをカートゥーン死亡演出に切り替える
-            if (_playerCartoonDeath != null)
-            {
-                _playerCartoonDeath.FlattenImmediately();
-            }
+            TrySpawnCinematicPlayer();
 
             // phase 4: カメラを引き、プレイヤーを映す
             elapsed = 0f;
 
             // プレイヤーの腰当たりの高さを注視点
-            Vector3 playerTargetPos = _playerController != null ? _playerController.transform.position : camStartPos;
-            Vector3 playerCameraTargetFocus = playerTargetPos + new Vector3(0f, 1.2f, 0f);
+            Vector3 playerTargetPos;
 
-            // プレイヤー空どれくらい離れた位置にカメラを配置するか
-            Vector3 focusCameraOffset = new Vector3(0f, 2.0f, -8.5f);
-            Vector3 camEndPos = playerTargetPos + focusCameraOffset;
+            if (_cinematicPlayerObject != null)
+            {
+                // 演出用プレイヤーが存在する場合は、そちらの位置を注視点にする
+                playerTargetPos = _cinematicPlayerObject.transform.position;
+            }
+            else if (_realPlayerObject != null)
+            {
+                // 演出用プレイヤーが存在しない場合は、元の位置を注視点にする
+                playerTargetPos = _realPlayerObject.transform.position;
+            }
+            else
+            {
+                // プレイヤーがいない場合は、カメラをそのままズームアウトする
+                playerTargetPos = camStartPos;
+            }
 
-            // プレイヤーの方を向くようにカメラの回転を計算
-            Quaternion camEndRot = Quaternion.LookRotation(playerCameraTargetFocus - camEndPos);
+            // カメラの最終位置
+            Vector3 camEndPos = playerTargetPos + _settings.PlayerCameraPositionOffset;
+
+            // まずプレイヤー中央を見る回転を計算する
+            Vector3 baseFocusPosition = playerTargetPos + Vector3.up * _settings.PlayerCameraFocusHeight;
+
+            Vector3 baseLookDirection = baseFocusPosition - camEndPos;
+
+            Quaternion baseCameraRotation = Quaternion.LookRotation(baseLookDirection, Vector3.up);
+
+            // カメラから見た右方向
+            Vector3 cameraRight = baseCameraRotation * Vector3.right;
+
+            // 注視点をプレイヤーより右側へずらす
+            Vector3 playerCameraTargetFocus = baseFocusPosition  + cameraRight * _settings.PlayerScreenLeftAmount;
+
+            Quaternion camEndRot = Quaternion.LookRotation(playerCameraTargetFocus - camEndPos, Vector3.up);
 
             while (elapsed < _settings.ZoomOutDuration)
             {
@@ -291,19 +337,24 @@ namespace Game.Presentation.GameOverCinematic
 
                 camTransform.position = Vector3.Lerp(_settings.CameraZoomPosition, camEndPos, easedT);
                 camTransform.rotation = Quaternion.Slerp(Quaternion.Euler(_settings.CameraZoomRotation), camEndRot, easedT);
+
+                // 視野角も補間する
+                _mainCamera.fieldOfView = Mathf.Lerp(cameraStartFieldOfView, _settings.PlayerCameraFieldOfView, easedT);
+
                 yield return null;
             }
 
             // ずれないように固定
             camTransform.position = camEndPos;
             camTransform.rotation = camEndRot;
+            _mainCamera.fieldOfView = _settings.PlayerCameraFieldOfView;
 
             yield return new WaitForSeconds(_settings.PlayerReviveDelay);
 
             // phase 5: プレイヤーが跳ねて復活
-            if (_playerCartoonDeath != null)
+            if (_cinematicPlayerDeath != null)
             {
-                yield return StartCoroutine(_playerCartoonDeath.PlayReviveAndDizzyRoutine());
+                yield return StartCoroutine(_cinematicPlayerDeath.PlayReviveRoutine());
             }
 
             yield return new WaitForSeconds(_settings.TransitionResultDelay);
@@ -319,6 +370,53 @@ namespace Game.Presentation.GameOverCinematic
                 SceneManager.LoadScene("Result", LoadSceneMode.Additive);
             }
         }
+
+
+        private bool TrySpawnCinematicPlayer()
+        {
+            if (_realPlayerObject == null)
+            {
+                Debug.LogWarning("[GameOver] 実プレイヤーが見つからないため、演出用プレイヤーを生成できないぜよ");
+                return false;
+            }
+
+            if (_settings == null || _settings.GameOverPlayerPrefab == null)
+            {
+                Debug.LogWarning("[GameOver] 演出用プレイヤーのPrefabが設定されていないぜよ");
+                return false;
+            }
+
+            Vector3 spawnPos = _realPlayerObject.transform.position + _settings.GameOverPlayerSpawnOffset;
+            Quaternion spawnRot = _realPlayerObject.transform.rotation;
+
+            // 実プレイヤーと同じ位置・向きに生成
+            GameObject instance = Instantiate(_settings.GameOverPlayerPrefab, spawnPos, spawnRot);
+
+            PlayerCartoonDeath cartoonDeath = instance.GetComponent<PlayerCartoonDeath>();
+
+            if (cartoonDeath == null)
+            {
+                Debug.LogWarning("[GameOver] 演出用プレイヤーにPlayerCartoonDeathコンポーネントが見つからないぜよ");
+
+                Destroy(instance);
+                return false;
+            }
+
+            // 演出用モデルの生成に成功してから、実プレイヤーを非表示にする
+            _realPlayerObject.SetActive(false);
+
+            _cinematicPlayerObject = instance;
+            _cinematicPlayerDeath = cartoonDeath;
+
+            // 座標補正を渡す
+            _cinematicPlayerDeath.ConfigurePositionCorrection(_settings.GameOverPlayerRevivedPositionOffset);
+
+            // カメラが門を映している間に潰す
+            _cinematicPlayerDeath.FlattenImmediately();
+
+            return true;
+        }
+
 
         /// <summary>
         /// Stageシーンの門オブジェクトから地震を登録してもらうためのメソッド

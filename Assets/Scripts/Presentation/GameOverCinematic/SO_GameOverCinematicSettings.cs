@@ -4,6 +4,8 @@
 //
 // Description  : ゲームオーバー演出の設定を格納する ScriptableObject。
 // Created      : 2026-07-09
+//
+// Note         : ゲームオーバー用プレイヤーモデルのPrefabを生成するような処理を追加します！ - Asano 2026-07-13
 // ================================================================================
 
 using UnityEngine;
@@ -13,6 +15,17 @@ namespace Game.Presentation.GameOverCinematic
     [CreateAssetMenu(fileName = "SO_GameOverCinematicSettings", menuName = "Game/Result/Game Over Cinematic Settings")]
     public class SO_GameOverCinematicSettings : ScriptableObject
     {
+        [Header("--- 演出用のプレイヤーPrefab ---")]
+        [Tooltip("演出用に生成するプレイヤーのPrefab")]
+        public GameObject GameOverPlayerPrefab;
+
+        [Tooltip("実プレイヤー位置からずらす演出用モデルのワールド座標オフセット")]
+        public Vector3 GameOverPlayerSpawnOffset = new Vector3(-3f, 0.1f, 0f);
+
+        [Tooltip("潰れ状態から元の大きさへ戻るときの座標補正")]
+        public Vector3 GameOverPlayerRevivedPositionOffset = new Vector3(0f, 1f, 0f);
+
+
         [Header("--- カメラ設定 ---")]
         [Tooltip("門へズームインする時のカメラのワールド座標")]
         public Vector3 CameraZoomPosition = new Vector3(0f, 0f, 0f);
@@ -22,6 +35,23 @@ namespace Game.Presentation.GameOverCinematic
         public float ZoomInDuration = 1f;
         [Tooltip("手前にズームアウトする時間")]
         public float ZoomOutDuration = 0.8f;
+
+        [Header("--- ゲームオーバープレイヤー用カメラ ---")]
+        [Tooltip("プレイヤー位置から見たカメラの相対位置。Zを0に近づけるほど近くなる")]
+        public Vector3 PlayerCameraPositionOffset = new Vector3(0f, 1.8f, -5f);
+
+        [Tooltip("プレイヤーのどの高さを見るか")]
+        public float PlayerCameraFocusHeight = 1.2f;
+
+        [Tooltip("キャラクターを画面左へ寄せる量")]
+        [Min(0f)]
+        public float PlayerScreenLeftAmount = 1.5f;
+
+        [Tooltip("プレイヤーを映すときのカメラ視野角。小さいほどズームする")]
+        [Range(15f, 90f)]
+        public float PlayerCameraFieldOfView = 35f;
+
+
 
         [Header("--- 扉の開閉アニメーション ---")]
         [Tooltip("扉が開くアニメーションカーブ (0: 閉 1: 全開")]
