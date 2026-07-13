@@ -17,6 +17,8 @@ namespace Game.Core.Enemy
     /// </summary>
     public sealed class JackFlowerBossVineSpawner : MonoBehaviour
     {
+        public static event System.Action BossDefeated;
+
         [Header("蔦の生成")]
         [SerializeField] private GameObject _vinePrefab;
         [SerializeField, Min(0.1f)] private float _spawnInterval = 4f;
@@ -49,6 +51,7 @@ namespace Game.Core.Enemy
         private Animator _bossAnimator;
         private Coroutine _spawnCoroutine;
         private bool _spawnLeftNext = true;
+        private bool _enemyEventsSubscribed;
 
         private void Awake()
         {
@@ -59,7 +62,14 @@ namespace Game.Core.Enemy
 
         private void OnEnable()
         {
+            TrySubscribeEnemyEvents();
             _spawnCoroutine = StartCoroutine(SpawnRoutine());
+        }
+
+        private void Start()
+        {
+            // EnemyControllerはEnemySpawnerから後付けされるため、Startでも取得を試みる。
+            TrySubscribeEnemyEvents();
         }
 
         private void OnDisable()
@@ -69,6 +79,61 @@ namespace Game.Core.Enemy
                 StopCoroutine(_spawnCoroutine);
                 _spawnCoroutine = null;
             }
+
+            UnsubscribeEnemyEvents();
+            ClearActiveVines();
+        }
+
+        private void OnDestroy()
+        {
+            UnsubscribeEnemyEvents();
+        }
+
+        private void TrySubscribeEnemyEvents()
+        {
+            if (_enemyEventsSubscribed)
+            {
+                return;
+            }
+
+            _enemyController ??= GetComponentInParent<EnemyController>();
+            if (_enemyController == null)
+            {
+                return;
+            }
+
+            _enemyController.OnDefeated += HandleBossDefeated;
+            _enemyEventsSubscribed = true;
+        }
+
+        private void UnsubscribeEnemyEvents()
+        {
+            if (!_enemyEventsSubscribed || _enemyController == null)
+            {
+                return;
+            }
+
+            _enemyController.OnDefeated -= HandleBossDefeated;
+            _enemyEventsSubscribed = false;
+        }
+
+        private void HandleBossDefeated()
+        {
+            ClearActiveVines();
+            BossDefeated?.Invoke();
+        }
+
+        private void ClearActiveVines()
+        {
+            foreach (JackFlowerVine vine in _activeVines)
+            {
+                if (vine != null)
+                {
+                    Destroy(vine.gameObject);
+                }
+            }
+
+            _activeVines.Clear();
         }
 
         private IEnumerator SpawnRoutine()
