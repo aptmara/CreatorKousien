@@ -2,20 +2,28 @@ Shader "Custom/URP/FieldMaskBlend"
 {
     Properties
     {
-        [Header(Grass  base)]
+        [Header(Grass)]
         _GrassTex ("草 テクスチャ", 2D) = "white" {}
         _GrassColor ("草 色", Color) = (0.70, 0.60, 0.28, 1)
 
-        [Header(Path  white in mask)]
-        _PathTex ("道 テクスチャ", 2D) = "white" {}
-        _PathColor ("道 色", Color) = (0.90, 0.86, 0.74, 1)
+        [Header(Dirt Path)]
+        _PathTex ("土道 テクスチャ", 2D) = "white" {}
+        _PathColor ("土道 色", Color) = (0.90, 0.86, 0.74, 1)
 
-        [Header(Mask  white is path)]
-        _MaskTex ("道マスク (白=道)", 2D) = "black" {}
+        [Header(Stone Path)]
+        _StoneTex ("石道 テクスチャ", 2D) = "white" {}
+        _StoneColor ("石道 色", Color) = (1, 1, 1, 1)
+
+        [Header(Terrain Mask)]
+        _MaskTex ("地形マスク 黒=草 R=土道 G=石道", 2D) = "black" {}
         _FieldSize ("フィールドのサイズ XZ", Vector) = (112, 50, 0, 0)
+
+        [Header(Blend Settings)]
         _Blur ("境目のぼかし幅", Range(0, 0.03)) = 0.008
         _Edge ("境目のなじみ幅", Range(0.001, 1)) = 0.35
-        _PathSpread ("道の広がり (草側へ浸食)", Range(0, 0.4)) = 0.15
+        _PathSpread ("道の広がり 草側へ浸食", Range(0, 0.4)) = 0.15
+
+        [Header(Noise Settings)]
         _NoiseScale ("浸食ノイズの細かさ", Range(0.2, 10)) = 2.0
         _NoiseStrength ("浸食ノイズの強さ", Range(0, 0.5)) = 0.25
     }
@@ -30,9 +38,12 @@ Shader "Custom/URP/FieldMaskBlend"
             Tags { "LightMode"="UniversalForward" }
 
             HLSLPROGRAM
+
             #pragma vertex vert
             #pragma fragment frag
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
+
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile _ _SHADOWS_SOFT
             #pragma multi_compile_fog
 
@@ -56,32 +67,56 @@ Shader "Custom/URP/FieldMaskBlend"
                 float  fogFactor   : TEXCOORD4;
             };
 
+            // ----- プロパティ -----
+            // 草テクスチャ
             TEXTURE2D(_GrassTex); SAMPLER(sampler_GrassTex);
+
+            // 土道テクスチャ
             TEXTURE2D(_PathTex);  SAMPLER(sampler_PathTex);
+
+            // 石道テクスチャ
+            TEXTURE2D(_StoneTex);  SAMPLER(sampler_StoneTex);
+
+            // RGB地形マスク
             TEXTURE2D(_MaskTex);  SAMPLER(sampler_MaskTex);
 
+
             CBUFFER_START(UnityPerMaterial)
+
                 float4 _GrassTex_ST;
                 float4 _PathTex_ST;
+                float4 _StoneTex_ST;
+
                 float4 _GrassColor;
                 float4 _PathColor;
+                float4 _StoneColor;
+
                 float4 _FieldSize;
-                float  _Blur;
-                float  _Edge;
+
+                float _Blur;
+                float _Edge;
                 float _PathSpread;
+
                 float _NoiseScale;
                 float _NoiseStrength;
+
             CBUFFER_END
+
 
             Varyings vert (Attributes IN)
             {
                 Varyings OUT;
+
                 VertexPositionInputs p = GetVertexPositionInputs(IN.positionOS.xyz);
                 VertexNormalInputs n = GetVertexNormalInputs(IN.normalOS);
+
                 OUT.positionHCS = p.positionCS;
                 OUT.positionWS  = p.positionWS;
                 OUT.normalWS    = n.normalWS;
+
                 OUT.uv          = IN.uv;
+
+                // オブジェクトのXZ座標を0-1のマスクUVへ変換する
                 OUT.maskUV      = IN.positionOS.xz / _FieldSize.xy + 0.5;
                 OUT.fogFactor   = ComputeFogFactor(p.positionCS.z);
                 return OUT;
@@ -102,103 +137,205 @@ Shader "Custom/URP/FieldMaskBlend"
             // ワールドXZ用のバリューノイズ
             float ValueNoise(float2 p)
             {
-                float2 i = floor(p);
-                float2 f = frac(p);
-                f = f * f * (3.0 - 2.0 * f);
-                float a = Hash21(i);
-                float b = Hash21(i + float2(1.0, 0.0));
-                float c = Hash21(i + float2(0.0, 1.0));
-                float d = Hash21(i + float2(1.0, 1.0));
-                return lerp(lerp(a, b, f.x), lerp(c, d, f.x), f.y);
+                float2 cell = floor(p);
+
+                float2 cellPosition = frac(p);
+
+                cellPosition = cellPosition * cellPosition * (3.0 - 2.0 * cellPosition);
+
+                float bottomLeft  = Hash21(cell);
+                float bottomRight = Hash21(cell + float2(1.0, 0.0));
+                float topLeft     = Hash21(cell + float2(0.0, 1.0));
+                float topRight    = Hash21(cell + float2(1.0, 1.0));
+
+                float bottom      = lerp(bottomLeft, bottomRight, cellPosition.x);
+                float top         = lerp(topLeft, topRight, cellPosition.x);
+                return lerp(bottom, top, cellPosition.y);
             }
 
 
+            // マスク
+            // ------------------------------------------------------------
 
-
-            // マスクをぼかしてグレーの中間帯を作る(5x5 box blur)
-            float SampleMaskBlurred(float2 uv, float blur)
+            /// <summary>
+            /// R=土道、G=石道のマスクをぼかして取得する。
+            /// </summary>
+            float2 SampleMaskBlurredRG(float2 uv, float blur)
             {
-                float sum = 0.0;
-                [unroll] for (int x = -2; x <= 2; x++)
+                float2 sum = float2(0.0, 0.0);
+
+                // 5x5のBox blur
+                [unroll]
+                for (int x = -2; x <= 2; x++)
                 {
-                    [unroll] for (int y = -2; y <= 2; y++)
+                    [unroll]
+                    for (int y = -2; y <= 2; y++)
                     {
-                        float2 o = float2(x, y) * blur * 0.5;
-                        sum += SAMPLE_TEXTURE2D(_MaskTex, sampler_MaskTex, uv + o).r;
+                        float2 offset = float2(x, y) * blur;
+                        float2 mask = SAMPLE_TEXTURE2D(_MaskTex, sampler_MaskTex, uv + offset).rg;
+
+                        sum += mask;
                     }
                 }
+
                 return sum / 25.0;
             }
 
+            /// <summary>
+            /// マスクとノイズから、草と道のブレンド値を計算する。
+            /// 土道と石道の両方で使用する。
+            /// </summary>
+            half CalculateTerrainBlend(half maskValue, float noise)
+            {
+                // マスクの境界部分だけを抽出する
+                half boundaryBand = saturate(maskValue * (1.0 - maskValue) * 4.0);
+
+                // 境界部分にノイズを加える
+                half noisyMask = maskValue + (noise - 0.5) * _NoiseStrength * boundaryBand;
+
+                // しきい値を下げると、道が草側へ浸食する
+                half threshold = 0.5 - _PathSpread;
+
+                half blendWidth = _Edge * 0.5;
+
+                return smoothstep(threshold - blendWidth, threshold + blendWidth, noisyMask);
+            }
+
+
+            // フラグメント
+            // ------------------------------------------------------------
+
             half4 frag (Varyings IN) : SV_Target
             {
-                float2 gUV = IN.uv * _GrassTex_ST.xy + _GrassTex_ST.zw;
-                float2 pUV = IN.uv * _PathTex_ST.xy  + _PathTex_ST.zw;
+                // --- 各テクスチャのUV ---
+                float2 grassUV = IN.uv * _GrassTex_ST.xy + _GrassTex_ST.zw;
+                float2 pathUV  = IN.uv * _PathTex_ST.xy  + _PathTex_ST.zw;
+                float2 stoneUV = IN.uv * _StoneTex_ST.xy + _StoneTex_ST.zw;
 
-                half3 grass = SAMPLE_TEXTURE2D(_GrassTex, sampler_GrassTex, gUV).rgb * _GrassColor.rgb;
-                half3 path  = SAMPLE_TEXTURE2D(_PathTex,  sampler_PathTex,  pUV).rgb * _PathColor.rgb;
+                // --- 各テクスチャの色 ---
+                half3 grassColor = SAMPLE_TEXTURE2D(_GrassTex, sampler_GrassTex, grassUV).rgb * _GrassColor.rgb;
+                half3 pathColor  = SAMPLE_TEXTURE2D(_PathTex,  sampler_PathTex,  pathUV).rgb  * _PathColor.rgb;
+                half3 stoneColor = SAMPLE_TEXTURE2D(_StoneTex, sampler_StoneTex, stoneUV).rgb * _StoneColor.rgb;
 
-                half m = SampleMaskBlurred(IN.maskUV, _Blur);
+                // --- RGBマスク ---
+                float2 terrainMask = SampleMaskBlurredRG(IN.maskUV, _Blur);
 
+                // 赤チャンネル
+                half dirtMask = terrainMask.r;
+
+                // 緑チャンネル
+                half stoneMask = terrainMask.g;
+
+                // --- 境界用ノイズ ---
                 // ワールド座標ベースのノイズ(2オクターブ)で境目を揺らす
                 float noise = ValueNoise(IN.positionWS.xz * _NoiseScale) * 0.7
                             + ValueNoise(IN.positionWS.xz * _NoiseScale * 3.7) * 0.3;
 
-                // 境目の帯(0<m<1)の中だけノイズを効かせる
-                half band = saturate(m * (1.0 - m) * 4.0);
-                half mNoisy = m + (noise - 0.5) * _NoiseStrength * band;
 
-                // しきい値を0.5より下げる → 細い道が消えず、道が草側へ浸食する
-                half th = 0.5 - _PathSpread;
-                half w  = _Edge * 0.5;
-                half blend = smoothstep(th - w, th + w, mNoisy);
-                half3 albedo = lerp(grass, path, blend);
+                // --- 土道・石道のブレンド値 ---
+                half dirtBlend  = CalculateTerrainBlend(dirtMask, noise);
+                half stoneBlend = CalculateTerrainBlend(stoneMask, noise);
 
-                float3 N = normalize(IN.normalWS);
-                float4 sc = TransformWorldToShadowCoord(IN.positionWS);
-                Light main = GetMainLight(sc);
-                half3 lit = main.color * (saturate(dot(N, main.direction)) * main.shadowAttenuation);
-                half3 ambient = SampleSH(N);
-                half3 col = albedo * (lit + ambient);
 
-                col = MixFog(col, IN.fogFactor);
-                return half4(col, 1.0);
+                // --- 草・土・石の合成 ---
+                half grassWeight = saturate(1.0 - dirtBlend - stoneBlend);
+
+                half dirtWeight = dirtBlend;
+                half stoneWeight = stoneBlend;
+
+                // 土と石の境界では合計が1を超えることがあるため、重みを正規化
+                half totalWeight = max(grassWeight + dirtWeight + stoneWeight, 0.0001);
+
+                grassWeight /= totalWeight;
+                dirtWeight  /= totalWeight;
+                stoneWeight /= totalWeight;
+
+                half3 albedo = grassColor * grassWeight + pathColor * dirtWeight + stoneColor * stoneWeight;
+
+
+                // --- URPライティング ---
+                float3 normalWS = normalize(IN.normalWS);
+                float4 shadowCoord = TransformWorldToShadowCoord(IN.positionWS);
+
+                Light mainLight = GetMainLight(shadowCoord);
+
+                half normalLight = saturate(dot(normalWS, mainLight.direction));
+                half3 directLight = mainLight.color * normalLight * mainLight.shadowAttenuation;
+                half3 ambientLight = SampleSH(normalWS);
+
+                half3 finalColor = albedo * (directLight + ambientLight);
+
+
+                // --- フォグ ---
+                finalColor = MixFog(finalColor, IN.fogFactor);
+                return half4(finalColor, 1.0);
             }
             ENDHLSL
         }
 
+
+        // ShadowCaster
+        // ------------------------------------------------------------
+
         Pass
         {
             Name "ShadowCaster"
+
             Tags { "LightMode"="ShadowCaster" }
+
             ZWrite On
             ColorMask 0
 
+
             HLSLPROGRAM
+
             #pragma vertex shadowVert
             #pragma fragment shadowFrag
+
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
 
             float3 _LightDirection;
-            struct A { float4 positionOS : POSITION; float3 normalOS : NORMAL; };
-            struct V { float4 positionHCS : SV_POSITION; };
 
-            V shadowVert (A IN)
+
+            struct ShadowAttributes
             {
-                V OUT;
-                float3 posWS = TransformObjectToWorld(IN.positionOS.xyz);
-                float3 nWS   = TransformObjectToWorldNormal(IN.normalOS);
-                float4 cs = TransformWorldToHClip(ApplyShadowBias(posWS, nWS, _LightDirection));
+                float4 positionOS : POSITION;
+                float3 normalOS   : NORMAL;
+            };
+
+
+            struct ShadowVaryings
+            {
+                float4 positionHCS : SV_POSITION;
+            };
+
+
+            ShadowVaryings shadowVert(ShadowAttributes IN)
+            {
+                ShadowVaryings OUT;
+
+                float3 positionWS = TransformObjectToWorld(IN.positionOS.xyz);
+
+                float3 normalWS   = TransformObjectToWorldNormal(IN.normalOS);
+                float4 positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS, normalWS, _LightDirection));
+
                 #if UNITY_REVERSED_Z
-                    cs.z = min(cs.z, cs.w * UNITY_NEAR_CLIP_VALUE);
+                   positionCS.z = min(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);
                 #else
-                    cs.z = max(cs.z, cs.w * UNITY_NEAR_CLIP_VALUE);
+                   positionCS.z = max(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);
                 #endif
-                OUT.positionHCS = cs;
+
+                OUT.positionHCS = positionCS;
                 return OUT;
             }
-            half4 shadowFrag (V IN) : SV_Target { return 0; }
+
+            half4 shadowFrag (ShadowVaryings IN) : SV_Target
+            {
+                return 0;
+            }
+
             ENDHLSL
         }
     }
