@@ -12,6 +12,7 @@
 // ------------------------------------------------------------
 using UnityEngine;
 using Game.Core.Events;
+using UnityEngine.Rendering.Universal;
 
 namespace Game.Gameplay.Cameras
 {
@@ -250,6 +251,10 @@ namespace Game.Gameplay.Cameras
             Transform targetXform = (_cameraTransform != null) ? _cameraTransform : transform;
             targetXform.position = settings.Position;
             targetXform.eulerAngles = settings.Rotation;
+
+            // 4. PostProcessingwをOnにする
+            UniversalAdditionalCameraData UniCameraData = _targetCamera.GetUniversalAdditionalCameraData();
+            UniCameraData.renderPostProcessing = true;
         }
 
 
