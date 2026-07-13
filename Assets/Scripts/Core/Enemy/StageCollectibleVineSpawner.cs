@@ -30,9 +30,12 @@ namespace Game.Core.Enemy
         private readonly List<StageCollectibleVine> _activeVines = new();
         private CollectibleSpawner _collectibleSpawner;
         private Coroutine _spawnCoroutine;
+        private bool _bossDefeated;
 
         private void OnEnable()
         {
+            _bossDefeated = false;
+            JackFlowerBossVineSpawner.BossDefeated += HandleBossDefeated;
             _spawnCoroutine = StartCoroutine(SpawnRoutine());
         }
 
@@ -43,15 +46,43 @@ namespace Game.Core.Enemy
                 StopCoroutine(_spawnCoroutine);
                 _spawnCoroutine = null;
             }
+
+            JackFlowerBossVineSpawner.BossDefeated -= HandleBossDefeated;
+            ClearActiveVines();
         }
 
         private IEnumerator SpawnRoutine()
         {
-            while (enabled)
+            while (enabled && !_bossDefeated)
             {
                 SpawnVine();
                 yield return new WaitForSeconds(_spawnInterval);
             }
+        }
+
+        private void HandleBossDefeated()
+        {
+            _bossDefeated = true;
+            if (_spawnCoroutine != null)
+            {
+                StopCoroutine(_spawnCoroutine);
+                _spawnCoroutine = null;
+            }
+
+            ClearActiveVines();
+        }
+
+        private void ClearActiveVines()
+        {
+            foreach (StageCollectibleVine vine in _activeVines)
+            {
+                if (vine != null)
+                {
+                    Destroy(vine.gameObject);
+                }
+            }
+
+            _activeVines.Clear();
         }
 
         private void SpawnVine()
