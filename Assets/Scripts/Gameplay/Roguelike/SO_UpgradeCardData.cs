@@ -6,27 +6,14 @@
 // auther : Shohei Takitani
 // date   : 2026/06/30 - begin.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-using NUnit.Framework;
-using TMPro;
-using UnityEditor;
 using UnityEngine;
-using System.Collections.Generic;
 using Game.Data.Player;
-using UnityEngine.UIElements;
-using Unity.VisualScripting;
 
 [CreateAssetMenu(fileName = "SO_UpgradeCardData", menuName = "Scriptable Objects/SO_UpgradeCardData")]
 public class SO_UpgradeCardData : ScriptableObject
 {
     //____________________________________
     // variables
-
-    //    [Header("基本の情報")]
-    //    [Tooltip("カード識別用ID(SourceUpgrade.Idと揃える運用？)")]
-    //    [SerializeField] private string _upgradeId;
-    //    [SerializeField] private string _displayName;
-    //    [TextArea(2, 5)]
-    //    [SerializeField] private string _description;
 
 
     [Header("適応する実データ")]

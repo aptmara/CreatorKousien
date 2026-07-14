@@ -318,6 +318,8 @@ GameObject:
   - component: {fileID: 705193398}
   - component: {fileID: 705193399}
   - component: {fileID: 705193400}
+  - component: {fileID: 705193401}
+  - component: {fileID: 705193403}
   m_Layer: 0
   m_Name: RoguelikeManager
   m_TagString: Untagged
@@ -400,6 +402,37 @@ MonoBehaviour:
   _backUILayerName: BackUI
   _middleLayerName: MiddleObject
   _frontUILayerName: UI
+--- !u!114 &705193401
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705193396}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7347cf97b3a61814cafb666ca3edd36d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::S_RoguelikeController
+  _input: {fileID: 705193403}
+  _selectionUI: {fileID: 705193398}
+  _navigateDeadzone: 0.5
+  _navigateCooldown: 0.2
+  _exitHoldDuration: 0.001
+--- !u!114 &705193403
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705193396}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d450daae90292fa49bd8be84d09cc432, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::S_RoguelikeSelectInput
+  _actions: {fileID: -944628639613478452, guid: 766b863253aa5a64184eee2469baf3ef, type: 3}
+  _actionMapName: Roguelike
 --- !u!1 &1113188341
 GameObject:
   m_ObjectHideFlags: 0
@@ -707,10 +740,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1800}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3

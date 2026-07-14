@@ -7,7 +7,6 @@
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using UnityEngine;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
 
 [CreateAssetMenu(fileName = "SO_UpgradeRuntimeState", menuName = "Scriptable Objects/SO_UpgradeRuntimeState")]
 public class SO_UpgradeRuntimeState : ScriptableObject

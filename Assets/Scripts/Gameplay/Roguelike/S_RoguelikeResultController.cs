@@ -8,9 +8,7 @@
 //          2026/07/02 - GameProgressionManagerに合わせる
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Game.Gameplay.Player;
-using Game.Core.Management;
 
 public class S_RoguelikeResultController : MonoBehaviour
 {

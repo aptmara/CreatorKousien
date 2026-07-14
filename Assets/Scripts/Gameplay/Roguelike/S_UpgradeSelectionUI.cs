@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using Game.Core.Events;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
 
 public class S_UpgradeSelectionUI : MonoBehaviour
 {
@@ -21,29 +20,36 @@ public class S_UpgradeSelectionUI : MonoBehaviour
 
     [Header("データ参照")]
     [SerializeField] private SO_UpgradePool _upgradePool;
+    [Header("強化データを保存")]
     [SerializeField] private SO_UpgradeRuntimeState _upgradeRuntimeState;
 
     [Header("結果反映先")]
     [SerializeField] private S_RoguelikeResultController _resultController;
 
     [Header("UI")]
+    [Space(10)]
+    [Header("強化カードのプレハブ")]
     [SerializeField] private S_UpgradeCard _cardPrefab;
+    [Header("カードの生成位置")]
     [SerializeField] private Transform _cardParent;
     [Tooltip("選択画面のルートオブジェクト(非表示切り替え対象)")]
     [SerializeField] private GameObject _panelRoot;
+    [Header("終了ボタンUI")]
     [SerializeField] private Button _exitButton;
+    [Header("背景(Shader入れたら使わないかも)")]
     [SerializeField] private Image _backGround;
+    [Header("SOから取得するお金のデータ")]
     [SerializeField] private MoneyData _moneyData;
+    [Header("カードの背景に配置するボードのプレハブ")]
     [SerializeField] private Image _upgradeBoard;
 
-
-    [Header("設定")]
-    [Tooltip("1回に提示する候補数")]
+    [Header("1回に提示する候補数")]
     [SerializeField] private int _cardidateCount = 3;
 
     private readonly List<S_UpgradeCard> _spawnedCards = new();
     private readonly Dictionary<S_UpgradeCard, SO_UpgradeCardData> _cardToData = new();
 
+    public int CardCount => _spawnedCards.Count;
 
 
 #if UNITY_EDITOR
@@ -92,6 +98,9 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         // 背景
         Canvas backCanvas = GameObject.Find("Canvas_Back")?.GetComponent<Canvas>();
         Instantiate(_backGround, backCanvas.transform).transform.SetAsFirstSibling();
+
+        // 開始時、1枚目にフォーカス
+        SetFocusIndex(0);
     }
 
     public void OnFinishButtonPressed()
@@ -170,8 +179,8 @@ public class S_UpgradeSelectionUI : MonoBehaviour
 
 
         // 所持金を減らす
+        Debug.Log($"[S_UpgradeSelectionUI] '{selectedCard.DisplayName}'購入！");
         _moneyData.SubtractMoney((int)subMoney);
-
 
         _resultController.SelectUpgrade(selectedCard);
 
@@ -199,6 +208,34 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         }
         _spawnedCards.Clear();
         _cardToData.Clear();
+    }
+
+    /// <summary>
+    /// キーボード/ゲームパッドのフォーカス位置を切り替える関数
+    /// </summary>
+    /// <param name="index"></param>
+    public void SetFocusIndex(int index)
+    {
+        for(int i = 0; i < _spawnedCards.Count; ++i)
+        {
+            _spawnedCards[i].SetHighlightFrame(i == index);
+        }
+    }
+
+    /// <summary>
+    /// 指定インデックスのカードを、マウスクリックと同じ経路で選択する関数
+    /// (Submit入力から呼ばれる想定)
+    /// </summary>
+    /// <param name="index"></param>
+    public void TriggerSelect(int index)
+    {
+        if (index < 0 || index >= _spawnedCards.Count) return;
+
+        S_UpgradeCard card = _spawnedCards[index];
+        if(_cardToData.TryGetValue(card, out var data))
+        {
+            OnCardSelected(data);
+        }
     }
 
     private void CreateCanvasChild()
