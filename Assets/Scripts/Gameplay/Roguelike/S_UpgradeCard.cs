@@ -20,6 +20,7 @@ public class S_UpgradeCard : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _descriptionText;
     [SerializeField] private TextMeshProUGUI _levelText;
     [SerializeField] private GameObject _acquiredMark;
+    [SerializeField] private GameObject _highlightFrame;
 
     [Header("機能面")]
     [SerializeField] private Button _selectButton;
@@ -71,4 +72,13 @@ public class S_UpgradeCard : MonoBehaviour
         // 次第レベル到達済みなら選べなくする
         _selectButton.interactable = !isMaxed;
     }
+
+    public void SetHighlightFrame(bool isHighlighted)
+    {
+        if(_highlightFrame != null)
+        {
+            _highlightFrame.SetActive(isHighlighted);
+        }
+    }
+
 }
