@@ -203,6 +203,8 @@ namespace Game.Core.Management
                 {
                     // ウェーブクリア -> ローグライクフェーズへ遷移
                     StartCoroutine(AnimateWaveClearRoutine(isFinalWave: false));
+
+                    EventBus.Publish(new PlayerTiltEvent(25.0f));
                 }
             }
         }
@@ -373,6 +375,7 @@ namespace Game.Core.Management
             if (_currentState != GameProgressionState.Roguelike) return;
 
             StartCoroutine(UnloadRoguelikeAndAdvanceRoutine());
+            EventBus.Publish(new PlayerTiltEvent(0.0f));
         }
 
         private IEnumerator UnloadRoguelikeAndAdvanceRoutine()

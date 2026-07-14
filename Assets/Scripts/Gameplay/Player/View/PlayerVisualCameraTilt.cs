@@ -8,6 +8,8 @@
 // Notes	:
 // - PlayerVisualCameraTilt はプレイヤーの見た目だけを本体とは別にカメラへ向けて傾けるクラスです。
 // ------------------------------------------------------------
+using Game.Core.Events;
+using Game.Gameplay.Stage;
 using UnityEngine;
 
 namespace Game.Gameplay.Player
@@ -39,8 +41,18 @@ namespace Game.Gameplay.Player
                 _yawSource = transform.parent;
             if (_camera == null)
                 _camera = Camera.main;
+
+            
+        }
+        private void OnEnable()
+        {
+            EventBus.Subscribe<PlayerTiltEvent>(OnPlayerTilt);
         }
 
+        private void OnDisable()
+        {
+            EventBus.Unsubscribe<PlayerTiltEvent>(OnPlayerTilt);
+        }
 
         /// <summary>
         /// 毎フレーム、カメラのピッチ角度に応じてプレイヤーの見た目を傾ける
@@ -84,6 +96,12 @@ namespace Game.Gameplay.Player
             float t = 1f - Mathf.Exp(-_followSpeed * Time.deltaTime);
             transform.rotation = Quaternion.Slerp(transform.rotation, target, t);
         }
+
+        public void OnPlayerTilt(PlayerTiltEvent data)
+        {
+            _maxTiltAngle = data.CurrentTilt;
+        }
+
     }
 }
 
