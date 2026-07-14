@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27a231d4700e2f548b07b5e735120540, type: 3}
+  m_Name: SO_SoundData
+  m_EditorClassIdentifier: Assembly-CSharp::SoundData
+  SEDataList:
+  - AudioClip: {fileID: 8300000, guid: 2e82fad0c1f84684d8638a16126d447d, type: 3}
+    Name: Barrier_01
+  - AudioClip: {fileID: 8300000, guid: cf29fe9369c74b9479679b3dd60c39fd, type: 3}
+    Name: Barrier_02
+  - AudioClip: {fileID: 8300000, guid: d486ae6690f2e67499f80769c9820ca7, type: 3}
+    Name: Drop
+  - AudioClip: {fileID: 8300000, guid: c014529fecd86ec46b1650f4b44fdc67, type: 3}
+    Name: PumpkinShot
+  BGMDataList:
+  - AudioClip: {fileID: 8300000, guid: 84b5d2a1020afd046a2475d7450af8a4, type: 3}
+    Name: InGame

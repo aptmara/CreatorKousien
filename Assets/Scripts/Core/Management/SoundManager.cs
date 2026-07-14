@@ -1,3 +1,11 @@
+/**
+ * サウンドをまとめつつ、再生を行うクラス
+ * 
+ * サウンドの登録をSOにて行い、登録したリストから再生を行う
+ * 
+ * テラダ
+ */
+
 using UnityEngine;
 using System.Collections.Generic;
 using Unity.Collections;
@@ -9,10 +17,7 @@ public class SoundManager : MonoBehaviour
     AudioSource _audioSrc;
 
     [SerializeField]
-    private List<AudioClip> _allSEData;
-
-    [SerializeField]
-    private List<AudioClip> _bgmList;
+    private SoundData _soundData;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -25,14 +30,14 @@ public class SoundManager : MonoBehaviour
 
     public void PlaySE(string name)
     {
-        var se = _bgmList.Find(x => x.name == name);
+        var se = _soundData.SEDataList.Find(x => x.Name == name).AudioClip;
         _audioSrc.PlayOneShot(se);
     }
 
     public void PlayBGM(string name)
     {
         _audioSrc.Stop();
-        var bgm = _bgmList.Find(x => x.name == name);
+        var bgm = _soundData.BGMDataList.Find(x => x.Name == name).AudioClip;
         _audioSrc.clip = bgm;
         _audioSrc.Play();
     }
