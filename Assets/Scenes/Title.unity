@@ -230,6 +230,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3548143925687689531, guid: 6bf5870406cc72442bf5b3acfab058a7, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -7.93
+      objectReference: {fileID: 0}
+    - target: {fileID: 3548143925687689531, guid: 6bf5870406cc72442bf5b3acfab058a7, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9659259
+      objectReference: {fileID: 0}
+    - target: {fileID: 3548143925687689531, guid: 6bf5870406cc72442bf5b3acfab058a7, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.258819
+      objectReference: {fileID: 0}
+    - target: {fileID: 3548143925687689531, guid: 6bf5870406cc72442bf5b3acfab058a7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -30
+      objectReference: {fileID: 0}
     - target: {fileID: 4544329800531041980, guid: 6bf5870406cc72442bf5b3acfab058a7, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 

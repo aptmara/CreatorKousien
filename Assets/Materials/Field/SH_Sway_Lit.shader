@@ -89,7 +89,6 @@ Shader "Custom/SH_Sway_Lit"
             Varyings vert(Attributes IN)
             {
                 Varyings OUT;
-                //OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
                 float4 localPos = IN.positionOS;
 
                 float t = smoothstep(0.0f,1.0f,localPos.y);
