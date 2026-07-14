@@ -38,6 +38,12 @@ namespace Game.WaveSystem
         private int fixedSeed = 12345;
 
 
+
+        private bool hasCreatedSeed;        ///< Seedを生成済みかどうかを取得します。
+        private int createdSeed;            ///< 生成済みのSeedの値を取得します。
+
+
+
         public StageDataSO StageData => stageData;      ///< StageDataSOの参照を取得します。
         public bool UseFixedSeed => useFixedSeed;       ///< 同じSeedでWaveを抽選するかどうかを取得します。
         public int FixedSeed => fixedSeed;              ///< UseFixedSeedが有効な場合に使用するSeedの値を取得します。
@@ -48,13 +54,13 @@ namespace Game.WaveSystem
         /// <returns>Seedの値</returns>
         public int CreateSeed()
         {
-            if (useFixedSeed)
-            {
-                return fixedSeed;
-            }
+            if (hasCreatedSeed) return createdSeed;
 
-            // プレイするたびにランダムなSeedを生成
-            return Environment.TickCount;
+            // UseFixedSeedが有効な場合は、固定のSeedを使用します。
+            createdSeed = useFixedSeed ? fixedSeed : Environment.TickCount;
+            hasCreatedSeed = true;
+
+            return createdSeed;
         }
     }
 }
