@@ -106,6 +106,6 @@ MonoBehaviour:
   TargetLineDistance: -20
   TargetLineWidth: 4
   DisappearDepth: 25
-  CartoonDustPrefab: {fileID: 8476163074117621257, guid: 2a2c09b2383248e478f687115d980e15, type: 3}
+  CartoonDustPrefab: {fileID: 8361481553770586302, guid: a81bbfc0c0be1a2478a3c834c054284b, type: 3}
   DustEffectDistance: 4
   DustEffectWidth: 30
