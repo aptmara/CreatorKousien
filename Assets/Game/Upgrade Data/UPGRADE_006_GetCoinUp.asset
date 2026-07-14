@@ -10,17 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 730422566b7cc734ea8529d8457fd466, type: 3}
-  m_Name: UPGRADE_002_MoveSpeedUp
+  m_Name: UPGRADE_006_GetCoinUp
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
-  Id: 2
-  DisplayName: MoveSpeedUp
-  Description: Move Speed 10% Up!!
-  Modifiers:
-  - TargetStat: 1
-    Operation: 1
-    Value: 1.1
+  Id: 6
+  DisplayName: GetCoinUp
+  Description: "\u30B3\u30A4\u30F3\u306E\u53D6\u5F97\u91CF"
+  Modifiers: []
   MaxLevel: 5
-  Icon: {fileID: 21300000, guid: 5ead5651c484d594fb3aa3974548c076, type: 3}
+  Icon: {fileID: 21300000, guid: 1aae3659e1c0694469a693d848e93a7f, type: 3}
   Category: 0
-  Cost: 50
+  Cost: 10
   CostMagni: 1.2

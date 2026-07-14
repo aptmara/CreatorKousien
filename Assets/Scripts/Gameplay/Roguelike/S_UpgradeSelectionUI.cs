@@ -10,6 +10,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Game.Core.Events;
+using Game.Data.Player;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
@@ -46,84 +47,21 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     [Header("1回に提示する候補数")]
     [SerializeField] private int _cardidateCount = 3;
 
+
+    [Header("グリッド設定")]
+    [Tooltip("1行当たりのカード数(GridLayoutGroupと一致させる)")]
+    [SerializeField] private int _columnCount = 3;
+
+
     private readonly List<S_UpgradeCard> _spawnedCards = new();
-    private readonly Dictionary<S_UpgradeCard, SO_UpgradeCardData> _cardToData = new();
+    private readonly Dictionary<S_UpgradeCard, UpgradeData> _cardToData = new();
 
     public int CardCount => _spawnedCards.Count;
+    public int ColumnCount => _columnCount;
 
 
-#if UNITY_EDITOR
-    private void Update()
-    {
-        if (Keyboard.current.tKey.wasPressedThisFrame)
-        {
-            OpenSelection();
-        }
-    }
-#endif
-
-    //____________________________________
-    // public function
-
-    /// <summary>
-    /// 選択画面を開き、候補を表示
-    /// 一旦ランダム設定
-    /// </summary>
-    public void OpenSelection()
-    {
-        if(_panelRoot != null)
-        {
-            _panelRoot.SetActive(true);
-        }
-
-        ClearCards();
-
-        List<SO_UpgradeCardData> available = new List<SO_UpgradeCardData>(
-            _upgradePool.GetAvailableUpgrades(_upgradeRuntimeState));
-
-        for(int i = 0; i< _cardidateCount; ++i)
-        {
-            if (available.Count == 0) break;
-
-            int index = Random.Range(0, available.Count);
-            SO_UpgradeCardData picked = available[index];
-            available.RemoveAt(index);
-
-            SpawnCard(picked);
-        }
-
-        // ボード
-        Instantiate(_upgradeBoard, _panelRoot.transform).transform.SetAsFirstSibling();
-
-        // 背景
-        Canvas backCanvas = GameObject.Find("Canvas_Back")?.GetComponent<Canvas>();
-        Instantiate(_backGround, backCanvas.transform).transform.SetAsFirstSibling();
-
-        // 開始時、1枚目にフォーカス
-        SetFocusIndex(0);
-    }
-
-    public void OnFinishButtonPressed()
-    {
-
-        ClearCards();
-
-        if(_panelRoot != null)
-        {
-            _panelRoot.SetActive(false);
-        }
-
-        _resultController.FinishRoguelikeScene();
-    }
-
-    private void Start()
-    {
-        _panelRoot.SetActive(false);
-        OpenSelection();
-    }
-
-    //____________________________________
-    // private function
+    //__________________________________________
+    // basic functions
 
     private void OnEnable()
     {
@@ -141,6 +79,79 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         _exitButton.onClick.RemoveListener(OnFinishButtonPressed);
     }
 
+    private void Start()
+    {
+        _panelRoot.SetActive(false);
+        OpenSelection();
+    }
+
+
+    //____________________________________
+    // public function
+
+    /// <summary>
+    /// 選択画面を開き、候補を表示
+    /// 一旦ランダム設定
+    /// </summary>
+    public void OpenSelection()
+    {
+        if(_panelRoot != null)
+        {
+            _panelRoot.SetActive(true);
+        }
+
+        ClearCards();
+
+        //! 怪しい
+        List<UpgradeData> available = new List<UpgradeData>(
+            _upgradePool.GetAvailableUpgrades(_upgradeRuntimeState));
+
+        for(int i = 0; i< _cardidateCount; ++i)
+        {
+            if (available.Count == 0) break;
+
+            int index = Random.Range(0, available.Count);
+            UpgradeData picked = available[index];
+            available.RemoveAt(index);
+
+            SpawnCard(picked);
+        }
+
+
+        // ボード
+        Instantiate(_upgradeBoard, _panelRoot.transform).transform.SetAsFirstSibling();
+
+        // 背景
+        Canvas backCanvas = GameObject.Find("Canvas_Back")?.GetComponent<Canvas>();
+        if(backCanvas != null)
+        {
+            Instantiate(_backGround, backCanvas.transform).transform.SetAsFirstSibling();
+        }
+
+        // 開始時、1枚目にフォーカス
+        SetFocusIndex(0);
+
+    }
+
+    public void OnFinishButtonPressed()
+    {
+
+        ClearCards();
+
+        if(_panelRoot != null)
+        {
+            _panelRoot.SetActive(false);
+        }
+
+        _resultController.FinishRoguelikeScene();
+    }
+
+
+
+
+    //____________________________________
+    // private function
+
     /// <summary>
     /// レベルアップ通知を受けて選択画面を開くコールバック
     /// </summary>
@@ -152,7 +163,7 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     }
 
 
-    private void SpawnCard(SO_UpgradeCardData cardData)
+    private void SpawnCard(UpgradeData cardData)
     {
         int currentLevel = _upgradeRuntimeState.GetLevel(cardData);
 
@@ -163,7 +174,7 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         _cardToData[card] = cardData;
     }
 
-    private void OnCardSelected(SO_UpgradeCardData selectedCard)
+    private void OnCardSelected(UpgradeData selectedCard)
     {
         // 現在のレベルを取得
         int nowLevel = _upgradeRuntimeState.GetLevel(selectedCard);
@@ -172,10 +183,7 @@ public class S_UpgradeSelectionUI : MonoBehaviour
 
         // お金が足りなければ処理しない
         int nowMoney = _moneyData.moneyOnHand;
-        if (nowMoney < subMoney)
-        {
-            return;
-        }
+        if (nowMoney < subMoney)    return;
 
 
         // 所持金を減らす

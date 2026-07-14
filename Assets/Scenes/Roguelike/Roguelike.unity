@@ -152,7 +152,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 200, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &97049209
@@ -164,23 +164,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 97049207}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GridLayoutGroup
   m_Padding:
     m_Left: 0
     m_Right: 0
-    m_Top: -250
+    m_Top: 0
     m_Bottom: 0
-  m_ChildAlignment: 5
-  m_Spacing: 200
-  m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
-  m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
+  m_ChildAlignment: 4
+  m_StartCorner: 0
+  m_StartAxis: 0
+  m_CellSize: {x: 200, y: 200}
+  m_Spacing: {x: 20, y: 20}
+  m_Constraint: 1
+  m_ConstraintCount: 3
 --- !u!1 &557249603
 GameObject:
   m_ObjectHideFlags: 0
@@ -368,7 +366,7 @@ MonoBehaviour:
   _backGround: {fileID: 280133138533333906, guid: 9a04e90fc9bb88c439ee030e4c81a0ef, type: 3}
   _moneyData: {fileID: 11400000, guid: ed79cb34a0ad631409cafd0e16aac641, type: 2}
   _upgradeBoard: {fileID: 7856578012856789490, guid: bb5dd133f2d42b742962ab320493d158, type: 3}
-  _cardidateCount: 3
+  _cardidateCount: 9
 --- !u!114 &705193399
 MonoBehaviour:
   m_ObjectHideFlags: 0
