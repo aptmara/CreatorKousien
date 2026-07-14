@@ -6,6 +6,8 @@
 // date   : 2026/06/30 - begin.
 //          2026/07/02 - EventBus連携を追加
 //                       複数選択 + 終了ボタン
+//
+// todo : line 191 
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using UnityEngine;
 using System.Collections.Generic;
@@ -39,10 +41,14 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     [SerializeField] private Button _exitButton;
     [Header("背景(Shader入れたら使わないかも)")]
     [SerializeField] private Image _backGround;
-    [Header("SOから取得するお金のデータ")]
-    [SerializeField] private MoneyData _moneyData;
+
     [Header("カードの背景に配置するボードのプレハブ")]
     [SerializeField] private Image _upgradeBoard;
+
+    [Header("SOから取得するお金のデータ")]
+    [SerializeField] private MoneyData _moneyData;
+    [Header("お金表示UI")]
+    [SerializeField] private S_RoguelikeMoneyUI _moneyUI;
 
     [Header("1回に提示する候補数")]
     [SerializeField] private int _cardidateCount = 3;
@@ -101,6 +107,8 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         }
 
         ClearCards();
+
+        _moneyUI.SpawnMoneyUI(_moneyData.moneyOnHand);
 
         //! 怪しい
         List<UpgradeData> available = new List<UpgradeData>(
@@ -178,17 +186,22 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     {
         // 現在のレベルを取得
         int nowLevel = _upgradeRuntimeState.GetLevel(selectedCard);
+        // 現在のレベルが最大レベルなら処理しない
+        if (nowLevel >= selectedCard.MaxLevel) return;
+
         // 減らす量を計算
-        float subMoney = (float)selectedCard.Cost * (selectedCard.CostMagni * (float)nowLevel);
+        int subtractMoney = selectedCard.GetCost(nowLevel);
+
 
         // お金が足りなければ処理しない
         int nowMoney = _moneyData.moneyOnHand;
-        if (nowMoney < subMoney)    return;
+        if (nowMoney < subtractMoney)    return;
 
 
         // 所持金を減らす
         Debug.Log($"[S_UpgradeSelectionUI] '{selectedCard.DisplayName}'購入！");
-        _moneyData.SubtractMoney((int)subMoney);
+        _moneyData.SubtractMoney((int)subtractMoney);
+        _moneyUI.ChangeMoneyUI(_moneyData.moneyOnHand);
 
         _resultController.SelectUpgrade(selectedCard);
 
@@ -199,6 +212,7 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         {
             if(_cardToData.TryGetValue(card, out var data) && data == selectedCard)
             {
+                // levelが0スタートのため、＋１
                 card.Refresh(newLevel);
                 break;
             }

@@ -9,6 +9,7 @@
 // - アップグレードデータの作成
 // - 2026/07/14 - SO_UpgradeCardDataと統合、UI/コスト等の情報を集約 - 滝谷
 // ------------------------------------------------------------
+using System.Transactions;
 using UnityEngine;
 
 namespace Game.Data.Player
@@ -47,6 +48,7 @@ namespace Game.Data.Player
 
         [Header("コスト(ショップでの選択画面用)")]
         public int Cost = 10;
+        [Tooltip("コスト倍率")]
         public float CostMagni = 1.2f;
 
 
@@ -76,6 +78,20 @@ namespace Game.Data.Player
             return result;
         }
 
+        public int GetCost(int currentLevel)
+        {
+            float magni = 0.0f;
+            // レベルが初期値なら倍率を計算しない
+            if(currentLevel == 0)
+            {
+                magni = 1.0f;
+            }
+            else
+            {
+                magni = CostMagni * currentLevel;
+            }
+            return (int)(Cost * magni);
+        }
 
         //____________________________________
         // private funtion

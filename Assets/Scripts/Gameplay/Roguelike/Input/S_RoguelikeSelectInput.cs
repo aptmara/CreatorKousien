@@ -1,4 +1,5 @@
 
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -27,16 +28,14 @@ public class S_RoguelikeSelectInput : MonoBehaviour
     private bool _submitPressed;
     private bool _cancelPressed;
     private bool _clickPressed;
+    private bool _exitPressed;
 
-    private bool _exitHeld;             // 押しっぱなし
-    private float _exitPressStartTime;  // 押し始めた時間
 
     //____________________________________
     // public variables
     public Vector2 Navigate => _navigateAction != null ? _navigateAction.ReadValue<Vector2>() : Vector2.zero;
     public Vector2 MousePosition => _pointAction != null ? _pointAction.ReadValue<Vector2>() : Vector2.zero;
 
-    public float ExitHeldSeconds => _exitHeld ? Time.unscaledDeltaTime - _exitPressStartTime : 0.0f;
 
 
     //____________________________________
@@ -77,12 +76,7 @@ public class S_RoguelikeSelectInput : MonoBehaviour
         _submitAction.performed += OnSubmitPerformed;
         _cancelAction.performed += OnCancelPerformed;
         _clickAction.performed += OnClickPerformed;
-
-        if(_exitAction != null)
-        {
-            _exitAction.started += OnExitStarted;
-            _exitAction.canceled += OnExitCanceled;
-        }
+        _exitAction.performed += OnExitPerformed;
     }
 
     private void OnDisable()
@@ -103,18 +97,8 @@ public class S_RoguelikeSelectInput : MonoBehaviour
     private void OnSubmitPerformed(InputAction.CallbackContext context) => _submitPressed = true;
     private void OnCancelPerformed(InputAction.CallbackContext context) => _cancelPressed = true;
     private void OnClickPerformed(InputAction.CallbackContext context) => _clickPressed = true;
+    private void OnExitPerformed(InputAction.CallbackContext context) => _exitPressed = true;
 
-
-    private void OnExitStarted(InputAction.CallbackContext context)
-    {
-        _exitHeld = true;
-        _exitPressStartTime = Time.unscaledDeltaTime;
-    }
-
-    private void OnExitCanceled(InputAction.CallbackContext context)
-    {
-        _exitHeld = false;
-    }
 
     public bool ConsumeSubmit()
     {
@@ -134,6 +118,13 @@ public class S_RoguelikeSelectInput : MonoBehaviour
     {
         bool result = _clickPressed;
         _clickPressed = false;
+        return result;
+    }
+
+    public bool ConsumeExit()
+    {
+        bool result = _exitPressed;
+        _exitPressed = false;
         return result;
     }
 }
