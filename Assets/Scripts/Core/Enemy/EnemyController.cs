@@ -171,6 +171,13 @@ namespace Game.Core.Enemy
 
             _debuffManager = new EnemyDebuffManager(HandleDamageOverTime, HandleFreeze, HandleFreezeEnd);
 
+            // VFX コンポーネントはオプション（不要な敵はコンポーネントを外す）
+            var statusVFX = GetComponent<EnemyStatusAilmentVFX>();
+            if (statusVFX != null)
+            {
+                statusVFX.Initialize(_debuffManager, this);
+            }
+
             return InstanceEnemyId;
         }
 
@@ -541,6 +548,11 @@ namespace Game.Core.Enemy
         private Action<float> _freezeRequest;
         private Action _freezeEndRequest;
 
+        /// <summary>デバフが新規付与されたときに発火する（debuffType）。</summary>
+        public event Action<string> OnDebuffAdded;
+        /// <summary>デバフが解除されたときに発火する（debuffType）。</summary>
+        public event Action<string> OnDebuffRemoved;
+
         public EnemyDebuffManager(Action<float> damageRequest, Action<float> freezeRequest, Action freezeEndRequest)
         {
             _damageRequest = damageRequest;
@@ -558,10 +570,16 @@ namespace Game.Core.Enemy
 
         public void AddDebuff(EnemyDebuffConfig debuffConfig)
         {
+            // すでに別の状態異常がかかっている場合は、もとのものを維持して新しい状態異常を無視する
+            if (_activeDebuffs.Count > 0 && !_activeDebuffs.ContainsKey(debuffConfig.DebuffType))
+            {
+                return;
+            }
+
             EnemyDebuffRuntime currentActivDebuff;
             if (_activeDebuffs.TryGetValue(debuffConfig.DebuffType, out currentActivDebuff))
             {
-                // 状態異常効果を加算する
+                // 状態異常効果時間をリセットする
                 currentActivDebuff.MergeDebuffEffect(debuffConfig);
 
                 // 追加された状態異常に応じて効果リクエストを送信
@@ -578,6 +596,8 @@ namespace Game.Core.Enemy
 
                 Debug.Log(debuffConfig.DebuffType.ToString() + "を追加！");
 
+                OnDebuffAdded?.Invoke(debuffConfig.DebuffType);
+
                 // 追加された状態異常に応じて効果リクエストを送信
                 if(data.IsFreezeActive)
                 {
@@ -590,6 +610,8 @@ namespace Game.Core.Enemy
         {
             // デバフの効果を解除する処理
             _activeDebuffs.Remove(debuffKey);
+
+            OnDebuffRemoved?.Invoke(debuffKey);
 
             // 解除後の状況に応じてコールバックを返す
             if (!IsFreeze())
@@ -606,6 +628,10 @@ namespace Game.Core.Enemy
                 _freezeEndRequest.Invoke();
             }
 
+            foreach (var key in _activeDebuffs.Keys.ToList())
+            {
+                OnDebuffRemoved?.Invoke(key);
+            }
             _activeDebuffs.Clear();
         }
         public bool HasDebuff(string debuffType)
@@ -680,6 +706,7 @@ namespace Game.Core.Enemy
 
             // 値を削除
             _activeDebuffs.Remove(debuffType);
+            OnDebuffRemoved?.Invoke(debuffType);
             // 凍結解除
             if (debuff.UseFreeze)
             {
@@ -784,7 +811,11 @@ namespace Game.Core.Enemy
                         Debug.LogWarning(debuff.DebuffType + "と" + this.DebuffType + "は異なるデバフのため、統合できません。");
                     return;
                 }
-                // 継続ダメージの効果を加算する
+
+                // 全体の効果時間をリセット
+                Duration = debuff.Duration;
+
+                // 継続ダメージの効果をリセットする
                 if (debuff.UseDamageOverTime)
                 {
                     MergeDamageOverTime(debuff.OverTimeDuration, debuff.OverTimeMaxDamage, debuff.OverTimeMinDamage, debuff.OverTimeInterval);
@@ -875,7 +906,7 @@ namespace Game.Core.Enemy
                 )
             {
                 UseFreeze = true;
-                FreezeDuration = Mathf.Max(FreezeDuration, newFreezeDuration);
+                FreezeDuration = newFreezeDuration; // 効果時間リセット
                 FreezeHitDurability = newFreezeHitDurability;
                 FreezeBreakDamage = newFreezeBreakDamage;
             }
@@ -888,8 +919,7 @@ namespace Game.Core.Enemy
                 )
             {
                 UseDamageOverTime = true;
-                // 継続時間は長い方にする
-                OverTimeDuration = Mathf.Max(newOverTimeDuration, OverTimeDuration);
+                OverTimeDuration = newOverTimeDuration; // 効果時間リセット
                 OverTimeMaxDamage = newOverTimeMaxDamage;
                 OverTimeMinDamage = newOverTimeMinDamage;
                 OverTimeInterval = newOverTimeInterval;
