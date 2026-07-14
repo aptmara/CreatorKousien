@@ -22,6 +22,7 @@ public class S_UpgradeCard : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _levelText;
     [SerializeField] private GameObject _acquiredMark;
     [SerializeField] private GameObject _highlightFrame;
+    [SerializeField] private TextMeshProUGUI _costText;
 
     [Header("機能面")]
     [SerializeField] private Button _selectButton;
@@ -46,6 +47,7 @@ public class S_UpgradeCard : MonoBehaviour
         _selectButton.onClick.RemoveAllListeners();
         _selectButton.onClick.AddListener(() => onSelected?.Invoke(_cardData));
 
+        // levelが0スタートのため、補正値として + 1
         Refresh(currentLevel);
     }
 
@@ -62,6 +64,16 @@ public class S_UpgradeCard : MonoBehaviour
         _nameText.text = _cardData.DisplayName;
         _descriptionText.text = _cardData.GetEffectText(nextLevel);
         _levelText.text = $"Lv.{currentLevel}/{_cardData.MaxLevel}";
+
+        int cost = _cardData.GetCost(currentLevel);
+        if(isMaxed)
+        {
+            _costText.text = $"Level Max";
+        }
+        else
+        {
+            _costText.text = $"Cost : {cost}";
+        }
 
         if(_acquiredMark != null)
         {

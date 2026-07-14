@@ -21,18 +21,14 @@ public class S_RoguelikeSelectController : MonoBehaviour
     [Tooltip("移動後、入力受付までの待機時間(秒)")]
     [SerializeField] private float _navigateCooldown = 0.2f;
 
-    [Header("Exit長押し設定")]
-    [SerializeField] private float _exitHoldDuration = 1.5f;
 
     private int _currentIndex = 0;
     private float _cooldownTimer = 0.0f;
     private bool _isNavigateReleased = true;
-    private bool _exitTriggered = false;        // 重複防止
 
     private void OnEnable()
     {
         _currentIndex = 0;
-        _exitTriggered = false;
         _selectionUI.SetFocusIndex(_currentIndex);
     }
 
@@ -41,7 +37,7 @@ public class S_RoguelikeSelectController : MonoBehaviour
     {
         HandleNavigate();
         HandleSubmit();
-        HandleExitHold();
+        HandleExit();
 
         // 二重処理の防止
         // 入力を消費させる
@@ -118,26 +114,12 @@ public class S_RoguelikeSelectController : MonoBehaviour
         }
     }
 
-    private void HandleExitHold()
+    private void HandleExit()
     {
-        float held = _input.ExitHeldSeconds;
-
-        if(held <= 0.0f)
+        if(_input.ConsumeExit())
         {
-            // ボタンを離したらリセット
-            _exitTriggered = false;
-            return;
-        }
-
-        if (_exitTriggered) return;
-
-//        Debug.Log($"[S_RoguelikeSelectController] held = '{held}'");
-        if(held >= _exitHoldDuration)
-        {
-            _exitTriggered = true;
             _selectionUI.OnFinishButtonPressed();
         }
-
     }
 
     private void MoveFocus(int dir)
