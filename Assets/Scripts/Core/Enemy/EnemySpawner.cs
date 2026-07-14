@@ -38,6 +38,16 @@ namespace Game.Core.Enemy
         [Tooltip("生成する範囲(2D:横幅*奥行)")]
         [SerializeField] private Vector2 _rangeSize;
 
+        [Header("状態異常VFX設定")]
+        [Tooltip("敵の状態異常ごとのVFX・マテリアル設定。EnemyStatusAilmentVFX.StatusAilmentVFXEntry と対応。")]
+        [SerializeField] private EnemyStatusAilmentVFX.StatusAilmentVFXEntry[] _statusAilmentVFXEntries = System.Array.Empty<EnemyStatusAilmentVFX.StatusAilmentVFXEntry>();
+
+        [Tooltip("状態異常VFXをアタッチする基準Transform。null の場合は敵ルート自身を使用。")]
+        [SerializeField] private Transform _statusAilmentVFXRoot;
+
+        [Tooltip("状態異常VFXのローカルオフセット（敵の上に表示したい場合は Y を正に）")]
+        [SerializeField] private Vector3 _statusAilmentVFXOffset = new Vector3(0.24f, 1.31f, 0f);
+
         [Header("出現位置の設定")]
         [Tooltip("最終目標地点")]
         [SerializeField] private Transform _spawnBasePoint;
@@ -169,6 +179,8 @@ namespace Game.Core.Enemy
             EnemyController controller = enemyGo.AddComponent<EnemyController>();
             enemyGo.AddComponent<EnemyRising>();
             enemyGo.AddComponent<EnemyWorldStatusView>();
+            var statusVFX = enemyGo.AddComponent<EnemyStatusAilmentVFX>();
+            statusVFX.SetupEntries(_statusAilmentVFXEntries, _statusAilmentVFXRoot, _statusAilmentVFXOffset, !definition.IsBoss);
 
             if (!body.TryGetComponent(out EnemyBodyController bodyController))
             {
