@@ -73,7 +73,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.JackFlowerBossVineSpawner
   _vinePrefab: {fileID: 2910390922885167427, guid: 960488377f47bd2498e1b2b7c76002cd, type: 3}
   _spawnInterval: 4
-  _maxActiveVines: 2
+  _maxActiveVines: 1
   _vineExtendSpeed: 6
   _vineHitBackDistance: 1.5
   _vineMaxShrinkDistance: 4.5

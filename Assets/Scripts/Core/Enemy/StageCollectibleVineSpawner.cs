@@ -55,7 +55,11 @@ namespace Game.Core.Enemy
         {
             while (enabled && !_bossDefeated)
             {
-                SpawnVine();
+                if (FindFirstObjectByType<JackFlowerBossVineSpawner>() != null)
+                {
+                    SpawnVine();
+                }
+
                 yield return new WaitForSeconds(_spawnInterval);
             }
         }
