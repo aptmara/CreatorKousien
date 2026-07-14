@@ -6,13 +6,16 @@
 // Created      : 2026-07-02
 //
 // Notes        : ゲームクリアのUI実装します！ - 2026/07/09  Asano
+// Notes        : コントローラー対応させました。 - 2026/07/14  Iwai
 // ================================================================================
 
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Game.Core.Management;
+using UnityEngine.EventSystems;
 
 namespace Game.Presentation.UI.Result
 {
@@ -39,6 +42,7 @@ namespace Game.Presentation.UI.Result
         [Header("--- Game Clear 時に隠す既存UI ---")]
         [SerializeField] private GameObject[] _hideOnGameClearObjects;
 
+        private bool _isGameOverActive;
 
 
         /// <summary>
@@ -68,7 +72,7 @@ namespace Game.Presentation.UI.Result
 
             if (_defenseLineHpText != null)
             {
-                _defenseLineHpText.text = $"Defense Line Current HP: {summary.RemainingDefenseLineHp:F1}";
+                _defenseLineHpText.text = $"Defense Line HP: {summary.RemainingDefenseLineHp:F1}";
                 _defenseLineHpText.gameObject.SetActive(!summary.IsGameClear);
             }
 
@@ -76,6 +80,8 @@ namespace Game.Presentation.UI.Result
             // 3. リトライボタンのイベント登録
             if (summary.IsGameClear)
             {
+                _isGameOverActive = false;
+
                 // クリア時の演出を再生する
                 if (_resultStatusText != null) _resultStatusText.text = "GAME CLEAR";
                 if (_gameClearVisualParent != null) _gameClearVisualParent.SetActive(true);
@@ -94,7 +100,43 @@ namespace Game.Presentation.UI.Result
                 {
                     _gameOverRetryButton.onClick.RemoveAllListeners();
                     _gameOverRetryButton.onClick.AddListener(() => onGameOverRetryCallback?.Invoke());
+
+                    _isGameOverActive = true;
+
+                    StartCoroutine(DelayFocusRoutine());
                 }
+            }
+        }
+
+
+        /// <summary>
+        /// 演出が終わってUIが完全に表示される時間（約0.5秒〜1秒）待ってから
+        /// ボタンを強制フォーカスするコルーチン
+        /// </summary>
+        private IEnumerator DelayFocusRoutine()
+        {
+            yield return new WaitForSecondsRealtime(0.5f);
+
+            FocusOnButton();
+        }
+
+        private void Update()
+        {
+            if (_isGameOverActive && EventSystem.current != null)
+            {
+                if (EventSystem.current.currentSelectedGameObject == null)
+                {
+                    FocusOnButton();
+                }
+            }
+        }
+
+        private void FocusOnButton()
+        {
+            if (EventSystem.current != null && _gameOverRetryButton != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+                EventSystem.current.SetSelectedGameObject(_gameOverRetryButton.gameObject);
             }
         }
     }
