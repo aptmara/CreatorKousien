@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Collectibles.CollectibleData
   Id: 3
   Type: 2
-  ViewPrefab: {fileID: 8775489147838489531, guid: 097a24663dba791478c3b6ebcc34acdd, type: 3}
+  ViewPrefab: {fileID: 6418183121027934079, guid: 8cd63b28fcecc334fb5a38c681ab7de9, type: 3}
   Weight: 1
   DamageAmount: 1
   Attribute: None
