@@ -344,5 +344,16 @@ namespace Game.Core.Events
             DurationRatio = durationRatio;
         }
     }
+
+    public readonly struct PlayerTiltEvent
+    {
+        public readonly float CurrentTilt;
+
+        public PlayerTiltEvent(float currentTilt)
+        {
+            CurrentTilt = currentTilt;
+        }
+    }
+
 }
 
