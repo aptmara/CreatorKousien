@@ -8,6 +8,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Game.Data.Player;
 
 public class S_UpgradeCard : MonoBehaviour
 {
@@ -25,9 +26,7 @@ public class S_UpgradeCard : MonoBehaviour
     [Header("機能面")]
     [SerializeField] private Button _selectButton;
 
-    private SO_UpgradeCardData _cardData;
-//    private int _nextLevel;
-
+    private UpgradeData _cardData;
 
 
     //____________________________________
@@ -39,8 +38,8 @@ public class S_UpgradeCard : MonoBehaviour
     /// <param name="cardData">表示するカードデータ</param>
     /// <param name="currentLevel">現在の取得済みレベル</param>
     /// <param name="onSelected">選択時に呼ばれるコールバック</param>
-    public void Setup(SO_UpgradeCardData cardData, int currentLevel,
-        System.Action<SO_UpgradeCardData> onSelected)
+    public void Setup(UpgradeData cardData, int currentLevel,
+        System.Action<UpgradeData> onSelected)
     {
         _cardData = cardData;
 

@@ -7,6 +7,7 @@
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using UnityEngine;
 using System.Collections.Generic;
+using Game.Data.Player;
 
 [CreateAssetMenu(fileName = "SO_UpgradeRuntimeState", menuName = "Scriptable Objects/SO_UpgradeRuntimeState")]
 public class SO_UpgradeRuntimeState : ScriptableObject
@@ -23,7 +24,7 @@ public class SO_UpgradeRuntimeState : ScriptableObject
     /// ※実ステータスへの反映は行わない
     /// </summary>
     /// <param name="card"></param>
-    public void AddOrLevelUp(SO_UpgradeCardData card)
+    public void AddOrLevelUp(UpgradeData card)
     {
         if (card == null) return;
 
@@ -36,19 +37,14 @@ public class SO_UpgradeRuntimeState : ScriptableObject
         entry.Level = Mathf.Min(entry.Level + 1, card.MaxLevel);
     }
 
-    public int GetLevel(SO_UpgradeCardData card)
+    public int GetLevel(UpgradeData card)
     {
         UpgradeRuntimeEntry entry = _entries.Find(x => x.CardData == card);
         return entry != null ? entry.Level : 0;
     }
 
-    public bool IsAcquired(SO_UpgradeCardData card)
-    {
-        return GetLevel(card) > 0;
-    }
+    public bool IsAcquired(UpgradeData card)
+        => GetLevel(card) > 0;
 
-    public void Clear()
-    {
-        _entries.Clear();
-    }
+    public void Clear() => _entries.Clear();
 }

@@ -8,6 +8,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using Game.Data.Player;
 
 [CreateAssetMenu(fileName = "SO_UpgradePool", menuName = "Scriptable Objects/SO_UpgradePool")]
 public class SO_UpgradePool : ScriptableObject
@@ -15,11 +16,13 @@ public class SO_UpgradePool : ScriptableObject
     //______________________________
     // variables
     [SerializeField]
-    private List<SO_UpgradeCardData> _upgrades = new();
+    private List<UpgradeData> _upgrades = new();
 
-    public IReadOnlyList<SO_UpgradeCardData> Upgrades => _upgrades;
+    public IReadOnlyList<UpgradeData> Upgrades => _upgrades;
 
     public int Count => _upgrades.Count;
+
+
 
 
     //______________________________
@@ -30,25 +33,16 @@ public class SO_UpgradePool : ScriptableObject
     /// </summary>
     /// <param name="upgradeId"></param>
     /// <returns></returns>
-    public SO_UpgradeCardData GetById(string upgradeId)
-    {
-        return _upgrades.FirstOrDefault(
-            x => x != null && x.UpgradeId == upgradeId);
-    }
+    public UpgradeData GetById(string upgradId)
+        => _upgrades.FirstOrDefault(x => x != null && x.Id == upgradId);
 
     /// <summary>
     /// 指定categoryの強化データ一覧を取得する関数 
     /// </summary>
     /// <param name="category">指定カテゴリー</param>
     /// <returns></returns>
-    public List<SO_UpgradeCardData> GetByCategory(UpgradeCategory category)
-    {
-        //todo SO_UpgradeDataにCategoryフィールドを追加後、フィルタ処理に置き換え
-
-        return _upgrades
-            .Where(x => x != null && x.Category == category)
-            .ToList();
-    }
+    public List<UpgradeData> GetByCategory(UpgradeCategory category)
+        => _upgrades.Where(x => x != null && x.Category == category).ToList();
 
     /// <summary>
     /// 指定カテゴリーの強化データを取得する関数
@@ -56,19 +50,11 @@ public class SO_UpgradePool : ScriptableObject
     /// <param name="category">指定カテゴリー</param>
     /// <returns></returns>
     public int GetCountByCategory(UpgradeCategory category)
-    {
-        //todo SO_UpgradeDataにCategoryフィールドを追加後、カウント処理に置き換える
-
-        return _upgrades.Count(x => x != null);
-    }
+    => _upgrades.Count(x => x != null && x.Category == category);
 
 
-    public List<SO_UpgradeCardData> GetAvailableUpgrades(SO_UpgradeRuntimeState runtimeState)
-    {
-        return _upgrades
-            .Where(x => x != null)
+    public List<UpgradeData> GetAvailableUpgrades(SO_UpgradeRuntimeState runtimeState)
+        => _upgrades.Where(x => x != null)
             .Where(x => runtimeState.GetLevel(x) < x.MaxLevel)
             .ToList();
-    }
-
 }

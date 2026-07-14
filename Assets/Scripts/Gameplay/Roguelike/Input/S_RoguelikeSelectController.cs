@@ -32,14 +32,13 @@ public class S_RoguelikeSelectController : MonoBehaviour
     private void OnEnable()
     {
         _currentIndex = 0;
+        _exitTriggered = false;
         _selectionUI.SetFocusIndex(_currentIndex);
     }
 
 
     private void Update()
     {
-        Debug.Log($"[S_RoguelikeController] Navigate={_input.Navigate}, CardCount={_selectionUI.CardCount}, CurrentIndex={_currentIndex}");
-
         HandleNavigate();
         HandleSubmit();
         HandleExitHold();
@@ -60,7 +59,7 @@ public class S_RoguelikeSelectController : MonoBehaviour
         if(_cooldownTimer > 0.0f)
         {
 //            _cooldownTimer -= Time.deltaTime;   // deltaTimeが0なので定数で減算します
-            _cooldownTimer -= (1.0f / 60.0f);
+            _cooldownTimer -= Time.unscaledDeltaTime;
         }
 
 
@@ -74,14 +73,38 @@ public class S_RoguelikeSelectController : MonoBehaviour
 
         if (!_isNavigateReleased || _cooldownTimer > 0.0f) return;
 
-        // 横並びの入力を優先する
-        int direction = nav.y > 0.0f
-            ? -1 : nav.y < 0.0f
-                ? 1 : 0;
-        if (direction == 0) return;
+        // 入力操作
+        int columnCount = (int)Mathf.Max(1, _selectionUI.ColumnCount);
+        int cardCount = _selectionUI.CardCount;
+        if (cardCount == 0) return;
 
+        int col = _currentIndex % columnCount;
+        int row = _currentIndex / columnCount;
+        int rowCount = Mathf.CeilToInt((float)cardCount / columnCount);
 
-        MoveFocus(direction);
+        bool horizontalDominant = Mathf.Abs(nav.x) >= Mathf.Abs(nav.y);
+
+        if (horizontalDominant)
+        {
+            int dir = nav.x > 0 ? 1 : -1;
+            col = (col + dir + columnCount) % columnCount;
+        }
+        else
+        {
+            // 上入力で前の行、下入力で次の行へ
+            int dir = nav.y > 0 ? -1 : 1;
+            row = (row + dir + rowCount) % rowCount;
+        }
+
+        int newIndex = row * columnCount + col;
+
+        // 最終行が9未満で欠けている場合は異動させない
+        if(newIndex < cardCount)
+        {
+            _currentIndex = newIndex;
+            _selectionUI.SetFocusIndex(_currentIndex);
+        }
+
 
         _isNavigateReleased = false;
         _cooldownTimer = _navigateCooldown;
