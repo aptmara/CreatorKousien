@@ -128,7 +128,7 @@ namespace Game.Core.Enemy
 
             // 敵攻撃処理初期化
             _enemyAttack = new EnemyAttack();
-            _enemyAttack.Initialize(definition.AttackPower, definition.Attackinterval, false);
+            _enemyAttack.Initialize(InstanceEnemyId ,definition.AttackPower, definition.Attackinterval, false, definition.AttackMotionTime, definition.AttackStartUpTime);
 
 
             // 初期HP・ゲージをUIに通知
@@ -358,6 +358,7 @@ namespace Game.Core.Enemy
         private void HandleRoseLeft()
         {
             _stateManager.SetRose(false);
+            _enemyAttack.ResetAttack();
             _enemyAttack.SetActiv(false);
         }
 
@@ -370,6 +371,8 @@ namespace Game.Core.Enemy
         /// </summary>
         private void TransitionToDown()
         {
+            _enemyAttack.ResetAttack();
+            _enemyAttack.SetActiv(false);
             _rising.BreakDrop(transform);
             _stateManager.TransitionTo(EnemyState.Down);
             _barrierGauge.SetActive(false);
@@ -410,13 +413,30 @@ namespace Game.Core.Enemy
 
     public class EnemyAttack
     {
+        string _enemyID;
+
         float _maxAttackInterval;
         float _attackInterval;
         float _attackPower;
         bool _isActiv;
 
-        public void Initialize(float attackPower, float attackInterval, bool isActiv)
+        float _attackStartUpLag;
+        float _attackMotionTime;
+
+
+        float _attackTimer;
+        float _attackMotionTimer;
+
+        bool isAttackMotion = false;
+        bool isAttack = false;
+
+        Action OnAttackEnd;
+
+        public void Initialize(string enemyID, float attackPower, float attackInterval, bool isActiv, float attackMotionTime, float startUpLag)
         {
+            _enemyID = enemyID;
+            _attackStartUpLag = startUpLag;
+            _attackMotionTime = attackMotionTime;
             _maxAttackInterval = attackInterval;
             _attackInterval = _maxAttackInterval;
             _attackPower = attackPower;
@@ -426,15 +446,71 @@ namespace Game.Core.Enemy
         public void UpdateAttack()
         {
             if (!_isActiv) return;
+
+            if(isAttackMotion) UpdateAttackMotion();
+            else UpdateAttackWait();
+        }
+
+        private void UpdateAttackWait()
+        {
+            // タイマーを進め、0になったら攻撃開始をコールバックする
             _attackInterval -= Time.deltaTime;
             if (_attackInterval <= 0.0f)
             {
+
                 _attackInterval = _maxAttackInterval;
-                Attack();
+
+                _attackMotionTimer = _attackMotionTime;
+                _attackTimer = _attackStartUpLag;
+                Debug.Log("攻撃モーション開始！");
+                EventBus.Publish(new EnemyAttackMotionStartedEvent(_enemyID));
+                isAttackMotion = true;
+                isAttack = false;
             }
         }
 
-        public void SetActiv(bool activ) => _isActiv = activ;
+        private void UpdateAttackMotion()
+        {
+            // 前隙終了
+            _attackTimer -= Time.deltaTime;
+            if (!isAttack && _attackTimer <= 0.0f)
+            {
+                AttackNow();
+                isAttack = true;
+            }
+
+            // 攻撃終了
+            _attackMotionTimer -= Time.deltaTime;
+            if (_attackMotionTimer <= 0.0f)
+            {
+                // もしモーション終了時に前隙攻撃が行われていなかったら攻撃する
+                if(!isAttack)
+                {
+                    AttackNow();
+                }
+
+                EventBus.Publish(new EnemyAttackMotionEndedEvent(_enemyID));
+
+                isAttackMotion = false;
+                isAttack = false;
+            }
+        }
+
+        public void SetActiv(bool activ)
+        {
+            _isActiv = activ;
+        }
+
+        public void ResetAttack()
+        {
+            if(isAttackMotion) EventBus.Publish(new EnemyAttackMotionEndedEvent(_enemyID));
+            isAttackMotion = false;
+            isAttack = false;
+            _attackInterval = _maxAttackInterval;
+            _attackTimer = _attackStartUpLag;
+            _attackMotionTimer = _attackMotionTime;
+
+        }
 
         public void AttackNow()
         {

@@ -17,7 +17,7 @@ MonoBehaviour:
     _barrierRate: 1
     _spawnInterval: 1
     _spawnEnemies:
-    - {fileID: 11400000, guid: 5d78bca46e2c39648841f11362a49081, type: 2}
+    - {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
     _maxAliveEnemies: 3
     _minDistanceFromOtherEnemies: 5
   - _hpRate: 1

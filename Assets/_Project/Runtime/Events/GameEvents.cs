@@ -148,6 +148,34 @@ namespace Game.Core.Events
     }
 
     /// <summary>
+    /// 敵の攻撃モーション開始通知。
+    /// モーション開始を受けて演出やサウンドを再生する用途に使う（現状は EnemyId のみ）。
+    /// </summary>
+    public readonly struct EnemyAttackMotionStartedEvent
+    {
+        public readonly string EnemyId;
+
+        public EnemyAttackMotionStartedEvent(string enemyId)
+        {
+            EnemyId = enemyId;
+        }
+    }
+
+    /// <summary>
+    /// 敵の攻撃モーション終了通知。
+    /// モーション開始を受けて演出やサウンドを再生する用途に使う（現状は EnemyId のみ）。
+    /// </summary>
+    public readonly struct EnemyAttackMotionEndedEvent
+    {
+        public readonly string EnemyId;
+
+        public EnemyAttackMotionEndedEvent(string enemyId)
+        {
+            EnemyId = enemyId;
+        }
+    }
+
+    /// <summary>
     /// 敵の本体HP変化通知。
     /// EnemyHealthが変化するたびに発行する。
     /// </summary>
