@@ -95,7 +95,7 @@ namespace Game.Core.Enemy
                 gameObject.AddComponent<EnemyWorldStatusView>();
             }
             // TODO 敵オブジェクトの高さを決定できるようにする
-            statusView.Initialize(InstanceEnemyId, new Vector3(0.0f, 3.6f, 1.5f), definition.HasBarrier);
+            statusView.Initialize(InstanceEnemyId, new Vector3(0.0f, 1.6f, 0.5f), definition.HasBarrier);
 
             // HP管理初期化
             _health = new EnemyHealth();
