@@ -31,3 +31,7 @@ MonoBehaviour:
       spawnCount: 3
       startDelay: 0
       spawnInterval: 1
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 2
+      startDelay: 0
+      spawnInterval: 1
