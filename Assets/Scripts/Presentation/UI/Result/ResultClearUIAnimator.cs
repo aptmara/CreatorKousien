@@ -7,12 +7,14 @@
 //
 // Notes	:
 // - ベースのUIアニメーションを再生する
+// Notes	: コントローラー対応させました。 - 2026/07/14  Iwai
 // ------------------------------------------------------------
 using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 namespace Game.Presentation.UI.Result
 {
@@ -193,6 +195,13 @@ namespace Game.Presentation.UI.Result
             if (_titleButton != null)
             {
                 _titleButton.interactable = true;
+
+                // アニメーションが完全に終わったらボタンを選択状態にする
+                if (EventSystem.current != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(null);
+                    EventSystem.current.SetSelectedGameObject(_titleButton.gameObject);
+                }
             }
         }
 

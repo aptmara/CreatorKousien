@@ -165,5 +165,5 @@ MonoBehaviour:
   _animator: {fileID: 180908112170821028}
   _maxHitAnimationTime: 2
   _addHitAnimationTime: 1
-  _dropDuration: 0.3
+  _dropDuration: 0.5
   _dropRot: {x: 0, y: 90, z: -180}

@@ -57,11 +57,13 @@ namespace Game.Core.Enemy
         public float Attackinterval = 5.0f;
 
         [Header("攻撃モーション時間")]
-        [Tooltip("攻撃モーションにかかる時間、モーション秒数以上に長くした場合再度再生される")]
+        [Tooltip("攻撃モーション開始から終了までの時間")]
+        [Min(0f)]
         public float AttackMotionTime = 3.0f;
 
-        [Header("攻撃間隔")]
+        [Header("攻撃前隙")]
         [Tooltip("攻撃の前隙")]
+        [Min(0f)]
         public float AttackStartUpTime = 1.5f;
 
 

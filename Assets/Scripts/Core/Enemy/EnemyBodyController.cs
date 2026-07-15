@@ -1,9 +1,6 @@
-using Game.Core.Enemy;
 using Game.Core.Events;
 using System.Collections;
-using Unity.Mathematics;
 using UnityEngine;
-using static UnityEngine.InputSystem.PlayerInput;
 
 namespace Game.Core.Enemy
 {
@@ -27,11 +24,11 @@ namespace Game.Core.Enemy
         float _elapsedTime;
         Quaternion _startRot;
 
-        int _test = 0;
-        int _test2 = 0;
-
-        private int _attackStateLayer = 0; // 攻撃ステートがあるレイヤー（通常0）
+        private const int AttackStateLayer = 0;
         private static readonly int AttackStateHash = Animator.StringToHash("Attack");
+        private static readonly int AttackStartParameterHash = Animator.StringToHash("AttackAnimeEvent");
+        private static readonly int AttackEndParameterHash = Animator.StringToHash("AttackAnimeEndEvent");
+
         private void Start()
         {
             var controller = GetComponentInParent<EnemyController>();
@@ -48,6 +45,9 @@ namespace Game.Core.Enemy
             {
                 controller.OnDropStarted -= OnDropStarted;
             }
+
+            EventBus.Unsubscribe<EnemyAttackMotionStartedEvent>(OnAttackMotionStarted);
+            EventBus.Unsubscribe<EnemyAttackMotionEndedEvent>(OnAttackMotionEnded);
         }
 
         public void Initialize(string enemyID)
@@ -60,8 +60,8 @@ namespace Game.Core.Enemy
                 _receiver.OnHitAction = HandleHitDamage;
             }
 
-            EventBus.Subscribe<EnemyAttackMotionStartedEvent>(OnAttackMotion);
-            EventBus.Subscribe<EnemyAttackMotionEndedEvent>(OnAttackMotionEnd);
+            EventBus.Subscribe<EnemyAttackMotionStartedEvent>(OnAttackMotionStarted);
+            EventBus.Subscribe<EnemyAttackMotionEndedEvent>(OnAttackMotionEnded);
         }
 
         private void Update()
@@ -82,46 +82,48 @@ namespace Game.Core.Enemy
             if (_animator != null) _animator.SetFloat("HitTime", _hitAnimationTime);
         }
 
-        void OnAttackMotion(EnemyAttackMotionStartedEvent motionEvent)
+        void OnAttackMotionStarted(EnemyAttackMotionStartedEvent motionEvent)
         {
-            if(motionEvent.EnemyId != _enemyID) return;
+            if (motionEvent.EnemyId != _enemyID) return;
             if (_animator == null) return;
 
-            // 現在のステート情報を取得
-            var state = _animator.GetCurrentAnimatorStateInfo(0);
+            bool isInTransition = _animator.IsInTransition(AttackStateLayer);
+            bool isCurrentStateAttack = _animator.GetCurrentAnimatorStateInfo(AttackStateLayer).shortNameHash == AttackStateHash;
+            bool isNextStateAttack = isInTransition
+                && _animator.GetNextAnimatorStateInfo(AttackStateLayer).shortNameHash == AttackStateHash;
 
-            // 現在ステートが攻撃ステートか（shortNameHashで比較）
-            bool isInAttackState = state.shortNameHash == AttackStateHash;
+            _animator.ResetTrigger(AttackEndParameterHash);
 
-            // トランジション中かどうか（必要に応じて確認）
-            bool isInTransition = _animator.IsInTransition(0);
-
-            if (isInAttackState && !isInTransition)
+            if (isCurrentStateAttack && !isInTransition)
             {
-                _test2++;
-                // 攻撃ステート名が指定されていればそのステートを先頭から強制再生（リスタート）
-                Debug.Log(_test2 + "回目の攻撃モーションを再起動");
-                _animator.CrossFadeInFixedTime(AttackStateHash, 0.08f, _attackStateLayer, 0f);
-                // 即時反映
-                _animator.Update(0f);
+                _animator.CrossFadeInFixedTime(AttackStateHash, 0.08f, AttackStateLayer, 0f);
+            }
+            else if (!isNextStateAttack)
+            {
+                _animator.SetTrigger(AttackStartParameterHash);
+            }
+        }
+
+        void OnAttackMotionEnded(EnemyAttackMotionEndedEvent endEvent)
+        {
+            if (endEvent.EnemyId != _enemyID) return;
+            if (_animator == null) return;
+
+            bool isInTransition = _animator.IsInTransition(AttackStateLayer);
+            bool isCurrentStateAttack = _animator.GetCurrentAnimatorStateInfo(AttackStateLayer).shortNameHash == AttackStateHash;
+            bool isNextStateAttack = isInTransition
+                && _animator.GetNextAnimatorStateInfo(AttackStateLayer).shortNameHash == AttackStateHash;
+
+            _animator.ResetTrigger(AttackStartParameterHash);
+            if ((!isInTransition && isCurrentStateAttack) || isNextStateAttack)
+            {
+                _animator.SetTrigger(AttackEndParameterHash);
             }
             else
             {
-                _test++;
-                Debug.Log(_test + "回目の攻撃モーションイベントを発行されました");
-                _animator.SetTrigger("AttackAnimeEvent");
+                _animator.ResetTrigger(AttackEndParameterHash);
             }
         }
-
-        void OnAttackMotionEnd(EnemyAttackMotionEndedEvent endEvent)
-        {
-            if (endEvent.EnemyId != _enemyID) return;
-
-            _animator.SetTrigger("AttackAnimeEndEvent");
-
-        }
-
-
         void OnDropStarted()
         {
             _elapsedTime = 0.0f;

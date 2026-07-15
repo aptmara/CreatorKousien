@@ -101,6 +101,7 @@ MonoBehaviour:
   _minimumHitSpeed: 0.75
   _bodyDamageMultiplier: 2.5
   _despawnItemOnHit: 1
+  UIWorldOffset: {x: 0, y: 2.81, z: 0.19}
 --- !u!95 &3090767071386169047
 Animator:
   serializedVersion: 7

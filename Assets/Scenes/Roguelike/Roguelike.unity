@@ -152,7 +152,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 450, y: 50}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &97049209
@@ -164,23 +164,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 97049207}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GridLayoutGroup
   m_Padding:
     m_Left: 0
     m_Right: 0
-    m_Top: -250
+    m_Top: 0
     m_Bottom: 0
-  m_ChildAlignment: 5
-  m_Spacing: 200
-  m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
-  m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
+  m_ChildAlignment: 4
+  m_StartCorner: 0
+  m_StartAxis: 0
+  m_CellSize: {x: 200, y: 200}
+  m_Spacing: {x: 20, y: 20}
+  m_Constraint: 1
+  m_ConstraintCount: 3
 --- !u!1 &557249603
 GameObject:
   m_ObjectHideFlags: 0
@@ -320,6 +318,7 @@ GameObject:
   - component: {fileID: 705193400}
   - component: {fileID: 705193401}
   - component: {fileID: 705193403}
+  - component: {fileID: 705193404}
   m_Layer: 0
   m_Name: RoguelikeManager
   m_TagString: Untagged
@@ -366,9 +365,11 @@ MonoBehaviour:
   _panelRoot: {fileID: 1113188341}
   _exitButton: {fileID: 2122145297}
   _backGround: {fileID: 280133138533333906, guid: 9a04e90fc9bb88c439ee030e4c81a0ef, type: 3}
-  _moneyData: {fileID: 11400000, guid: ed79cb34a0ad631409cafd0e16aac641, type: 2}
   _upgradeBoard: {fileID: 7856578012856789490, guid: bb5dd133f2d42b742962ab320493d158, type: 3}
-  _cardidateCount: 3
+  _moneyData: {fileID: 11400000, guid: ed79cb34a0ad631409cafd0e16aac641, type: 2}
+  _moneyUI: {fileID: 705193404}
+  _cardidateCount: 9
+  _columnCount: 3
 --- !u!114 &705193399
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -418,7 +419,6 @@ MonoBehaviour:
   _selectionUI: {fileID: 705193398}
   _navigateDeadzone: 0.5
   _navigateCooldown: 0.2
-  _exitHoldDuration: 0.001
 --- !u!114 &705193403
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -433,6 +433,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::S_RoguelikeSelectInput
   _actions: {fileID: -944628639613478452, guid: 766b863253aa5a64184eee2469baf3ef, type: 3}
   _actionMapName: Roguelike
+--- !u!114 &705193404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705193396}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54889e5028c713a41bcff481ecb001a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::S_RoguelikeMoneyUI
+  _moneyPrefab: {fileID: 6675198725112651241, guid: f1ec9a27bb06abc439c8c41a0992b153, type: 3}
+  _spawnParent: {fileID: 1113188344}
 --- !u!1 &1113188341
 GameObject:
   m_ObjectHideFlags: 0
@@ -939,7 +953,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &2122145297
 MonoBehaviour:
   m_ObjectHideFlags: 0

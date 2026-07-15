@@ -95,7 +95,7 @@ namespace Game.Core.Enemy
                 gameObject.AddComponent<EnemyWorldStatusView>();
             }
             // TODO 敵オブジェクトの高さを決定できるようにする
-            statusView.Initialize(InstanceEnemyId, new Vector3(0.0f, 3.6f, 1.5f), definition.HasBarrier);
+            statusView.Initialize(InstanceEnemyId, new Vector3(0.0f, 1.6f, 0.5f), definition.HasBarrier);
 
             // HP管理初期化
             _health = new EnemyHealth();
@@ -128,7 +128,7 @@ namespace Game.Core.Enemy
 
             // 敵攻撃処理初期化
             _enemyAttack = new EnemyAttack();
-            _enemyAttack.Initialize(InstanceEnemyId ,definition.AttackPower, definition.Attackinterval, false, definition.AttackMotionTime, definition.AttackStartUpTime);
+            _enemyAttack.Initialize(InstanceEnemyId, definition.AttackPower, definition.Attackinterval, false, definition.AttackMotionTime, definition.AttackStartUpTime);
 
 
             // 初期HP・ゲージをUIに通知
@@ -170,6 +170,13 @@ namespace Game.Core.Enemy
             _rising.StartRise(spawnSummary.TargetPos, spawnSummary.UndergroundOffset, transform);
 
             _debuffManager = new EnemyDebuffManager(HandleDamageOverTime, HandleFreeze, HandleFreezeEnd);
+
+            // VFX コンポーネントはオプション（不要な敵はコンポーネントを外す）
+            var statusVFX = GetComponent<EnemyStatusAilmentVFX>();
+            if (statusVFX != null)
+            {
+                statusVFX.Initialize(_debuffManager, this);
+            }
 
             return InstanceEnemyId;
         }
@@ -302,6 +309,8 @@ namespace Game.Core.Enemy
         private void HandleDefeated()
         {
             _stateManager.TransitionTo(EnemyState.OverHit);
+            _enemyAttack.ResetAttack();
+            _enemyAttack.SetActiv(false);
 
             if (_downTimerCoroutine != null)
             {
@@ -399,6 +408,7 @@ namespace Game.Core.Enemy
                 _barrierGauge.ResetGauge();
                 _barrierGauge.SetActive(true);
                 _barrierGauge.SetActive(_definition.HasBarrier);
+                _enemyAttack.SetActiv(_stateManager.CanAttackDefenceLine);
 
                 Debug.Log($"[EnemyController] {InstanceEnemyId} ダウン復帰。ゲージリセット。");
             }
@@ -427,10 +437,8 @@ namespace Game.Core.Enemy
         float _attackTimer;
         float _attackMotionTimer;
 
-        bool isAttackMotion = false;
-        bool isAttack = false;
-
-        Action OnAttackEnd;
+        bool _isAttackMotion;
+        bool _hasAttacked;
 
         public void Initialize(string enemyID, float attackPower, float attackInterval, bool isActiv, float attackMotionTime, float startUpLag)
         {
@@ -447,7 +455,7 @@ namespace Game.Core.Enemy
         {
             if (!_isActiv) return;
 
-            if(isAttackMotion) UpdateAttackMotion();
+            if (_isAttackMotion) UpdateAttackMotion();
             else UpdateAttackWait();
         }
 
@@ -462,10 +470,9 @@ namespace Game.Core.Enemy
 
                 _attackMotionTimer = _attackMotionTime;
                 _attackTimer = _attackStartUpLag;
-                Debug.Log("攻撃モーション開始！");
                 EventBus.Publish(new EnemyAttackMotionStartedEvent(_enemyID));
-                isAttackMotion = true;
-                isAttack = false;
+                _isAttackMotion = true;
+                _hasAttacked = false;
             }
         }
 
@@ -473,10 +480,10 @@ namespace Game.Core.Enemy
         {
             // 前隙終了
             _attackTimer -= Time.deltaTime;
-            if (!isAttack && _attackTimer <= 0.0f)
+            if (!_hasAttacked && _attackTimer <= 0.0f)
             {
                 AttackNow();
-                isAttack = true;
+                _hasAttacked = true;
             }
 
             // 攻撃終了
@@ -484,15 +491,15 @@ namespace Game.Core.Enemy
             if (_attackMotionTimer <= 0.0f)
             {
                 // もしモーション終了時に前隙攻撃が行われていなかったら攻撃する
-                if(!isAttack)
+                if (!_hasAttacked)
                 {
                     AttackNow();
                 }
 
                 EventBus.Publish(new EnemyAttackMotionEndedEvent(_enemyID));
 
-                isAttackMotion = false;
-                isAttack = false;
+                _isAttackMotion = false;
+                _hasAttacked = false;
             }
         }
 
@@ -503,9 +510,9 @@ namespace Game.Core.Enemy
 
         public void ResetAttack()
         {
-            if(isAttackMotion) EventBus.Publish(new EnemyAttackMotionEndedEvent(_enemyID));
-            isAttackMotion = false;
-            isAttack = false;
+            if (_isAttackMotion) EventBus.Publish(new EnemyAttackMotionEndedEvent(_enemyID));
+            _isAttackMotion = false;
+            _hasAttacked = false;
             _attackInterval = _maxAttackInterval;
             _attackTimer = _attackStartUpLag;
             _attackMotionTimer = _attackMotionTime;
@@ -517,10 +524,6 @@ namespace Game.Core.Enemy
             EventBus.Publish(new RuleBarrierAttackEvent(_attackPower));
         }
 
-        private void Attack()
-        {
-            AttackNow();
-        }
     }
 
     public class EnemyHoldCounter
@@ -617,6 +620,11 @@ namespace Game.Core.Enemy
         private Action<float> _freezeRequest;
         private Action _freezeEndRequest;
 
+        /// <summary>デバフが新規付与されたときに発火する（debuffType）。</summary>
+        public event Action<string> OnDebuffAdded;
+        /// <summary>デバフが解除されたときに発火する（debuffType）。</summary>
+        public event Action<string> OnDebuffRemoved;
+
         public EnemyDebuffManager(Action<float> damageRequest, Action<float> freezeRequest, Action freezeEndRequest)
         {
             _damageRequest = damageRequest;
@@ -634,10 +642,16 @@ namespace Game.Core.Enemy
 
         public void AddDebuff(EnemyDebuffConfig debuffConfig)
         {
+            // すでに別の状態異常がかかっている場合は、もとのものを維持して新しい状態異常を無視する
+            if (_activeDebuffs.Count > 0 && !_activeDebuffs.ContainsKey(debuffConfig.DebuffType))
+            {
+                return;
+            }
+
             EnemyDebuffRuntime currentActivDebuff;
             if (_activeDebuffs.TryGetValue(debuffConfig.DebuffType, out currentActivDebuff))
             {
-                // 状態異常効果を加算する
+                // 状態異常効果時間をリセットする
                 currentActivDebuff.MergeDebuffEffect(debuffConfig);
 
                 // 追加された状態異常に応じて効果リクエストを送信
@@ -654,6 +668,8 @@ namespace Game.Core.Enemy
 
                 Debug.Log(debuffConfig.DebuffType.ToString() + "を追加！");
 
+                OnDebuffAdded?.Invoke(debuffConfig.DebuffType);
+
                 // 追加された状態異常に応じて効果リクエストを送信
                 if(data.IsFreezeActive)
                 {
@@ -666,6 +682,8 @@ namespace Game.Core.Enemy
         {
             // デバフの効果を解除する処理
             _activeDebuffs.Remove(debuffKey);
+
+            OnDebuffRemoved?.Invoke(debuffKey);
 
             // 解除後の状況に応じてコールバックを返す
             if (!IsFreeze())
@@ -682,6 +700,10 @@ namespace Game.Core.Enemy
                 _freezeEndRequest.Invoke();
             }
 
+            foreach (var key in _activeDebuffs.Keys.ToList())
+            {
+                OnDebuffRemoved?.Invoke(key);
+            }
             _activeDebuffs.Clear();
         }
         public bool HasDebuff(string debuffType)
@@ -756,6 +778,7 @@ namespace Game.Core.Enemy
 
             // 値を削除
             _activeDebuffs.Remove(debuffType);
+            OnDebuffRemoved?.Invoke(debuffType);
             // 凍結解除
             if (debuff.UseFreeze)
             {
@@ -860,7 +883,11 @@ namespace Game.Core.Enemy
                         Debug.LogWarning(debuff.DebuffType + "と" + this.DebuffType + "は異なるデバフのため、統合できません。");
                     return;
                 }
-                // 継続ダメージの効果を加算する
+
+                // 全体の効果時間をリセット
+                Duration = debuff.Duration;
+
+                // 継続ダメージの効果をリセットする
                 if (debuff.UseDamageOverTime)
                 {
                     MergeDamageOverTime(debuff.OverTimeDuration, debuff.OverTimeMaxDamage, debuff.OverTimeMinDamage, debuff.OverTimeInterval);
@@ -951,7 +978,7 @@ namespace Game.Core.Enemy
                 )
             {
                 UseFreeze = true;
-                FreezeDuration = Mathf.Max(FreezeDuration, newFreezeDuration);
+                FreezeDuration = newFreezeDuration; // 効果時間リセット
                 FreezeHitDurability = newFreezeHitDurability;
                 FreezeBreakDamage = newFreezeBreakDamage;
             }
@@ -964,8 +991,7 @@ namespace Game.Core.Enemy
                 )
             {
                 UseDamageOverTime = true;
-                // 継続時間は長い方にする
-                OverTimeDuration = Mathf.Max(newOverTimeDuration, OverTimeDuration);
+                OverTimeDuration = newOverTimeDuration; // 効果時間リセット
                 OverTimeMaxDamage = newOverTimeMaxDamage;
                 OverTimeMinDamage = newOverTimeMinDamage;
                 OverTimeInterval = newOverTimeInterval;

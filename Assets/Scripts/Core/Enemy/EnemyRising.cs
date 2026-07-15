@@ -462,5 +462,6 @@ namespace Game.Core.Enemy
             _isStopping = false;
             RestartCoroutine();
         }
+
     }
 }

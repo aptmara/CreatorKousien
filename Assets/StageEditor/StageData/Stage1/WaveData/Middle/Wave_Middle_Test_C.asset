@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: afad848287d220844a1244f267789a9c, type: 3}
+  m_Name: Wave_Middle_Test_C
+  m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.WaveDataSO
+  waveName: Wave_Middle_Test_C
+  plannerMemo: 
+  startDelay: 1
+  completeDelay: 2
+  hpRate: 1
+  barrierRate: 1
+  maxAliveEnemies: 0
+  minDistanceFromOtherEnemies: 3
+  groups:
+  - groupName: 
+    plannerMemo: 
+    delayBeforeStart: 0
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 3
+      startDelay: 0
+      spawnInterval: 1
