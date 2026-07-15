@@ -44,33 +44,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48ace6592fc2c9a489aed5ee94288a32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
-  _spawnAction:
-    m_Name: Spawn
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: 6c4795c7-8096-4d6a-9f10-cf048b74810e
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: 0ac29537-95e0-45bf-bc90-9c68e937e545
-      m_Path: <Keyboard>/f10
-      m_Interactions: 
-      m_Processors: 
-      m_Groups: 
-      m_Action: Spawn
-      m_Flags: 0
-    m_Flags: 0
-  _enemyPrefab: {fileID: 8990543758482931198, guid: 1929e3aeac607824092eabd95578b649, type: 3}
-  _definition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-  _rangeSize: {x: 10, y: 2}
+  _rangeSize: {x: 36.3, y: 2}
+  _statusAilmentVFXEntries:
+  - DebuffType: Poison
+    LoopVFXPrefab: {fileID: 8035996757950515496, guid: 170793df188586a41bad20c0bff1a0b2, type: 3}
+    DeathVFXPrefab: {fileID: 764230422517785610, guid: a3903a9f1a5a421439e626b15ab82bf2, type: 3}
+    OverlayMaterial: {fileID: 2100000, guid: 93aad8f6debfb4b49a80725137d766e4, type: 2}
+    ChildScale: {x: 3.63, y: 3.63, z: 3.63}
+  - DebuffType: Ice
+    LoopVFXPrefab: {fileID: 8521017165506079719, guid: ff5b1301f5cdbc046b8000c9a85be2f2, type: 3}
+    DeathVFXPrefab: {fileID: 3140498029041030553, guid: 6c17ff86033df8e41b754e11780e86d8, type: 3}
+    OverlayMaterial: {fileID: 2100000, guid: 32a997adbcf97d346882114aa4a4dffe, type: 2}
+    ChildScale: {x: 3.63, y: 3.63, z: 3.63}
+  _statusAilmentVFXRoot: {fileID: 0}
+  _statusAilmentVFXOffset: {x: 0, y: -0.83, z: -2.01}
   _spawnBasePoint: {fileID: 8125261586118470773}
-  _undergroundOffset: 0
-  _minDistanceFromOtherEnemies: 3
-  _maxSpawnPositionAttempts: 20
-  _enableAutoSpawn: 1
-  _initialSpawnDelay: 2
-  _spawnInterval: 5
-  _enemiesPerSpawn: 1
-  _maxAliveEnemies: 3
-  _enemySpawnerDefinition: {fileID: 11400000, guid: f14a04607d1020d4c9a6e8adde6d5a6e, type: 2}
+  _undergroundOffset: 10
