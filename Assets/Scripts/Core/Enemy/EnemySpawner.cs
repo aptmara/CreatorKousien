@@ -1,7 +1,7 @@
 /**
  * 作成：寺田晴
  *
- * 内容：敵を生成する(現在はデバッグキー込み)
+ * 内容：敵を生成する
  *
  * 更新履歴：
  * 5/30: 敵生成時、重なってスポーンしないように修正しました - 浅野
@@ -17,12 +17,10 @@
  *       ウェーブ進行管理を GameProgressionManager へ分離。 - Iwai a.k.a. ZEUS
  *
  * 7/11: ボスの追加 - Y_Akira
+ *
+ * 7/15: EnemySpawnerほぼ全部修正。新たにつくったWave管理のデータから敵をスポーンするように変更。 - Asano a.k.a. Gachi
  */
-
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Game.Presentation.UI;
 
 namespace Game.Core.Enemy
@@ -32,9 +30,6 @@ namespace Game.Core.Enemy
     /// </summary>
     public class EnemySpawner : MonoBehaviour
     {
-        [Header("DebugInput設定")]
-        [SerializeField] private InputAction _spawnAction;
-
         [Tooltip("生成する範囲(2D:横幅*奥行)")]
         [SerializeField] private Vector2 _rangeSize;
 
@@ -57,90 +52,11 @@ namespace Game.Core.Enemy
         [Min(0f)]
         private float _undergroundOffset = 10f;
 
-        // 既存の敵と最低限空ける距離
-        [Min(0f)] private float _minDistanceFromOtherEnemies = 3.0f;
 
         // スポーン位置を探す最大試行回数"
         [Min(1)] private int _maxSpawnPositionAttempts = 20;
 
-        // 自動スポーンの間隔
-        [Min(0.1f)] private float _spawnInterval = 5.0f;
 
-        // 同時に存在できる敵の最大数,0以下なら制限なし
-        private int _maxAliveEnemies = 3;
-
-        // 現在のウェーブの敵情報
-        private List<EnemyDefinition> _currentSpawnEnemies = new List<EnemyDefinition>();
-        private float _currentHpRate = 1.0f;
-        private float _currentBarrierRate = 1.0f;
-
-        private Coroutine _autoSpawnCoroutine;
-
-
-        private void OnEnable()
-        {
-            // デバッグインプットを行うための登録
-            if (_spawnAction != null)
-            {
-                _spawnAction.performed += OnSpawnPerformed;
-                _spawnAction.Enable();
-            }
-
-        }
-
-        private void OnDisable()
-        {
-            // デバッグインプットの登録解除
-            if (_spawnAction != null)
-            {
-                _spawnAction.performed -= OnSpawnPerformed;
-                _spawnAction.Disable();
-            }
-
-            StopSpawnRoutine();
-        }
-
-        /// <summary>
-        /// デバッグインプットにより行う関数
-        /// </summary>
-        /// <param name="context"></param>
-        private void OnSpawnPerformed(InputAction.CallbackContext context)
-        {
-            SpawnEnemy();
-        }
-
-        /// <summary>
-        /// マネージャーからウェーブ情報を受け取り、このウェーブの生成フローを最初から回す。
-        /// </summary>
-        /// <param name="waveData"></param>
-        /// <param name="undergroundOffset"></param>
-        public void InjectAndStartWave(EnemySpawnerDefinition.WaveData waveData, float undergroundOffset)
-        {
-            StopSpawnRoutine();
-
-            // 進行マネージャーから渡されたウェーブ固有のパラメータを同期
-            _undergroundOffset = undergroundOffset;
-            _maxAliveEnemies = waveData.MaxAliveEnemies;
-            _minDistanceFromOtherEnemies = waveData.MinDistanceFromOtherEnemies;
-            _spawnInterval = waveData.SpawnInterval;
-
-            // 敵リストのコピーとステータス倍率の適用
-            _currentSpawnEnemies = waveData.SpawnEnemies;
-            _currentHpRate = waveData.HPRate;
-            _currentBarrierRate = waveData.BarrierRate;
-
-            // スポーンの開始
-            _autoSpawnCoroutine = StartCoroutine(AutoSpawnRoutine());
-        }
-
-        private void StopSpawnRoutine()
-        {
-            if (_autoSpawnCoroutine != null)
-            {
-                StopCoroutine(_autoSpawnCoroutine);
-                _autoSpawnCoroutine = null;
-            }
-        }
 
 
         public bool TrySpawnEnemy(EnemyDefinition definition, float hpRate, float barrierRate, float minDistanceFromOtherEnemies, out EnemyController spawnedEnemy)
@@ -225,83 +141,6 @@ namespace Game.Core.Enemy
 
             spawnedEnemy = enemyController;
             return true;
-        }
-
-
-        /// <summary>
-        /// 敵の生成
-        /// </summary>
-        private void SpawnEnemy()
-        {
-            if (_currentSpawnEnemies.Count == 0)
-            {
-                return;
-            }
-
-            EnemyDefinition definition = _currentSpawnEnemies[0];
-
-            if (definition == null)
-            {
-                Debug.LogWarning("[EnemySpawner] スポーン対象の EnemyDefinition が null です。");
-                _currentSpawnEnemies.RemoveAt(0);
-                return;
-            }
-
-            bool succeeded = TrySpawnEnemy(definition, _currentHpRate, _currentBarrierRate, _minDistanceFromOtherEnemies, out _);
-
-            if (succeeded)
-            {
-                _currentSpawnEnemies.RemoveAt(0);
-            }
-        }
-
-        private IEnumerator AutoSpawnRoutine()
-        {
-            // インジェクト直後は少しだけ待機
-            yield return new WaitForSecondsRealtime(0.5f);
-
-            while (_currentSpawnEnemies.Count > 0)
-            {
-                // 同時に存在出来るエネミー上限に達していない場合のみスポーンする
-                if (!IsAliveEnemyLimitReached())
-                {
-                    SpawnEnemy();
-                }
-
-                // ローグライク中はループ自体がポーズ
-                yield return new WaitForSeconds(_spawnInterval);
-            }
-        }
-
-        /// <summary>
-        /// 同時に存在できる敵の最大数に達しているか
-        /// </summary>
-        /// <returns>達していたらtrue</returns>
-        private bool IsAliveEnemyLimitReached()
-        {
-            if (_maxAliveEnemies <= 0) return false; // 制限なし
-
-            return CountAliveEnemies() >= _maxAliveEnemies;
-        }
-
-        /// <summary>
-        /// 現在存在する生存中の敵の数を数える
-        /// </summary>
-        /// <returns>生存する敵の数</returns>
-        private int CountAliveEnemies()
-        {
-            EnemyController[] enemies = FindObjectsByType<EnemyController>(FindObjectsSortMode.None);
-            int count = 0;
-
-            foreach (EnemyController enemy in enemies)
-            {
-                if (enemy != null && enemy.gameObject.activeInHierarchy)
-                {
-                    count++;
-                }
-            }
-
-            return count;
         }
 
         /// <summary>

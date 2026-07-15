@@ -372,6 +372,16 @@ namespace Game.WaveSystem
         }
 
 
+        /// <summary>
+        /// 実行中の強制中断し、ランタイム状態をリセット
+        /// </summary>
+        public void AbortAndReset()
+        {
+            StopAllCoroutines();
+            ResetRuntimeState();
+            LastRunSucceeded = false;
+        }
+
 
         /// <summary>
         /// ランタイム状態をリセットします。

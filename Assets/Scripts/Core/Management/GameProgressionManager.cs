@@ -212,36 +212,6 @@ namespace Game.Core.Management
         }
 
 
-
-        ///// <summary>
-        ///// エネミー撃破時のコールバック。全滅した瞬間にローグライクフェーズへ遷移。
-        ///// </summary>
-        ///// <param name="ev"></param>
-        //private void OnEnemyDefeated(EnemyDefeatedEvent ev)
-        //{
-        //    if (_currentState != GameProgressionState.Battle) return;
-
-        //    _defeatedEnemiesInCurrentWave++;
-        //    Debug.Log($"[Progression] エネミー撃破検知: {_defeatedEnemiesInCurrentWave} / {_totalEnemiesInCurrentWave}");
-
-        //    // 現在のウェーブの敵が全滅したかどうかチェック
-        //    if (_defeatedEnemiesInCurrentWave >= _totalEnemiesInCurrentWave)
-        //    {
-        //        if (_currentWaveIndex + 1 >= _spawnerDefinition.WaveDatas.Count)
-        //        {
-        //            // 最終ウェーブクリア -> ゲームクリア状態へ遷移
-        //            StartCoroutine(AnimateWaveClearRoutine(isFinalWave: true));
-        //        }
-        //        else
-        //        {
-        //            // ウェーブクリア -> ローグライクフェーズへ遷移
-        //            StartCoroutine(AnimateWaveClearRoutine(isFinalWave: false));
-
-        //            EventBus.Publish(new PlayerTiltEvent(25.0f));
-        //        }
-        //    }
-        //}
-
         private void OnDefenseLineBroken(DefLineBreakReactionEvent ev)
         {
             if (_currentState != GameProgressionState.Battle) return;
@@ -526,6 +496,14 @@ namespace Game.Core.Management
                 Debug.LogError("[Progression] WaveRunnerがGameProgressionManagerと同じGameObjectにありません。");
                 yield break;
             }
+
+
+            if (stageContext.ManualTestMode)
+            {
+                Debug.Log("[Progression] 手動テストモードのため、自動Wave進行をスキップします");
+                yield break;
+            }
+
 
             // StageDataSOからWave順を生成
             int seed = stageContext.CreateSeed();

@@ -38,6 +38,18 @@ namespace Game.WaveSystem
         private int fixedSeed = 12345;
 
 
+        [Header("--- デバッグ ---")]
+        [SerializeField]
+        [Tooltip("ONにすると、このSceneでは自動でWaveを進行しません。WaveTesterで手動実行するデバック用モードです")]
+        private bool manualTestMode = false;
+
+
+        /// <summary>
+        /// デバック用モードかどうか
+        /// </summary>
+        public bool ManualTestMode => manualTestMode;
+
+
 
         private bool hasCreatedSeed;        ///< Seedを生成済みかどうかを取得します。
         private int createdSeed;            ///< 生成済みのSeedの値を取得します。
