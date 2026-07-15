@@ -16,16 +16,30 @@ public class S_UpgradeCard : MonoBehaviour
     // variables
 
     [Header("見た目")]
+    [Header("アイコン")]
     [SerializeField] private Image _iconImage;
+    [Header("強化名")]
     [SerializeField] private TextMeshProUGUI _nameText;
+    [Header("詳細説明")]
     [SerializeField] private TextMeshProUGUI _descriptionText;
+    [Header("レベル表示(〇/〇)")]
     [SerializeField] private TextMeshProUGUI _levelText;
+    [Header("使用していない(空でOK)")]
     [SerializeField] private GameObject _acquiredMark;
-    [SerializeField] private GameObject _highlightFrame;
+    [Header("コストを表示するテキスト")]
     [SerializeField] private TextMeshProUGUI _costText;
+
+    [Header("フォーカス演出")]
+    [SerializeField] private S_UIScaleAnimator _scaleAnimator;
+
+    [Header("旧Frame演出")]
+    [SerializeField] private GameObject _highlightFrame;
+    [Header("旧Frameを使用するか")]
+    [SerializeField] private bool _useFrameHighlight = false;
 
     [Header("機能面")]
     [SerializeField] private Button _selectButton;
+
 
     private UpgradeData _cardData;
 
@@ -42,6 +56,11 @@ public class S_UpgradeCard : MonoBehaviour
     public void Setup(UpgradeData cardData, int currentLevel,
         System.Action<UpgradeData> onSelected)
     {
+        if (!_useFrameHighlight && _highlightFrame != null)
+        {
+            _highlightFrame.SetActive(false);
+        }
+
         _cardData = cardData;
 
         _selectButton.onClick.RemoveAllListeners();
@@ -84,12 +103,32 @@ public class S_UpgradeCard : MonoBehaviour
         _selectButton.interactable = !isMaxed;
     }
 
-    public void SetHighlightFrame(bool isHighlighted)
+
+    /// <summary>
+    /// キーボード/ゲームパッドでのフォーカス状態を切り替える関数
+    /// </summary>
+    /// <param name="isHighlighted"></param>
+    public void SetHighlighted(bool isHighlighted)
     {
-        if(_highlightFrame != null)
+        if(_scaleAnimator != null)
+        {
+            _scaleAnimator.SetHighlighted(isHighlighted);
+        }
+
+        // 旧Frame方式
+        if(_useFrameHighlight && _highlightFrame != null)
         {
             _highlightFrame.SetActive(isHighlighted);
         }
+    }
+
+    /// <summary>
+    /// 選択確定時のアニメーションを再生する関数
+    /// </summary>
+    /// <param name="onComplete"></param>
+    public void PlaySelectedAnimation(System.Action onComplete = null)
+    {
+        _scaleAnimator?.PlaySelectedAnimation(onComplete);
     }
 
 }

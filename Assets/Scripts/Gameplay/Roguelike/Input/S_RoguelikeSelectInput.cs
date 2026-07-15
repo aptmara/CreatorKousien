@@ -1,5 +1,10 @@
-
-using Unity.VisualScripting;
+//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+// file   : S_RoguelikeSelectInput.cs
+// brief  : ローグライクで使用する入力操作をAssetから取得し、検知
+//
+// auther : Takitani Shohei
+// date   : 2026/07/12 - begin
+//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using UnityEngine;
 using UnityEngine.InputSystem;
 
