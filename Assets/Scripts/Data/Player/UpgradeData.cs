@@ -9,7 +9,6 @@
 // - アップグレードデータの作成
 // - 2026/07/14 - SO_UpgradeCardDataと統合、UI/コスト等の情報を集約 - 滝谷
 // ------------------------------------------------------------
-using System.Transactions;
 using UnityEngine;
 
 namespace Game.Data.Player

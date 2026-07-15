@@ -2,7 +2,7 @@
 // file   : UpgradeRuntimeEntry.cs
 // brief  : 強化の分類
 //
-// auther : Shohei Takitani
+// auther : Takitani Shohei
 // date   : 2026/07/01 - begin.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using UnityEngine;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Game.Core.Events;
 using UnityEngine;
 
 namespace Game.Core.Enemy
@@ -22,6 +23,12 @@ namespace Game.Core.Enemy
         [SerializeField] Vector3 _dropRot;
         [SerializeField, Min(0f)] float _postFlipDelay = 0.25f;
         Coroutine _dropPoseCoroutine;
+
+        private const int AttackStateLayer = 0;
+        private static readonly int HitTimeParameterHash = Animator.StringToHash("HitTime");
+        private static readonly int AttackStateHash = Animator.StringToHash("Attack");
+        private static readonly int AttackStartParameterHash = Animator.StringToHash("AttackAnimeEvent");
+        private static readonly int AttackEndParameterHash = Animator.StringToHash("AttackAnimeEndEvent");
 
         [Header("Cartoon Feedback")]
         [SerializeField] bool _useCartoonFeedback;
@@ -49,6 +56,12 @@ namespace Game.Core.Enemy
         Vector3 _visualScaleMultiplier = Vector3.one;
         Coroutine _hitFeedbackCoroutine;
 
+        private void OnDestroy()
+        {
+            EventBus.Unsubscribe<EnemyAttackMotionStartedEvent>(OnAttackMotionStarted);
+            EventBus.Unsubscribe<EnemyAttackMotionEndedEvent>(OnAttackMotionEnded);
+        }
+
         public void Initialize(string enemyID, bool allowCartoonFeedback)
         {
             _enemyID = enemyID;
@@ -71,6 +84,9 @@ namespace Game.Core.Enemy
                 _receiver.Initialize(enemyID);
                 _receiver.OnHitAction = HandleHitDamage;
             }
+
+            EventBus.Subscribe<EnemyAttackMotionStartedEvent>(OnAttackMotionStarted);
+            EventBus.Subscribe<EnemyAttackMotionEndedEvent>(OnAttackMotionEnded);
         }
 
         private void Update()
@@ -81,7 +97,7 @@ namespace Game.Core.Enemy
                 _hitAnimationTime -= Time.deltaTime;
                 _hitAnimationTime = Mathf.Max(_hitAnimationTime, 0.0f);
             }
-            _animator.SetFloat("HitTime", _hitAnimationTime);
+            _animator.SetFloat(HitTimeParameterHash, _hitAnimationTime);
         }
 
         private void LateUpdate()
@@ -103,7 +119,7 @@ namespace Game.Core.Enemy
         {
             _hitAnimationTime += _addHitAnimationTime;
             _hitAnimationTime = Mathf.Min(_hitAnimationTime, _maxHitAnimationTime);
-            if (_animator != null) _animator.SetTrigger("HitAnimeEvent");
+            if (_animator != null) _animator.SetFloat(HitTimeParameterHash, _hitAnimationTime);
 
             if (_enableCartoonFeedback && !_isPlayingDropPose)
             {
@@ -112,6 +128,47 @@ namespace Game.Core.Enemy
                 _hitRotationOffset = Quaternion.identity;
                 _hitDirection *= -1;
                 _hitFeedbackCoroutine = StartCoroutine(HitFeedbackRoutine());
+            }
+        }
+
+        private void OnAttackMotionStarted(EnemyAttackMotionStartedEvent motionEvent)
+        {
+            if (motionEvent.EnemyId != _enemyID || _animator == null) return;
+
+            bool isInTransition = _animator.IsInTransition(AttackStateLayer);
+            bool isCurrentStateAttack = _animator.GetCurrentAnimatorStateInfo(AttackStateLayer).shortNameHash == AttackStateHash;
+            bool isNextStateAttack = isInTransition
+                && _animator.GetNextAnimatorStateInfo(AttackStateLayer).shortNameHash == AttackStateHash;
+
+            _animator.ResetTrigger(AttackEndParameterHash);
+
+            if (isCurrentStateAttack && !isInTransition)
+            {
+                _animator.CrossFadeInFixedTime(AttackStateHash, 0.08f, AttackStateLayer, 0f);
+            }
+            else if (!isNextStateAttack)
+            {
+                _animator.SetTrigger(AttackStartParameterHash);
+            }
+        }
+
+        private void OnAttackMotionEnded(EnemyAttackMotionEndedEvent motionEvent)
+        {
+            if (motionEvent.EnemyId != _enemyID || _animator == null) return;
+
+            bool isInTransition = _animator.IsInTransition(AttackStateLayer);
+            bool isCurrentStateAttack = _animator.GetCurrentAnimatorStateInfo(AttackStateLayer).shortNameHash == AttackStateHash;
+            bool isNextStateAttack = isInTransition
+                && _animator.GetNextAnimatorStateInfo(AttackStateLayer).shortNameHash == AttackStateHash;
+
+            _animator.ResetTrigger(AttackStartParameterHash);
+            if ((!isInTransition && isCurrentStateAttack) || isNextStateAttack)
+            {
+                _animator.SetTrigger(AttackEndParameterHash);
+            }
+            else
+            {
+                _animator.ResetTrigger(AttackEndParameterHash);
             }
         }
 

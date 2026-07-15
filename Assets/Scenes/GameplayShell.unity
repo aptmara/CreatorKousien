@@ -376,6 +376,7 @@ GameObject:
   m_Component:
   - component: {fileID: 737055403}
   - component: {fileID: 737055404}
+  - component: {fileID: 737055405}
   m_Layer: 0
   m_Name: GameProgressionManager
   m_TagString: Untagged
@@ -412,14 +413,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Management.GameProgressionManager
   _roguelikeSceneName: Roguelike
   _resultSceneName: Result
-  _spawnerDefinition: {fileID: 11400000, guid: f14a04607d1020d4c9a6e8adde6d5a6e, type: 2}
+  _waveRunner: {fileID: 737055405}
   _enemySpawner: {fileID: 0}
   _cameraRigController: {fileID: 1756462886}
   _shopVehicleController: {fileID: 0}
   _shopCinematicCameraController: {fileID: 0}
-  _clearDelayDuration: 2
   _slowMotionTimeScale: 0.2
   _gameClearCinematicController: {fileID: 1760067149}
+--- !u!114 &737055405
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 737055402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9afa2cca0d3d7fb4b8a369c7046288f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.WaveRunner
+  spawnRetryInterval: 0.25
 --- !u!1 &806947044
 GameObject:
   m_ObjectHideFlags: 0
@@ -915,6 +928,8 @@ MonoBehaviour:
   _playerController: {fileID: 0}
   _playerAnimationController: {fileID: 0}
   _flashCanvasGroup: {fileID: 1760067148}
+  _playerFaceController: {fileID: 0}
+  _clearStartFaceName: ClearStart
 --- !u!1 &2030498475
 GameObject:
   m_ObjectHideFlags: 0
