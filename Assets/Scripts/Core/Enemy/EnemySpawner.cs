@@ -41,7 +41,7 @@ namespace Game.Core.Enemy
         [SerializeField] private Transform _statusAilmentVFXRoot;
 
         [Tooltip("状態異常VFXのローカルオフセット（敵の上に表示したい場合は Y を正に）")]
-        [SerializeField] private Vector3 _statusAilmentVFXOffset = new Vector3(0.24f, 1.31f, 0f);
+        [SerializeField] private Vector3 _statusAilmentVFXOffset = new Vector3(0f, -0.83f, -2.01f);
 
         [Header("出現位置の設定")]
         [Tooltip("最終目標地点")]
