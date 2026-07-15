@@ -39,7 +39,7 @@ namespace Game.Presentation.UI
 
         [SerializeField]
         [Tooltip("敵RootからUIを出す高さ")]
-        private Vector3 _worldOffset = new Vector3(0f, 2.4f, 0f);
+        private Vector3 _worldOffset = new Vector3(0f, 1.6f, 0.5f);
 
         [SerializeField]
         [Tooltip("World Space Canvasの大きさ")]
@@ -57,6 +57,7 @@ namespace Game.Presentation.UI
             public Slider GaugeSlider;
             public Image HpFillImage;
             public Image GaugeFillImage;
+            public Vector3 ElementOffset;
         }
 
         private readonly System.Collections.Generic.List<StatusUIElement> _uiElements = new System.Collections.Generic.List<StatusUIElement>();
@@ -75,7 +76,7 @@ namespace Game.Presentation.UI
             {
                 foreach (var receiver in hitReceivers)
                 {
-                    BuildView(receiver.transform);
+                    BuildView(receiver);
                 }
             }
             else
@@ -83,7 +84,7 @@ namespace Game.Presentation.UI
                 // HitReceiverが一つもない場合のフォールバック（最初のRendererか自分自身）
                 var renderer = GetComponentInChildren<Renderer>();
                 Transform target = renderer != null ? renderer.transform : transform;
-                BuildView(target);
+                BuildView(null, target);
             }
         }
 
@@ -125,8 +126,8 @@ namespace Game.Presentation.UI
                     continue;
                 }
 
-                // 対象（TargetTransform）を基準にすることで、親と実体が離れていても正しい位置に出る
-                element.Canvas.transform.position = element.TargetTransform.position + _worldOffset;
+                // Root座標を基準にする（実体のローカルオフセットに影響されないようにする）
+                element.Canvas.transform.position = transform.position + element.ElementOffset;
 
                 if (_mainCamera != null)
                 {
@@ -139,11 +140,14 @@ namespace Game.Presentation.UI
         /// <summary>
         /// World Space Canvasとバーを生成する。
         /// </summary>
-        private void BuildView(Transform target)
+        private void BuildView(Game.Core.Enemy.EnemyHitReceiver receiver, Transform fallbackTarget = null)
         {
+            Transform target = receiver != null ? receiver.transform : fallbackTarget;
+            Vector3 offset = receiver != null ? receiver.UIWorldOffset : _worldOffset;
+
             GameObject canvasObject = new GameObject($"EnemyWorldStatusCanvas_{target.name}");
             canvasObject.transform.SetParent(transform, false);
-            canvasObject.transform.localPosition = _worldOffset;
+            canvasObject.transform.localPosition = offset;
             canvasObject.transform.localScale = Vector3.one * _canvasScale;
             canvasObject.layer = gameObject.layer; // 敵と同じレイヤーに設定
 
@@ -182,7 +186,8 @@ namespace Game.Presentation.UI
                 HpSlider = hpSlider,
                 GaugeSlider = gaugeSlider,
                 HpFillImage = hpFillImage,
-                GaugeFillImage = gaugeFillImage
+                GaugeFillImage = gaugeFillImage,
+                ElementOffset = offset
             });
         }
 
