@@ -61,6 +61,7 @@ namespace Game.Core.Enemy
         private EnemyAttack _enemyAttack;
         private EnemyHoldCounter _holdCounter;
         private EnemyDebuffManager _debuffManager;
+        private EnemyBodyController _bodyController;
         private Coroutine _downTimerCoroutine;
 
         public event System.Action<float, float> OnHealthChanged;
@@ -80,9 +81,10 @@ namespace Game.Core.Enemy
         /// Awake後の動的生成（スポーン）でも呼び出せる。
         /// </summary>
         /// <param name="def">適用するEnemyDefinition</param>
-        public string Initialize(EnemyDefinition definition, SpawnSummary spawnSummary)
+        public string Initialize(EnemyDefinition definition, SpawnSummary spawnSummary, EnemyBodyController bodyController)
         {
             _definition = definition;
+            _bodyController = bodyController;
             InstanceEnemyId = $"{definition.EnemyId}_{GetInstanceID()}";
 
             // 状態管理初期化
@@ -330,8 +332,19 @@ namespace Game.Core.Enemy
         /// </summary>
         private void HandleHoldEnd()
         {
-            // ステートを遷移し落下
             _stateManager.TransitionTo(EnemyState.Drop);
+
+            if (!_definition.IsBoss && _bodyController != null)
+            {
+                _bodyController.PlayDropPose(BeginDefeatDrop);
+                return;
+            }
+
+            BeginDefeatDrop();
+        }
+
+        private void BeginDefeatDrop()
+        {
             _rising.ResumeMove();
             _rising.DropStart(transform);
             OnDropStarted?.Invoke();

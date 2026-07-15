@@ -167,3 +167,6 @@ MonoBehaviour:
   _addHitAnimationTime: 1
   _dropDuration: 0.5
   _dropRot: {x: 0, y: 90, z: -180}
+  _postFlipDelay: 0.25
+  _useCartoonFeedback: 1
+  _flipOvershoot: {x: 0, y: 0, z: -25}

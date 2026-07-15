@@ -234,7 +234,7 @@ namespace Game.Core.Enemy
         /// <param name="_enemyTransform">トランスフォーム</param>
         public void DamageDrop(Transform _enemyTransform)
         {
-            if (_enemyMoveState == EnemyMoveState.BreakDrop) return;
+            if (_enemyMoveState == EnemyMoveState.BreakDrop || _enemyMoveState == EnemyMoveState.Drop) return;
 
             if (_riseCoroutine != null) StopCoroutine(_riseCoroutine);
             if (_damageDropCoroutine != null) StopCoroutine(_damageDropCoroutine);
@@ -274,6 +274,7 @@ namespace Game.Core.Enemy
 
             //-イージング処理完了後開始地点に位置を補正
             enemyTransform.position = _startPosition;
+            _dropCoroutine = null;
             OnEnemyDroped?.Invoke();
         }
 
@@ -437,6 +438,11 @@ namespace Game.Core.Enemy
             if (_riseCoroutine != null) StopCoroutine(_riseCoroutine);
             if (_dropCoroutine != null) StopCoroutine(_dropCoroutine);
             if (_breakDropCoroutine != null) StopCoroutine(_breakDropCoroutine);
+            if (_damageDropCoroutine != null)
+            {
+                StopCoroutine(_damageDropCoroutine);
+                _damageDropCoroutine = null;
+            }
             _isStopping = true;
         }
 
@@ -449,7 +455,10 @@ namespace Game.Core.Enemy
                     _riseCoroutine = StartCoroutine(RiseRoutine(transform));
                     break;
                 case EnemyMoveState.Drop:
-                    _dropCoroutine = StartCoroutine(DropRoutine(transform));
+                    if (_dropCoroutine == null)
+                    {
+                        _dropCoroutine = StartCoroutine(DropRoutine(transform));
+                    }
                     break;
                 case EnemyMoveState.BreakDrop:
                     _breakDropCoroutine = StartCoroutine(BreakDropRoutine(transform));

@@ -130,9 +130,9 @@ namespace Game.Core.Enemy
 
             EnemyController.SpawnSummary spawnSummary = new EnemyController.SpawnSummary(targetPosition, _undergroundOffset, validHpRate, validBarrierRate);
 
-            string enemyId = enemyController.Initialize(definition, spawnSummary);
+            string enemyId = enemyController.Initialize(definition, spawnSummary, bodyController);
 
-            bodyController.Initialize(enemyId);
+            bodyController.Initialize(enemyId, !definition.IsBoss);
 
             if (definition.HasBarrier && barrier != null)
             {
