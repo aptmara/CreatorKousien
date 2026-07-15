@@ -1,8 +1,6 @@
-using Game.Core.Enemy;
-using UnityEngine;
 using Game.Core.Events;
-using Unity.Mathematics;
 using System.Collections;
+using UnityEngine;
 
 namespace Game.Core.Enemy
 {
@@ -26,6 +24,11 @@ namespace Game.Core.Enemy
         float _elapsedTime;
         Quaternion _startRot;
 
+        private const int AttackStateLayer = 0;
+        private static readonly int AttackStateHash = Animator.StringToHash("Attack");
+        private static readonly int AttackStartParameterHash = Animator.StringToHash("AttackAnimeEvent");
+        private static readonly int AttackEndParameterHash = Animator.StringToHash("AttackAnimeEndEvent");
+
         private void Start()
         {
             var controller = GetComponentInParent<EnemyController>();
@@ -42,6 +45,9 @@ namespace Game.Core.Enemy
             {
                 controller.OnDropStarted -= OnDropStarted;
             }
+
+            EventBus.Unsubscribe<EnemyAttackMotionStartedEvent>(OnAttackMotionStarted);
+            EventBus.Unsubscribe<EnemyAttackMotionEndedEvent>(OnAttackMotionEnded);
         }
 
         public void Initialize(string enemyID)
@@ -53,6 +59,9 @@ namespace Game.Core.Enemy
                 _receiver.Initialize(enemyID);
                 _receiver.OnHitAction = HandleHitDamage;
             }
+
+            EventBus.Subscribe<EnemyAttackMotionStartedEvent>(OnAttackMotionStarted);
+            EventBus.Subscribe<EnemyAttackMotionEndedEvent>(OnAttackMotionEnded);
         }
 
         private void Update()
@@ -70,9 +79,51 @@ namespace Game.Core.Enemy
         {
             _hitAnimationTime += _addHitAnimationTime;
             _hitAnimationTime = Mathf.Min(_hitAnimationTime, _maxHitAnimationTime);
-            if (_animator != null) _animator.SetTrigger("HitAnimeEvent");
+            if (_animator != null) _animator.SetFloat("HitTime", _hitAnimationTime);
         }
 
+        void OnAttackMotionStarted(EnemyAttackMotionStartedEvent motionEvent)
+        {
+            if (motionEvent.EnemyId != _enemyID) return;
+            if (_animator == null) return;
+
+            bool isInTransition = _animator.IsInTransition(AttackStateLayer);
+            bool isCurrentStateAttack = _animator.GetCurrentAnimatorStateInfo(AttackStateLayer).shortNameHash == AttackStateHash;
+            bool isNextStateAttack = isInTransition
+                && _animator.GetNextAnimatorStateInfo(AttackStateLayer).shortNameHash == AttackStateHash;
+
+            _animator.ResetTrigger(AttackEndParameterHash);
+
+            if (isCurrentStateAttack && !isInTransition)
+            {
+                _animator.CrossFadeInFixedTime(AttackStateHash, 0.08f, AttackStateLayer, 0f);
+            }
+            else if (!isNextStateAttack)
+            {
+                _animator.SetTrigger(AttackStartParameterHash);
+            }
+        }
+
+        void OnAttackMotionEnded(EnemyAttackMotionEndedEvent endEvent)
+        {
+            if (endEvent.EnemyId != _enemyID) return;
+            if (_animator == null) return;
+
+            bool isInTransition = _animator.IsInTransition(AttackStateLayer);
+            bool isCurrentStateAttack = _animator.GetCurrentAnimatorStateInfo(AttackStateLayer).shortNameHash == AttackStateHash;
+            bool isNextStateAttack = isInTransition
+                && _animator.GetNextAnimatorStateInfo(AttackStateLayer).shortNameHash == AttackStateHash;
+
+            _animator.ResetTrigger(AttackStartParameterHash);
+            if ((!isInTransition && isCurrentStateAttack) || isNextStateAttack)
+            {
+                _animator.SetTrigger(AttackEndParameterHash);
+            }
+            else
+            {
+                _animator.ResetTrigger(AttackEndParameterHash);
+            }
+        }
         void OnDropStarted()
         {
             _elapsedTime = 0.0f;

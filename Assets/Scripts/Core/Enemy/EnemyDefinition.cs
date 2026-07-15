@@ -56,6 +56,17 @@ namespace Game.Core.Enemy
         [Tooltip("攻撃する際の間隔、EnemyRisingで上り切ってからカウントされる")]
         public float Attackinterval = 5.0f;
 
+        [Header("攻撃モーション時間")]
+        [Tooltip("攻撃モーション開始から終了までの時間")]
+        [Min(0f)]
+        public float AttackMotionTime = 3.0f;
+
+        [Header("攻撃前隙")]
+        [Tooltip("攻撃の前隙")]
+        [Min(0f)]
+        public float AttackStartUpTime = 1.5f;
+
+
         [Header("回復待機時の復帰間隔")]
         [Tooltip("回復待機に移行した際に復帰するまでの間隔")]
         public float HealRegenWaitTime = 7.0f;
@@ -96,13 +107,13 @@ namespace Game.Core.Enemy
         [Tooltip("被ダメージ時のずり落ちカーブ")]
         public AnimationCurve DamageDropCurve = AnimationCurve.EaseInOut(0.0f, 1.0f, 1.0f, 0.0f);
 
-        [Header("ダメージずり落ちカーブ")]
-        [Tooltip("被ダメージ時のずり落ちカーブ")]
+        [Header("ずり落ち量")]
+        [Tooltip("バリア破壊時のずり落ち量")]
         public float BreakDropDistance = 0.2f;
 
 
-        [Header("ダメージずり落ちカーブ")]
-        [Tooltip("被ダメージ時のずり落ちカーブ")]
+        [Header("ダメージずり落ち量")]
+        [Tooltip("被ダメージ時のずり落ち量")]
         public float DamageDropDistance = 0.015f;
 
 
