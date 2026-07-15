@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using Game.Core.Events;
 using Game.Data.Player;
 using UnityEngine.UI;
-using UnityEngine.InputSystem;
 
 public class S_UpgradeSelectionUI : MonoBehaviour
 {
@@ -212,8 +211,8 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         {
             if(_cardToData.TryGetValue(card, out var data) && data == selectedCard)
             {
-                // levelが0スタートのため、＋１
                 card.Refresh(newLevel);
+                card.PlaySelectedAnimation();
                 break;
             }
         }
@@ -240,7 +239,7 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     {
         for(int i = 0; i < _spawnedCards.Count; ++i)
         {
-            _spawnedCards[i].SetHighlightFrame(i == index);
+            _spawnedCards[i].SetHighlighted(i == index);
         }
     }
 

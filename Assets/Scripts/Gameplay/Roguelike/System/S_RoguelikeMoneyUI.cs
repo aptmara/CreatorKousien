@@ -6,7 +6,6 @@
 // auther : Takitani Shohei
 // date   : 2026/07/14 - begin.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-using System.Runtime.InteropServices;
 using TMPro;
 using UnityEngine;
 
