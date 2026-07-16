@@ -45,6 +45,14 @@ namespace Game.Data.Enemy.Boss
         private string _plannerMemo = "ボス戦の説明や調整内容をここに記入してちょんまげ！";
 
 
+        [Header("--- 開幕演出設定 ---")]
+
+        [SerializeField]
+        [Tooltip("ボス戦開始時の開幕演出設定")]
+        private BossIntroPresentationData _introPresentationData = new BossIntroPresentationData();
+
+
+
         [Header("--- フェーズ設定 ---")]
 
         [SerializeField]
@@ -70,6 +78,11 @@ namespace Game.Data.Enemy.Boss
         /// プランナー向けのボス戦説明。
         /// </summary>
         public string PlannerMemo => _plannerMemo;
+
+        /// <summary>
+        /// ボス戦開始時の開幕演出設定。
+        /// </summary>
+        public BossIntroPresentationData IntroPresentationData => _introPresentationData;
 
         /// <summary>
         /// 登録されているフェーズ数。
@@ -125,6 +138,11 @@ namespace Game.Data.Enemy.Boss
         /// </summary>
         private void OnValidate()
         {
+            if (_introPresentationData == null)
+            {
+                Debug.LogWarning($"[{nameof(BossBattleDataSO)}] 開幕演出設定がnullです。", this);
+            }
+
             if (_phases == null)
             {
                 Debug.LogWarning($"[{nameof(BossBattleDataSO)}] フェーズ設定がnullです。", this);

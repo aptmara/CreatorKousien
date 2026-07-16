@@ -23,24 +23,29 @@ namespace Game.Gameplay.Enemy.Boss
         Inactive = 0,
 
         /// <summary>
+        /// ボス戦開始時の開幕演出を行っている状態
+        /// </summary>
+        Intro = 1,
+
+        /// <summary>
         /// ボスが棘攻撃を行う状態
         /// </summary>
-        ThornAttack = 1,
+        ThornAttack = 2,
 
         /// <summary>
         /// ボスが怒り状態で噛みつき攻撃を行う状態
         /// </summary>
-        AngryBite = 2,
+        AngryBite = 3,
 
         /// <summary>
         /// ボスがダウンしている状態
         /// </summary>
-        Down = 3,
+        Down = 4,
 
         /// <summary>
         /// ボスが撃破された状態
         /// </summary>
-        Defeated = 4,
+        Defeated = 5,
     }
 
     /// <summary>
