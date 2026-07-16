@@ -61,6 +61,7 @@ namespace Game.Presentation.UI.Title
         private Vector3[] _finalPartsScales;
         private Coroutine _playCoroutine;
         private bool _hasCachedFinalState;
+        private bool _hasRefreshedFinalStateOnEnable;
         private bool _hasWarnedOptionalReferences;
 
         /// <summary>
@@ -88,10 +89,11 @@ namespace Game.Presentation.UI.Title
         {
             if (_playOnStart)
             {
-                if (_refreshFinalStateOnStart)
+                if (_refreshFinalStateOnStart && !_hasRefreshedFinalStateOnEnable)
                 {
                     Canvas.ForceUpdateCanvases();
                     CacheFinalState();
+                    _hasRefreshedFinalStateOnEnable = true;
                 }
 
                 Play();
