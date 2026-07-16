@@ -804,7 +804,10 @@ namespace Game.Gameplay.Enemy.Boss
 
             if (didStartCloseAnimation)
             {
-                // 口閉じアニメーションが終了するまで待機する
+                // 口閉じアニメーション開始時に、ボスを防衛バリア付近の頂点へ固定する
+                _animationController.BeginAngryBiteClosePositionLock();
+
+                // 位置を固定したまま、口閉じアニメーションが終了するまで待機する
                 while (!_animationController.IsCurrentAnimationFinished())
                 {
                     yield return null;
@@ -847,27 +850,49 @@ namespace Game.Gameplay.Enemy.Boss
                 EventBus.Publish(new RuleBarrierAttackEvent(failureBarrierDamage, transform.position));
             }
 
-            // バリア到達位置からアングリバイト開始位置まで下降させる
+            float failureHoldDuration = MathF.Max(0f, biteData.FailureHoldDuration);
+
+            if (failureHoldDuration > 0f)
+            {
+                yield return new WaitForSeconds(failureHoldDuration);
+            }
+
+            _animationController.EndAngryBiteClosePositionLock();
+
+            Transform motionRoot = _animationController.MotionRoot;
+
+            if (motionRoot == null)
+            {
+                Debug.LogError($"[{nameof(BossBattleController)}] アングリバイト下降用のMotionRootが設定されていません。",this);
+
+                _stateRoutine = null;
+                StopBattle();
+
+                yield break;
+            }
+
+            Vector3 retreatStartLocalPosition = motionRoot.localPosition;
+
             float retreatDuration = MathF.Max(0.01f, biteData.FailureRetreatDuration);
 
             float retreatElapsedTime = 0f;
 
-            // 下降開始時は、必ずバリア到達位置へ合わせる
-            _animationController.UpdateAngryBiteFailureRetreatPosition(biteData, 0f);
+            // 下降開始時は、保存した現在位置をそのまま維持する
+            _animationController.UpdateAngryBiteFailureRetreatPosition(biteData, retreatStartLocalPosition, 0f);
 
             while (retreatElapsedTime < retreatDuration)
             {
                 retreatElapsedTime += Time.deltaTime;
 
-                float retreatProgress = Mathf.Clamp01(retreatElapsedTime / retreatDuration);
+                float retreatProgress = Mathf.Clamp01( retreatElapsedTime / retreatDuration);
 
-                _animationController.UpdateAngryBiteFailureRetreatPosition(biteData, retreatProgress);
+                _animationController.UpdateAngryBiteFailureRetreatPosition(biteData, retreatStartLocalPosition, retreatProgress);
 
                 yield return null;
             }
 
             // 誤差が残らないよう、最後に開始位置へ正確に合わせる
-            _animationController.UpdateAngryBiteFailureRetreatPosition(biteData, 1f);
+            _animationController.UpdateAngryBiteFailureRetreatPosition(biteData, retreatStartLocalPosition, 1f);
 
             if (_currentPhaseData == null)
             {

@@ -119,6 +119,31 @@ namespace Game.Gameplay.Enemy.Boss
         /// </summary>
         private bool _hasCachedAnimatorInitialPose;
 
+        /// <summary>
+        /// 口閉じアニメーション中の位置を固定しているかどうか
+        /// </summary>
+        private bool _isAngryBiteClosePositionLocked;
+
+        /// <summary>
+        /// 口閉じ開始時のMotionRootローカル位置
+        /// </summary>
+        private Vector3 _lockedMotionRootLocalPosition;
+
+        /// <summary>
+        /// 口閉じ開始時のMotionRootローカル回転
+        /// </summary>
+        private Quaternion _lockedMotionRootLocalRotation;
+
+        /// <summary>
+        /// 口閉じ開始時のAnimatorローカル位置
+        /// </summary>
+        private Vector3 _lockedAnimatorLocalPosition;
+
+        /// <summary>
+        /// 口閉じ開始時のAnimatorローカル回転
+        /// </summary>
+        private Quaternion _lockedAnimatorLocalRotation;
+
 
         // 公開プロパティ
         // ------------------------------------------------------------
@@ -290,6 +315,15 @@ namespace Game.Gameplay.Enemy.Boss
         // ------------------------------------------------------------
 
         /// <summary>
+        /// AnimatorによるRoot Motion適用後に、
+        /// 口閉じ中のボスを保存した位置へ固定する
+        /// </summary>
+        private void LateUpdate()
+        {
+            ApplyAngryBiteClosePositionLock();
+        }
+
+        /// <summary>
         /// アングリバイトの開始位置を設定して、口を開けるアニメーションを再生する
         /// </summary>
         /// <param name="biteData">アングリバイト設定</param>
@@ -338,9 +372,9 @@ namespace Game.Gameplay.Enemy.Boss
         /// </summary>
         /// <param name="biteData">現在のアングリバイト設定</param>
         /// <param name="normalizedTime">Mouth Open Durationに対する 0 - 1 の経過割合</param>
-        public void UpdateAngryBiteFailureRetreatPosition(BossAngryBiteData biteData, float normalizedTime)
+        public void UpdateAngryBiteFailureRetreatPosition(BossAngryBiteData biteData, Vector3 retreatStartLocalPosition, float normalizedTime)
         {
-            if (biteData == null)
+            if (biteData == null || _motionRoot == null)
             {
                 return;
             }
@@ -348,10 +382,13 @@ namespace Game.Gameplay.Enemy.Boss
             // 下降の進行度を0～1に制限する
             float retreatProgress = Mathf.Clamp01(normalizedTime);
 
-            // 上昇処理へ逆向き進行度を渡す
-            float reversedRiseProgress = 1f - retreatProgress;
+            AnimationCurve retreatCurve = biteData.RiseCurve;
 
-            UpdateAngryBiteRisePosition(biteData, reversedRiseProgress);
+            float moveProgress = retreatCurve != null ? retreatCurve.Evaluate(retreatProgress) : retreatProgress;
+
+            _motionRoot.localPosition = Vector3.LerpUnclamped(retreatStartLocalPosition, biteData.StartLocalPosition, moveProgress);
+
+            Physics.SyncTransforms();
         }
 
 
@@ -370,6 +407,78 @@ namespace Game.Gameplay.Enemy.Boss
 
             // 口を閉じるアニメーションは現在位置を維持する！！
             return TryPlayAnimation(_angryBiteCloseStateHash, _angryBiteCloseStateName, biteData.CloseAnimationSpeed, false, Vector3.zero, Vector3.zero);
+        }
+
+
+        /// <summary>
+        /// 現在表示されている位置と回転を保存し、
+        /// 口閉じアニメーション中の固定を開始する
+        /// </summary>
+        public void BeginAngryBiteClosePositionLock()
+        {
+            if (_motionRoot == null)
+            {
+                return;
+            }
+
+            // Barrier Reach Local Positionへ移動させず、
+            // 口閉じ開始時に表示されている現在位置をそのまま保存する
+            _lockedMotionRootLocalPosition = _motionRoot.localPosition;
+            _lockedMotionRootLocalRotation = _motionRoot.localRotation;
+
+            if (_animator != null)
+            {
+                Transform animatorTransform = _animator.transform;
+
+                _lockedAnimatorLocalPosition = animatorTransform.localPosition;
+
+                _lockedAnimatorLocalRotation = animatorTransform.localRotation;
+            }
+
+            _isAngryBiteClosePositionLocked = true;
+
+            ApplyAngryBiteClosePositionLock();
+        }
+
+
+        /// <summary>
+        /// 口閉じアニメーション終了後に位置固定を解除する
+        /// </summary>
+        public void EndAngryBiteClosePositionLock()
+        {
+            // 解除直前にも保存位置を適用し、最終フレームのずれを防ぐ
+            ApplyAngryBiteClosePositionLock();
+
+            _isAngryBiteClosePositionLocked = false;
+        }
+
+
+        /// <summary>
+        /// 口閉じ開始時に保存した位置と回転を再適用する
+        /// </summary>
+        private void ApplyAngryBiteClosePositionLock()
+        {
+            if (!_isAngryBiteClosePositionLocked || _motionRoot == null)
+            {
+                return;
+            }
+
+            _motionRoot.localPosition = _lockedMotionRootLocalPosition;
+
+            _motionRoot.localRotation = _lockedMotionRootLocalRotation;
+
+            if (_animator != null)
+            {
+                Transform animatorTransform = _animator.transform;
+
+                animatorTransform.localPosition = _lockedAnimatorLocalPosition;
+
+                animatorTransform.localRotation = _lockedAnimatorLocalRotation;
+            }
+
+            // 保存したTransform位置をRigidbodyとColliderへ反映する
+            ResetAnimatorRigidbodyPose();
+            Physics.SyncTransforms();
         }
 
 
@@ -645,6 +754,7 @@ namespace Game.Gameplay.Enemy.Boss
         /// </summary>
         public void CancelCurrentAnimation()
         {
+            _isAngryBiteClosePositionLocked = false;
             _isPlaying = false;
             _currentStateHash = 0;
 

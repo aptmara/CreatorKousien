@@ -95,6 +95,11 @@ namespace Game.Data.Enemy.Boss
         private float _failureBarrierDamage = 50f;
 
         [SerializeField]
+        [Min(0f)]
+        [Tooltip("口閉じアニメーション完了後、下降を開始するまで頂点で停止する時間（秒）")]
+        private float _failureHoldDuration = 1.5f;
+
+        [SerializeField]
         [Min(0.01f)]
         [Tooltip("バリアを噛んだ後、現在位置からアングリバイト開始位置まで下降する時間（秒）")]
         private float _failureRetreatDuration = 1.5f;
@@ -136,6 +141,7 @@ namespace Game.Data.Enemy.Boss
         /// </summary>
         public float CloseAnimationSpeed => _closeAnimationSpeed;
 
+
         /// <summary>
         /// ダウンアニメーションの再生速度
         /// </summary>
@@ -156,6 +162,12 @@ namespace Game.Data.Enemy.Boss
         /// アングリバイト失敗時の防衛バリアダメージ。
         /// </summary>
         public float FailureBarrierDamage => _failureBarrierDamage;
+
+
+        /// <summary>
+        /// 口閉じアニメーション完了後、頂点で停止する時間。
+        /// </summary>
+        public float FailureHoldDuration => _failureHoldDuration;
 
         /// <summary>
         /// アングリバイト失敗後、ボスが画面下へ下降する時間。
