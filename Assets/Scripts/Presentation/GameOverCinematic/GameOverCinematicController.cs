@@ -17,6 +17,7 @@ using Game.Gameplay.Cameras;
 using Game.Gameplay.Player;
 using Game.Gameplay.Stage;
 using Game.Core.Management;
+using Game.Gameplay.Collectibles;
 
 namespace Game.Presentation.GameOverCinematic
 {
@@ -36,17 +37,35 @@ namespace Game.Presentation.GameOverCinematic
         [SerializeField] private ParticleSystem _dustParticlePrefab;
         [SerializeField] private Transform _dustSpawnPoint;
 
+        [Header("--- なだれ込みカメラシェイク設定 ---")]
+        [Tooltip("なだれ込み中のカメラシェイクを有効にするか")]
+        [SerializeField] private bool _enableRushShake = true;
+        [Tooltip("位置の揺れの強さ")]
+        [SerializeField, Min(0f)] private float _shakeStrength = 0.14f;
+        [Tooltip("回転の揺れの強さ")]
+        [SerializeField, Min(0f)] private float _shakeRotationStrength = 1.5f;
+        [Tooltip("揺れの細かさ・激しさ")]
+        [SerializeField, Min(1f)] private float _shakeFrequency = 30f;
+
+        [Header("--- 視界クリアクリーンアップ設定 ---")]
+        [Tooltip("ゲームオーバー確定時にプレイヤー周囲から消去するアイテムの探索半径")]
+        [SerializeField, Min(0f)] private float _itemClearRadius = 7f;
+
         private CameraRigController _cameraRig;
         private Camera _mainCamera;
         private PlayerController _playerController;
 
-        // ゲームプレイ時のプレイヤーオブジェクトの参照（演出中に非表示にするため）
         private GameObject _realPlayerObject;
-
-        // ゲームオーバー演出用のプレイヤー
         private GameObject _cinematicPlayerObject;
         private PlayerCartoonDeath _cinematicPlayerDeath;
 
+        // パーリンノイズ用のシード値
+        private float _noiseSeed;
+
+        private void Awake()
+        {
+            _noiseSeed = Random.value * 1000f;
+        }
 
         private void OnEnable()
         {
@@ -61,6 +80,11 @@ namespace Game.Presentation.GameOverCinematic
         private void OnDefenceLineBroken(DefLineBreakReactionEvent ev)
         {
             StartCoroutine(PlayGameOverSequence());
+        }
+
+        private float Noise(float time, float offset)
+        {
+            return Mathf.PerlinNoise(_noiseSeed + offset, time) * 2f - 1f;
         }
 
         private IEnumerator PlayGameOverSequence()
@@ -185,6 +209,12 @@ namespace Game.Presentation.GameOverCinematic
                     enemyDelays.Add(Random.Range(0f, _settings.MaxStartDelay));
                 }
 
+                // プレイヤー周囲のカメラを遮るアイテムを消去する
+                if (_realPlayerObject != null)
+                {
+                    ClearCollectiblesAroundPlayer(_realPlayerObject.transform.position, _itemClearRadius);
+                }
+
                 // 2. 敵を一斉に門の奥へ走らせる
                 float rushElapsed = 0f;
 
@@ -207,9 +237,34 @@ namespace Game.Presentation.GameOverCinematic
                     activeDust.Play();
                 }
 
+                // ズームイン完了時のカメラベース位置を記録
+                Vector3 baseBrakeCamPos = camTransform.position;
+                Quaternion baseBrakeCamRot = camTransform.rotation;
+
                 while (rushElapsed < _settings.BaseDoorKeepOpenDuration)
                 {
                     rushElapsed += Time.deltaTime;
+
+                    // なだれ込みカメラシェイク計算処理
+                    if (_enableRushShake)
+                    {
+                        float noiseTime = rushElapsed * _shakeFrequency;
+
+                        // 左右上下の揺れ
+                        float offsetX = Noise(noiseTime, 0f) * _shakeStrength;
+                        float offsetY = Noise(noiseTime, 15f) * _shakeStrength;
+                        Vector3 shakeOffset = (camTransform.right * offsetX) + (camTransform.up * offsetY);
+
+                        // 回転のランダムグリッチ揺れ
+                        Quaternion shakeRotOffset = Quaternion.Euler(
+                            Noise(noiseTime, 30f) * _shakeRotationStrength,
+                            Noise(noiseTime, 45f) * _shakeRotationStrength,
+                            Noise(noiseTime, 60f) * _shakeRotationStrength
+                        );
+
+                        camTransform.position = baseBrakeCamPos + shakeOffset;
+                        camTransform.rotation = baseBrakeCamRot * shakeRotOffset;
+                    }
 
                     for (int i = enemyTransforms.Count - 1; i >= 0; i--)
                     {
@@ -386,6 +441,12 @@ namespace Game.Presentation.GameOverCinematic
                 return false;
             }
 
+            // 手を強制的に非表示
+            if (_realPlayerObject.TryGetComponent<PlayerAttachmentController>(out var attachmentController))
+            {
+                attachmentController.ForceDestroyAttachment();
+            }
+
             Vector3 spawnPos = _realPlayerObject.transform.position + _settings.GameOverPlayerSpawnOffset;
             Quaternion spawnRot = _realPlayerObject.transform.rotation;
 
@@ -415,6 +476,37 @@ namespace Game.Presentation.GameOverCinematic
             _cinematicPlayerDeath.FlattenImmediately();
 
             return true;
+        }
+
+
+        /// <summary>
+        /// プレイヤー周囲の指定半径内にある収集物を強制的にデスポーンしてプールへ戻す
+        /// </summary>
+        /// <param name="center"></param>
+        /// <param name="radius"></param>
+        private void ClearCollectiblesAroundPlayer(Vector3 center, float radius)
+        {
+            Collider[] hitColliders = Physics.OverlapSphere(center, radius);
+            int clearCount = 0;
+
+            foreach (var col in hitColliders)
+            {
+                // タグによる判定
+                if (col.CompareTag("Collectable") || col.gameObject.name.Contains("Collectible"))
+                {
+                    CollectibleObject collectible = col.GetComponentInParent<CollectibleObject>();
+                    if (collectible != null && collectible.gameObject.activeInHierarchy)
+                    {
+                        collectible.Despawn();
+                        clearCount++;
+                    }
+                }
+            }
+
+            if (clearCount > 0)
+            {
+                Debug.Log($"[GameOver] プレイヤー周囲の収集物を{clearCount}個デスポーンしてプールへ戻したぜよ");
+            }
         }
 
 
