@@ -17,6 +17,7 @@ using Game.Gameplay.Cameras;
 using Game.Gameplay.Player;
 using Game.Gameplay.Stage;
 using Game.Core.Management;
+using Game.Gameplay.Collectibles;
 
 namespace Game.Presentation.GameOverCinematic
 {
@@ -45,6 +46,10 @@ namespace Game.Presentation.GameOverCinematic
         [SerializeField, Min(0f)] private float _shakeRotationStrength = 1.5f;
         [Tooltip("揺れの細かさ・激しさ")]
         [SerializeField, Min(1f)] private float _shakeFrequency = 30f;
+
+        [Header("--- 視界クリアクリーンアップ設定 ---")]
+        [Tooltip("ゲームオーバー確定時にプレイヤー周囲から消去するアイテムの探索半径")]
+        [SerializeField, Min(0f)] private float _itemClearRadius = 7f;
 
         private CameraRigController _cameraRig;
         private Camera _mainCamera;
@@ -202,6 +207,12 @@ namespace Game.Presentation.GameOverCinematic
                     enemyTargets.Add(finalTargetPos);
                     enemySpeeds.Add(_settings.BaseEnemySpeed + Random.Range(-_settings.SpeedVariation, _settings.SpeedVariation));
                     enemyDelays.Add(Random.Range(0f, _settings.MaxStartDelay));
+                }
+
+                // プレイヤー周囲のカメラを遮るアイテムを消去する
+                if (_realPlayerObject != null)
+                {
+                    ClearCollectiblesAroundPlayer(_realPlayerObject.transform.position, _itemClearRadius);
                 }
 
                 // 2. 敵を一斉に門の奥へ走らせる
@@ -430,6 +441,12 @@ namespace Game.Presentation.GameOverCinematic
                 return false;
             }
 
+            // 手を強制的に非表示
+            if (_realPlayerObject.TryGetComponent<PlayerAttachmentController>(out var attachmentController))
+            {
+                attachmentController.ForceDestroyAttachment();
+            }
+
             Vector3 spawnPos = _realPlayerObject.transform.position + _settings.GameOverPlayerSpawnOffset;
             Quaternion spawnRot = _realPlayerObject.transform.rotation;
 
@@ -459,6 +476,37 @@ namespace Game.Presentation.GameOverCinematic
             _cinematicPlayerDeath.FlattenImmediately();
 
             return true;
+        }
+
+
+        /// <summary>
+        /// プレイヤー周囲の指定半径内にある収集物を強制的にデスポーンしてプールへ戻す
+        /// </summary>
+        /// <param name="center"></param>
+        /// <param name="radius"></param>
+        private void ClearCollectiblesAroundPlayer(Vector3 center, float radius)
+        {
+            Collider[] hitColliders = Physics.OverlapSphere(center, radius);
+            int clearCount = 0;
+
+            foreach (var col in hitColliders)
+            {
+                // タグによる判定
+                if (col.CompareTag("Collectable") || col.gameObject.name.Contains("Collectible"))
+                {
+                    CollectibleObject collectible = col.GetComponentInParent<CollectibleObject>();
+                    if (collectible != null && collectible.gameObject.activeInHierarchy)
+                    {
+                        collectible.Despawn();
+                        clearCount++;
+                    }
+                }
+            }
+
+            if (clearCount > 0)
+            {
+                Debug.Log($"[GameOver] プレイヤー周囲の収集物を{clearCount}個デスポーンしてプールへ戻したぜよ");
+            }
         }
 
 
