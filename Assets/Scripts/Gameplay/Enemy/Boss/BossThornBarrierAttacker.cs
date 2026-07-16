@@ -239,7 +239,7 @@ namespace Game.Gameplay.Enemy.Boss
             // イベント発効前に無効にしておく
             _hasDamagedBarrier = true;
 
-            EventBus.Publish(new RuleBarrierAttackEvent(_barrierDamage));
+            EventBus.Publish(new RuleBarrierAttackEvent(_barrierDamage, hitPosition));
 
             BarrierDamaged?.Invoke(_thorn, _barrierDamage, hitPosition);
 
