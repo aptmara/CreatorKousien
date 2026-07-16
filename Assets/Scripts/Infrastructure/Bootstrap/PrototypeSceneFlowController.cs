@@ -10,6 +10,7 @@
 // - 5/6: Bootから設計通りのAdditiveシーンを読み込む統合用Bootstrapを追加
 // ------------------------------------------------------------
 using System.Collections;
+using Game.Core.Management;
 using Game.Gameplay.Cameras;
 using Game.Gameplay.Collectibles;
 using Game.Gameplay.Player;
@@ -51,16 +52,24 @@ namespace Game.Infrastructure.Bootstrap
         [SerializeField] private bool _disablePlayerHoldMode = true;
 
         private bool _isBootstrapped;
+        private PlayerFacade _preparedPlayer;
+
+        public bool IsPrepared { get; private set; }
+        public bool PreparationFailed { get; private set; }
 
         private void Start()
         {
-            StartCoroutine(BootstrapRoutine());
+            Scene loadingScene = SceneManager.GetSceneByName("Loading");
+            if (!loadingScene.IsValid() || !loadingScene.isLoaded)
+            {
+                StartCoroutine(PrepareAndStartStandaloneRoutine());
+            }
         }
 
         /// <summary>
         /// シーン読み込み、参照接続、初期スポーンを順番に実行する。
         /// </summary>
-        private IEnumerator BootstrapRoutine()
+        public IEnumerator PrepareGameRoutine()
         {
             if (_isBootstrapped)
             {
@@ -74,6 +83,15 @@ namespace Game.Infrastructure.Bootstrap
             yield return LoadSceneIfNeeded(_uiScene);
             yield return LoadSceneIfNeeded(_debugScene);
 
+            if (!IsSceneLoaded(_gameplayShellScene) ||
+                !IsSceneLoaded(_stageScene) ||
+                !IsSceneLoaded(_uiScene) ||
+                !IsSceneLoaded(_debugScene))
+            {
+                PreparationFailed = true;
+                yield break;
+            }
+
             Scene gameplayScene = SceneManager.GetSceneByName(_gameplayShellScene);
             if (gameplayScene.IsValid())
             {
@@ -82,10 +100,36 @@ namespace Game.Infrastructure.Bootstrap
 
             yield return null;
 
-            PlayerFacade player = SpawnPlayer();
-            DisablePlayerHoldMode(player);
+            _preparedPlayer = SpawnPlayer();
+            if (_preparedPlayer == null)
+            {
+                PreparationFailed = true;
+                yield break;
+            }
+
+            SetPlayerMovement(_preparedPlayer, false);
+            DisablePlayerHoldMode(_preparedPlayer);
             ApplyCameraConfiguration();
             SpawnCollectibles();
+
+            yield return WaitForRuntimeInitialization();
+
+            GameProgressionManager progression = Object.FindFirstObjectByType<GameProgressionManager>();
+            if (progression == null)
+            {
+                Debug.LogError("[PrototypeSceneFlowController] GameProgressionManagerが見つかりません。");
+                PreparationFailed = true;
+                yield break;
+            }
+
+            yield return progression.PrepareFirstWaveRoutine();
+            if (progression.PreparationFailed || !progression.IsFirstWavePrepared)
+            {
+                PreparationFailed = true;
+                yield break;
+            }
+
+            IsPrepared = true;
         }
 
         /// <summary>
@@ -117,6 +161,56 @@ namespace Game.Infrastructure.Bootstrap
             {
                 yield return null;
             }
+        }
+
+        private static bool IsSceneLoaded(string sceneName)
+        {
+            Scene scene = SceneManager.GetSceneByName(sceneName);
+            return scene.IsValid() && scene.isLoaded;
+        }
+
+        private static IEnumerator WaitForRuntimeInitialization()
+        {
+            while (!Game.Gameplay.Stage.FieldContext.IsReady)
+            {
+                yield return null;
+            }
+
+            CollectiblePool pool = Object.FindFirstObjectByType<CollectiblePool>();
+            while (pool != null && !pool.IsPrewarmed)
+            {
+                yield return null;
+            }
+        }
+
+        public void StartPreparedGame()
+        {
+            if (!IsPrepared || PreparationFailed)
+            {
+                return;
+            }
+
+            SetPlayerMovement(_preparedPlayer, true);
+
+            GameProgressionManager progression = Object.FindFirstObjectByType<GameProgressionManager>();
+            progression?.BeginPreparedGame();
+        }
+
+        private static void SetPlayerMovement(PlayerFacade player, bool canMove)
+        {
+            if (player == null)
+            {
+                return;
+            }
+
+            PlayerController controller = player.GetComponentInChildren<PlayerController>(true);
+            controller?.SetCanMove(canMove);
+        }
+
+        private IEnumerator PrepareAndStartStandaloneRoutine()
+        {
+            yield return PrepareGameRoutine();
+            StartPreparedGame();
         }
 
         /// <summary>

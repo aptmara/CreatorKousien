@@ -2981,7 +2981,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Title.TitleMenuController
   _startButton: {fileID: 1090685987}
-  _bootSceneName: Boot
+  _loadingSceneName: Loading
 --- !u!1 &1985533822
 GameObject:
   m_ObjectHideFlags: 0

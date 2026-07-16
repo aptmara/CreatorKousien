@@ -820,7 +820,9 @@ namespace Game.Gameplay.Enemy.Boss
 
             if (failureBarrierDamage > 0f)
             {
-                EventBus.Publish(new RuleBarrierAttackEvent(failureBarrierDamage));
+                EventBus.Publish(new RuleBarrierAttackEvent(
+                    failureBarrierDamage,
+                    _mouthHitReceiver.transform.position));
             }
 
             if (_currentPhaseData == null)
