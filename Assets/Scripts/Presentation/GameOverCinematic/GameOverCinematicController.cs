@@ -26,6 +26,8 @@ namespace Game.Presentation.GameOverCinematic
     /// </summary>
     public sealed class GameOverCinematicController : MonoBehaviour
     {
+        private const float DefaultFixedDeltaTime = 0.02f;
+
         [Header("--- 設定データ ---")]
         [SerializeField] private SO_GameOverCinematicSettings _settings;
 
@@ -50,6 +52,22 @@ namespace Game.Presentation.GameOverCinematic
         [Header("--- 視界クリアクリーンアップ設定 ---")]
         [Tooltip("ゲームオーバー確定時にプレイヤー周囲から消去するアイテムの探索半径")]
         [SerializeField, Min(0f)] private float _itemClearRadius = 7f;
+
+        [Header("--- バリア破壊時のスローモーション設定 ---")]
+        [Tooltip("スローモーション倍率")]
+        [SerializeField, Range(0.01f, 1f)] private float _breakSlowTimeScale = 0.1f;
+        [Tooltip("門へのズーム前に、破壊の余韻とスローを維持する実時間（秒）")]
+        [SerializeField, Min(0f)] private float _delayBeforeZoomIn = 2.5f;
+        [Tooltip("カメラシェイクの強さ")]
+        [SerializeField] private float _breakImpactStrength = 0.3f;
+        [Tooltip("カメラシェイクの回転の強さ")]
+        [SerializeField] private float _breakImpactRotation = 4.0f;
+
+        [Header("--- カートゥーン閉扉バウンド設定 ---")]
+        [Tooltip("門が閉まりきる直前の激しい反動バウンド時間（秒）")]
+        [SerializeField] private float _doorSlamBounceDuration = 0.25f;
+        [Tooltip("門が閉まった瞬間の行き過ぎ（食い込み）角度の最大幅")]
+        [SerializeField] private float _doorOvershootAngle = 35f;
 
         private CameraRigController _cameraRig;
         private Camera _mainCamera;
@@ -120,6 +138,45 @@ namespace Game.Presentation.GameOverCinematic
             Vector3 camStartPos = camTransform.position;
             Quaternion camStartRot = camTransform.rotation;
 
+            // バリア破壊のカメラシェイク & スローモーション猶予
+            if (_delayBeforeZoomIn > 0.0f)
+            {
+                Time.timeScale = _breakSlowTimeScale;
+                Time.fixedDeltaTime = DefaultFixedDeltaTime * Time.timeScale;
+
+                float breakElapsed = 0f;
+                while (breakElapsed < _delayBeforeZoomIn)
+                {
+                    breakElapsed += Time.unscaledDeltaTime;
+                    float t = Mathf.Clamp01(breakElapsed / _delayBeforeZoomIn);
+                    float damping = 1f - (t * t);
+
+                    // ノイズシェイク計算
+                    float noiseTime = breakElapsed * _shakeFrequency * 1.5f;
+                    float offsetX = Noise(noiseTime, 100f) * _breakImpactStrength * damping;
+                    float offsetY = Noise(noiseTime, 115f) * _breakImpactStrength * damping;
+                    Vector3 shakeOffset = (camTransform.right * offsetX) + (camTransform.up * offsetY);
+
+                    Quaternion shakeRotOffset = Quaternion.Euler(
+                        Noise(noiseTime, 130f) * _breakImpactRotation * damping,
+                        Noise(noiseTime, 145f) * _breakImpactRotation * damping,
+                        Noise(noiseTime, 160f) * _breakImpactRotation * damping
+                    );
+
+                    camTransform.position = camStartPos + shakeOffset;
+                    camTransform.rotation = camStartRot * shakeRotOffset;
+                    yield return null;
+                }
+
+                // スローモーション解除
+                Time.timeScale = 1f;
+                Time.fixedDeltaTime = DefaultFixedDeltaTime;
+            }
+
+            // 門を最大開放角度まで開く
+            if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.Euler(0f, _settings.MaxOpenAngle, 0f);
+            if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.Euler(0f, -_settings.MaxOpenAngle, 0f);
+
             // phase 1: カメラが奥の門へズームイン
             float elapsed = 0f;
             while (elapsed < _settings.ZoomInDuration)
@@ -133,25 +190,11 @@ namespace Game.Presentation.GameOverCinematic
                 yield return null;
             }
 
-            // phase 2: 門が勢いよく奥へ開く & 砂煙エフェクト
+            // phase 2: 砂煙エフェクト
             if (_dustParticlePrefab != null && _dustSpawnPoint != null)
             {
                 _dustParticlePrefab.transform.position = _dustSpawnPoint.position;
                 _dustParticlePrefab.Play();
-            }
-
-            elapsed = 0f;
-            while (elapsed < _settings.DoorOpenDuration)
-            {
-                elapsed += Time.deltaTime;
-                float rate = Mathf.Clamp01(elapsed / _settings.DoorOpenDuration);
-                float curveValue = _settings.DoorOpenCurve.Evaluate(rate);
-
-                float currentAngle = curveValue * _settings.MaxOpenAngle;
-                if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.Euler(0f, -currentAngle, 0f);
-                if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.Euler(0f, currentAngle, 0f);
-                yield return null;
-
             }
 
             // 敵のなだれ込み演出
@@ -324,7 +367,7 @@ namespace Game.Presentation.GameOverCinematic
                 yield return new WaitForSeconds(_settings.BaseDoorKeepOpenDuration);
             }
 
-            // phase 3: 門が勢いよく閉まる
+            // phase 3: 門がカートゥーン風に閉まる
             elapsed = 0f;
             while (elapsed < _settings.DoorCloseDuration)
             {
@@ -332,13 +375,30 @@ namespace Game.Presentation.GameOverCinematic
                 float rate = Mathf.Clamp01(elapsed / _settings.DoorCloseDuration);
                 float curveValue = _settings.DoorCloseCurve.Evaluate(rate);
 
-                float currentAngle = curveValue * _settings.MaxOpenAngle;
-                if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.Euler(0f, -currentAngle, 0f);
-                if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.Euler(0f, currentAngle, 0f);
+                float currentAngle = Mathf.Lerp(_settings.MaxOpenAngle, 0f, curveValue);
+                if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.Euler(0f, currentAngle, 0f);
+                if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.Euler(0f, -currentAngle, 0f);
                 yield return null;
             }
 
-            // TODO: 閉まった瞬間カメラシェイクとかあっても良いかも
+            // バタンと閉まった瞬間の反動
+            float bounceElapsed = 0f;
+            while (bounceElapsed < _doorSlamBounceDuration)
+            {
+                bounceElapsed += Time.deltaTime;
+                float t = bounceElapsed / _doorSlamBounceDuration;
+                float damping = 1f - t;
+
+                float bounceAngle = Mathf.Sin(t * Mathf.PI * 3f) * _doorOvershootAngle * damping;
+
+                if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.Euler(0f, bounceAngle, 0f);
+                if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.Euler(0f, -bounceAngle, 0f);
+                yield return null;
+            }
+
+            // 扉をゼロ座標で固定
+            if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.identity;
+            if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.identity;
 
 
             // 扉が閉まるのと同時に、プレイヤーをカートゥーン死亡演出に切り替える
