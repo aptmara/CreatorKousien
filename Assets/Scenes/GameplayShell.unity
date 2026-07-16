@@ -594,6 +594,9 @@ MonoBehaviour:
   _breakImpactRotation: 4
   _doorSlamBounceDuration: 0.25
   _doorOvershootAngle: 35
+  _newSoulVfxPrefab: {fileID: 5947945855874270942, guid: 2797666e6e9a2524d85272740a490986, type: 3}
+  _soulSpawnInterval: 3
+  _soulVfxLifetime: 4
 --- !u!1 &1756462884
 GameObject:
   m_ObjectHideFlags: 0
