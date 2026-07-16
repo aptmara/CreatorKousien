@@ -49,6 +49,9 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     [Header("お金表示UI")]
     [SerializeField] private S_RoguelikeMoneyUI _moneyUI;
 
+    [Header("表示する詳細データ")]
+    [SerializeField] private S_UpgradeDetail _upgradeDetail;
+
     [Header("1回に提示する候補数")]
     [SerializeField] private int _cardidateCount = 3;
 
@@ -107,6 +110,7 @@ public class S_UpgradeSelectionUI : MonoBehaviour
 
         ClearCards();
 
+        // お金のUI生成
         _moneyUI.SpawnMoneyUI(_moneyData.moneyOnHand);
 
         //! 怪しい
@@ -173,9 +177,10 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     private void SpawnCard(UpgradeData cardData)
     {
         int currentLevel = _upgradeRuntimeState.GetLevel(cardData);
+        _upgradeDetail.SetCurrentLevel(currentLevel);
 
         S_UpgradeCard card = Instantiate(_cardPrefab, _cardParent);
-        card.Setup(cardData, currentLevel, OnCardSelected);
+        card.Setup(cardData, currentLevel);
 
         _spawnedCards.Add(card);
         _cardToData[card] = cardData;
@@ -207,6 +212,10 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         // 選択したカードのみ表示を更新
         int newLevel = _upgradeRuntimeState.GetLevel(selectedCard);
 
+        // 詳細を更新
+        _upgradeDetail.SetCurrentLevel(newLevel);
+        _upgradeDetail.SpawnDetail(selectedCard);
+
         foreach (var card in _spawnedCards)
         {
             if(_cardToData.TryGetValue(card, out var data) && data == selectedCard)
@@ -216,6 +225,16 @@ public class S_UpgradeSelectionUI : MonoBehaviour
                 break;
             }
         }
+    }
+
+    public void TriggerSelectByCard(S_UpgradeCard card)
+    {
+        int index = _spawnedCards.IndexOf(card);
+        if (index < 0) return;
+
+        // クリックしたカードにフォーカスを合わせる
+        SetFocusIndex(index);
+        TriggerSelect(index);
     }
 
     private void ClearCards()
@@ -240,6 +259,17 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         for(int i = 0; i < _spawnedCards.Count; ++i)
         {
             _spawnedCards[i].SetHighlighted(i == index);
+        }
+
+        // カードの詳細を表示
+        if(index >= 0 && index < _spawnedCards.Count)
+        {
+            S_UpgradeCard focusedCard = _spawnedCards[index];
+            if(_cardToData.TryGetValue(focusedCard, out var data))
+            {
+                _upgradeDetail.SetCurrentLevel(_upgradeRuntimeState.GetLevel(data));
+                _upgradeDetail.SpawnDetail(data);
+            }
         }
     }
 

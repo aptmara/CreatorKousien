@@ -5,7 +5,6 @@
 // auther : Takitani Shohei
 // date   : 2026/07/01 - begin.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
-using UnityEngine;
 
 public enum UpgradeCategory
 {

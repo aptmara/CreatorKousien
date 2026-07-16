@@ -91,6 +91,7 @@ public class S_RoguelikeSelectInput : MonoBehaviour
         _submitAction.performed -= OnSubmitPerformed;
         _cancelAction.performed -= OnCancelPerformed;
         _clickAction.performed -= OnClickPerformed;
+        _exitAction.performed -= OnClickPerformed;
 
         _map.Disable();
     }
