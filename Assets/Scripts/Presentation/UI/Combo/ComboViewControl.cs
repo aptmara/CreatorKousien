@@ -52,6 +52,8 @@ namespace Game.Presentation.UI.Combo
 
         private ComboManager _comboManager;
         private readonly List<IComboFeedback> _activeFeedbacks = new List<IComboFeedback>();
+        private Vector3 _lastHitPosition = Vector3.zero;
+        private int _currentComboValue;
 
         private void Awake()
         {
@@ -105,6 +107,7 @@ namespace Game.Presentation.UI.Combo
         /// </summary>
         private void OnEnemyHit(EnemyHitBatchEvent ev)
         {
+            _lastHitPosition = ev.HitPosition;
             int hits = ev.HitCount;
             _comboManager.AddCombo(hits);
             _comboGaugeUI?.GaugeUpdate(hits);
@@ -115,6 +118,7 @@ namespace Game.Presentation.UI.Combo
         /// </summary>
         private void OnBarrierHit(BarrierHitBatchEvent ev)
         {
+            _lastHitPosition = ev.HitPosition;
             int hits = ev.HitCount;
             _comboManager.AddCombo(hits);
             _comboGaugeUI?.GaugeUpdate(hits);
@@ -122,6 +126,7 @@ namespace Game.Presentation.UI.Combo
 
         private void HandleComboUpdated(int currentCombo, float durationRatio)
         {
+            _currentComboValue = currentCombo;
             SetTextActive(true);
 
             string textString = $"{currentCombo}";// Combo!";
@@ -146,6 +151,9 @@ namespace Game.Presentation.UI.Combo
 
         private void HandleComboReset()
         {
+            int finalCombo = _currentComboValue;
+            Vector3 lastHitPosition = _lastHitPosition;
+
             SetTextActive(false);
             _comboGaugeUI?.resetGauge();
 
@@ -161,6 +169,13 @@ namespace Game.Presentation.UI.Combo
             }
 
             // コンボ変化イベントを発行
+            if (finalCombo >= 1)
+            {
+                EventBus.Publish(new ComboEndedEvent(finalCombo, lastHitPosition));
+            }
+
+            _currentComboValue = 0;
+            _lastHitPosition = Vector3.zero;
             EventBus.Publish(new ComboChangedEvent(0, 0f));
         }
 

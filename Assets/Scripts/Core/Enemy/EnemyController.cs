@@ -336,7 +336,7 @@ namespace Game.Core.Enemy
         private void HandleDroped()
         {
             _stateManager.TransitionTo(EnemyState.Defeated);
-            EventBus.Publish(new EnemyDefeatedEvent(InstanceEnemyId));
+            EventBus.Publish(new EnemyDefeatedEvent(InstanceEnemyId, transform.position));
             OnDefeated?.Invoke();
             Debug.Log($"[EnemyController] {InstanceEnemyId} 撃破！");
 
