@@ -51,6 +51,8 @@ namespace Game.Presentation.UI.Title
         private List<Sprite> _scatterItems;
         [SerializeField,Tooltip("ばらまくオブジェクトのプレハブ")]
         private GameObject _scatterObj;
+        [SerializeField,Tooltip("最小回転量")] private float _scatterRotMin;
+        [SerializeField,Tooltip("最大回転量")] private float _scatterRotMax;
 
         [SerializeField, Tooltip("アンカーポイント")]
         private Vector2 _anchorPoint = new Vector2( 0.5f,0.5f );
@@ -154,6 +156,12 @@ namespace Game.Presentation.UI.Title
                     Random.Range(-10.0f, 10.0f) * _animScale,
                     Random.Range(5.0f, 10.0f) * _animScale),
                     ForceMode2D.Impulse);
+                float rotPower = Random.Range(-30.0f, 30.0f);
+                rotPower = rotPower >= 0.0f ?
+                    Mathf.Clamp(rotPower, _scatterRotMin, _scatterRotMax) :
+                    Mathf.Clamp(rotPower, -_scatterRotMax, -_scatterRotMin);
+                rb.AddTorque(rotPower);
+
                 // 一定期間後に削除
                 Destroy(obj, _continueTime);
             }

@@ -84,7 +84,7 @@ namespace Game.Presentation.UI.Title
             }
         }
 
-        private void Start()
+        private void OnEnable()
         {
             if (_playOnStart)
             {
