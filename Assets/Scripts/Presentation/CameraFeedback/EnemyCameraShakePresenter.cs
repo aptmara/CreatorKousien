@@ -10,6 +10,7 @@
 // ------------------------------------------------------------
 using UnityEngine;
 using Game.Core.Events;
+using System.Collections;
 
 namespace Game.Presentation.CameraFeedback
 {
@@ -35,6 +36,18 @@ namespace Game.Presentation.CameraFeedback
             [Header("複数Hit補正")]
             [SerializeField, Tooltip("ヒットのカウントボーナス"), Min(0f)]      private float _hitCountBonus = 0.08f;
             [SerializeField, Tooltip("シェイクの最大倍率"),       Min(1f)]      private float _maxMultiplier = 1.8f;
+
+            public ShakeSettings()
+            {
+            }
+
+            public ShakeSettings(float duration, float positionStrength, float rotationStrength, float frequency)
+            {
+                _duration = duration;
+                _positionStrength = positionStrength;
+                _rotationStrength = rotationStrength;
+                _frequency = frequency;
+            }
 
             public bool Enable => _enable;
             public float Duration => _duration;
@@ -66,6 +79,13 @@ namespace Game.Presentation.CameraFeedback
         [Header("敵撃破時の揺れ")]
         [SerializeField] private ShakeSettings _enemyDefeatShake = new ShakeSettings();
 
+        [Header("防衛ライン破壊時の強い揺れ")]
+        [SerializeField] private ShakeSettings _defenseLineBreakPrimaryShake = new ShakeSettings(0.22f, 0.16f, 2.8f, 32.0f);
+
+        [Header("防衛ライン破壊時の余震")]
+        [SerializeField] private ShakeSettings _defenseLineBreakSecondaryShake = new ShakeSettings(0.18f, 0.06f, 1.3f, 22.0f);
+        [SerializeField, Min(0.0f)] private float _defenseLineBreakSecondaryDelay = 0.16f;
+
         private float _remainingTime;                                       // シェイクの残り時間
         private float _totalTime;                                           // シェイクの総時間
         private float _positionStrength;                                    // シェイクの位置の強さ
@@ -75,6 +95,9 @@ namespace Game.Presentation.CameraFeedback
 
         private float _nextHitShakeTime;                                    // 次のヒットシェイクが発生可能な時間
         private float _nextDefeatShakeTime;                                 // 次の撃破シェイクが発生可能な時間
+        private float _nextDefenseLineBreakPrimaryShakeTime;
+        private float _nextDefenseLineBreakSecondaryShakeTime;
+        private Coroutine _defenseLineBreakCoroutine;
 
         private bool _hasAppliedOffset;                                     // シェイクのオフセットが適用されたかどうか
         private Vector3 _lastBaseLocalPosition;                             // シェイクのオフセットを適用する前のローカル位置
@@ -102,6 +125,7 @@ namespace Game.Presentation.CameraFeedback
         {
             EventBus.Subscribe<EnemyHitBatchEvent>(OnEnemyHit);
             EventBus.Subscribe<EnemyDefeatedEvent>(OnEnemyDefeated);
+            EventBus.Subscribe<DefLineBreakReactionEvent>(OnDefenseLineBreak);
         }
 
         /// <summary>
@@ -111,6 +135,13 @@ namespace Game.Presentation.CameraFeedback
         {
             EventBus.Unsubscribe<EnemyHitBatchEvent>(OnEnemyHit);
             EventBus.Unsubscribe<EnemyDefeatedEvent>(OnEnemyDefeated);
+            EventBus.Unsubscribe<DefLineBreakReactionEvent>(OnDefenseLineBreak);
+
+            if (_defenseLineBreakCoroutine != null)
+            {
+                StopCoroutine(_defenseLineBreakCoroutine);
+                _defenseLineBreakCoroutine = null;
+            }
 
             RestoreOffsetIfNeeded();
         }
@@ -174,6 +205,35 @@ namespace Game.Presentation.CameraFeedback
         private void OnEnemyDefeated(EnemyDefeatedEvent ev)
         {
             TryStartShake(_enemyDefeatShake, 1f, ref _nextDefeatShakeTime);
+        }
+
+        private void OnDefenseLineBreak(DefLineBreakReactionEvent ev)
+        {
+            if (_defenseLineBreakCoroutine != null)
+            {
+                StopCoroutine(_defenseLineBreakCoroutine);
+            }
+
+            _defenseLineBreakCoroutine = StartCoroutine(PlayDefenseLineBreakShake());
+        }
+
+        private IEnumerator PlayDefenseLineBreakShake()
+        {
+            TryStartShake(
+                _defenseLineBreakPrimaryShake,
+                1.0f,
+                ref _nextDefenseLineBreakPrimaryShakeTime);
+
+            if (_defenseLineBreakSecondaryDelay > 0.0f)
+            {
+                yield return new WaitForSeconds(_defenseLineBreakSecondaryDelay);
+            }
+
+            TryStartShake(
+                _defenseLineBreakSecondaryShake,
+                1.0f,
+                ref _nextDefenseLineBreakSecondaryShakeTime);
+            _defenseLineBreakCoroutine = null;
         }
 
 
@@ -294,4 +354,3 @@ namespace Game.Presentation.CameraFeedback
     }
 
 }
-
