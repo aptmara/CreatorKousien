@@ -21,6 +21,9 @@ namespace Game.Gameplay.Collectibles
     [RequireComponent(typeof(Rigidbody), typeof(Collider))]
     public class CollectibleObject : MonoBehaviour
     {
+        private const string FieldWallRootName = "FIELD_WALL";
+        private const string EnemySideWallName = "Wall_Front";
+
         [Header("--- データ ---")]
         [Tooltip("このオブジェクトのマスターデータ")]
         [SerializeField] private CollectibleData _data;
@@ -45,6 +48,11 @@ namespace Game.Gameplay.Collectibles
 
         private Dictionary<int, GameObject> _visualCache = new Dictionary<int, GameObject>();
         private Vector3 _initialScale;
+        private Collider _collider;
+        private Transform _fieldWallRoot;
+        private Collider[] _fieldWallColliders;
+        private Bounds _fieldWallLocalBounds;
+        private bool _hasFieldWallBounds;
 
         // --- 特殊効果用のランタイム変数 ---
         private int _currentBounceCount = 0;
@@ -59,6 +67,7 @@ namespace Game.Gameplay.Collectibles
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
+            _collider = GetComponent<Collider>();
             _initialScale = transform.localScale;
         }
 
@@ -68,6 +77,35 @@ namespace Game.Gameplay.Collectibles
             if (transform.position.y < _fallDeadLineY)
             {
                 Despawn();
+                return;
+            }
+
+            ResolveFieldWallBoundsIfNeeded();
+            if (_fieldWallRoot != null && _hasFieldWallBounds)
+            {
+                Vector3 localPosition = _fieldWallRoot.InverseTransformPoint(transform.position);
+                if (IsOutsideFieldBounds(localPosition))
+                {
+                    MoveInsideField();
+                }
+            }
+        }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (IsFieldWall(collision.transform)
+                && !IsEnemySideWall(collision.transform))
+            {
+                MoveInsideField(collision.collider);
+            }
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            if (IsFieldWall(other.transform)
+                && !IsEnemySideWall(other.transform))
+            {
+                MoveInsideField(other);
             }
         }
 
@@ -87,6 +125,7 @@ namespace Game.Gameplay.Collectibles
         /// <param name="canBeCollectedByPlayer">プレイヤー収集を許可するか</param>
         public void Initialize(CollectibleData data, Action<CollectibleObject> returnAction, bool canBeCollectedByPlayer)
         {
+            ResolveFieldWallBoundsIfNeeded();
             _data = data;
             _returnAction = returnAction;
             CanBeCollectedByPlayer = canBeCollectedByPlayer;
@@ -94,6 +133,279 @@ namespace Game.Gameplay.Collectibles
 
             UpdateVisual();
             ApplySpecialPhysics();
+        }
+
+        private void ResolveFieldWallBoundsIfNeeded()
+        {
+            if (_fieldWallRoot != null && _hasFieldWallBounds)
+            {
+                return;
+            }
+
+            GameObject fieldWall = GameObject.Find(FieldWallRootName);
+            if (fieldWall == null)
+            {
+                return;
+            }
+
+            _fieldWallRoot = fieldWall.transform;
+            Collider[] wallColliders = fieldWall.GetComponentsInChildren<Collider>(true);
+            List<Collider> activeWallColliders = new List<Collider>();
+            bool hasPoint = false;
+            Vector3 minimum = Vector3.zero;
+            Vector3 maximum = Vector3.zero;
+
+            foreach (Collider wallCollider in wallColliders)
+            {
+                if (wallCollider == null
+                    || !wallCollider.enabled
+                    || !wallCollider.gameObject.activeInHierarchy)
+                {
+                    continue;
+                }
+
+                activeWallColliders.Add(wallCollider);
+
+                if (wallCollider is BoxCollider boxCollider)
+                {
+                    EncapsulateBoxCollider(boxCollider, ref minimum, ref maximum, ref hasPoint);
+                }
+                else
+                {
+                    EncapsulateWorldBounds(wallCollider.bounds, ref minimum, ref maximum, ref hasPoint);
+                }
+            }
+
+            if (!hasPoint)
+            {
+                return;
+            }
+
+            _fieldWallLocalBounds.SetMinMax(minimum, maximum);
+            _fieldWallColliders = activeWallColliders.ToArray();
+            _hasFieldWallBounds = true;
+        }
+
+        private bool IsOutsideFieldBounds(Vector3 localPosition)
+        {
+            return localPosition.x < _fieldWallLocalBounds.min.x
+                || localPosition.x > _fieldWallLocalBounds.max.x
+                || localPosition.z > _fieldWallLocalBounds.max.z;
+        }
+
+        private void MoveInsideField(Collider contactedWall = null)
+        {
+            ResolveFieldWallBoundsIfNeeded();
+            if (_fieldWallRoot == null || !_hasFieldWallBounds)
+            {
+                return;
+            }
+
+            Vector3 currentPosition = transform.position;
+            Vector3 localPosition = _fieldWallRoot.InverseTransformPoint(currentPosition);
+            Vector3 localCenter = _fieldWallLocalBounds.center;
+            localCenter.y = localPosition.y;
+
+            Vector3 fieldCenter = _fieldWallRoot.TransformPoint(localCenter);
+            Vector3 outwardDirection = currentPosition - fieldCenter;
+            float distanceFromCenter = outwardDirection.magnitude;
+            if (distanceFromCenter <= 0.0001f)
+            {
+                return;
+            }
+
+            outwardDirection /= distanceFromCenter;
+            float insideClearance = GetColliderExtentAlong(outwardDirection) + 0.01f;
+            float rayDistance = distanceFromCenter + insideClearance + 0.01f;
+
+            if (!TryGetInnerWallPoint(
+                    contactedWall,
+                    fieldCenter,
+                    outwardDirection,
+                    rayDistance,
+                    out Vector3 innerWallPoint))
+            {
+                Vector3 clampedPosition = new Vector3(
+                    Mathf.Clamp(localPosition.x, _fieldWallLocalBounds.min.x, _fieldWallLocalBounds.max.x),
+                    localPosition.y,
+                    Mathf.Clamp(localPosition.z, _fieldWallLocalBounds.min.z, _fieldWallLocalBounds.max.z));
+                Vector3 clampedWorldPosition = _fieldWallRoot.TransformPoint(clampedPosition);
+                Vector3 inwardDirection = (fieldCenter - clampedWorldPosition).normalized;
+                SetPositionOnly(clampedWorldPosition + inwardDirection * insideClearance);
+                return;
+            }
+
+            SetPositionOnly(innerWallPoint - outwardDirection * insideClearance);
+        }
+
+        private bool TryGetInnerWallPoint(
+            Collider contactedWall,
+            Vector3 rayOrigin,
+            Vector3 rayDirection,
+            float rayDistance,
+            out Vector3 innerWallPoint)
+        {
+            Ray ray = new Ray(rayOrigin, rayDirection);
+            if (contactedWall != null
+                && contactedWall.enabled
+                && contactedWall.gameObject.activeInHierarchy
+                && contactedWall.Raycast(ray, out RaycastHit contactedHit, rayDistance))
+            {
+                innerWallPoint = contactedHit.point;
+                return true;
+            }
+
+            bool found = false;
+            float nearestDistance = float.MaxValue;
+            innerWallPoint = Vector3.zero;
+
+            if (_fieldWallColliders == null)
+            {
+                return false;
+            }
+
+            foreach (Collider wallCollider in _fieldWallColliders)
+            {
+                if (wallCollider == null
+                    || !wallCollider.enabled
+                    || !wallCollider.gameObject.activeInHierarchy
+                    || !wallCollider.Raycast(ray, out RaycastHit hit, rayDistance)
+                    || hit.distance >= nearestDistance)
+                {
+                    continue;
+                }
+
+                found = true;
+                nearestDistance = hit.distance;
+                innerWallPoint = hit.point;
+            }
+
+            return found;
+        }
+
+        private float GetColliderExtentAlong(Vector3 direction)
+        {
+            if (_collider == null)
+            {
+                return 0f;
+            }
+
+            Vector3 extents = _collider.bounds.extents;
+            return Mathf.Abs(direction.x) * extents.x
+                + Mathf.Abs(direction.y) * extents.y
+                + Mathf.Abs(direction.z) * extents.z;
+        }
+
+        private void SetPositionOnly(Vector3 position)
+        {
+            if (_rigidbody != null)
+            {
+                _rigidbody.position = position;
+                return;
+            }
+
+            transform.position = position;
+        }
+
+        private void EncapsulateBoxCollider(
+            BoxCollider boxCollider,
+            ref Vector3 minimum,
+            ref Vector3 maximum,
+            ref bool hasPoint)
+        {
+            Vector3 extents = boxCollider.size * 0.5f;
+            for (int x = -1; x <= 1; x += 2)
+            {
+                for (int y = -1; y <= 1; y += 2)
+                {
+                    for (int z = -1; z <= 1; z += 2)
+                    {
+                        Vector3 localCorner = boxCollider.center + Vector3.Scale(
+                            extents,
+                            new Vector3(x, y, z));
+                        Vector3 worldCorner = boxCollider.transform.TransformPoint(localCorner);
+                        EncapsulatePoint(
+                            _fieldWallRoot.InverseTransformPoint(worldCorner),
+                            ref minimum,
+                            ref maximum,
+                            ref hasPoint);
+                    }
+                }
+            }
+        }
+
+        private void EncapsulateWorldBounds(
+            Bounds worldBounds,
+            ref Vector3 minimum,
+            ref Vector3 maximum,
+            ref bool hasPoint)
+        {
+            Vector3 extents = worldBounds.extents;
+            for (int x = -1; x <= 1; x += 2)
+            {
+                for (int y = -1; y <= 1; y += 2)
+                {
+                    for (int z = -1; z <= 1; z += 2)
+                    {
+                        Vector3 worldCorner = worldBounds.center + Vector3.Scale(
+                            extents,
+                            new Vector3(x, y, z));
+                        EncapsulatePoint(
+                            _fieldWallRoot.InverseTransformPoint(worldCorner),
+                            ref minimum,
+                            ref maximum,
+                            ref hasPoint);
+                    }
+                }
+            }
+        }
+
+        private static void EncapsulatePoint(
+            Vector3 point,
+            ref Vector3 minimum,
+            ref Vector3 maximum,
+            ref bool hasPoint)
+        {
+            if (!hasPoint)
+            {
+                minimum = point;
+                maximum = point;
+                hasPoint = true;
+                return;
+            }
+
+            minimum = Vector3.Min(minimum, point);
+            maximum = Vector3.Max(maximum, point);
+        }
+
+        private bool IsFieldWall(Transform target)
+        {
+            while (target != null)
+            {
+                if (target == _fieldWallRoot || target.name == FieldWallRootName)
+                {
+                    return true;
+                }
+
+                target = target.parent;
+            }
+
+            return false;
+        }
+
+        private bool IsEnemySideWall(Transform target)
+        {
+            while (target != null && target != _fieldWallRoot)
+            {
+                if (target.name == EnemySideWallName)
+                {
+                    return true;
+                }
+
+                target = target.parent;
+            }
+
+            return false;
         }
 
         /// <summary>

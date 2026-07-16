@@ -2,12 +2,13 @@ using Game.Gameplay.Collectibles;
 using Game.Gameplay.Stage;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using System.Collections.Generic;
 
 public class CrystalWalk : MonoBehaviour, ICrystalBreakable
 {
+    private const string FieldWallRootName = "FIELD_WALL";
+
     // --- 【ここを追加】セグメントごとの移動モード ---
     public enum SegmentMode
     {
@@ -80,9 +81,11 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     [SerializeField] private FieldData _fieldData;
 
     [Header("Collectible射出方向")]
-    [Tooltip("CollectibleをこのTransformの位置へ向けて射出します。未設定の場合はステージ中心へ向けます。")]
+    [Tooltip("通常移動中の生成位置を内側へ寄せる基準です。未設定の場合はステージ中心を使用します。プレイヤー未検出時の射出方向にも使用します。")]
     [FormerlySerializedAs("_fieldCenter")]
     [SerializeField] private Transform _collectibleEmissionTarget;
+    [Tooltip("初期移動以外のCollectibleを向けるプレイヤー位置へのワールド座標オフセットです。")]
+    [SerializeField] private Vector3 _playerEmissionTargetOffset;
     [SerializeField] private float _emitOffset = 1.5f;
     [SerializeField] private float _upBias = 1.5f;
 
@@ -100,10 +103,23 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     [SerializeField, Min(0f)] private float _movementEmissionInwardOffset = 2f;
 
     private float _movementCollectibleEmissionAccumulator;
+    private Transform _playerEmissionTarget;
+    private Transform _fieldWallRoot;
 
     private Vector3 CollectibleEmissionTargetPosition => _collectibleEmissionTarget != null
         ? _collectibleEmissionTarget.position
         : FieldContext.IsReady ? FieldContext.Center : Vector3.zero;
+
+    private Vector3 PlayerEmissionTargetPosition
+    {
+        get
+        {
+            ResolvePlayerEmissionTargetIfNeeded();
+            return _playerEmissionTarget != null
+                ? _playerEmissionTarget.position + _playerEmissionTargetOffset
+                : CollectibleEmissionTargetPosition;
+        }
+    }
 
     public void Break(Vector3 hitPoint, Vector3 hitDirection) => Emits(hitPoint);
 
@@ -129,6 +145,7 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
 
     void Start()
     {
+        ResolvePlayerEmissionTargetIfNeeded();
         _currentCount = startCount;
         if (_scale.x <= 0.0f || _scale.y <= 0.0f || _scale.z <= 0.0f) _scale = Vector3.one;
         if (_model != null) _modelBaseLocalPos = _model.localPosition;
@@ -156,7 +173,6 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
 
     void Update()
     {
-        if (Keyboard.current.spaceKey.wasPressedThisFrame) Emits(transform.position);
         if (_isMovementSuspended) return;
         if (pathSegments == null || pathSegments.Count == 0) return;
 
@@ -326,9 +342,9 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         }
 
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(CollectibleEmissionTargetPosition, 0.5f);
+        Gizmos.DrawWireSphere(PlayerEmissionTargetPosition, 0.5f);
 
-        Vector3 launchDirection = CreateFieldCenterLaunchDirection(transform.position);
+        Vector3 launchDirection = CreatePlayerLaunchDirection(transform.position);
         if (launchDirection.sqrMagnitude > 0.0001f)
         {
             Gizmos.color = Color.magenta;
@@ -357,7 +373,7 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         }
 
         Vector3 adjustedSpawnPosition = CreateMovementEmissionSpawnPosition(spawnPosition);
-        Vector3 direction = CreateFieldCenterLaunchDirection(adjustedSpawnPosition);
+        Vector3 direction = CreatePlayerLaunchDirection(adjustedSpawnPosition);
 
         _emitter.EmitFromHit(adjustedSpawnPosition, direction, _spreadAngle, _movementEmissionPower, null);
     }
@@ -428,21 +444,70 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     }
 
     /// <summary>
-    /// 指定位置からフィールド中心へ向かう射出方向を計算します。
+    /// 指定位置からプレイヤー位置とオフセットを加えた地点へ向かう射出方向を計算します。
     /// </summary>
     /// <param name="spawnPosition">Collectibleの生成位置です。</param>
-    /// <returns>フィールド面に沿う中心方向へ上向き補正を加えた正規化済み方向です。</returns>
-    private Vector3 CreateFieldCenterLaunchDirection(Vector3 spawnPosition)
+    /// <returns>フィールド面に沿うプレイヤー方向へ上向き補正を加えた正規化済み方向です。</returns>
+    private Vector3 CreatePlayerLaunchDirection(Vector3 spawnPosition)
     {
         Vector3 fieldUp = FieldRotation * Vector3.up;
-        Vector3 directionToCenter = Vector3.ProjectOnPlane(
-            CollectibleEmissionTargetPosition - spawnPosition,
+        return CreatePlayerLaunchDirection(spawnPosition, fieldUp);
+    }
+
+    private Vector3 CreatePlayerLaunchDirection(Vector3 spawnPosition, Vector3 fieldUp)
+    {
+        Vector3 directionToPlayer = Vector3.ProjectOnPlane(
+            PlayerEmissionTargetPosition - spawnPosition,
             fieldUp);
-        Vector3 launchDirection = directionToCenter + fieldUp * _upBias;
+        Vector3 launchDirection = directionToPlayer + fieldUp * _upBias;
 
         return launchDirection.sqrMagnitude > 0.0001f
             ? launchDirection.normalized
             : fieldUp;
+    }
+
+    private void ResolvePlayerEmissionTargetIfNeeded()
+    {
+        if (_playerEmissionTarget != null)
+        {
+            return;
+        }
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            _playerEmissionTarget = player.transform;
+        }
+    }
+
+    private Vector3 GetCurrentFieldUp()
+    {
+        ResolveFieldWallRootIfNeeded();
+        if (_fieldWallRoot != null)
+        {
+            return _fieldWallRoot.up;
+        }
+
+        if (FieldContext.IsReady)
+        {
+            return FieldContext.Up;
+        }
+
+        return FieldRotation * Vector3.up;
+    }
+
+    private void ResolveFieldWallRootIfNeeded()
+    {
+        if (_fieldWallRoot != null)
+        {
+            return;
+        }
+
+        GameObject fieldWall = GameObject.Find(FieldWallRootName);
+        if (fieldWall != null)
+        {
+            _fieldWallRoot = fieldWall.transform;
+        }
     }
 
     /// <summary>
@@ -485,7 +550,44 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     /// <param name="count">生成するCollectible数です。</param>
     public void EmitHitStyleCollectibles(int count)
     {
-        EmitHitStyleCollectibles(transform.position, count);
+        EmitHitStyleCollectibles(transform.position, count, 0f);
+    }
+
+    public void EmitInwardHitStyleCollectibles(int count, float inwardOffset)
+    {
+        EmitHitStyleCollectibles(transform.position, count, inwardOffset);
+    }
+
+    public bool EmitPlayerOverheadCollectibles(int count, float heightOffset)
+    {
+        if (_emitter == null || count <= 0)
+        {
+            return false;
+        }
+
+        ResolvePlayerEmissionTargetIfNeeded();
+        if (_playerEmissionTarget == null)
+        {
+            return false;
+        }
+
+        Vector3 fieldUp = GetCurrentFieldUp();
+        Vector3 spawnPosition = _playerEmissionTarget.position
+            + fieldUp * Mathf.Max(0f, heightOffset);
+        Vector3 direction = CreatePlayerLaunchDirection(spawnPosition, fieldUp);
+
+        for (int index = 0; index < count; index++)
+        {
+            _emitter.EmitFromWorldPosition(
+                spawnPosition,
+                direction,
+                _spreadAngle,
+                power,
+                null,
+                fieldUp);
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -493,7 +595,7 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     /// </summary>
     /// <param name="hitPoint">生成位置補正の基準となるヒット地点です。</param>
     /// <param name="count">生成するCollectible数です。</param>
-    private void EmitHitStyleCollectibles(Vector3 hitPoint, int count)
+    private void EmitHitStyleCollectibles(Vector3 hitPoint, int count, float inwardOffset)
     {
         if (_emitter == null || count <= 0)
         {
@@ -503,7 +605,8 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         Vector3 outward = hitPoint - transform.position;
         outward = outward.sqrMagnitude > 0.0001f ? outward.normalized : Vector3.up;
         Vector3 spawnPosition = hitPoint + outward * _emitOffset;
-        Vector3 direction = CreateFieldCenterLaunchDirection(spawnPosition);
+        spawnPosition = MoveSpawnPositionTowardPlayer(spawnPosition, inwardOffset);
+        Vector3 direction = CreatePlayerLaunchDirection(spawnPosition);
 
         for (int index = 0; index < count; index++)
         {
@@ -513,9 +616,31 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
 
     public void Emits(Vector3 hitPoint)
     {
-        EmitHitStyleCollectibles(hitPoint, curShardCount);
+        EmitHitStyleCollectibles(hitPoint, curShardCount, 0f);
         _currentHitStop = _hitStop;
         InitShardCount();
+    }
+
+    private Vector3 MoveSpawnPositionTowardPlayer(Vector3 spawnPosition, float inwardOffset)
+    {
+        float moveDistance = Mathf.Max(0f, inwardOffset);
+        if (moveDistance <= 0f)
+        {
+            return spawnPosition;
+        }
+
+        Vector3 fieldUp = FieldRotation * Vector3.up;
+        Vector3 directionToPlayer = Vector3.ProjectOnPlane(
+            PlayerEmissionTargetPosition - spawnPosition,
+            fieldUp);
+        float distanceToPlayer = directionToPlayer.magnitude;
+        if (distanceToPlayer <= 0.0001f)
+        {
+            return spawnPosition;
+        }
+
+        moveDistance = Mathf.Min(moveDistance, distanceToPlayer);
+        return spawnPosition + directionToPlayer / distanceToPlayer * moveDistance;
     }
 
     public void PlayEffect(Vector3 position, float size)
