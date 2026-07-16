@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyDefinition
   EnemyId: Enemy_01
   IsBoss: 1
-  EnemyBody: {fileID: 8621798176936029137, guid: e5b17b09730b832428c6ba51d7475246, type: 3}
+  EnemyBody: {fileID: 8373035013781116987, guid: dd05c3705f5d36d4b9680910fb85cb42, type: 3}
   MaxHp: 300
   ExpRate: 1
   DownDuration: 5
@@ -24,6 +24,8 @@ MonoBehaviour:
   barrierBreakMaxLossRate: 0.7
   AttackPower: 5
   Attackinterval: 5
+  AttackMotionTime: 3
+  AttackStartUpTime: 1.5
   HealRegenWaitTime: 7
   HealPower: 30
   RiseDuration: 30

@@ -45,6 +45,60 @@ namespace Game.Data.Enemy.Boss
         [Tooltip("ダウン開始からエフェクトを生成するまでの時間")]
         private float _downEffectStartDelay;
 
+        [SerializeField]
+        [Tooltip("Prefab本来の向きへ追加するローカル回転角度")]
+        private Vector3 _downEffectRotationOffset = Vector3.zero;
+
+        [SerializeField]
+        [Min(0.01f)]
+        [Tooltip("Prefab本来の大きさへ掛ける倍率")]
+        private float _downEffectScaleMultiplier = 1f;
+
+
+        [SerializeField]
+        [Tooltip("ダウン中にボスの怒りを表現するエフェクトPrefab")]
+        private GameObject _angerEffectPrefab;
+
+        [SerializeField]
+        [Tooltip("怒りエフェクトの生成位置")]
+        private Vector3 _angerEffectLocalOffset = Vector3.zero;
+
+        [SerializeField]
+        [Tooltip("Prefab本来の向きへ追加するローカル回転角度")]
+        private Vector3 _angerEffectRotationOffset = Vector3.zero;
+
+        [SerializeField]
+        [Min(0.01f)]
+        [Tooltip("Prefab本来の大きさへ掛ける倍率")]
+        private float _angerEffectScaleMultiplier = 1f;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("ダウン開始から怒りエフェクトを生成するまでの時間（秒）")]
+        private float _angerEffectStartDelay;
+
+        [SerializeField]
+        [Tooltip("ダウン中の咆哮を表現するエフェクトPrefab")]
+        private GameObject _roarEffectPrefab;
+
+        [SerializeField]
+        [Tooltip("咆哮エフェクトの生成位置")]
+        private Vector3 _roarEffectLocalOffset = Vector3.zero;
+
+        [SerializeField]
+        [Tooltip("Prefab本来の向きへ追加するローカル回転角度")]
+        private Vector3 _roarEffectRotationOffset = Vector3.zero;
+
+        [SerializeField]
+        [Min(0.01f)]
+        [Tooltip("Prefab本来の大きさへ掛ける倍率")]
+        private float _roarEffectScaleMultiplier = 1f;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("ダウン開始から咆哮エフェクトを生成するまでの時間（秒）")]
+        private float _roarEffectStartDelay;
+
 
         [Header("--- カメラシェイク ---")]
 
@@ -120,9 +174,69 @@ namespace Game.Data.Enemy.Boss
         public Vector3 DownEffectLocalOffset => _downEffectLocalOffset;
 
         /// <summary>
+        /// ダウンエフェクトの生成時にPrefab本来の向きへ追加するローカル回転角度。
+        /// </summary>
+        public Vector3 DownEffectRotationOffset => _downEffectRotationOffset;
+
+        /// <summary>
+        /// ダウンエフェクトの生成時にPrefab本来の大きさへ掛ける倍率。
+        /// </summary>
+        public float DownEffectScaleMultiplier => _downEffectScaleMultiplier;
+
+        /// <summary>
         /// ダウンエフェクトを生成するまでの時間。
         /// </summary>
         public float DownEffectStartDelay => _downEffectStartDelay;
+
+        /// <summary>
+        /// 怒りを表現するエフェクトPrefab。
+        /// </summary>
+        public GameObject AngerEffectPrefab => _angerEffectPrefab;
+
+        /// <summary>
+        /// 怒りエフェクトの生成相対座標。
+        /// </summary>
+        public Vector3 AngerEffectLocalOffset => _angerEffectLocalOffset;
+
+        /// <summary>
+        /// 怒りエフェクトの生成時にPrefab本来の向きへ追加するローカル回転角度
+        /// </summary>
+        public Vector3 AngerEffectRotationOffset => _angerEffectRotationOffset;
+
+        /// <summary>
+        /// 怒りエフェクトの生成時にPrefab本来の大きさへ掛ける倍率。
+        /// </summary>
+        public float AngerEffectScaleMultiplier => _angerEffectScaleMultiplier;
+
+        /// <summary>
+        /// 怒りエフェクトを生成するまでの時間。
+        /// </summary>
+        public float AngerEffectStartDelay => _angerEffectStartDelay;
+
+        /// <summary>
+        /// 咆哮を表現するエフェクトPrefab。
+        /// </summary>
+        public GameObject RoarEffectPrefab => _roarEffectPrefab;
+
+        /// <summary>
+        /// 咆哮エフェクトの生成相対座標。
+        /// </summary>
+        public Vector3 RoarEffectLocalOffset => _roarEffectLocalOffset;
+
+        /// <summary>
+        /// 咆哮エフェクトの生成時にPrefab本来の向きへ追加するローカル回転角度。
+        /// </summary>
+        public Vector3 RoarEffectRotationOffset => _roarEffectRotationOffset;
+
+        /// <summary>
+        /// 咆哮エフェクトの生成時にPrefab本来の大きさへ掛ける倍率。
+        /// </summary>
+        public float RoarEffectScaleMultiplier => _roarEffectScaleMultiplier;
+
+        /// <summary>
+        /// 咆哮エフェクトを生成するまでの時間。
+        /// </summary>
+        public float RoarEffectStartDelay => _roarEffectStartDelay;
 
         /// <summary>
         /// ダウン時にカメラを揺らすかどうか。

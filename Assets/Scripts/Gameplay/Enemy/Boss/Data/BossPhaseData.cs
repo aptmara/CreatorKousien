@@ -66,6 +66,33 @@ namespace Game.Data.Enemy.Boss
         private bool _rerollThornsOnRetry = true;
 
 
+        [Header("--- 棘破壊時のカメラシェイク設定 ---")]
+
+        [SerializeField]
+        [Tooltip("有効な棘が1本破壊された瞬間にカメラシェイクを行うかどうか")]
+        private bool _enableThornBreakCameraShake = true;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("棘破壊時のカメラシェイク継続時間（秒）")]
+        private float _thornBreakShakeDuration = 0.16f;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("棘破壊時のカメラ位置の揺れ幅")]
+        private float _thornBreakShakePositionStrength = 0.18f;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("棘破壊時のカメラ回転の揺れ幅")]
+        private float _thornBreakShakeRotationStrength = 3.5f;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("棘破壊時のカメラシェイク周波数")]
+        private float _thornBreakShakeFrequency = 45f;
+
+
         [Header("--- イバラタックルの段階設定 ---")]
 
         [SerializeField]
@@ -125,6 +152,31 @@ namespace Game.Data.Enemy.Boss
         /// 再挑戦時に有効な棘を再抽選するかどうか。
         /// </summary>
         public bool RerollThornsOnRetry => _rerollThornsOnRetry;
+
+        /// <summary>
+        /// 有効な棘が破壊された瞬間にカメラシェイクを行うかどうか。
+        /// </summary>
+        public bool EnableThornBreakCameraShake => _enableThornBreakCameraShake;
+
+        /// <summary>
+        /// 棘破壊時のカメラシェイク継続時間。
+        /// </summary>
+        public float ThornBreakShakeDuration => _thornBreakShakeDuration;
+
+        /// <summary>
+        /// 棘破壊時のカメラ位置の揺れ幅。
+        /// </summary>
+        public float ThornBreakShakePositionStrength => _thornBreakShakePositionStrength;
+
+        /// <summary>
+        /// 棘破壊時のカメラ回転の揺れ幅。
+        /// </summary>
+        public float ThornBreakShakeRotationStrength => _thornBreakShakeRotationStrength;
+
+        /// <summary>
+        /// 棘破壊時のカメラシェイク周波数。
+        /// </summary>
+        public float ThornBreakShakeFrequency => _thornBreakShakeFrequency;
 
         /// <summary>
         /// 順番に実行するイバラタックルの設定一覧。

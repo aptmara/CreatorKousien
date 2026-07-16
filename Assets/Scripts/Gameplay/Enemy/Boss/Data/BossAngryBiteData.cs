@@ -25,7 +25,7 @@ namespace Game.Data.Enemy.Boss
     /// ・アングリバイトの開始位置と向き
     /// ・口開け／口閉じ／ダウンアニメーションの再生速度
     /// ・口を開けて待機する制限時間
-    /// ・失敗時に防衛バリアへ与えるダメージ
+    /// ・失敗時に防衛バリアへ与えるダメージと、攻撃後の下降時間
     /// ・ダウン状態の長さ
     /// ・ダウン時に吐き出す落とし物の個数
     /// </summary>
@@ -41,6 +41,17 @@ namespace Game.Data.Enemy.Boss
         [SerializeField]
         [Tooltip("アングリバイトの開始角度")]
         private Vector3 _startEulerAngles = Vector3.zero;
+
+
+        [Header("--- 防衛バリアへ向かう上昇 ---")]
+
+        [SerializeField]
+        [Tooltip("Mouth Open Duration終了時に到達する、防衛バリア付近のローカル位置")]
+        private Vector3 _barrierReachLocalPosition = new Vector3(0f, -1.5f, -6f);
+
+        [SerializeField]
+        [Tooltip("アングリバイト中の上昇速度を制御するカーブ。横軸が経過時間、縦軸が上昇速度倍率。")]
+        private AnimationCurve _riseCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
 
         [Header("--- アニメーション再生速度 ---")]
@@ -82,6 +93,11 @@ namespace Game.Data.Enemy.Boss
         [Min(0f)]
         [Tooltip("アングリバイト失敗時に防衛バリアへ与えるダメージ")]
         private float _failureBarrierDamage = 50f;
+
+        [SerializeField]
+        [Min(0.01f)]
+        [Tooltip("バリアを噛んだ後、現在位置からアングリバイト開始位置まで下降する時間（秒）")]
+        private float _failureRetreatDuration = 1.5f;
 
 
         [Header("--- アングリバイト成功・ダウン状態 ---")]
@@ -142,6 +158,11 @@ namespace Game.Data.Enemy.Boss
         public float FailureBarrierDamage => _failureBarrierDamage;
 
         /// <summary>
+        /// アングリバイト失敗後、ボスが画面下へ下降する時間。
+        /// </summary>
+        public float FailureRetreatDuration => _failureRetreatDuration;
+
+        /// <summary>
         /// アングリバイト成功後のダウン時間。
         /// </summary>
         public float DownDuration => _downDuration;
@@ -150,5 +171,15 @@ namespace Game.Data.Enemy.Boss
         /// ダウン時に吐き出す落とし物の個数。
         /// </summary>
         public int SpitCollectibleCount => _spitCollectibleCount;
+
+        /// <summary>
+        /// アングリバイト中に防衛バリア付近に到達するローカル位置。
+        /// </summary>
+        public Vector3 BarrierReachLocalPosition => _barrierReachLocalPosition;
+
+        /// <summary>
+        /// アングリバイト中の上昇速度を制御するカーブ。横軸が経過時間、縦軸が上昇速度倍率。
+        /// </summary>
+        public AnimationCurve RiseCurve => _riseCurve;
     }
 }

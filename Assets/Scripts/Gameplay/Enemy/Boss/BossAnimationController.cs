@@ -39,6 +39,10 @@ namespace Game.Gameplay.Enemy.Boss
         [Tooltip("開始位置と向きを変更するためのTransform")]
         private Transform _motionRoot;
 
+        [SerializeField]
+        [Tooltip("Animatorと同じGameObjectにある、Root Motionを物理座標へ反映するRigidbody")]
+        private Rigidbody _animatorRigidbody;
+
 
         [Header("--- Animatorレイヤー ---")]
 
@@ -99,6 +103,21 @@ namespace Game.Gameplay.Enemy.Boss
         /// 現在アニメーションが再生中かどうか
         /// </summary>
         private bool _isPlaying;
+
+        /// <summary>
+        /// Root Motionが適用される前のAnimatorの初期ローカル位置
+        /// </summary>
+        private Vector3 _animatorInitialLocalPosition;
+
+        /// <summary>
+        /// Root Motionが適用される前のAnimatorの初期ローカル回転
+        /// </summary>
+        private Quaternion _animatorInitialLocalRotation;
+
+        /// <summary>
+        /// Animatorの初期姿勢を保存済みかどうか
+        /// </summary>
+        private bool _hasCachedAnimatorInitialPose;
 
 
         // 公開プロパティ
@@ -164,8 +183,13 @@ namespace Game.Gameplay.Enemy.Boss
             if (_motionRoot == null)
             {
                 Debug.LogWarning($"[{nameof(BossAnimationController)}] 開始位置変更用Transformが設定されていません。");
+
                 enabled = false;
+                return;
             }
+
+            // Root Motionで移動する前のAnimatorの初期姿勢を保存する
+            CacheAnimatorInitialPose();
         }
 
 
@@ -193,6 +217,11 @@ namespace Game.Gameplay.Enemy.Boss
             if (_motionRoot == null && _animator != null)
             {
                 _motionRoot = _animator.transform;
+            }
+
+            if (_animatorRigidbody == null && _animator != null)
+            {
+                _animatorRigidbody = _animator.GetComponent<Rigidbody>();
             }
         }
 
@@ -274,6 +303,55 @@ namespace Game.Gameplay.Enemy.Boss
             }
 
             return TryPlayAnimation(_angryBiteOpenStateHash, _angryBiteOpenStateName, biteData.OpenAnimationSpeed, true, biteData.StartLocalPosition, biteData.StartEulerAngles);
+        }
+
+
+        /// <summary>
+        /// アングリバイトの口を上昇させる位置を更新する
+        /// </summary>
+        /// <param name="biteData">現在のアングリバイト設定</param>
+        /// <param name="normalizedTime">Mouth Open Durationに対する 0 - 1 の経過割合</param>
+        public void UpdateAngryBiteRisePosition(BossAngryBiteData biteData, float normalizedTime)
+        {
+            if (biteData == null || _motionRoot == null)
+            {
+                return;
+            }
+
+            // カーブへ渡す時間は0～1に制限する
+            float safeNormalizedTime = Mathf.Clamp01(normalizedTime);
+
+            AnimationCurve riseCurve = biteData.RiseCurve;
+
+            // カーブが未設定の場合は、一定速度で上昇させる
+            float moveProgress = riseCurve != null ? riseCurve.Evaluate(safeNormalizedTime) : safeNormalizedTime;
+
+            // 開始位置から防衛バリア付近の位置まで補間する
+            _motionRoot.localPosition = Vector3.LerpUnclamped(biteData.StartLocalPosition, biteData.BarrierReachLocalPosition, moveProgress);
+
+            // 動いている口Colliderの位置も物理判定へ反映する
+            Physics.SyncTransforms();
+        }
+
+        /// <summary>
+        /// アングリバイト失敗時の下降位置を更新する
+        /// </summary>
+        /// <param name="biteData">現在のアングリバイト設定</param>
+        /// <param name="normalizedTime">Mouth Open Durationに対する 0 - 1 の経過割合</param>
+        public void UpdateAngryBiteFailureRetreatPosition(BossAngryBiteData biteData, float normalizedTime)
+        {
+            if (biteData == null)
+            {
+                return;
+            }
+
+            // 下降の進行度を0～1に制限する
+            float retreatProgress = Mathf.Clamp01(normalizedTime);
+
+            // 上昇処理へ逆向き進行度を渡す
+            float reversedRiseProgress = 1f - retreatProgress;
+
+            UpdateAngryBiteRisePosition(biteData, reversedRiseProgress);
         }
 
 
@@ -400,6 +478,100 @@ namespace Game.Gameplay.Enemy.Boss
         // 開始姿勢
         // ------------------------------------------------------------
 
+
+        public void ResetForPhaseStart()
+        {
+            // 現在のアニメーションをキャンセルする
+            CancelCurrentAnimation();
+
+            if (_animator == null || _motionRoot == null)
+            {
+                return;
+            }
+
+            // Animator内部のステート、ボーン姿勢、Root Motionによる位置・回転の変化をリセットする
+            _animator.Rebind();
+
+            // Rebindした初期姿勢を保存する
+            _animator.Update(0f);
+
+            // Animator本体へ残っているRoot Motionの位置・回転の変化をリセットする
+            ResetAnimatorRootMotionOffset();
+
+            // 開始位置を設定する親Transformも初期状態へ戻す
+            _motionRoot.localPosition = Vector3.zero;
+            _motionRoot.localRotation = Quaternion.identity;
+
+            ResetAnimatorRigidbodyPose();
+        }
+
+
+        /// <summary>
+        /// Animatorの初期姿勢をキャッシュする
+        /// </summary>
+        private void CacheAnimatorInitialPose()
+        {
+            if (_animator == null)
+            {
+                return;
+            }
+
+            Transform animatorTransform = _animator.transform;
+
+            _animatorInitialLocalPosition = animatorTransform.localPosition;
+            _animatorInitialLocalRotation = animatorTransform.localRotation;
+            _hasCachedAnimatorInitialPose = true;
+        }
+
+
+        /// <summary>
+        /// AnimatorのRoot Motionによる位置と回転の変化をリセットして、初期姿勢に戻す
+        /// </summary>
+        private void ResetAnimatorRootMotionOffset()
+        {
+            if (_animator == null || !_hasCachedAnimatorInitialPose)
+            {
+                return;
+            }
+
+            Transform animatorTransform = _animator.transform;
+
+            animatorTransform.localPosition = _animatorInitialLocalPosition;
+            animatorTransform.localRotation = _animatorInitialLocalRotation;
+        }
+
+
+        private void ResetAnimatorRigidbodyPose()
+        {
+            if (_animator == null)
+            {
+                return;
+            }
+
+            // Rigidbodyがない構成でも
+            if (_animatorRigidbody == null)
+            {
+                Physics.SyncTransforms();
+                return;
+            }
+
+            Transform animatorTransform = _animator.transform;
+
+            // Interpolateが前回の物理姿勢を表示しないよう、一度補間を解除する
+            RigidbodyInterpolation previousInterpolation = _animatorRigidbody.interpolation;
+            _animatorRigidbody.interpolation = RigidbodyInterpolation.None;
+
+            // リセット済みTransformのワールド座標をRigidbodyへ反映する
+            _animatorRigidbody.position = animatorTransform.position;
+            _animatorRigidbody.rotation = animatorTransform.rotation;
+
+            Physics.SyncTransforms();
+
+            // Inspectorで設定されていた補間モードを復元する
+            _animatorRigidbody.interpolation = previousInterpolation;
+        }
+
+
         /// <summary>
         /// アニメーション再生前にボスモデルの開始位置と向きを設定する
         /// </summary>
@@ -412,8 +584,14 @@ namespace Game.Gameplay.Enemy.Boss
                 return;
             }
 
+            ResetAnimatorRootMotionOffset();
+
             _motionRoot.localPosition = localPosition;
             _motionRoot.localRotation = Quaternion.Euler(eulerAngles);
+
+            ResetAnimatorRigidbodyPose();
+
+            Physics.SyncTransforms();
         }
 
 
@@ -474,6 +652,24 @@ namespace Game.Gameplay.Enemy.Boss
             {
                 _animator.speed = 1.0f;
             }
+        }
+
+
+        /// <summary>
+        /// 現在のアニメーションを停止して、口HPを削り切った瞬間の姿勢と位置で停止する
+        /// </summary>
+        public void PauseCurrentPose()
+        {
+            _isPlaying = false;
+            _currentStateHash = 0;
+
+            if (_animator == null)
+            {
+                return;
+            }
+
+            // 口HPを削り切った瞬間の姿勢と位置で停止する
+            _animator.speed = 0.0f;
         }
     }
 }

@@ -50,6 +50,10 @@ namespace Game.Gameplay.Enemy.Boss
         private BossAnimationController _animationController;
 
         [SerializeField]
+        [Tooltip("ボスのダウンアニメーション、エフェクト、落下演出を管理するコンポーネント")]
+        private BossDownPresentationController _downPresentationController;
+
+        [SerializeField]
         [Tooltip("複数の棘の抽選・復活・全破壊判定を管理するコンポーネント")]
         private BossThornGroupController _thornGroupController;
 
@@ -331,14 +335,21 @@ namespace Game.Gameplay.Enemy.Boss
                 _animationController = GetComponent<BossAnimationController>();
             }
 
+            if (_downPresentationController == null)
+            {
+                _downPresentationController = GetComponent<BossDownPresentationController>();
+            }
+
             if (_thornGroupController == null)
             {
                 _thornGroupController = GetComponent<BossThornGroupController>();
             }
+
             if (_mouthHealth == null)
             {
                 _mouthHealth = GetComponentInChildren<BossMouthHealth>(true);
             }
+
             if (_mouthHitReceiver == null)
             {
                 _mouthHitReceiver = GetComponentInChildren<BossMouthHitReceiver>(true);
@@ -544,6 +555,8 @@ namespace Game.Gameplay.Enemy.Boss
                 return false;
             }
 
+            _animationController.ResetForPhaseStart();
+
             // 新しいフェーズように有効な棘を抽選し、各棘のHPを設定する
             if (!_thornGroupController.BeginPhase(phaseData))
             {
@@ -646,17 +659,11 @@ namespace Game.Gameplay.Enemy.Boss
 
                 ThornAttackStepStarted?.Invoke(_currentPhaseIndex, _currentThornAttackStepIndex, attackSide, stepData);
 
+                yield return new WaitForFixedUpdate();
+
                 // アニメーションが終了するまで待機する
                 while (!_animationController.IsCurrentAnimationFinished())
                 {
-                    if (_shouldEnterAngryBite)
-                    {
-                        // 次のアングリバイトで別ステートを再生するため、現在の完了監視と再生をキャンセルする
-                        _animationController.CancelCurrentAnimation();
-
-                        break;
-                    }
-
                     yield return null;
                 }
 
@@ -754,9 +761,19 @@ namespace Game.Gameplay.Enemy.Boss
             float elapsedTime = 0f;
             float challengeDuration = MathF.Max(0.01f, biteData.MouthOpenDuration);
 
+            // アングリバイト開始時は、必ず上昇開始位置へ合わせる
+            _animationController.UpdateAngryBiteRisePosition(biteData, 0f);
+
             while (elapsedTime < challengeDuration && !_mouthHealth.IsDepleted)
             {
                 elapsedTime += Time.deltaTime;
+
+                // Mouth Open Duration に対する 0 - 1 の進行度を計算する
+                float riseProgress = Mathf.Clamp01(elapsedTime / challengeDuration);
+
+                // 口の上昇位置を計算し、アニメーションコントローラーに反映する
+                _animationController.UpdateAngryBiteRisePosition(biteData, riseProgress);
+
                 yield return null;
             }
 
@@ -798,53 +815,90 @@ namespace Game.Gameplay.Enemy.Boss
 
             Debug.Log($"[{nameof(BossBattleController)}] フェーズ{_currentPhaseIndex + 1}のアングリバイト阻止に失敗して無事死亡ｗ", this);
 
-            HandleAngryBiteFailure(biteData);
+            // バリアダメージ、下降、イバラタックルへの復帰が
+            // すべて完了するまで待機する
+            yield return HandleAngryBiteFailure(biteData);
         }
 
 
-        private void HandleAngryBiteFailure(BossAngryBiteData biteData)
+        /// <summary>
+        /// アングリバイト失敗時にバリアへダメージを与え、
+        /// ボスの下降完了後に棘を復活させてイバラタックルへ戻す
+        /// </summary>
+        /// <param name="biteData">失敗したアングリバイトの設定</param>
+        /// <returns></returns>
+        private IEnumerator HandleAngryBiteFailure(BossAngryBiteData biteData)
         {
-            // 現在のアングリバイト処理はここで終了する
-            _stateRoutine = null;
-
             if (biteData == null)
             {
                 Debug.LogError($"[{nameof(BossBattleController)}] フェーズ{_currentPhaseIndex + 1}のアングリバイトの設定がありません。");
 
+                _stateRoutine = null;
                 StopBattle();
-                return;
+
+                yield break;
             }
 
-            // アングリバイト失敗時のバリアダメージを発生させる
+            // バリアを噛んだ瞬間に、防衛バリアへダメージを与える
             float failureBarrierDamage = MathF.Max(0f, biteData.FailureBarrierDamage);
 
             if (failureBarrierDamage > 0f)
             {
-                EventBus.Publish(new RuleBarrierAttackEvent(failureBarrierDamage));
+                EventBus.Publish(new RuleBarrierAttackEvent(failureBarrierDamage, transform.position));
             }
+
+            // バリア到達位置からアングリバイト開始位置まで下降させる
+            float retreatDuration = MathF.Max(0.01f, biteData.FailureRetreatDuration);
+
+            float retreatElapsedTime = 0f;
+
+            // 下降開始時は、必ずバリア到達位置へ合わせる
+            _animationController.UpdateAngryBiteFailureRetreatPosition(biteData, 0f);
+
+            while (retreatElapsedTime < retreatDuration)
+            {
+                retreatElapsedTime += Time.deltaTime;
+
+                float retreatProgress = Mathf.Clamp01(retreatElapsedTime / retreatDuration);
+
+                _animationController.UpdateAngryBiteFailureRetreatPosition(biteData, retreatProgress);
+
+                yield return null;
+            }
+
+            // 誤差が残らないよう、最後に開始位置へ正確に合わせる
+            _animationController.UpdateAngryBiteFailureRetreatPosition(biteData, 1f);
 
             if (_currentPhaseData == null)
             {
                 Debug.LogError($"[{nameof(BossBattleController)}] フェーズ{_currentPhaseIndex + 1}の設定がありません。");
+
+                _stateRoutine = null;
                 StopBattle();
-                return;
+
+                yield break;
             }
 
-            // 破壊された棘のHPを全て回復させる
+            // ボスが画面下へ到達してから、破壊された棘を復活させる
             bool didRestoreThorns = _thornGroupController.RestoreForRetry(_currentPhaseData);
 
             if (!didRestoreThorns)
             {
                 Debug.LogError($"[{nameof(BossBattleController)}] フェーズ{_currentPhaseIndex + 1}のアングリバイト失敗後の棘の復活に失敗しました。");
+
+                _stateRoutine = null;
                 StopBattle();
-                return;
+
+                yield break;
             }
+
+            // 現在のアングリバイト処理を終了してから、新しいイバラタックル用コルーチンを開始する
+            _stateRoutine = null;
 
             ChangeState(BossBattleState.ThornAttack);
 
-            Debug.Log($"[{nameof(BossBattleController)}] フェーズ{_currentPhaseIndex + 1}のアングリバイト失敗後、棘を復活させてイバラタックル状態へ戻しました。", this);
+            Debug.Log($"[{nameof(BossBattleController)}] フェーズ{_currentPhaseIndex + 1}のアングリバイト失敗後、下降を完了してイバラタックル状態へ戻しました。", this);
 
-            // 失敗後の棘復活後は、再度イバラタックルを開始する
             StartThornAttackSequence();
         }
 
@@ -859,7 +913,7 @@ namespace Game.Gameplay.Enemy.Boss
         /// <returns></returns>
         private IEnumerator PlayDownSequence(BossAngryBiteData biteData)
         {
-            if (biteData == null || _currentPhaseData == null || _currentPhaseData.DownPresentationData == null)
+            if (biteData == null || _currentPhaseData == null || _currentPhaseData.DownPresentationData == null || _downPresentationController == null)
             {
                 Debug.LogError($"[{nameof(BossBattleController)}] フェーズ{_currentPhaseIndex + 1}のダウン状態の演出に必要な設定がありません。");
 
@@ -880,13 +934,7 @@ namespace Game.Gameplay.Enemy.Boss
 
             Debug.Log($"[{nameof(BossBattleController)}] フェーズ{_currentPhaseIndex + 1}のダウン演出を開始しました。", this);
 
-            float downDuration = MathF.Max(0f, biteData.DownDuration);
-
-            // ダウン演出が終了するまで待機する
-            if (downDuration > 0f)
-            {
-                yield return new WaitForSeconds(downDuration);
-            }
+            yield return _downPresentationController.PlayPresentation(biteData, downPresentationData);
 
             if (isFinalPhase)
             {
@@ -958,6 +1006,12 @@ namespace Game.Gameplay.Enemy.Boss
             {
                 StopCoroutine(_stateRoutine);
                 _stateRoutine = null;
+            }
+
+            // ダウン中にボス戦が停止された場合、生成したエフェクトも破棄
+            if (_downPresentationController != null)
+            {
+                _downPresentationController.CancelPresentation();
             }
 
             _currentThornAttackStepIndex = -1;

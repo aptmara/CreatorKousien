@@ -126,6 +126,8 @@ namespace Game.Presentation.CameraFeedback
             EventBus.Subscribe<EnemyHitBatchEvent>(OnEnemyHit);
             EventBus.Subscribe<EnemyDefeatedEvent>(OnEnemyDefeated);
             EventBus.Subscribe<DefLineBreakReactionEvent>(OnDefenseLineBreak);
+
+            EventBus.Subscribe<CameraShakeRequestedEvent>(OnCameraShakeRequested);
         }
 
         /// <summary>
@@ -136,6 +138,8 @@ namespace Game.Presentation.CameraFeedback
             EventBus.Unsubscribe<EnemyHitBatchEvent>(OnEnemyHit);
             EventBus.Unsubscribe<EnemyDefeatedEvent>(OnEnemyDefeated);
             EventBus.Unsubscribe<DefLineBreakReactionEvent>(OnDefenseLineBreak);
+
+            EventBus.Unsubscribe<CameraShakeRequestedEvent>(OnCameraShakeRequested);
 
             if (_defenseLineBreakCoroutine != null)
             {
@@ -207,6 +211,13 @@ namespace Game.Presentation.CameraFeedback
             TryStartShake(_enemyDefeatShake, 1f, ref _nextDefeatShakeTime);
         }
 
+
+        private void OnCameraShakeRequested(CameraShakeRequestedEvent ev)
+        {
+            StartShake(ev.Duration, ev.PositionStrength, ev.RotationStrength, ev.Frequency);
+        }
+
+
         private void OnDefenseLineBreak(DefLineBreakReactionEvent ev)
         {
             if (_defenseLineBreakCoroutine != null)
@@ -238,6 +249,26 @@ namespace Game.Presentation.CameraFeedback
 
 
         /// <summary>
+        /// シェイクを開始するための共通処理。シェイクの設定を引数に取ります。
+        /// </summary>
+        /// <param name="duration">継続時間</param>
+        /// <param name="positionStrength">位置の強さ</param>
+        /// <param name="rotationStrength">回転の強さ</param>
+        /// <param name="frequency">周波数</param>
+        private void StartShake(float duration, float positionStrength, float rotationStrength, float frequency)
+        {
+            // durationが0以下の場合は最小値を設定してクラッシュを防ぐ
+            float safeDuration = Mathf.Max(0.01f, duration);
+
+            _totalTime = safeDuration;
+            _remainingTime = safeDuration;
+            _positionStrength = Mathf.Max(0f, positionStrength);
+            _rotationStrength = Mathf.Max(0f, rotationStrength);
+            _frequency = Mathf.Max(1f, frequency);
+        }
+
+
+        /// <summary>
         /// シェイクを開始するための共通処理。シェイクの設定と倍率、シェイクが発生可能な時間を引数に取ります。
         /// </summary>
         /// <param name="settings">シェイクの設定</param>
@@ -250,11 +281,7 @@ namespace Game.Presentation.CameraFeedback
 
             nextTime = Time.time + settings.Cooldown;
 
-            _totalTime = settings.Duration;
-            _remainingTime = settings.Duration;
-            _positionStrength = settings.PositionStrength * multiplier;
-            _rotationStrength = settings.RotationStrength * multiplier;
-            _frequency = settings.Frequency;
+            StartShake(settings.Duration, settings.PositionStrength * multiplier, settings.RotationStrength * multiplier, settings.Frequency);
         }
 
 

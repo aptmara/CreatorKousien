@@ -19,9 +19,12 @@
  * 7/11: ボスの追加 - Y_Akira
  *
  * 7/15: EnemySpawnerほぼ全部修正。新たにつくったWave管理のデータから敵をスポーンするように変更。 - Asano a.k.a. Gachi
+ *
+ * 7/16: EnemySpawnerからBOSSのスポーン修正 - Asano a.k.a. hu_do
  */
 using UnityEngine;
 using Game.Presentation.UI;
+using Game.Gameplay.Enemy.Boss;
 
 namespace Game.Core.Enemy
 {
@@ -76,12 +79,19 @@ namespace Game.Core.Enemy
             }
 
             // EnemyBodyController が付与されているか確認
-            if (!definition.EnemyBody.TryGetComponent(out EnemyBodyController _))
+            // 通常敵とボスでは戦闘制御を担当するコンポーネントが異なるため、EnemyDefinitionのIsBossに応じて必要なコンポーネントを検証する
+            if (definition.IsBoss)
             {
-                Debug.LogError(
-                    $"[EnemySpawner] 敵「{definition.EnemyId}」のEnemyBodyに" +
-                    "EnemyBodyControllerが設定されていません。",
-                    definition.EnemyBody);
+                if (!definition.EnemyBody.TryGetComponent(out BossBattleController _))
+                {
+                    Debug.LogError($"[EnemySpawner] ボス「{definition.EnemyId}」のEnemyBodyにBossBattleControllerが設定されていません。", definition.EnemyBody);
+
+                    return false;
+                }
+            }
+            else if (!definition.EnemyBody.TryGetComponent(out EnemyBodyController _))
+            {
+                Debug.LogError($"[EnemySpawner] 敵「{definition.EnemyId}」のEnemyBodyにEnemyBodyControllerが設定されていません。", definition.EnemyBody);
 
                 return false;
             }
@@ -94,12 +104,24 @@ namespace Game.Core.Enemy
                 return false;
             }
 
-            // 敵の生成
-            GameObject enemyObject = new GameObject($"Enemy_{definition.EnemyId}");
+            // 通常敵は制御用の親オブジェクトを作成し、ボスは回転軸を崩さないようにEnemyBody自身をルートとして生成する
+            GameObject enemyObject;
+            GameObject body;
 
-            enemyObject.transform.SetPositionAndRotation(targetPosition, Quaternion.identity);
+            if (definition.IsBoss)
+            {
+                enemyObject = Instantiate(definition.EnemyBody, targetPosition, Quaternion.identity);
 
-            GameObject body = Instantiate(definition.EnemyBody, enemyObject.transform);
+                body = enemyObject;
+            }
+            else
+            {
+                enemyObject = new GameObject($"Enemy_{definition.EnemyId}");
+
+                enemyObject.transform.SetPositionAndRotation(targetPosition, Quaternion.identity);
+
+                body = Instantiate(definition.EnemyBody, enemyObject.transform);
+            }
             GameObject barrier = null;
 
             if (definition.HasBarrier && definition.BarrierBody != null)
@@ -108,6 +130,40 @@ namespace Game.Core.Enemy
             }
 
             EnemyController enemyController = enemyObject.AddComponent<EnemyController>();
+
+            if (definition.IsBoss)
+            {
+                if (!body.TryGetComponent(out BossBattleController bossBattleController))
+                {
+                    Debug.LogError($"[EnemySpawner] ボス「{definition.EnemyId}」のEnemyBodyにBossBattleControllerが設定されていません。", body);
+
+                    Destroy(enemyObject);
+                    return false;
+                }
+
+                string bossInstanceId = enemyController.InitializeForBoss(definition);
+
+                if (string.IsNullOrEmpty(bossInstanceId))
+                {
+                    Debug.LogError($"[EnemySpawner] ボス「{definition.EnemyId}」の初期化に失敗しました。", enemyObject);
+
+                    Destroy(enemyObject);
+                    return false;
+                }
+
+                // 最終フェーズ終了後
+                bossBattleController.BattleCompleted += _ => Destroy(enemyObject);
+
+                if (!bossBattleController.StartBattle(bossInstanceId))
+                {
+                    Debug.LogError($"[EnemySpawner] ボス「{definition.EnemyId}」の戦闘開始に失敗しました。", enemyObject);
+                    Destroy(enemyObject);
+                    return false;
+                }
+
+                spawnedEnemy = enemyController;
+                return true;
+            }
 
             enemyObject.AddComponent<EnemyRising>();
             enemyObject.AddComponent<EnemyWorldStatusView>();
