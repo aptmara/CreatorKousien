@@ -75,6 +75,12 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     {
         EventBus.Subscribe<UpgradeSelectionRequestedEvent>(
             OnUpgradeSelectionRequested);
+        if(_exitButton == null)
+        {
+            Debug.LogError("[S_UpgradeSelectionUI] ExitButtonが未設定です。");
+            return;
+        }
+
         _exitButton.onClick.AddListener(OnFinishButtonPressed);
         Debug.Log("RoguelikeEnable");
         //CreateCanvasChild();
@@ -177,7 +183,6 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     private void SpawnCard(UpgradeData cardData)
     {
         int currentLevel = _upgradeRuntimeState.GetLevel(cardData);
-        _upgradeDetail.SetCurrentLevel(currentLevel);
 
         S_UpgradeCard card = Instantiate(_cardPrefab, _cardParent);
         card.Setup(cardData, currentLevel);
@@ -213,8 +218,7 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         int newLevel = _upgradeRuntimeState.GetLevel(selectedCard);
 
         // 詳細を更新
-        _upgradeDetail.SetCurrentLevel(newLevel);
-        _upgradeDetail.SpawnDetail(selectedCard);
+        _upgradeDetail.SpawnDetail(selectedCard, false);
 
         foreach (var card in _spawnedCards)
         {
@@ -267,7 +271,6 @@ public class S_UpgradeSelectionUI : MonoBehaviour
             S_UpgradeCard focusedCard = _spawnedCards[index];
             if(_cardToData.TryGetValue(focusedCard, out var data))
             {
-                _upgradeDetail.SetCurrentLevel(_upgradeRuntimeState.GetLevel(data));
                 _upgradeDetail.SpawnDetail(data);
             }
         }
@@ -289,21 +292,11 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         }
     }
 
-    private void CreateCanvasChild()
-    {
-        // 背景
-        Instantiate(_backGround, _panelRoot.transform).transform.SetAsFirstSibling() ;
-
-        // カード生成
-        S_UpgradeCard card = Instantiate(_cardPrefab, _cardParent);
-        RectTransform cardRect = card.GetComponent<RectTransform>();
-        cardRect.anchoredPosition = new Vector2(-600.0f, 0);
-
-        Button exit = Instantiate(_exitButton, _cardParent);
-        RectTransform buttonRect = exit.GetComponent<RectTransform>();
-        buttonRect.anchoredPosition = new Vector2(700.0f, -450.0f);     // 画面端基準にしたい
-
-        exit.onClick.AddListener(OnFinishButtonPressed);
-    }
+    /// <summary>
+    /// 指定したカードが何番目に生成されたかを返す関数
+    /// </summary>
+    /// <param name="card"></param>
+    /// <returns></returns>
+    public int IndexOfCard(S_UpgradeCard card) => _spawnedCards.IndexOf(card);
 
 }
