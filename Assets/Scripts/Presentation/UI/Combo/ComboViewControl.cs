@@ -4,6 +4,7 @@
 //
 // Description  : EventBusからヒットイベントを受け取り、コンボロジックの更新と演出一斉適用を統括するUIコンポーネント。
 // Created      : 2026-06-08
+// Updated      : 2026-07-16 (右上固定の静的文字への依存を外しました。) Iwai Shogo
 // ================================================================================
 
 using Game.Core.Events;
@@ -32,19 +33,17 @@ namespace Game.Presentation.UI.Combo
         SceneEventChannel _sceneEventChannel;
         [SerializeField, Tooltip("コンボボーナス倍率"),Range(0.0f,1.0f)]
         float _multiRatio;
+        [SerializeField,Tooltip("コンボゲージのUI")]
+        private ComboGaugeUI _comboGaugeUI;
 
-        [Header("--- UI References ---")]
+        [Header("--- Legacy UI References ---")]
         [Tooltip("コンボテキストを表示するオブジェクトのRectTransform")]
         [SerializeField] private RectTransform _comboTextRect;
-
         [Tooltip("コンボ数テキスト")]
         [SerializeField] private TMPro.TMP_Text _comboTextBase;
-
         [Tooltip("前面にあるエネルギー充填テキスト")]
         [SerializeField] private TMPro.TMP_Text _comboTextFill;
 
-        [SerializeField,Tooltip("コンボゲージのUI")]
-        private ComboGaugeUI _comboGaugeUI;
 
         [Header("Feedback Patterns (検証用演出リスト)")]
         [RequireInterface(typeof(IComboFeedback))]
@@ -52,6 +51,8 @@ namespace Game.Presentation.UI.Combo
 
         private ComboManager _comboManager;
         private readonly List<IComboFeedback> _activeFeedbacks = new List<IComboFeedback>();
+        private Vector3 _lastHitPosition = Vector3.zero;
+        private int _currentComboValue;
 
         private void Awake()
         {
@@ -105,6 +106,7 @@ namespace Game.Presentation.UI.Combo
         /// </summary>
         private void OnEnemyHit(EnemyHitBatchEvent ev)
         {
+            _lastHitPosition = ev.HitPosition;
             int hits = ev.HitCount;
             _comboManager.AddCombo(hits);
             _comboGaugeUI?.GaugeUpdate(hits);
@@ -115,6 +117,7 @@ namespace Game.Presentation.UI.Combo
         /// </summary>
         private void OnBarrierHit(BarrierHitBatchEvent ev)
         {
+            _lastHitPosition = ev.HitPosition;
             int hits = ev.HitCount;
             _comboManager.AddCombo(hits);
             _comboGaugeUI?.GaugeUpdate(hits);
@@ -122,6 +125,7 @@ namespace Game.Presentation.UI.Combo
 
         private void HandleComboUpdated(int currentCombo, float durationRatio)
         {
+            _currentComboValue = currentCombo;
             SetTextActive(true);
 
             string textString = $"{currentCombo}";// Combo!";
@@ -146,6 +150,9 @@ namespace Game.Presentation.UI.Combo
 
         private void HandleComboReset()
         {
+            int finalCombo = _currentComboValue;
+            Vector3 lastHitPosition = _lastHitPosition;
+
             SetTextActive(false);
             _comboGaugeUI?.resetGauge();
 
@@ -161,6 +168,13 @@ namespace Game.Presentation.UI.Combo
             }
 
             // コンボ変化イベントを発行
+            if (finalCombo >= 1)
+            {
+                EventBus.Publish(new ComboEndedEvent(finalCombo, lastHitPosition));
+            }
+
+            _currentComboValue = 0;
+            _lastHitPosition = Vector3.zero;
             EventBus.Publish(new ComboChangedEvent(0, 0f));
         }
 

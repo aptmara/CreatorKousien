@@ -69,6 +69,16 @@ namespace Game.Presentation.GameOverCinematic
         [Tooltip("門が閉まった瞬間の行き過ぎ（食い込み）角度の最大幅")]
         [SerializeField] private float _doorOvershootAngle = 35f;
 
+        [Header("--- 魂VFX設定 ---")]
+        [Tooltip("新しく用意した単一の魂VFXプレハブ")]
+        [SerializeField] private GameObject _newSoulVfxPrefab;
+
+        [Tooltip("魂が次に湧き出るまでの一定間隔（秒）")]
+        [SerializeField, Min(0.05f)] private float _soulSpawnInterval = 0.4f;
+
+        [Tooltip("生成された各魂エフェクトが自動で消滅するまでの寿命（秒）")]
+        [SerializeField, Min(0.1f)] private float _soulVfxLifetime = 4.0f;
+
         private CameraRigController _cameraRig;
         private Camera _mainCamera;
         private PlayerController _playerController;
@@ -79,6 +89,7 @@ namespace Game.Presentation.GameOverCinematic
 
         // パーリンノイズ用のシード値
         private float _noiseSeed;
+        private bool _isSoulLoopActive = false;
 
         private void Awake()
         {
@@ -176,7 +187,7 @@ namespace Game.Presentation.GameOverCinematic
             // 門を最大開放角度まで開く
             if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.Euler(0f, _settings.MaxOpenAngle, 0f);
             if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.Euler(0f, -_settings.MaxOpenAngle, 0f);
-
+            
             // phase 1: カメラが奥の門へズームイン
             float elapsed = 0f;
             while (elapsed < _settings.ZoomInDuration)
@@ -400,7 +411,6 @@ namespace Game.Presentation.GameOverCinematic
             if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.identity;
             if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.identity;
 
-
             // 扉が閉まるのと同時に、プレイヤーをカートゥーン死亡演出に切り替える
             TrySpawnCinematicPlayer();
 
@@ -472,6 +482,11 @@ namespace Game.Presentation.GameOverCinematic
                 yield return StartCoroutine(_cinematicPlayerDeath.PlayReviveRoutine());
             }
 
+            if (_newSoulVfxPrefab != null && _cinematicPlayerObject != null)
+            {
+                StartCoroutine(SoulSpawnLoopRoutine());
+            }
+
             yield return new WaitForSeconds(_settings.TransitionResultDelay);
 
             // phase 6: リザルトシーンへの加算ロード
@@ -484,6 +499,48 @@ namespace Game.Presentation.GameOverCinematic
                 // マネージャーがいない場合のフォールバック（直接加算シーンロードなど）
                 SceneManager.LoadScene("Result", LoadSceneMode.Additive);
             }
+        }
+
+        /// <summary>
+        /// 設定されたインターバルごとに魂エフェクトをプレイヤー位置から生成し続けるコルーチン
+        /// </summary>
+        private IEnumerator SoulSpawnLoopRoutine()
+        {
+            _isSoulLoopActive = true;
+
+            while (_isSoulLoopActive && _cinematicPlayerObject != null)
+            {
+                Vector3 basePos = (_cinematicPlayerObject != null) ? _cinematicPlayerObject.transform.position : Vector3.zero;
+
+                Vector3 randomOffset = new Vector3(
+                    UnityEngine.Random.Range(-0.4f, 0.4f),
+                    0.2f,
+                    UnityEngine.Random.Range(-0.4f, 0.4f)
+                );
+
+                Vector3 spawnPos = basePos + randomOffset;
+
+                // 魂エフェクトを生成
+                GameObject soulInstance = Instantiate(_newSoulVfxPrefab, spawnPos, Quaternion.identity);
+
+                ParticleSystem[] particles = soulInstance.GetComponentsInChildren<ParticleSystem>(true);
+                foreach (ParticleSystem ps in particles)
+                {
+                    var main = ps.main;
+                    main.useUnscaledTime = true;
+                }
+
+                // エフェクトの寿命が来たら自動破棄
+                Destroy(soulInstance, _soulVfxLifetime);
+
+                yield return new WaitForSecondsRealtime(_soulSpawnInterval);
+            }
+        }
+
+
+        private void OnDestroy()
+        {
+            _isSoulLoopActive = false;
         }
 
 

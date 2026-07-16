@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
   Id: 8
   DisplayName: SheldLifeUp
-  Description: 
+  Description: "\u3042"
   Modifiers: []
   MaxLevel: 5
   Icon: {fileID: 21300000, guid: 1cd065bb151816445ad4228b21b07f30, type: 3}

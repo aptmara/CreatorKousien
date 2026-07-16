@@ -35,6 +35,11 @@ namespace Game.Gameplay.Stage
         public static Quaternion Rotation { get; private set; } = Quaternion.identity;
 
         /// <summary>
+        /// フィールド中心のワールド座標
+        /// </summary>
+        public static Vector3 Center { get; private set; } = Vector3.zero;
+
+        /// <summary>
         /// 重力方向(正規化・下向き = -Up)
         /// </summary>
         public static Vector3 GravityDir => -Up;
@@ -45,8 +50,19 @@ namespace Game.Gameplay.Stage
         /// <param name="rotation"></param>
         public static void Set(Quaternion rotation)
         {
+            Set(rotation, Vector3.zero);
+        }
+
+        /// <summary>
+        /// フィールドの傾きと中心座標を設定するメソッド
+        /// </summary>
+        /// <param name="rotation">フィールドの傾き</param>
+        /// <param name="center">フィールド中心のワールド座標</param>
+        public static void Set(Quaternion rotation, Vector3 center)
+        {
             Rotation = rotation;
             Up = Rotation * Vector3.up;
+            Center = center;
             IsReady = true;
         }
 
@@ -59,6 +75,7 @@ namespace Game.Gameplay.Stage
             IsReady = false;
             Up = Vector3.up;
             Rotation = Quaternion.identity;
+            Center = Vector3.zero;
         }
     }
 

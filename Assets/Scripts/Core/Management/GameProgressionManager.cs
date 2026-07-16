@@ -61,6 +61,10 @@ namespace Game.Core.Management
         private int _currentWaveIndex = 0;
         private bool _isCameraWorkFinished = false;
         private List<WaveDataSO> _waveSequence = new();
+        private bool _isFirstWavePrepared;
+        private bool _hasGameStarted;
+        private bool _preparationFailed;
+        private bool _isPreparingFirstWave;
 
 
         // カメラの固定画角を保持しておく変数
@@ -121,7 +125,11 @@ namespace Game.Core.Management
 
         private void Start()
         {
-            StartCoroutine(WaitAndStartFirstWaveRoutine());
+            Scene loadingScene = SceneManager.GetSceneByName("Loading");
+            if (!loadingScene.IsValid() || !loadingScene.isLoaded)
+            {
+                StartCoroutine(PrepareAndBeginForStandaloneRoutine());
+            }
         }
 
         private void OnEnable()
@@ -468,8 +476,21 @@ namespace Game.Core.Management
         /// <summary>
         /// 加算ロード完了後、StageDataSOからWave順を生成して開始します。
         /// </summary>
-        private IEnumerator WaitAndStartFirstWaveRoutine()
+        public IEnumerator PrepareFirstWaveRoutine()
         {
+            if (_isFirstWavePrepared || _preparationFailed)
+            {
+                yield break;
+            }
+
+            if (_isPreparingFirstWave)
+            {
+                yield return new WaitUntil(() => _isFirstWavePrepared || _preparationFailed);
+                yield break;
+            }
+
+            _isPreparingFirstWave = true;
+
             // 初期化
             _currentWaveIndex = 0;
             _currentState = GameProgressionState.Setup;
@@ -494,6 +515,8 @@ namespace Game.Core.Management
             if (_waveRunner == null)
             {
                 Debug.LogError("[Progression] WaveRunnerがGameProgressionManagerと同じGameObjectにありません。");
+                _preparationFailed = true;
+                _isPreparingFirstWave = false;
                 yield break;
             }
 
@@ -501,6 +524,8 @@ namespace Game.Core.Management
             if (stageContext.ManualTestMode)
             {
                 Debug.Log("[Progression] 手動テストモードのため、自動Wave進行をスキップします");
+                _isFirstWavePrepared = true;
+                _isPreparingFirstWave = false;
                 yield break;
             }
 
@@ -512,6 +537,8 @@ namespace Game.Core.Management
             if (!StageWaveSequenceBuilder.TryBuild(stageContext.StageData, seed, out List<WaveDataSO> waveSequence, out string errorMessage))
             {
                 Debug.LogError($"[Progression] Wave順の生成に失敗しました。\n{errorMessage}", stageContext);
+                _preparationFailed = true;
+                _isPreparingFirstWave = false;
                 yield break;
             }
 
@@ -520,8 +547,32 @@ namespace Game.Core.Management
 
             Debug.Log($"[Progression] Stage開始：{stageContext.StageData.StageName} / Seed：{seed} / Wave数：{_waveSequence.Count}");
 
-            // 最初のWaveを開始
+            _isFirstWavePrepared = true;
+            _isPreparingFirstWave = false;
+        }
+
+        public bool IsFirstWavePrepared => _isFirstWavePrepared;
+        public bool PreparationFailed => _preparationFailed;
+
+        public void BeginPreparedGame()
+        {
+            if (!_isFirstWavePrepared ||
+                _preparationFailed ||
+                _hasGameStarted ||
+                _waveSequence == null ||
+                _waveSequence.Count == 0)
+            {
+                return;
+            }
+
+            _hasGameStarted = true;
             StartBattleWave(_currentWaveIndex);
+        }
+
+        private IEnumerator PrepareAndBeginForStandaloneRoutine()
+        {
+            yield return PrepareFirstWaveRoutine();
+            BeginPreparedGame();
         }
 
         /// <summary>

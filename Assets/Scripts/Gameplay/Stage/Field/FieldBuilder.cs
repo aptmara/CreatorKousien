@@ -55,10 +55,10 @@ namespace Game.Gameplay.Stage
 
             // 1. 傾き回転を決定
             FieldRotation = Quaternion.Euler(_fieldData.FieldTilt, 0f, 0f);
-            FieldContext.Set(FieldRotation);
+            Transform root = _fieldRoot != null ? _fieldRoot : transform;
+            FieldContext.Set(FieldRotation, root.position);
 
             // 2. 床の傾きを当てる
-            Transform root = _fieldRoot != null ? _fieldRoot : transform;
             root.rotation = FieldRotation;
 
             // 3. クリスタルを原点に同じ傾きで生成する
@@ -72,4 +72,3 @@ namespace Game.Gameplay.Stage
         }
     }
 }
-

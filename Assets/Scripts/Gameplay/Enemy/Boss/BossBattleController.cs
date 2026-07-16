@@ -948,7 +948,9 @@ namespace Game.Gameplay.Enemy.Boss
 
             if (failureBarrierDamage > 0f)
             {
-                EventBus.Publish(new RuleBarrierAttackEvent(failureBarrierDamage, transform.position));
+                EventBus.Publish(new RuleBarrierAttackEvent(
+                    failureBarrierDamage,
+                    _mouthHitReceiver.transform.position));
             }
 
             float failureHoldDuration = MathF.Max(0f, biteData.FailureHoldDuration);

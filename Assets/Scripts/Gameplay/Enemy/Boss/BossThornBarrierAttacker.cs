@@ -244,7 +244,6 @@ namespace Game.Gameplay.Enemy.Boss
             // イベント発効前に無効にしておく
             _hasDamagedBarrier = true;
 
-            // 防衛バリアへ、ダメージ量と棘の接触位置を通知する
             EventBus.Publish(new RuleBarrierAttackEvent(_barrierDamage, hitPosition));
 
             BarrierDamaged?.Invoke(_thorn, _barrierDamage, hitPosition);

@@ -53,20 +53,18 @@ public class S_UpgradeCard : MonoBehaviour
     /// <param name="cardData">表示するカードデータ</param>
     /// <param name="currentLevel">現在の取得済みレベル</param>
     /// <param name="onSelected">選択時に呼ばれるコールバック</param>
-    public void Setup(UpgradeData cardData, int currentLevel,
-        System.Action<UpgradeData> onSelected)
+    public void Setup(UpgradeData cardData, int currentLevel)
     {
         if (!_useFrameHighlight && _highlightFrame != null)
         {
             _highlightFrame.SetActive(false);
         }
 
+        // 使用しない
+        //_selectButton.onClick.RemoveAllListeners();
+        //_selectButton.onClick.AddListener(() => onSelected?.Invoke(_cardData));
+
         _cardData = cardData;
-
-        _selectButton.onClick.RemoveAllListeners();
-        _selectButton.onClick.AddListener(() => onSelected?.Invoke(_cardData));
-
-        // levelが0スタートのため、補正値として + 1
         Refresh(currentLevel);
     }
 

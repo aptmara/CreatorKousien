@@ -204,10 +204,17 @@ namespace Game.Core.Events
     public readonly struct EnemyDefeatedEvent
     {
         public readonly string EnemyId;
+        public readonly Vector3 Position;
 
         public EnemyDefeatedEvent(string enemyId)
+            : this(enemyId, Vector3.zero)
+        {
+        }
+
+        public EnemyDefeatedEvent(string enemyId, Vector3 position)
         {
             EnemyId = enemyId;
+            Position = position;
         }
     }
 
@@ -386,7 +393,6 @@ namespace Game.Core.Events
             DurationRatio = durationRatio;
         }
     }
-
     public readonly struct PlayerTiltEvent
     {
         public readonly float CurrentTilt;
@@ -397,4 +403,18 @@ namespace Game.Core.Events
         }
     }
 
+    /// <summary>
+    /// 猶予時間切れ等で有効なコンボが終了した通知
+    /// </summary>
+    public readonly struct ComboEndedEvent
+    {
+        public readonly int FinalCombo;
+        public readonly Vector3 Position;
+
+        public ComboEndedEvent(int finalCombo, Vector3 position)
+        {
+            FinalCombo = finalCombo;
+            Position = position;
+        }
+    }
 }

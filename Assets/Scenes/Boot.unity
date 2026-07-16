@@ -151,7 +151,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Infrastructure.Bootstrap.PrototypeSceneFlowController
   _gameplayShellScene: GameplayShell
   _stageScene: Stage
-  _uiScene: Falu_Gauge_Proto
+  _uiScene: UI_HUD
   _debugScene: DebugOverlay
   _cameraConfig: {fileID: 11400000, guid: aa330ccda141b004cb12309afff5dbbb, type: 2}
   _cameraProjectionMode: 1

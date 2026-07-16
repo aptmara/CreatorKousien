@@ -178,6 +178,10 @@ namespace Game.Gameplay.Shop
 
             if (_playerTransform == null || _shopVehicleTransform == null) return;
 
+            // 屋台の角度を基準にする
+            Quaternion vehicleRotation = _shopVehicleTransform.rotation;
+            Vector3 vehicleUp = _shopVehicleTransform.up;
+
             // 屋台のステートによる2フェーズ切り替え
             // ------------------------------------------------------------
             if (_vehicleController.CurrentState == ShopVehicleController.VehicleState.Stationary ||
@@ -185,9 +189,8 @@ namespace Game.Gameplay.Shop
             {
                 // phase 2: 急ブレーキ & フレーミング
                 Vector3 midPoint = (_playerTransform.position + _shopVehicleTransform.position) * 0.5f;
-                Vector3 targetLookTarget = midPoint + (FieldContext.Rotation * _lookAtOffsetFromCenter);
-
-                Vector3 rotatedOffset = FieldContext.Rotation * _finalAngleOffsetFromCenter;
+                Vector3 targetLookTarget = midPoint + (vehicleRotation * _lookAtOffsetFromCenter);
+                Vector3 rotatedOffset = vehicleRotation * _finalAngleOffsetFromCenter;
                 Vector3 targetCameraPos = midPoint + rotatedOffset;
 
                 // 位置を回り込み座標へ移動
@@ -204,7 +207,7 @@ namespace Game.Gameplay.Shop
                 if (lookDir != Vector3.zero)
                 {
                     Vector3 fieldUp = FieldContext.Rotation * Vector3.up;
-                    Quaternion targetRot = Quaternion.LookRotation(lookDir, fieldUp);
+                    Quaternion targetRot = Quaternion.LookRotation(lookDir, vehicleUp);
                     _mainCameraTransform.rotation = Quaternion.Slerp(_mainCameraTransform.rotation, targetRot, Time.deltaTime * _rotationSmoothSpeed);
                 }
 
@@ -218,10 +221,10 @@ namespace Game.Gameplay.Shop
             else
             {
                 // phase 1: 爆走フォーカス
-                Vector3 targetLookTarget = _shopVehicleTransform.position + (FieldContext.Rotation * _lookAtOffsetCenterCalculated());
+                Vector3 targetLookTarget = _shopVehicleTransform.position + (vehicleRotation * _lookAtOffsetCenterCalculated());
 
                 // 屋台に並走・追従するカメラ座標
-                Vector3 rotatedBrakeOffset = FieldContext.Rotation * _cruiseOffsetFromVehicle;
+                Vector3 rotatedBrakeOffset = vehicleRotation * _cruiseOffsetFromVehicle;
                 Vector3 targetCameraPos = _shopVehicleTransform.position + rotatedBrakeOffset;
 
                 _mainCameraTransform.position = Vector3.SmoothDamp(_mainCameraTransform.position, targetCameraPos, ref _posVelocity, _followSmoothTime);
@@ -236,8 +239,7 @@ namespace Game.Gameplay.Shop
                 Vector3 lookDir = (targetLookTarget - _mainCameraTransform.position).normalized;
                 if (lookDir != Vector3.zero)
                 {
-                    Vector3 fieldUp = FieldContext.Rotation * Vector3.up;
-                    Quaternion targetRot = Quaternion.LookRotation(lookDir, fieldUp);
+                    Quaternion targetRot = Quaternion.LookRotation(lookDir, vehicleUp);
                     _mainCameraTransform.rotation = Quaternion.Slerp(_mainCameraTransform.rotation, targetRot, Time.deltaTime * _rotationSmoothSpeed);
                 }
             }

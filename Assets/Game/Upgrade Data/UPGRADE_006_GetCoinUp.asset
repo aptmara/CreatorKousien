@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
   Id: 6
   DisplayName: GetCoinUp
-  Description: "\u30B3\u30A4\u30F3\u306E\u53D6\u5F97\u91CF"
+  Description: "\u3042"
   Modifiers: []
   MaxLevel: 5
   Icon: {fileID: 21300000, guid: 1aae3659e1c0694469a693d848e93a7f, type: 3}
