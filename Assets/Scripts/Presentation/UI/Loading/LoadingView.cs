@@ -8,6 +8,7 @@ namespace Game.Presentation.UI.Loading
     public sealed class LoadingView : MonoBehaviour
     {
         private const string TextureRoot = "Textures/Title/UI_Title_Logo/";
+        private const string GameStartTextureRoot = "Textures/GAMECLEAR/";
 
         private readonly List<DecorationState> _decorations = new();
         private Camera _loadingCamera;
@@ -70,10 +71,10 @@ namespace Game.Presentation.UI.Loading
             for (int i = 0; i < _gameCharacters.Length; i++)
             {
                 StartCoroutine(PopCharacterRoutine(_gameCharacters[i], i));
-                yield return new WaitForSecondsRealtime(0.1f);
+                yield return new WaitForSecondsRealtime(0.18f);
             }
 
-            yield return new WaitForSecondsRealtime(0.65f);
+            yield return new WaitForSecondsRealtime(0.72f);
 
             Vector3 exitStartPosition = _gameStartGroup.transform.localPosition;
             Vector3 dipPosition = exitStartPosition + Vector3.down * 22f;
@@ -141,7 +142,10 @@ namespace Game.Presentation.UI.Loading
             }
 
             Vector2 startPosition = finalPosition + Vector2.down * 85f;
-            float startRotation = finalRotation + Mathf.Lerp(-10f, 10f, index / 3f);
+            float normalizedIndex = _gameCharacters.Length > 1
+                ? index / (float)(_gameCharacters.Length - 1)
+                : 0.5f;
+            float startRotation = finalRotation + Mathf.Lerp(-10f, 10f, normalizedIndex);
             Image image = target.GetComponent<Image>();
             Color color = image.color;
             color.a = 0f;
@@ -151,7 +155,7 @@ namespace Game.Presentation.UI.Loading
             target.localRotation = Quaternion.Euler(0f, 0f, startRotation);
 
             float elapsed = 0f;
-            const float duration = 0.42f;
+            const float duration = 0.58f;
             while (elapsed < duration)
             {
                 elapsed += Time.unscaledDeltaTime;
@@ -266,31 +270,34 @@ namespace Game.Presentation.UI.Loading
         {
             RectTransform root = CreateRect("GameStartRoot", parent);
             root.anchorMin = root.anchorMax = new Vector2(0.5f, 0.72f);
-            root.sizeDelta = new Vector2(920f, 330f);
+            root.sizeDelta = new Vector2(1100f, 330f);
             root.anchoredPosition = Vector2.zero;
             _gameStartGroup = root.gameObject.AddComponent<CanvasGroup>();
             _gameStartGroup.alpha = 0f;
 
-            string[] names = { "G", "A", "M", "E" };
-            string[] resources = { "UI_Clear_G", "UI_Clear_A", "UI_Clear_M", "UI_Clear_E" };
-            Vector2[] positions =
-            {
-                new Vector2(-300f, -35f),
-                new Vector2(-105f, 30f),
-                new Vector2(105f, 30f),
-                new Vector2(300f, -35f)
-            };
-            float[] rotations = { -12f, -4f, 4f, 12f };
+            string[] names = { "S", "T", "A", "R", "T", "!" };
+            string[] resources = { "UI_InGame_S", "UI_InGame_T", "UI_InGame_A", "UI_InGame_R", "UI_InGame_T", "UI_InGame_Exclamation" };
 
-            _gameCharacters = new RectTransform[4];
+            _gameCharacters = new RectTransform[names.Length];
+            float halfCharacterCount = (_gameCharacters.Length - 1) * 0.5f;
+            const float arcRadius = 340f;
+            const float arcAngleStep = 28f;
+            const float centerGap = 36f;
             for (int i = 0; i < _gameCharacters.Length; i++)
             {
-                Image image = CreateImage(names[i], root, Resources.Load<Sprite>($"Textures/GAMECLEAR/char/{resources[i]}"));
+                float centeredIndex = i - halfCharacterCount;
+                float angle = centeredIndex * arcAngleStep;
+                float angleRadians = angle * Mathf.Deg2Rad;
+                Vector2 position = new Vector2(
+                    Mathf.Sin(angleRadians) * arcRadius + Mathf.Sign(centeredIndex) * centerGap * 0.5f,
+                    (Mathf.Cos(angleRadians) - 1f) * arcRadius + 95f);
+
+                Image image = CreateImage(names[i], root, Resources.Load<Sprite>(GameStartTextureRoot + resources[i]));
                 RectTransform rect = image.rectTransform;
                 rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-                rect.sizeDelta = new Vector2(190f, 190f);
-                rect.anchoredPosition = positions[i];
-                rect.localRotation = Quaternion.Euler(0f, 0f, rotations[i]);
+                rect.sizeDelta = new Vector2(160f, 190f);
+                rect.anchoredPosition = position;
+                rect.localRotation = Quaternion.Euler(0f, 0f, -angle);
                 image.preserveAspect = true;
                 _gameCharacters[i] = rect;
             }

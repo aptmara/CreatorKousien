@@ -27,6 +27,8 @@ namespace Game.Presentation.UI.Title
 
         public void OnEnable()
         {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
             EventSystem.current.SetSelectedGameObject(_startButton.gameObject);
         }
 
