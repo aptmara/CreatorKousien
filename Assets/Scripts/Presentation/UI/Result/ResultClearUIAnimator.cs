@@ -4,10 +4,11 @@
 //
 // Author	: [浅野 勇生]
 // Created	: 2026-07-09
+// Updated	: 2026-07-14 (コントローラー対応) Iwai
+// Updated  : 2026-07-16 (ゲームクリア文字のポップアップ演出を実装) Iwai
 //
 // Notes	:
 // - ベースのUIアニメーションを再生する
-// Notes	: コントローラー対応させました。 - 2026/07/14  Iwai
 // ------------------------------------------------------------
 using System;
 using System.Collections;
@@ -45,8 +46,31 @@ namespace Game.Presentation.UI.Result
         [Tooltip("タイトルボタン")]
         [SerializeField] private Button _titleButton;
 
-        [Tooltip("クリアテキスト")]
-        [SerializeField] private TextMeshProUGUI _clearText;
+
+        [Header("--- [GAME CLEAR] 1文字ずつ演出設定 ---")]
+        [Tooltip("GAME CLEARを構成する1文字ずつの配列")]
+        [SerializeField] private RectTransform[] _clearCharTransforms;
+        [Tooltip("1文字ずつのポップアップ演出の時間")]
+        [SerializeField] private float _charPopDuration = 0.4f;
+        [Tooltip("次の文字が飛び出し始めるまでのディレイ (時間差)")]
+        [SerializeField] private float _charPopInterval = 0.08f;
+        [Tooltip("文字が飛び出す際の下方向への初期位置オフセットY")]
+        [SerializeField] private float _charStartOffsetY = -100f;
+        [Tooltip("文字が飛び出す際の初期ランダム回転の最大角度幅 (左右)")]
+        [SerializeField] private float _charMaxStartRotationZ = 25f;
+
+
+        [Header("--- ウェーブ＆最後尾回転ループ設定 ---")]
+        [Tooltip("文字が揃った後にインターバルウェーブを実行するか")]
+        [SerializeField] private bool _enableCharWave = true;
+        [Tooltip("ウェーブ発生のインターバル間隔")]
+        [SerializeField] private float _waveCooldown = 2.0f;
+        [Tooltip("1回のウェーブが左から右へ通り抜ける総時間（秒）")]
+        [SerializeField] private float _waveDuration = 1.0f;
+        [Tooltip("波が通り抜ける際の各文字の跳ね上がり高さ")]
+        [SerializeField] private float _waveJumpHeightY = 20f;
+        [Tooltip("左から右へ波が伝わる速さの係数")]
+        [SerializeField] private float _waveTravelSpeed = 4.0f;
 
 
         [Header("アニメーションの速度設定")]
@@ -127,7 +151,11 @@ namespace Game.Presentation.UI.Result
         private Vector2 _treeLPos, _treeRPos, _mainBoardPos, _smallBoardPos;
         private Vector2[] _catsPos;
         private Vector2[] _soulsPos;
+        private Vector2[] _charInitialPositions; // 各文字の最終目標座標の退避用
+        private CanvasGroup[] _charCanvasGroups;
         private bool _floatSouls;
+        private bool _isWaveActive;
+        private float _waveTimer;
 
 
 
@@ -140,11 +168,6 @@ namespace Game.Presentation.UI.Result
             StopAllCoroutines();
             CaptureFinalPositions();
             ResetView();
-
-            if (_clearText != null)
-            {
-                _clearText.text = "GAME CLEAR";
-            }
 
             if (_titleButton != null)
             {
@@ -185,6 +208,15 @@ namespace Game.Presentation.UI.Result
             // --- メインボードを表示するアニメーション ---
             yield return PlayMainBoardDropRoutine();
 
+            // --- GAME CLEARの文字を1文字ずつ表示するアニメーション ---
+            yield return PlayClearCharsPopRoutine();
+
+            // 文字が揃ったら常時ウェーブ & 最後尾回転ループ
+            if (_enableCharWave)
+            {
+                _isWaveActive = true;
+                _waveTimer = 0f;
+            }
 
             // --- 小さいボードと猫を順番に表示するアニメーション ---
             StartCoroutine(PlayCatAppearRoutine());
@@ -211,12 +243,76 @@ namespace Game.Presentation.UI.Result
         /// </summary>
         private void Update()
         {
+            float unscaledTime = Time.unscaledTime;
+            float deltaTime = Time.unscaledDeltaTime;
+
+            // クリア文字の常時ウェーブ
+            if (_isWaveActive && _clearCharTransforms != null)
+            {
+                _waveTimer += deltaTime;
+                float totalCyclePeriod = _waveDuration + _waveCooldown;
+
+                // タイマーがウェーブ周期を超えた場合、周期内に収める
+                if (_waveTimer >= totalCyclePeriod)
+                {
+                    _waveTimer -= totalCyclePeriod;
+                }
+
+                // 現在の進行度がウェーブ実行期間内にあるかチェック
+                bool isWavingNow = _waveTimer < _waveDuration;
+
+                for (int i = 0; i < _clearCharTransforms.Length; i++)
+                {
+                    RectTransform charRect = _clearCharTransforms[i];
+                    if (charRect == null || !charRect.gameObject.activeSelf) continue;
+
+                    if (isWavingNow)
+                    {
+                        // ウェーブの進行度を0.0〜1.0で計算
+                        float waveProgress = Mathf.Lerp(-0.2f, 1.2f, _waveTimer / _waveDuration);
+
+                        // 各文字の位置を0.0〜1.0で計算
+                        float charPositionFactor = (float)i / Mathf.Max(1, _clearCharTransforms.Length - 1);
+
+                        // 波の当たり判定距離
+                        float distanceToWaveCenter = Mathf.Abs(charPositionFactor - waveProgress * 1.2f);
+                        float waveInfluence = Mathf.Clamp01(1f - (distanceToWaveCenter * _waveTravelSpeed));
+
+                        // なだらかな跳ね上がりを形成
+                        float jumpT = Mathf.Sin(waveInfluence * Mathf.PI * 0.5f);
+                        float easedJump = EaseOutBack(jumpT) * waveInfluence;
+
+                        float currentOffsetY = easedJump * _waveJumpHeightY;
+                        charRect.anchoredPosition = _charInitialPositions[i] + new Vector2(0f, currentOffsetY);
+
+                        if (i == _clearCharTransforms.Length - 1 && waveInfluence > 0f)
+                        {
+                            float spinAngleY = waveInfluence * 360f;
+                            charRect.localRotation = Quaternion.Euler(0f, spinAngleY, 0f);
+                        }
+                        else if (i == _clearCharTransforms.Length - 1)
+                        {
+                            charRect.localRotation = Quaternion.identity;
+                        }
+                    }
+                    else
+                    {
+                        // クールタイム
+                        charRect.anchoredPosition = _charInitialPositions[i];
+                        if (i == _clearCharTransforms.Length - 1)
+                        {
+                            charRect.localRotation = Quaternion.identity;
+                        }
+                    }
+                }
+            }
+
+            // 魂のふわふわアニメーション
             if (!_floatSouls || _souls == null || _souls.Length == 0)
             {
                 return;
             }
 
-            float time = Time.unscaledTime;
             for (int i = 0; i < _souls.Length; i++)
             {
                 if (_souls[i] == null || !_souls[i].gameObject.activeSelf)
@@ -227,8 +323,8 @@ namespace Game.Presentation.UI.Result
                 // 魂の位置をふわふわさせる
                 float phase = (float)i * 1.7f;
                 _souls[i].anchoredPosition = _soulsPos[i] + new Vector2(
-                    Mathf.Sin(time * _soulFloatSpeed.x + phase) * _soulFloatAmplitude.x,
-                    Mathf.Cos(time * _soulFloatSpeed.y + phase) * _soulFloatAmplitude.y
+                    Mathf.Sin(unscaledTime * _soulFloatSpeed.x + phase) * _soulFloatAmplitude.x,
+                    Mathf.Cos(unscaledTime * _soulFloatSpeed.y + phase) * _soulFloatAmplitude.y
                 );
             }
         }
@@ -258,6 +354,21 @@ namespace Game.Presentation.UI.Result
             {
                 _soulsPos[i] = _souls[i].anchoredPosition;
             }
+
+            // クリアも時用配列の初期化 & CanvasGroupの取得
+            if (_clearCharTransforms != null)
+            {
+                _charInitialPositions = new Vector2[_clearCharTransforms.Length];
+                _charCanvasGroups = new CanvasGroup[_clearCharTransforms.Length];
+                for (int i = 0; i < _clearCharTransforms.Length; i++)
+                {
+                    if (_clearCharTransforms[i] != null)
+                    {
+                        _charInitialPositions[i] = _clearCharTransforms[i].anchoredPosition;
+                        _charCanvasGroups[i] = GetOrAddCanvasGroup(_clearCharTransforms[i]);
+                    }
+                }
+            }
         }
 
 
@@ -272,6 +383,7 @@ namespace Game.Presentation.UI.Result
                 _backgroundBlur.gameObject.SetActive(false);
             }
 
+            _isWaveActive = false;
             _floatSouls = false;
             _treeL.gameObject.SetActive(true);
             _treeR.gameObject.SetActive(true);
@@ -295,6 +407,20 @@ namespace Game.Presentation.UI.Result
             foreach (var item in _bottomItems)
             {
                 item.gameObject.SetActive(false);
+            }
+
+            // クリア文字要素を初期状態で非アクティブ
+            if (_clearCharTransforms != null)
+            {
+                for (int i = 0; i < _clearCharTransforms.Length; i++)
+                {
+                    if (_clearCharTransforms[i] != null)
+                    {
+                        _clearCharTransforms[i].gameObject.SetActive(false);
+                        _clearCharTransforms[i].localRotation = Quaternion.identity;
+                        if (_charCanvasGroups[i] != null) _charCanvasGroups[i].alpha = 0f;
+                    }
+                }
             }
         }
 
@@ -400,6 +526,77 @@ namespace Game.Presentation.UI.Result
             _mainBoard.anchoredPosition = _mainBoardPos;
 
             yield return PunchScale(_mainBoard, _mainBoardBounceScale, 0.12f);
+        }
+
+
+        /// <summary>
+        /// 1文字ずつ飛び出すコルーチン
+        /// </summary>
+        private IEnumerator PlayClearCharsPopRoutine()
+        {
+            if (_clearCharTransforms == null || _clearCharTransforms.Length == 0)
+            {
+                yield break;
+            }
+
+            for (int i = 0; i < _clearCharTransforms.Length; i++)
+            {
+                RectTransform charRect = _clearCharTransforms[i];
+                CanvasGroup cg = _charCanvasGroups[i];
+
+                if (charRect != null)
+                {
+                    StartCoroutine(AnimateSingleCharPop(charRect, cg, _charInitialPositions[i]));
+                }
+                yield return new WaitForSecondsRealtime(_charPopInterval);
+            }
+
+            // 最後の文字が飛び出しきる時間を少し待つ
+            yield return new WaitForSecondsRealtime(_charPopDuration);
+        }
+
+
+        /// <summary>
+        /// 1文字ずつポップアップ挙動のアニメーションのコルーチン
+        /// </summary>
+        private IEnumerator AnimateSingleCharPop(RectTransform charRect, CanvasGroup cg, Vector2 finalPos)
+        {
+            // 初期位置と回転を設定
+            Vector2 startPos = finalPos + Vector2.up * _charStartOffsetY;
+            float startRotZ = UnityEngine.Random.Range(-_charMaxStartRotationZ, _charMaxStartRotationZ);
+
+            // 初期状態を設定
+            charRect.anchoredPosition = startPos;
+            charRect.localScale = Vector3.zero;
+            charRect.localRotation = Quaternion.Euler(0f, 0f, startRotZ);
+            charRect.gameObject.SetActive(true);
+
+            float time = 0f;
+            while (time < _charPopDuration)
+            {
+                time += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(time / _charPopDuration);
+                float easedT = EaseOutBack(t);
+
+                // 位置、スケール、回転を補間
+                charRect.anchoredPosition = Vector2.LerpUnclamped(startPos, finalPos, easedT);
+                charRect.localScale = Vector3.one * Mathf.LerpUnclamped(0f, 1f, easedT);
+                charRect.localRotation = Quaternion.Euler(0f, 0f, Mathf.LerpUnclamped(startRotZ, 0f, easedT));
+
+                if (cg != null)
+                {
+                    // フェードイン
+                    cg.alpha = Mathf.Clamp01(t * 2f);
+                }
+
+                yield return null;
+            }
+
+            // 最終状態にピタッと固定
+            charRect.anchoredPosition = finalPos;
+            charRect.localScale = Vector3.one;
+            charRect.localRotation = Quaternion.identity;
+            if (cg != null) cg.alpha = 1f;
         }
 
 
