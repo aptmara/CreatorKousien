@@ -516,11 +516,12 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         EmitHitStyleCollectibles(hitPoint, curShardCount);
         _currentHitStop = _hitStop;
         InitShardCount();
-        PlayEffect(hitPoint, _scale.x);
     }
 
     public void PlayEffect(Vector3 position, float size)
     {
+        if (VFX == null) return;
+
         GameObject effect = Instantiate(VFX, position, Quaternion.identity);
         ParticleSystem[] particles = effect.GetComponentsInChildren<ParticleSystem>();
         foreach (ParticleSystem particle in particles)

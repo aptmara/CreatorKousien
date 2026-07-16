@@ -133,6 +133,11 @@ namespace Game.Gameplay.Player
             else
                 _faceController?.SetFace("Punch");
 
+            if (_pendingTarget != null && _pendingTarget is CrystalWalk crystalWalk)
+            {
+                crystalWalk.PlayEffect(_pendingHitPoint, crystalWalk.transform.localScale.x * 3.0f);
+            }
+
             _activePunchAnimator = _attachmentController.CurrentAttachment.GetComponentInChildren<AttachmentPunchAnimator>();
 
             if (_activePunchAnimator == null)
