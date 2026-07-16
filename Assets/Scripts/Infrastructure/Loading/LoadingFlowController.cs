@@ -1,0 +1,76 @@
+using System.Collections;
+using Game.Infrastructure.Bootstrap;
+using Game.Presentation.UI.Loading;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+namespace Game.Infrastructure.Loading
+{
+    public sealed class LoadingFlowController : MonoBehaviour
+    {
+        private const float MinimumLoadingDuration = 3f;
+
+        [SerializeField] private string _bootSceneName = "Boot";
+
+        private IEnumerator Start()
+        {
+            Time.timeScale = 1f;
+
+            LoadingView view = gameObject.AddComponent<LoadingView>();
+            view.Initialize();
+            float loadingStartedAt = Time.realtimeSinceStartup;
+
+            AsyncOperation bootLoad = SceneManager.LoadSceneAsync(_bootSceneName, LoadSceneMode.Additive);
+            if (bootLoad == null)
+            {
+                Debug.LogError($"[LoadingFlowController] {_bootSceneName}シーンのロード開始に失敗しました。");
+                yield break;
+            }
+
+            yield return bootLoad;
+
+            PrototypeSceneFlowController boot = Object.FindFirstObjectByType<PrototypeSceneFlowController>();
+            if (boot == null)
+            {
+                Debug.LogError("[LoadingFlowController] PrototypeSceneFlowControllerが見つかりません。");
+                yield break;
+            }
+
+            yield return boot.PrepareGameRoutine();
+            if (boot.PreparationFailed || !boot.IsPrepared)
+            {
+                Debug.LogError("[LoadingFlowController] ゲームの初期化に失敗しました。");
+                yield break;
+            }
+
+            yield return null;
+            Shader.WarmupAllShaders();
+            yield return null;
+
+            float remainingDuration = MinimumLoadingDuration - (Time.realtimeSinceStartup - loadingStartedAt);
+            if (remainingDuration > 0f)
+            {
+                yield return new WaitForSecondsRealtime(remainingDuration);
+            }
+
+            yield return view.PlayGameStartRoutine();
+
+            boot.StartPreparedGame();
+
+            AsyncOperation bootUnload = SceneManager.UnloadSceneAsync(_bootSceneName);
+            if (bootUnload != null)
+            {
+                yield return bootUnload;
+            }
+
+            Scene loadingScene = gameObject.scene;
+            Scene gameplayScene = SceneManager.GetSceneByName("GameplayShell");
+            if (gameplayScene.IsValid() && gameplayScene.isLoaded)
+            {
+                SceneManager.SetActiveScene(gameplayScene);
+            }
+
+            SceneManager.UnloadSceneAsync(loadingScene);
+        }
+    }
+}

@@ -16,8 +16,14 @@ namespace Game.Core.DefenceLine
         // 将来用にフラグを保持
         bool _isBroken = false;
         [SerializeField] float _gaugeHP = 80.0f;
+        float _maxGaugeHP;
 
         public float CurrentHP => _gaugeHP;
+
+        private void Awake()
+        {
+            _maxGaugeHP = _gaugeHP;
+        }
 
         private void OnEnable()
         {
@@ -32,6 +38,7 @@ namespace Game.Core.DefenceLine
         private void Initialized(float gaugeHP)
         {
             _gaugeHP = gaugeHP;
+            _maxGaugeHP = gaugeHP;
         }
 
 
@@ -56,12 +63,13 @@ namespace Game.Core.DefenceLine
                 OnGaugeBroken?.Invoke();
 
                 // オブジェクトに破壊リアクションを返す
-                EventBus.Publish(new DefLineBreakReactionEvent());
+                EventBus.Publish(new DefLineBreakReactionEvent(ev.AttackPower, ev.AttackPosition));
                 _isBroken = true;
             }
             else
             {
-                EventBus.Publish(new DefLineHitReactionEvent());
+                float remainingHpRatio = _maxGaugeHP > 0.0f ? _gaugeHP / _maxGaugeHP : 0.0f;
+                EventBus.Publish(new DefLineHitReactionEvent(ev.AttackPower, remainingHpRatio, ev.AttackPosition));
             }
         }
 

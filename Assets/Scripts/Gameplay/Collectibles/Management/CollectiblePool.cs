@@ -31,6 +31,8 @@ namespace Game.Gameplay.Collectibles
 
         private List<CollectibleObject> _activeInField = new List<CollectibleObject>();
 
+        public bool IsPrewarmed { get; private set; }
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -55,6 +57,8 @@ namespace Game.Gameplay.Collectibles
             {
                 CreateNewObject();
             }
+
+            IsPrewarmed = true;
         }
 
         private CollectibleObject CreateNewObject()

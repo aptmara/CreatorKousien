@@ -10,6 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 3018142709706974663}
   - component: {fileID: 3765421836384558845}
+  - component: {fileID: 7455662598261104584}
+  - component: {fileID: 8958698075229155609}
+  - component: {fileID: 5780322741382380988}
   m_Layer: 0
   m_Name: Col_Thorn2
   m_TagString: Untagged
@@ -26,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 990951944914383586}
   serializedVersion: 2
   m_LocalRotation: {x: -0.057784554, y: 0.00000094878465, z: -0.00013310842, w: 0.99832904}
-  m_LocalPosition: {x: -0.085588954, y: 0.008392056, z: -0.019484613}
+  m_LocalPosition: {x: 0.0087, y: -0.0543, z: 0.0063}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -53,6 +56,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.05, y: 0.05, z: 0.05}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &7455662598261104584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 990951944914383586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b9921b2c0efe4f4c899d0bcfcfff0af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossThorn
+  _thornId: 2
+  _thornRenderer: {fileID: 8039943292496077887}
+  _blendShapeIndex: 0
+  _activeBlendShapeWeight: 100
+  _inactiveBlendShapeWeight: 0
+  _damageCollider: {fileID: 3765421836384558845}
+--- !u!114 &8958698075229155609
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 990951944914383586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa21c9964f28a6d4d88a9fd7299d3447, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossThornHitReceiver
+  _thorn: {fileID: 7455662598261104584}
+  _minimumHitSpeed: 0.75
+  _damageMultiplier: 2.5
+  _despawnItemOnHit: 0
+--- !u!114 &5780322741382380988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 990951944914383586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acb40f48e212a1e449fc022dcc27d7b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossThornBarrierAttacker
+  _thorn: {fileID: 7455662598261104584}
 --- !u!1 &5973436040399590698
 GameObject:
   m_ObjectHideFlags: 0
@@ -63,6 +113,9 @@ GameObject:
   m_Component:
   - component: {fileID: 6682158053812453278}
   - component: {fileID: 6330535194724104748}
+  - component: {fileID: 8003374471779709960}
+  - component: {fileID: 4307620977459687863}
+  - component: {fileID: 4648313031018712984}
   m_Layer: 0
   m_Name: Col_Thorn3
   m_TagString: Untagged
@@ -79,7 +132,7 @@ Transform:
   m_GameObject: {fileID: 5973436040399590698}
   serializedVersion: 2
   m_LocalRotation: {x: 0.081523195, y: -0.011463353, z: -0.0011540093, w: 0.99660486}
-  m_LocalPosition: {x: -0.06998538, y: 0.01347402, z: -0.016899394}
+  m_LocalPosition: {x: 0.0247, y: -0.0481, z: -0.0074}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -106,6 +159,136 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.05, y: 0.05, z: 0.05}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8003374471779709960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5973436040399590698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b9921b2c0efe4f4c899d0bcfcfff0af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossThorn
+  _thornId: 3
+  _thornRenderer: {fileID: 6447104718868769339}
+  _blendShapeIndex: 0
+  _activeBlendShapeWeight: 100
+  _inactiveBlendShapeWeight: 0
+  _damageCollider: {fileID: 6330535194724104748}
+--- !u!114 &4307620977459687863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5973436040399590698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa21c9964f28a6d4d88a9fd7299d3447, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossThornHitReceiver
+  _thorn: {fileID: 8003374471779709960}
+  _minimumHitSpeed: 0.75
+  _damageMultiplier: 2.5
+  _despawnItemOnHit: 0
+--- !u!114 &4648313031018712984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5973436040399590698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acb40f48e212a1e449fc022dcc27d7b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossThornBarrierAttacker
+  _thorn: {fileID: 8003374471779709960}
+--- !u!1 &6299142910596438775
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3225674299080318745}
+  - component: {fileID: 8200164246897301878}
+  - component: {fileID: 7521006716136607607}
+  - component: {fileID: 2692876526948297543}
+  m_Layer: 0
+  m_Name: Col_Mouth
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3225674299080318745
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6299142910596438775}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7575054288960086639}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &8200164246897301878
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6299142910596438775}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.08, y: 0.08, z: 0.08}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &7521006716136607607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6299142910596438775}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6741f1b33a0a91f4e93a001a046bc622, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossMouthHealth
+--- !u!114 &2692876526948297543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6299142910596438775}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52fcb3b92b246424faaaa64fe4426058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossMouthHitReceiver
+  _mouthHealth: {fileID: 7521006716136607607}
+  _minimumHitSpeed: 0.75
+  _damageMultiplier: 2.5
+  _despawnItemOnAccepted: 1
 --- !u!1 &8373035013781116987
 GameObject:
   m_ObjectHideFlags: 0
@@ -115,6 +298,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6010145140413704302}
+  - component: {fileID: 3049542023914037592}
+  - component: {fileID: 6602237408296608932}
+  - component: {fileID: 7696647767596055215}
   m_Layer: 0
   m_Name: PFB_BOSS
   m_TagString: Untagged
@@ -138,6 +324,66 @@ Transform:
   - {fileID: 7575054288960086639}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3049542023914037592
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8373035013781116987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89512555d7024c34ead6a70ef4304129, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossAnimationController
+  _animator: {fileID: 998389536169778826}
+  _motionRoot: {fileID: 7575054288960086639}
+  _baseLayerIndex: 0
+  _thornAttackStateName: Base Layer.ThornAttack
+  _angryBiteOpenStateName: Base Layer.AngryBiteOpen
+  _angryBiteCloseStateName: Base Layer.AngryBiteClose
+  _downStateName: Base Layer.Down
+--- !u!114 &6602237408296608932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8373035013781116987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a0587eb1a2d9e5439c2b36f8053b3a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossThornGroupController
+  _thorns:
+  - {fileID: 9098273043879594755}
+  - {fileID: 7455662598261104584}
+  - {fileID: 8003374471779709960}
+  _thornHitReceivers:
+  - {fileID: 4307620977459687863}
+  - {fileID: 8958698075229155609}
+  - {fileID: 7331295494978312367}
+  _thornBarrierAttackers:
+  - {fileID: 4648313031018712984}
+  - {fileID: 5780322741382380988}
+  - {fileID: 4796930859861594495}
+--- !u!114 &7696647767596055215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8373035013781116987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c130287b068b18a47a23a2152c609299, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossBattleController
+  _battleData: {fileID: 11400000, guid: 0f4d968dfd0017748a53e92d2379ae3c, type: 2}
+  _animationController: {fileID: 3049542023914037592}
+  _thornGroupController: {fileID: 6602237408296608932}
+  _mouthHealth: {fileID: 7521006716136607607}
+  _mouthHitReceiver: {fileID: 2692876526948297543}
 --- !u!1 &8550809187659737705
 GameObject:
   m_ObjectHideFlags: 0
@@ -148,6 +394,9 @@ GameObject:
   m_Component:
   - component: {fileID: 6007186247314356272}
   - component: {fileID: 2368115416224449468}
+  - component: {fileID: 9098273043879594755}
+  - component: {fileID: 7331295494978312367}
+  - component: {fileID: 4796930859861594495}
   m_Layer: 0
   m_Name: Col_Thorn1
   m_TagString: Untagged
@@ -164,7 +413,7 @@ Transform:
   m_GameObject: {fileID: 8550809187659737705}
   serializedVersion: 2
   m_LocalRotation: {x: -0.00000014854592, y: 0.000000004656612, z: -0.000000021627779, w: 1}
-  m_LocalPosition: {x: -0.1252155, y: 0.011362522, z: -0.018714862}
+  m_LocalPosition: {x: -0.0321, y: -0.0524, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -191,6 +440,53 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.05, y: 0.05, z: 0.05}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &9098273043879594755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8550809187659737705}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b9921b2c0efe4f4c899d0bcfcfff0af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossThorn
+  _thornId: 1
+  _thornRenderer: {fileID: 7284961863857347771}
+  _blendShapeIndex: 0
+  _activeBlendShapeWeight: 100
+  _inactiveBlendShapeWeight: 0
+  _damageCollider: {fileID: 2368115416224449468}
+--- !u!114 &7331295494978312367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8550809187659737705}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa21c9964f28a6d4d88a9fd7299d3447, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossThornHitReceiver
+  _thorn: {fileID: 9098273043879594755}
+  _minimumHitSpeed: 0.75
+  _damageMultiplier: 2.5
+  _despawnItemOnHit: 0
+--- !u!114 &4796930859861594495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8550809187659737705}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acb40f48e212a1e449fc022dcc27d7b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossThornBarrierAttacker
+  _thorn: {fileID: 9098273043879594755}
 --- !u!1001 &7968352909127484804
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -217,31 +513,31 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -12.81733
+      value: 8.853032
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 14.824993
+      value: -0.25397015
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.7134133
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0.70074356
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
+      value: -88.974
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
@@ -251,13 +547,32 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -8391291360543336129, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
+      propertyPath: 'm_BlendShapeWeights.Array.data[0]'
+      value: 6.8
+      objectReference: {fileID: 0}
+    - target: {fileID: -3157907228213027927, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 915dea14f3c098c428410cb7131ce548, type: 2}
+    - target: {fileID: 73987318733463995, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
+      propertyPath: 'm_BlendShapeWeights.Array.data[0]'
+      value: 6.8
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       propertyPath: m_Name
       value: BOSS_JACKFLOWER
       objectReference: {fileID: 0}
+    - target: {fileID: 4030142592507473855, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
+      propertyPath: 'm_BlendShapeWeights.Array.data[0]'
+      value: 6.8
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3225674299080318745}
     - targetCorrespondingSourceObject: {fileID: -8619497217415073131, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       insertIndex: 0
       addedObject: {fileID: 6682158053812453278}
@@ -271,6 +586,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       insertIndex: -1
       addedObject: {fileID: 998389536169778826}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2040337422880406849}
   m_SourcePrefab: {fileID: 100100000, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
 --- !u!4 &4686207444974572381 stripped
 Transform:
@@ -280,6 +598,11 @@ Transform:
 --- !u!4 &5913930895178749422 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4361672537900896362, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
+  m_PrefabInstance: {fileID: 7968352909127484804}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &6447104718868769339 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 4030142592507473855, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
   m_PrefabInstance: {fileID: 7968352909127484804}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &7085339865255229653 stripped
@@ -299,16 +622,48 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 07d2d550e3f4a124395451c0685180a6, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 1
   m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
+  m_AnimatePhysics: 1
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!54 &2040337422880406849
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7085339865255229653}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 1
+  m_Constraints: 0
+  m_CollisionDetection: 3
+--- !u!137 &7284961863857347771 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -8391291360543336129, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
+  m_PrefabInstance: {fileID: 7968352909127484804}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7418592085755770641 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8619497217415073131, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
@@ -317,5 +672,10 @@ Transform:
 --- !u!4 &7575054288960086639 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
+  m_PrefabInstance: {fileID: 7968352909127484804}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &8039943292496077887 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 73987318733463995, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
   m_PrefabInstance: {fileID: 7968352909127484804}
   m_PrefabAsset: {fileID: 0}

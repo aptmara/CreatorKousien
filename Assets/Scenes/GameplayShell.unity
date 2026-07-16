@@ -376,6 +376,7 @@ GameObject:
   m_Component:
   - component: {fileID: 737055403}
   - component: {fileID: 737055404}
+  - component: {fileID: 737055405}
   m_Layer: 0
   m_Name: GameProgressionManager
   m_TagString: Untagged
@@ -412,14 +413,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Management.GameProgressionManager
   _roguelikeSceneName: Roguelike
   _resultSceneName: Result
-  _spawnerDefinition: {fileID: 11400000, guid: f14a04607d1020d4c9a6e8adde6d5a6e, type: 2}
+  _waveRunner: {fileID: 737055405}
   _enemySpawner: {fileID: 0}
   _cameraRigController: {fileID: 1756462886}
   _shopVehicleController: {fileID: 0}
   _shopCinematicCameraController: {fileID: 0}
-  _clearDelayDuration: 2
   _slowMotionTimeScale: 0.2
   _gameClearCinematicController: {fileID: 1760067149}
+--- !u!114 &737055405
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 737055402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9afa2cca0d3d7fb4b8a369c7046288f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.WaveRunner
+  spawnRetryInterval: 0.25
 --- !u!1 &806947044
 GameObject:
   m_ObjectHideFlags: 0
@@ -450,7 +463,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.VFX.EnemyHitVfxPresenter
   _hitVfxOffset: {x: 0, y: 3, z: 0}
-  _hitVfxPrefab: {fileID: 7450204837871267800, guid: 8023fa6d5fbc2424e8834726e079bec3, type: 3}
+  _hitVfxPrefabs:
+  - {fileID: 7450204837871267800, guid: 8023fa6d5fbc2424e8834726e079bec3, type: 3}
+  - {fileID: 2610124898922505302, guid: 66452da6f98c1d84da4beb81f1f02ead, type: 3}
   _poolSize: 20
   _effectIntervalPerEnemy: 0.08
   _lifeTime: 1
@@ -568,6 +583,17 @@ MonoBehaviour:
   _rightDoorHinge: {fileID: 0}
   _dustParticlePrefab: {fileID: 0}
   _dustSpawnPoint: {fileID: 0}
+  _enableRushShake: 1
+  _shakeStrength: 0.14
+  _shakeRotationStrength: 1.5
+  _shakeFrequency: 30
+  _itemClearRadius: 7
+  _breakSlowTimeScale: 0.1
+  _delayBeforeZoomIn: 2.5
+  _breakImpactStrength: 0.3
+  _breakImpactRotation: 4
+  _doorSlamBounceDuration: 0.25
+  _doorOvershootAngle: 35
 --- !u!1 &1756462884
 GameObject:
   m_ObjectHideFlags: 0
@@ -780,6 +806,25 @@ MonoBehaviour:
     _cooldown: 0.03
     _hitCountBonus: 0.08
     _maxMultiplier: 1.8
+  _defenseLineBreakPrimaryShake:
+    _enable: 1
+    _duration: 0.22
+    _positionStrength: 0.16
+    _rotationStrength: 2.8
+    _frequency: 32
+    _cooldown: 0.03
+    _hitCountBonus: 0.08
+    _maxMultiplier: 1.8
+  _defenseLineBreakSecondaryShake:
+    _enable: 1
+    _duration: 0.18
+    _positionStrength: 0.06
+    _rotationStrength: 1.3
+    _frequency: 22
+    _cooldown: 0.03
+    _hitCountBonus: 0.08
+    _maxMultiplier: 1.8
+  _defenseLineBreakSecondaryDelay: 0.16
 --- !u!1 &1760067143
 GameObject:
   m_ObjectHideFlags: 0
@@ -915,6 +960,8 @@ MonoBehaviour:
   _playerController: {fileID: 0}
   _playerAnimationController: {fileID: 0}
   _flashCanvasGroup: {fileID: 1760067148}
+  _playerFaceController: {fileID: 0}
+  _clearStartFaceName: ClearStart
 --- !u!1 &2030498475
 GameObject:
   m_ObjectHideFlags: 0

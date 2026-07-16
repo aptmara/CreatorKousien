@@ -141,6 +141,9 @@ MonoBehaviour:
   _addHitAnimationTime: 1
   _dropDuration: 0.3
   _dropRot: {x: -180, y: 0, z: 0}
+  _postFlipDelay: 0.25
+  _useCartoonFeedback: 1
+  _flipOvershoot: {x: -25, y: 0, z: 0}
 --- !u!136 &3699580084391280425
 CapsuleCollider:
   m_ObjectHideFlags: 0

@@ -17,6 +17,7 @@ using Game.Gameplay.Cameras;
 using Game.Gameplay.Player;
 using Game.Gameplay.Stage;
 using Game.Core.Management;
+using Game.Gameplay.Collectibles;
 
 namespace Game.Presentation.GameOverCinematic
 {
@@ -25,6 +26,8 @@ namespace Game.Presentation.GameOverCinematic
     /// </summary>
     public sealed class GameOverCinematicController : MonoBehaviour
     {
+        private const float DefaultFixedDeltaTime = 0.02f;
+
         [Header("--- 設定データ ---")]
         [SerializeField] private SO_GameOverCinematicSettings _settings;
 
@@ -36,17 +39,51 @@ namespace Game.Presentation.GameOverCinematic
         [SerializeField] private ParticleSystem _dustParticlePrefab;
         [SerializeField] private Transform _dustSpawnPoint;
 
+        [Header("--- なだれ込みカメラシェイク設定 ---")]
+        [Tooltip("なだれ込み中のカメラシェイクを有効にするか")]
+        [SerializeField] private bool _enableRushShake = true;
+        [Tooltip("位置の揺れの強さ")]
+        [SerializeField, Min(0f)] private float _shakeStrength = 0.14f;
+        [Tooltip("回転の揺れの強さ")]
+        [SerializeField, Min(0f)] private float _shakeRotationStrength = 1.5f;
+        [Tooltip("揺れの細かさ・激しさ")]
+        [SerializeField, Min(1f)] private float _shakeFrequency = 30f;
+
+        [Header("--- 視界クリアクリーンアップ設定 ---")]
+        [Tooltip("ゲームオーバー確定時にプレイヤー周囲から消去するアイテムの探索半径")]
+        [SerializeField, Min(0f)] private float _itemClearRadius = 7f;
+
+        [Header("--- バリア破壊時のスローモーション設定 ---")]
+        [Tooltip("スローモーション倍率")]
+        [SerializeField, Range(0.01f, 1f)] private float _breakSlowTimeScale = 0.1f;
+        [Tooltip("門へのズーム前に、破壊の余韻とスローを維持する実時間（秒）")]
+        [SerializeField, Min(0f)] private float _delayBeforeZoomIn = 2.5f;
+        [Tooltip("カメラシェイクの強さ")]
+        [SerializeField] private float _breakImpactStrength = 0.3f;
+        [Tooltip("カメラシェイクの回転の強さ")]
+        [SerializeField] private float _breakImpactRotation = 4.0f;
+
+        [Header("--- カートゥーン閉扉バウンド設定 ---")]
+        [Tooltip("門が閉まりきる直前の激しい反動バウンド時間（秒）")]
+        [SerializeField] private float _doorSlamBounceDuration = 0.25f;
+        [Tooltip("門が閉まった瞬間の行き過ぎ（食い込み）角度の最大幅")]
+        [SerializeField] private float _doorOvershootAngle = 35f;
+
         private CameraRigController _cameraRig;
         private Camera _mainCamera;
         private PlayerController _playerController;
 
-        // ゲームプレイ時のプレイヤーオブジェクトの参照（演出中に非表示にするため）
         private GameObject _realPlayerObject;
-
-        // ゲームオーバー演出用のプレイヤー
         private GameObject _cinematicPlayerObject;
         private PlayerCartoonDeath _cinematicPlayerDeath;
 
+        // パーリンノイズ用のシード値
+        private float _noiseSeed;
+
+        private void Awake()
+        {
+            _noiseSeed = Random.value * 1000f;
+        }
 
         private void OnEnable()
         {
@@ -61,6 +98,11 @@ namespace Game.Presentation.GameOverCinematic
         private void OnDefenceLineBroken(DefLineBreakReactionEvent ev)
         {
             StartCoroutine(PlayGameOverSequence());
+        }
+
+        private float Noise(float time, float offset)
+        {
+            return Mathf.PerlinNoise(_noiseSeed + offset, time) * 2f - 1f;
         }
 
         private IEnumerator PlayGameOverSequence()
@@ -96,6 +138,45 @@ namespace Game.Presentation.GameOverCinematic
             Vector3 camStartPos = camTransform.position;
             Quaternion camStartRot = camTransform.rotation;
 
+            // バリア破壊のカメラシェイク & スローモーション猶予
+            if (_delayBeforeZoomIn > 0.0f)
+            {
+                Time.timeScale = _breakSlowTimeScale;
+                Time.fixedDeltaTime = DefaultFixedDeltaTime * Time.timeScale;
+
+                float breakElapsed = 0f;
+                while (breakElapsed < _delayBeforeZoomIn)
+                {
+                    breakElapsed += Time.unscaledDeltaTime;
+                    float t = Mathf.Clamp01(breakElapsed / _delayBeforeZoomIn);
+                    float damping = 1f - (t * t);
+
+                    // ノイズシェイク計算
+                    float noiseTime = breakElapsed * _shakeFrequency * 1.5f;
+                    float offsetX = Noise(noiseTime, 100f) * _breakImpactStrength * damping;
+                    float offsetY = Noise(noiseTime, 115f) * _breakImpactStrength * damping;
+                    Vector3 shakeOffset = (camTransform.right * offsetX) + (camTransform.up * offsetY);
+
+                    Quaternion shakeRotOffset = Quaternion.Euler(
+                        Noise(noiseTime, 130f) * _breakImpactRotation * damping,
+                        Noise(noiseTime, 145f) * _breakImpactRotation * damping,
+                        Noise(noiseTime, 160f) * _breakImpactRotation * damping
+                    );
+
+                    camTransform.position = camStartPos + shakeOffset;
+                    camTransform.rotation = camStartRot * shakeRotOffset;
+                    yield return null;
+                }
+
+                // スローモーション解除
+                Time.timeScale = 1f;
+                Time.fixedDeltaTime = DefaultFixedDeltaTime;
+            }
+
+            // 門を最大開放角度まで開く
+            if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.Euler(0f, _settings.MaxOpenAngle, 0f);
+            if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.Euler(0f, -_settings.MaxOpenAngle, 0f);
+
             // phase 1: カメラが奥の門へズームイン
             float elapsed = 0f;
             while (elapsed < _settings.ZoomInDuration)
@@ -109,25 +190,11 @@ namespace Game.Presentation.GameOverCinematic
                 yield return null;
             }
 
-            // phase 2: 門が勢いよく奥へ開く & 砂煙エフェクト
+            // phase 2: 砂煙エフェクト
             if (_dustParticlePrefab != null && _dustSpawnPoint != null)
             {
                 _dustParticlePrefab.transform.position = _dustSpawnPoint.position;
                 _dustParticlePrefab.Play();
-            }
-
-            elapsed = 0f;
-            while (elapsed < _settings.DoorOpenDuration)
-            {
-                elapsed += Time.deltaTime;
-                float rate = Mathf.Clamp01(elapsed / _settings.DoorOpenDuration);
-                float curveValue = _settings.DoorOpenCurve.Evaluate(rate);
-
-                float currentAngle = curveValue * _settings.MaxOpenAngle;
-                if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.Euler(0f, -currentAngle, 0f);
-                if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.Euler(0f, currentAngle, 0f);
-                yield return null;
-
             }
 
             // 敵のなだれ込み演出
@@ -185,6 +252,12 @@ namespace Game.Presentation.GameOverCinematic
                     enemyDelays.Add(Random.Range(0f, _settings.MaxStartDelay));
                 }
 
+                // プレイヤー周囲のカメラを遮るアイテムを消去する
+                if (_realPlayerObject != null)
+                {
+                    ClearCollectiblesAroundPlayer(_realPlayerObject.transform.position, _itemClearRadius);
+                }
+
                 // 2. 敵を一斉に門の奥へ走らせる
                 float rushElapsed = 0f;
 
@@ -207,9 +280,34 @@ namespace Game.Presentation.GameOverCinematic
                     activeDust.Play();
                 }
 
+                // ズームイン完了時のカメラベース位置を記録
+                Vector3 baseBrakeCamPos = camTransform.position;
+                Quaternion baseBrakeCamRot = camTransform.rotation;
+
                 while (rushElapsed < _settings.BaseDoorKeepOpenDuration)
                 {
                     rushElapsed += Time.deltaTime;
+
+                    // なだれ込みカメラシェイク計算処理
+                    if (_enableRushShake)
+                    {
+                        float noiseTime = rushElapsed * _shakeFrequency;
+
+                        // 左右上下の揺れ
+                        float offsetX = Noise(noiseTime, 0f) * _shakeStrength;
+                        float offsetY = Noise(noiseTime, 15f) * _shakeStrength;
+                        Vector3 shakeOffset = (camTransform.right * offsetX) + (camTransform.up * offsetY);
+
+                        // 回転のランダムグリッチ揺れ
+                        Quaternion shakeRotOffset = Quaternion.Euler(
+                            Noise(noiseTime, 30f) * _shakeRotationStrength,
+                            Noise(noiseTime, 45f) * _shakeRotationStrength,
+                            Noise(noiseTime, 60f) * _shakeRotationStrength
+                        );
+
+                        camTransform.position = baseBrakeCamPos + shakeOffset;
+                        camTransform.rotation = baseBrakeCamRot * shakeRotOffset;
+                    }
 
                     for (int i = enemyTransforms.Count - 1; i >= 0; i--)
                     {
@@ -269,7 +367,7 @@ namespace Game.Presentation.GameOverCinematic
                 yield return new WaitForSeconds(_settings.BaseDoorKeepOpenDuration);
             }
 
-            // phase 3: 門が勢いよく閉まる
+            // phase 3: 門がカートゥーン風に閉まる
             elapsed = 0f;
             while (elapsed < _settings.DoorCloseDuration)
             {
@@ -277,13 +375,30 @@ namespace Game.Presentation.GameOverCinematic
                 float rate = Mathf.Clamp01(elapsed / _settings.DoorCloseDuration);
                 float curveValue = _settings.DoorCloseCurve.Evaluate(rate);
 
-                float currentAngle = curveValue * _settings.MaxOpenAngle;
-                if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.Euler(0f, -currentAngle, 0f);
-                if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.Euler(0f, currentAngle, 0f);
+                float currentAngle = Mathf.Lerp(_settings.MaxOpenAngle, 0f, curveValue);
+                if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.Euler(0f, currentAngle, 0f);
+                if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.Euler(0f, -currentAngle, 0f);
                 yield return null;
             }
 
-            // TODO: 閉まった瞬間カメラシェイクとかあっても良いかも
+            // バタンと閉まった瞬間の反動
+            float bounceElapsed = 0f;
+            while (bounceElapsed < _doorSlamBounceDuration)
+            {
+                bounceElapsed += Time.deltaTime;
+                float t = bounceElapsed / _doorSlamBounceDuration;
+                float damping = 1f - t;
+
+                float bounceAngle = Mathf.Sin(t * Mathf.PI * 3f) * _doorOvershootAngle * damping;
+
+                if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.Euler(0f, bounceAngle, 0f);
+                if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.Euler(0f, -bounceAngle, 0f);
+                yield return null;
+            }
+
+            // 扉をゼロ座標で固定
+            if (_leftDoorHinge != null) _leftDoorHinge.localRotation = Quaternion.identity;
+            if (_rightDoorHinge != null) _rightDoorHinge.localRotation = Quaternion.identity;
 
 
             // 扉が閉まるのと同時に、プレイヤーをカートゥーン死亡演出に切り替える
@@ -386,6 +501,12 @@ namespace Game.Presentation.GameOverCinematic
                 return false;
             }
 
+            // 手を強制的に非表示
+            if (_realPlayerObject.TryGetComponent<PlayerAttachmentController>(out var attachmentController))
+            {
+                attachmentController.ForceDestroyAttachment();
+            }
+
             Vector3 spawnPos = _realPlayerObject.transform.position + _settings.GameOverPlayerSpawnOffset;
             Quaternion spawnRot = _realPlayerObject.transform.rotation;
 
@@ -415,6 +536,37 @@ namespace Game.Presentation.GameOverCinematic
             _cinematicPlayerDeath.FlattenImmediately();
 
             return true;
+        }
+
+
+        /// <summary>
+        /// プレイヤー周囲の指定半径内にある収集物を強制的にデスポーンしてプールへ戻す
+        /// </summary>
+        /// <param name="center"></param>
+        /// <param name="radius"></param>
+        private void ClearCollectiblesAroundPlayer(Vector3 center, float radius)
+        {
+            Collider[] hitColliders = Physics.OverlapSphere(center, radius);
+            int clearCount = 0;
+
+            foreach (var col in hitColliders)
+            {
+                // タグによる判定
+                if (col.CompareTag("Collectable") || col.gameObject.name.Contains("Collectible"))
+                {
+                    CollectibleObject collectible = col.GetComponentInParent<CollectibleObject>();
+                    if (collectible != null && collectible.gameObject.activeInHierarchy)
+                    {
+                        collectible.Despawn();
+                        clearCount++;
+                    }
+                }
+            }
+
+            if (clearCount > 0)
+            {
+                Debug.Log($"[GameOver] プレイヤー周囲の収集物を{clearCount}個デスポーンしてプールへ戻したぜよ");
+            }
         }
 
 

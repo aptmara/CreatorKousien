@@ -67,12 +67,12 @@ namespace Game.WaveSystem
 
 
         // --- 公開プロパティ ---
-        public string GroupName => groupName;
-        public string PlannerMemo => plannerMemo;
-        public float DelayBeforeStart => delayBeforeStart;
-        public WaveGroupAdvanceType AdvanceType => advanceType;
-        public float TimeUntilNextGroup => timeUntilNextGroup;
-        public IReadOnlyList<EnemySpawnEntry> SpawnEntries => spawnEntries;
+        public string GroupName => groupName;                                   ///< Groupの表示名
+        public string PlannerMemo => plannerMemo;                               ///< Groupの説明文
+        public float DelayBeforeStart => delayBeforeStart;                      ///< Group開始までの待機時間
+        public WaveGroupAdvanceType AdvanceType => advanceType;                 ///< Group終了条件のタイプ
+        public float TimeUntilNextGroup => timeUntilNextGroup;                  ///< Group終了条件が「時間経過」の場合の待機時間
+        public IReadOnlyList<EnemySpawnEntry> SpawnEntries => spawnEntries;     ///< Groupで出現する敵の一覧
     }
 }
 

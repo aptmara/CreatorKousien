@@ -38,6 +38,24 @@ namespace Game.WaveSystem
         private int fixedSeed = 12345;
 
 
+        [Header("--- デバッグ ---")]
+        [SerializeField]
+        [Tooltip("ONにすると、このSceneでは自動でWaveを進行しません。WaveTesterで手動実行するデバック用モードです")]
+        private bool manualTestMode = false;
+
+
+        /// <summary>
+        /// デバック用モードかどうか
+        /// </summary>
+        public bool ManualTestMode => manualTestMode;
+
+
+
+        private bool hasCreatedSeed;        ///< Seedを生成済みかどうかを取得します。
+        private int createdSeed;            ///< 生成済みのSeedの値を取得します。
+
+
+
         public StageDataSO StageData => stageData;      ///< StageDataSOの参照を取得します。
         public bool UseFixedSeed => useFixedSeed;       ///< 同じSeedでWaveを抽選するかどうかを取得します。
         public int FixedSeed => fixedSeed;              ///< UseFixedSeedが有効な場合に使用するSeedの値を取得します。
@@ -48,13 +66,13 @@ namespace Game.WaveSystem
         /// <returns>Seedの値</returns>
         public int CreateSeed()
         {
-            if (useFixedSeed)
-            {
-                return fixedSeed;
-            }
+            if (hasCreatedSeed) return createdSeed;
 
-            // プレイするたびにランダムなSeedを生成
-            return Environment.TickCount;
+            // UseFixedSeedが有効な場合は、固定のSeedを使用します。
+            createdSeed = useFixedSeed ? fixedSeed : Environment.TickCount;
+            hasCreatedSeed = true;
+
+            return createdSeed;
         }
     }
 }

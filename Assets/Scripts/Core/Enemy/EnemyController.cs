@@ -61,6 +61,7 @@ namespace Game.Core.Enemy
         private EnemyAttack _enemyAttack;
         private EnemyHoldCounter _holdCounter;
         private EnemyDebuffManager _debuffManager;
+        private EnemyBodyController _bodyController;
         private Coroutine _downTimerCoroutine;
 
         public event System.Action<float, float> OnHealthChanged;
@@ -80,9 +81,10 @@ namespace Game.Core.Enemy
         /// Awake後の動的生成（スポーン）でも呼び出せる。
         /// </summary>
         /// <param name="def">適用するEnemyDefinition</param>
-        public string Initialize(EnemyDefinition definition, SpawnSummary spawnSummary)
+        public string Initialize(EnemyDefinition definition, SpawnSummary spawnSummary, EnemyBodyController bodyController)
         {
             _definition = definition;
+            _bodyController = bodyController;
             InstanceEnemyId = $"{definition.EnemyId}_{GetInstanceID()}";
 
             // 状態管理初期化
@@ -128,7 +130,14 @@ namespace Game.Core.Enemy
 
             // 敵攻撃処理初期化
             _enemyAttack = new EnemyAttack();
-            _enemyAttack.Initialize(definition.AttackPower, definition.Attackinterval, false);
+            _enemyAttack.Initialize(
+                InstanceEnemyId,
+                definition.AttackPower,
+                definition.Attackinterval,
+                false,
+                definition.AttackMotionTime,
+                definition.AttackStartUpTime,
+                attackPower => EventBus.Publish(new RuleBarrierAttackEvent(attackPower, transform.position)));
 
 
             // 初期HP・ゲージをUIに通知
@@ -309,6 +318,8 @@ namespace Game.Core.Enemy
         private void HandleDefeated()
         {
             _stateManager.TransitionTo(EnemyState.OverHit);
+            _enemyAttack.ResetAttack();
+            _enemyAttack.SetActiv(false);
 
             if (_downTimerCoroutine != null)
             {
@@ -328,8 +339,19 @@ namespace Game.Core.Enemy
         /// </summary>
         private void HandleHoldEnd()
         {
-            // ステートを遷移し落下
             _stateManager.TransitionTo(EnemyState.Drop);
+
+            if (!_definition.IsBoss && _bodyController != null)
+            {
+                _bodyController.PlayDropPose(BeginDefeatDrop);
+                return;
+            }
+
+            BeginDefeatDrop();
+        }
+
+        private void BeginDefeatDrop()
+        {
             _rising.ResumeMove();
             _rising.DropStart(transform);
             OnDropStarted?.Invoke();
@@ -365,6 +387,7 @@ namespace Game.Core.Enemy
         private void HandleRoseLeft()
         {
             _stateManager.SetRose(false);
+            _enemyAttack.ResetAttack();
             _enemyAttack.SetActiv(false);
         }
 
@@ -377,6 +400,8 @@ namespace Game.Core.Enemy
         /// </summary>
         private void TransitionToDown()
         {
+            _enemyAttack.ResetAttack();
+            _enemyAttack.SetActiv(false);
             _rising.BreakDrop(transform);
             _stateManager.TransitionTo(EnemyState.Down);
             _barrierGauge.SetActive(false);
@@ -403,6 +428,7 @@ namespace Game.Core.Enemy
                 _barrierGauge.ResetGauge();
                 _barrierGauge.SetActive(true);
                 _barrierGauge.SetActive(_definition.HasBarrier);
+                _enemyAttack.SetActiv(_stateManager.CanAttackDefenceLine);
 
                 Debug.Log($"[EnemyController] {InstanceEnemyId} ダウン復帰。ゲージリセット。");
             }
@@ -417,13 +443,37 @@ namespace Game.Core.Enemy
 
     public class EnemyAttack
     {
+        string _enemyID;
+        Action<float> _onAttack;
+
         float _maxAttackInterval;
         float _attackInterval;
         float _attackPower;
         bool _isActiv;
 
-        public void Initialize(float attackPower, float attackInterval, bool isActiv)
+        float _attackStartUpLag;
+        float _attackMotionTime;
+
+
+        float _attackTimer;
+        float _attackMotionTimer;
+
+        bool _isAttackMotion;
+        bool _hasAttacked;
+
+        public void Initialize(
+            string enemyID,
+            float attackPower,
+            float attackInterval,
+            bool isActiv,
+            float attackMotionTime,
+            float startUpLag,
+            Action<float> onAttack)
         {
+            _enemyID = enemyID;
+            _onAttack = onAttack;
+            _attackStartUpLag = startUpLag;
+            _attackMotionTime = attackMotionTime;
             _maxAttackInterval = attackInterval;
             _attackInterval = _maxAttackInterval;
             _attackPower = attackPower;
@@ -433,25 +483,76 @@ namespace Game.Core.Enemy
         public void UpdateAttack()
         {
             if (!_isActiv) return;
+
+            if (_isAttackMotion) UpdateAttackMotion();
+            else UpdateAttackWait();
+        }
+
+        private void UpdateAttackWait()
+        {
+            // タイマーを進め、0になったら攻撃開始をコールバックする
             _attackInterval -= Time.deltaTime;
             if (_attackInterval <= 0.0f)
             {
+
                 _attackInterval = _maxAttackInterval;
-                Attack();
+
+                _attackMotionTimer = _attackMotionTime;
+                _attackTimer = _attackStartUpLag;
+                EventBus.Publish(new EnemyAttackMotionStartedEvent(_enemyID));
+                _isAttackMotion = true;
+                _hasAttacked = false;
             }
         }
 
-        public void SetActiv(bool activ) => _isActiv = activ;
+        private void UpdateAttackMotion()
+        {
+            // 前隙終了
+            _attackTimer -= Time.deltaTime;
+            if (!_hasAttacked && _attackTimer <= 0.0f)
+            {
+                AttackNow();
+                _hasAttacked = true;
+            }
+
+            // 攻撃終了
+            _attackMotionTimer -= Time.deltaTime;
+            if (_attackMotionTimer <= 0.0f)
+            {
+                // もしモーション終了時に前隙攻撃が行われていなかったら攻撃する
+                if (!_hasAttacked)
+                {
+                    AttackNow();
+                }
+
+                EventBus.Publish(new EnemyAttackMotionEndedEvent(_enemyID));
+
+                _isAttackMotion = false;
+                _hasAttacked = false;
+            }
+        }
+
+        public void SetActiv(bool activ)
+        {
+            _isActiv = activ;
+        }
+
+        public void ResetAttack()
+        {
+            if (_isAttackMotion) EventBus.Publish(new EnemyAttackMotionEndedEvent(_enemyID));
+            _isAttackMotion = false;
+            _hasAttacked = false;
+            _attackInterval = _maxAttackInterval;
+            _attackTimer = _attackStartUpLag;
+            _attackMotionTimer = _attackMotionTime;
+
+        }
 
         public void AttackNow()
         {
-            EventBus.Publish(new RuleBarrierAttackEvent(_attackPower));
+            _onAttack?.Invoke(_attackPower);
         }
 
-        private void Attack()
-        {
-            AttackNow();
-        }
     }
 
     public class EnemyHoldCounter

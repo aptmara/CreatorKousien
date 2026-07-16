@@ -108,10 +108,12 @@ namespace Game.Core.Events
     public readonly struct RuleBarrierAttackEvent
     {
         public readonly float AttackPower;
+        public readonly Vector3 AttackPosition;
 
-        public RuleBarrierAttackEvent(float attackPower)
+        public RuleBarrierAttackEvent(float attackPower, Vector3 attackPosition)
         {
             AttackPower = attackPower;
+            AttackPosition = attackPosition;
         }
     }
 
@@ -144,6 +146,34 @@ namespace Game.Core.Events
             CurrentGauge = currentGauge;
             MaxGauge = maxGauge;
             Ratio = maxGauge > 0f ? currentGauge / maxGauge : 0f;
+        }
+    }
+
+    /// <summary>
+    /// 敵の攻撃モーション開始通知。
+    /// モーション開始を受けて演出やサウンドを再生する用途に使う（現状は EnemyId のみ）。
+    /// </summary>
+    public readonly struct EnemyAttackMotionStartedEvent
+    {
+        public readonly string EnemyId;
+
+        public EnemyAttackMotionStartedEvent(string enemyId)
+        {
+            EnemyId = enemyId;
+        }
+    }
+
+    /// <summary>
+    /// 敵の攻撃モーション終了通知。
+    /// モーション開始を受けて演出やサウンドを再生する用途に使う（現状は EnemyId のみ）。
+    /// </summary>
+    public readonly struct EnemyAttackMotionEndedEvent
+    {
+        public readonly string EnemyId;
+
+        public EnemyAttackMotionEndedEvent(string enemyId)
+        {
+            EnemyId = enemyId;
         }
     }
 
@@ -200,9 +230,16 @@ namespace Game.Core.Events
     /// </summary
     public readonly struct DefLineHitReactionEvent
     {
-        // 現状防衛ラインが何をもって被弾演出を行うか不明なため
-        // 空の構造体だが、演出に攻撃された座標や属性によるバリアの反応など
-        // 何かしらが必要になった場合このイベントで渡す
+        public readonly float Damage;
+        public readonly float RemainingHpRatio;
+        public readonly Vector3 AttackPosition;
+
+        public DefLineHitReactionEvent(float damage, float remainingHpRatio, Vector3 attackPosition)
+        {
+            Damage = damage;
+            RemainingHpRatio = remainingHpRatio;
+            AttackPosition = attackPosition;
+        }
     }
 
     /// <summary>
@@ -210,9 +247,14 @@ namespace Game.Core.Events
     /// </summary
     public readonly struct DefLineBreakReactionEvent
     {
-        // 現状防衛ラインが何をもって被弾演出を行うか不明なため
-        // 空の構造体だが、演出に攻撃された座標や属性によるバリアの反応など
-        // 何かしらが必要になった場合このイベントで渡す
+        public readonly float Damage;
+        public readonly Vector3 AttackPosition;
+
+        public DefLineBreakReactionEvent(float damage, Vector3 attackPosition)
+        {
+            Damage = damage;
+            AttackPosition = attackPosition;
+        }
     }
 
 
@@ -356,4 +398,3 @@ namespace Game.Core.Events
     }
 
 }
-
