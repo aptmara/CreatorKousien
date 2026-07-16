@@ -5,6 +5,7 @@
 // auther : Takitani Shohei
 // date   : 2026/07/12 - begin.
 //        : 2026/07/15 - マウスクリックをレイキャスト判定に変更
+//        : 2026/07/16 - マウス移動検知でのモード切替実装
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -12,6 +13,12 @@ using System.Collections.Generic;
 
 public class S_RoguelikeSelectController : MonoBehaviour
 {
+    private enum InputMode
+    {
+        Keyboard,
+        Mouse,
+    }
+
     [Header("InputActionの取得")]
     [SerializeField] private S_RoguelikeSelectInput _input;
 
@@ -24,28 +31,48 @@ public class S_RoguelikeSelectController : MonoBehaviour
     [Tooltip("移動後、入力受付までの待機時間(秒)")]
     [SerializeField] private float _navigateCooldown = 0.2f;
 
+    [Header("マウス検知距離")]
+    [Tooltip("指定距離以上動いたらマウスモードに切り替える")]
+    [SerializeField] private float _mouseMoveThreshold = 1.0f;
 
     private int _currentIndex = 0;
     private float _cooldownTimer = 0.0f;
     private bool _isNavigateReleased = true;
+
+    // インプット別
+    private InputMode _mode = InputMode.Keyboard;
+    private Vector2 _lastMousePosition;
+    private bool _mousePositionInitialized = false;
 
     private readonly List<RaycastResult> _raycastResults = new();
 
 
 
     //______________________________
-    // private function
+    // basic function
 
     private void OnEnable()
     {
         _currentIndex = 0;
+        _mode = InputMode.Keyboard;
+        _mousePositionInitialized = false;
         _selectionUI.SetFocusIndex(_currentIndex);
     }
 
 
     private void Update()
     {
-        HandleNavigate();
+        DetectModeSwitch();
+
+        if (_mode == InputMode.Keyboard)
+        {
+            HandleNavigate();
+        }
+        else
+        {
+            HandleHover();
+        }
+
         HandleSubmit();
         HandleExit();
         HandleClick();
@@ -133,28 +160,89 @@ public class S_RoguelikeSelectController : MonoBehaviour
     {
         if (!_input.ConsumeClick()) return;
 
-        if (EventSystem.current == null) return;
+        S_UpgradeCard card = GetCardUnderPointer(_input.MousePosition);
+
+        if(card != null)
+        {
+            _selectionUI.TriggerSelectByCard(card);
+        }
+
+    }
+
+    private void HandleHover()
+    {
+        S_UpgradeCard card = GetCardUnderPointer(_input.MousePosition);
+        if (card == null) return;
+
+        int index = _selectionUI.IndexOfCard(card);
+        if (index < 0 || index == _currentIndex) return;
+
+        _currentIndex = index;
+        _selectionUI.SetFocusIndex(index);
+    }
+
+
+
+    //____________________________________
+    // mode switching
+
+    /// <summary>
+    /// マウスの移動量とNavigate入力を検知し、操作モードを切り替える
+    /// _currentIndexは共有
+    /// </summary>
+    private void DetectModeSwitch()
+    {
+        Vector2 mousePos = _input.MousePosition;
+
+        if(!_mousePositionInitialized)
+        {
+            _lastMousePosition = mousePos;
+            _mousePositionInitialized = true;
+        }
+        else if((mousePos - _lastMousePosition).sqrMagnitude > _mouseMoveThreshold * _mouseMoveThreshold)
+        {
+            _mode = InputMode.Mouse;
+            _lastMousePosition = mousePos;
+        }
+        else
+        {
+            _lastMousePosition = mousePos;
+        }
+
+        // navigateを一定量検知したらキーボード/ゲームパッドへ
+        Vector2 nav = _input.Navigate;
+        if (nav.sqrMagnitude > _navigateDeadzone * _navigateDeadzone)
+        {
+            _mode = InputMode.Keyboard;
+        }
+    }
+
+
+
+    //______
+    // shared raycast
+
+    private S_UpgradeCard GetCardUnderPointer(Vector2 screenPosition)
+    {
+        if(EventSystem.current == null) return null;
 
         PointerEventData pointerData = new PointerEventData(EventSystem.current)
         {
-            position = _input.MousePosition
+            position = screenPosition
         };
 
         _raycastResults.Clear();
         EventSystem.current.RaycastAll(pointerData, _raycastResults);
 
-        foreach (var result in _raycastResults)
+        foreach(var result in _raycastResults)
         {
-            S_UpgradeCard card = result.gameObject.GetComponentInChildren<S_UpgradeCard>();
-            if(card != null)
-            {
-                _selectionUI.TriggerSelectByCard(card);
-                return;
-            }
+            S_UpgradeCard card = result.gameObject.GetComponentInParent<S_UpgradeCard>();
+            if (card != null) return card;
         }
 
-
+        return null;
     }
+
 
     private void MoveFocus(int dir)
     {
