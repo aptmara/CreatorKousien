@@ -36,17 +36,31 @@ namespace Game.Presentation.GameOverCinematic
         [SerializeField] private ParticleSystem _dustParticlePrefab;
         [SerializeField] private Transform _dustSpawnPoint;
 
+        [Header("--- なだれ込みカメラシェイク設定 ---")]
+        [Tooltip("なだれ込み中のカメラシェイクを有効にするか")]
+        [SerializeField] private bool _enableRushShake = true;
+        [Tooltip("位置の揺れの強さ")]
+        [SerializeField, Min(0f)] private float _shakeStrength = 0.14f;
+        [Tooltip("回転の揺れの強さ")]
+        [SerializeField, Min(0f)] private float _shakeRotationStrength = 1.5f;
+        [Tooltip("揺れの細かさ・激しさ")]
+        [SerializeField, Min(1f)] private float _shakeFrequency = 30f;
+
         private CameraRigController _cameraRig;
         private Camera _mainCamera;
         private PlayerController _playerController;
 
-        // ゲームプレイ時のプレイヤーオブジェクトの参照（演出中に非表示にするため）
         private GameObject _realPlayerObject;
-
-        // ゲームオーバー演出用のプレイヤー
         private GameObject _cinematicPlayerObject;
         private PlayerCartoonDeath _cinematicPlayerDeath;
 
+        // パーリンノイズ用のシード値
+        private float _noiseSeed;
+
+        private void Awake()
+        {
+            _noiseSeed = Random.value * 1000f;
+        }
 
         private void OnEnable()
         {
@@ -61,6 +75,11 @@ namespace Game.Presentation.GameOverCinematic
         private void OnDefenceLineBroken(DefLineBreakReactionEvent ev)
         {
             StartCoroutine(PlayGameOverSequence());
+        }
+
+        private float Noise(float time, float offset)
+        {
+            return Mathf.PerlinNoise(_noiseSeed + offset, time) * 2f - 1f;
         }
 
         private IEnumerator PlayGameOverSequence()
@@ -207,9 +226,34 @@ namespace Game.Presentation.GameOverCinematic
                     activeDust.Play();
                 }
 
+                // ズームイン完了時のカメラベース位置を記録
+                Vector3 baseBrakeCamPos = camTransform.position;
+                Quaternion baseBrakeCamRot = camTransform.rotation;
+
                 while (rushElapsed < _settings.BaseDoorKeepOpenDuration)
                 {
                     rushElapsed += Time.deltaTime;
+
+                    // なだれ込みカメラシェイク計算処理
+                    if (_enableRushShake)
+                    {
+                        float noiseTime = rushElapsed * _shakeFrequency;
+
+                        // 左右上下の揺れ
+                        float offsetX = Noise(noiseTime, 0f) * _shakeStrength;
+                        float offsetY = Noise(noiseTime, 15f) * _shakeStrength;
+                        Vector3 shakeOffset = (camTransform.right * offsetX) + (camTransform.up * offsetY);
+
+                        // 回転のランダムグリッチ揺れ
+                        Quaternion shakeRotOffset = Quaternion.Euler(
+                            Noise(noiseTime, 30f) * _shakeRotationStrength,
+                            Noise(noiseTime, 45f) * _shakeRotationStrength,
+                            Noise(noiseTime, 60f) * _shakeRotationStrength
+                        );
+
+                        camTransform.position = baseBrakeCamPos + shakeOffset;
+                        camTransform.rotation = baseBrakeCamRot * shakeRotOffset;
+                    }
 
                     for (int i = enemyTransforms.Count - 1; i >= 0; i--)
                     {
