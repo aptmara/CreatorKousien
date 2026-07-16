@@ -4,6 +4,7 @@
 //
 // Description  : EventBusからヒットイベントを受け取り、コンボロジックの更新と演出一斉適用を統括するUIコンポーネント。
 // Created      : 2026-06-08
+// Updated      : 2026-07-16 (右上固定の静的文字への依存を外しました。) Iwai Shogo
 // ================================================================================
 
 using Game.Core.Events;
@@ -32,19 +33,17 @@ namespace Game.Presentation.UI.Combo
         SceneEventChannel _sceneEventChannel;
         [SerializeField, Tooltip("コンボボーナス倍率"),Range(0.0f,1.0f)]
         float _multiRatio;
+        [SerializeField,Tooltip("コンボゲージのUI")]
+        private ComboGaugeUI _comboGaugeUI;
 
-        [Header("--- UI References ---")]
+        [Header("--- Legacy UI References ---")]
         [Tooltip("コンボテキストを表示するオブジェクトのRectTransform")]
         [SerializeField] private RectTransform _comboTextRect;
-
         [Tooltip("コンボ数テキスト")]
         [SerializeField] private TMPro.TMP_Text _comboTextBase;
-
         [Tooltip("前面にあるエネルギー充填テキスト")]
         [SerializeField] private TMPro.TMP_Text _comboTextFill;
 
-        [SerializeField,Tooltip("コンボゲージのUI")]
-        private ComboGaugeUI _comboGaugeUI;
 
         [Header("Feedback Patterns (検証用演出リスト)")]
         [RequireInterface(typeof(IComboFeedback))]
