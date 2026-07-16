@@ -41,7 +41,8 @@ Shader "Custom/SH_Sway_Lit"
         LOD 100
 
         Blend SrcAlpha OneMinusSrcAlpha
-        ZWrite Off
+        ZWrite On
+        ZTest LEqual
         Cull Back
 
         Pass
@@ -106,7 +107,7 @@ Shader "Custom/SH_Sway_Lit"
                 
                 OUT.positionHCS = TransformObjectToHClip(localPos.xyz);
                 OUT.normalWS = TransformObjectToWorldNormal(IN.normalOS);
-                OUT.viewDirWS = GetWorldSpaceViewDir(IN.positionOS);
+                OUT.viewDirWS = GetWorldSpaceViewDir(OUT.positionHCS);
                 OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
                 OUT.height = t;
                 return OUT;

@@ -10,6 +10,7 @@
 // - 5/24: アタッチメントの拡大縮小機能の作成
 // - 6/19: PlayerRuntimeDataを参照、アタッチメントのサイズをステータスに基づいて変化させる機能の追加
 // - 7/8 : エフェクト出てから腕出す感じで作ってみる！
+// - 7/16: ゲームオーバー演出用のForceDestroyAttachment()を追加 - Iwai
 // ------------------------------------------------------------
 using UnityEngine;
 using Game.Gameplay.Player.Progression;
@@ -284,6 +285,32 @@ namespace Game.Gameplay.Player
             {
                 Destroy(_clearAttachmentInstance);
             }
+        }
+
+        /// <summary>
+        /// ゲームオーバー用: アタッチメントとそのオーラエフェクトを強制的に破棄する
+        /// </summary>
+        public void ForceDestroyAttachment()
+        {
+            if (_clearRoutine != null)
+            {
+                StopCoroutine(_clearRoutine);
+                _clearRoutine = null;
+            }
+
+            if (_currentAttachment != null)
+            {
+                Destroy(_currentAttachment.gameObject);
+                _currentAttachment = null;
+            }
+
+            if (_clearAttachmentInstance != null)
+            {
+                Destroy(_clearAttachmentInstance);
+                _clearAttachmentInstance = null;
+            }
+
+            _isClearPlaying = false;
         }
 
 

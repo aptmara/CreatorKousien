@@ -108,10 +108,12 @@ namespace Game.Core.Events
     public readonly struct RuleBarrierAttackEvent
     {
         public readonly float AttackPower;
+        public readonly Vector3 AttackPosition;
 
-        public RuleBarrierAttackEvent(float attackPower)
+        public RuleBarrierAttackEvent(float attackPower, Vector3 attackPosition)
         {
             AttackPower = attackPower;
+            AttackPosition = attackPosition;
         }
     }
 
@@ -235,9 +237,16 @@ namespace Game.Core.Events
     /// </summary
     public readonly struct DefLineHitReactionEvent
     {
-        // 現状防衛ラインが何をもって被弾演出を行うか不明なため
-        // 空の構造体だが、演出に攻撃された座標や属性によるバリアの反応など
-        // 何かしらが必要になった場合このイベントで渡す
+        public readonly float Damage;
+        public readonly float RemainingHpRatio;
+        public readonly Vector3 AttackPosition;
+
+        public DefLineHitReactionEvent(float damage, float remainingHpRatio, Vector3 attackPosition)
+        {
+            Damage = damage;
+            RemainingHpRatio = remainingHpRatio;
+            AttackPosition = attackPosition;
+        }
     }
 
     /// <summary>
@@ -245,9 +254,14 @@ namespace Game.Core.Events
     /// </summary
     public readonly struct DefLineBreakReactionEvent
     {
-        // 現状防衛ラインが何をもって被弾演出を行うか不明なため
-        // 空の構造体だが、演出に攻撃された座標や属性によるバリアの反応など
-        // 何かしらが必要になった場合このイベントで渡す
+        public readonly float Damage;
+        public readonly Vector3 AttackPosition;
+
+        public DefLineBreakReactionEvent(float damage, Vector3 attackPosition)
+        {
+            Damage = damage;
+            AttackPosition = attackPosition;
+        }
     }
 
 

@@ -130,7 +130,14 @@ namespace Game.Core.Enemy
 
             // 敵攻撃処理初期化
             _enemyAttack = new EnemyAttack();
-            _enemyAttack.Initialize(InstanceEnemyId, definition.AttackPower, definition.Attackinterval, false, definition.AttackMotionTime, definition.AttackStartUpTime);
+            _enemyAttack.Initialize(
+                InstanceEnemyId,
+                definition.AttackPower,
+                definition.Attackinterval,
+                false,
+                definition.AttackMotionTime,
+                definition.AttackStartUpTime,
+                attackPower => EventBus.Publish(new RuleBarrierAttackEvent(attackPower, transform.position)));
 
 
             // 初期HP・ゲージをUIに通知
@@ -437,6 +444,7 @@ namespace Game.Core.Enemy
     public class EnemyAttack
     {
         string _enemyID;
+        Action<float> _onAttack;
 
         float _maxAttackInterval;
         float _attackInterval;
@@ -453,9 +461,17 @@ namespace Game.Core.Enemy
         bool _isAttackMotion;
         bool _hasAttacked;
 
-        public void Initialize(string enemyID, float attackPower, float attackInterval, bool isActiv, float attackMotionTime, float startUpLag)
+        public void Initialize(
+            string enemyID,
+            float attackPower,
+            float attackInterval,
+            bool isActiv,
+            float attackMotionTime,
+            float startUpLag,
+            Action<float> onAttack)
         {
             _enemyID = enemyID;
+            _onAttack = onAttack;
             _attackStartUpLag = startUpLag;
             _attackMotionTime = attackMotionTime;
             _maxAttackInterval = attackInterval;
@@ -534,7 +550,7 @@ namespace Game.Core.Enemy
 
         public void AttackNow()
         {
-            EventBus.Publish(new RuleBarrierAttackEvent(_attackPower));
+            _onAttack?.Invoke(_attackPower);
         }
 
     }
