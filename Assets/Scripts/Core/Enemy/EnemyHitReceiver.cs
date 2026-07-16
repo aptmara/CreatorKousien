@@ -40,6 +40,10 @@ namespace Game.Core.Enemy
         [Tooltip("命中したアイテムをPoolへ戻すか。")]
         private bool _despawnItemOnHit = false;
 
+        [Header("UI設定")]
+        [Tooltip("この実体に対するHPバー等のオフセット（Root基準）")]
+        public Vector3 UIWorldOffset = new Vector3(0f, 1.6f, 0.5f);
+
         private readonly Dictionary<int, float> _nextHitTimes = new Dictionary<int, float>();
 
         public void Initialize(string enemyID)

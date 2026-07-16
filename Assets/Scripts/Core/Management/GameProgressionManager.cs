@@ -6,6 +6,7 @@
 // Created      : 2026-07-02
 //
 // Notes        : クリア演出追加しました! - Asano 2026-07-09
+//              : WaveSystemの実装を追加しました! - Asano 2026-07-15
 // ================================================================================
 
 using Game.Core.Enemy;
@@ -17,6 +18,9 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Game.Presentation.GameClearCinematic;
+using System.Collections.Generic;
+using Game.Gameplay.Player;
+using Game.WaveSystem;
 
 namespace Game.Core.Management
 {
@@ -31,8 +35,8 @@ namespace Game.Core.Management
         [SerializeField] private string _roguelikeSceneName = "Roguelike";
         [SerializeField] private string _resultSceneName = "Result";
 
-        [Header("--- ウェーブ設定定義アセット ---")]
-        [SerializeField] private EnemySpawnerDefinition _spawnerDefinition;
+        [Header("--- Waveシステム ---")]
+        [SerializeField] private WaveRunner _waveRunner;
 
         [Header("--- 参照 ---")]
         [SerializeField] private EnemySpawner _enemySpawner;
@@ -43,8 +47,6 @@ namespace Game.Core.Management
         [SerializeField] private ShopCinematicCameraController _shopCinematicCameraController;
 
         [Header("--- クリア演出・猶予設定 ---")]
-        [Tooltip("最後の敵を倒してから、コンボや弾が当たり切るまでの猶予時間 (秒)")]
-        [SerializeField] private float _clearDelayDuration = 2.0f;
 
         [Tooltip("クリアした瞬間の時間の進み方 (例 0.1f: 10%のスローモーション)")]
         [Range(0.01f, 1f)]
@@ -57,9 +59,9 @@ namespace Game.Core.Management
 
         private GameProgressionState _currentState = GameProgressionState.Setup;
         private int _currentWaveIndex = 0;
-        private int _totalEnemiesInCurrentWave = 0;
-        private int _defeatedEnemiesInCurrentWave = 0;
         private bool _isCameraWorkFinished = false;
+        private List<WaveDataSO> _waveSequence = new();
+
 
         // カメラの固定画角を保持しておく変数
         private Vector3 _savedBattleCameraPosition;
@@ -110,6 +112,11 @@ namespace Game.Core.Management
             {
                 _gameClearCinematicController = Object.FindFirstObjectByType<GameClearCinematicController>();
             }
+
+            if (_waveRunner == null)
+            {
+                _waveRunner = GetComponent<WaveRunner>();
+            }
         }
 
         private void Start()
@@ -120,7 +127,6 @@ namespace Game.Core.Management
         private void OnEnable()
         {
             // エネミーの撃破イベントを購読
-            EventBus.Subscribe<EnemyDefeatedEvent>(OnEnemyDefeated);
             EventBus.Subscribe<DefLineBreakReactionEvent>(OnDefenseLineBroken);
 
             // 演出カメラからの完了通知イベントを購読
@@ -133,7 +139,6 @@ namespace Game.Core.Management
         private void OnDisable()
         {
             // エネミーの撃破イベントの購読解除
-            EventBus.Unsubscribe<EnemyDefeatedEvent>(OnEnemyDefeated);
             EventBus.Unsubscribe<DefLineBreakReactionEvent>(OnDefenseLineBroken);
 
             // 演出カメラからの完了通知イベントを購読解除
@@ -149,63 +154,63 @@ namespace Game.Core.Management
             _isCameraWorkFinished = true;
         }
 
+
+
         /// <summary>
-        /// バトルウェーブの開始処理
+        /// 指定された番号のWaveを開始します。
         /// </summary>
-        /// <param name="waveIndex">開始するウェーブの番号</param>
         private void StartBattleWave(int waveIndex)
         {
-            _currentState = GameProgressionState.Battle;
-            Time.timeScale = 1f;    // ポーズ解除
-            Time.fixedDeltaTime = 0.02f * Time.timeScale;
-
-            if (_spawnerDefinition == null || waveIndex >= _spawnerDefinition.WaveDatas.Count)
-            {
-                Debug.LogError($"[Progression] ウェーブインデックス {waveIndex} のデータが存在しないぜよ。");
-                return;
-            }
-
-            var waveData = _spawnerDefinition.WaveDatas[waveIndex];
-
-            // カウンタの初期化
-            _defeatedEnemiesInCurrentWave = 0;
-            _totalEnemiesInCurrentWave = waveData.SpawnEnemies.Count;
-
-            Debug.Log($"[Progression] ===== ウェーブ {waveIndex + 1} 開始。敵総数: {_totalEnemiesInCurrentWave} =====");
-
-            // スポナーへ現在のウェーブデータを渡して実行
-            if (_enemySpawner != null)
-            {
-                _enemySpawner.InjectAndStartWave(waveData, _spawnerDefinition.UndergroundOffset);
-            }
+            StartCoroutine(StartBattleWaveRoutine(waveIndex));
         }
+
+
 
         /// <summary>
-        /// エネミー撃破時のコールバック。全滅した瞬間にローグライクフェーズへ遷移。
+        /// WaveRunnerを使って1Waveを実行し、完了後の演出へ進みます。
         /// </summary>
-        /// <param name="ev"></param>
-        private void OnEnemyDefeated(EnemyDefeatedEvent ev)
+        private IEnumerator StartBattleWaveRoutine(int waveIndex)
         {
-            if (_currentState != GameProgressionState.Battle) return;
-
-            _defeatedEnemiesInCurrentWave++;
-            Debug.Log($"[Progression] エネミー撃破検知: {_defeatedEnemiesInCurrentWave} / {_totalEnemiesInCurrentWave}");
-
-            // 現在のウェーブの敵が全滅したかどうかチェック
-            if (_defeatedEnemiesInCurrentWave >= _totalEnemiesInCurrentWave)
+            if (_waveSequence == null || waveIndex < 0 || waveIndex >= _waveSequence.Count)
             {
-                if (_currentWaveIndex + 1 >= _spawnerDefinition.WaveDatas.Count)
-                {
-                    // 最終ウェーブクリア -> ゲームクリア状態へ遷移
-                    StartCoroutine(AnimateWaveClearRoutine(isFinalWave: true));
-                }
-                else
-                {
-                    // ウェーブクリア -> ローグライクフェーズへ遷移
-                    StartCoroutine(AnimateWaveClearRoutine(isFinalWave: false));
-                }
+                Debug.LogError($"[Progression] Wave Index {waveIndex}のデータが存在しません。");
+                yield break;
             }
+
+            if (_waveRunner == null || _enemySpawner == null)
+            {
+                Debug.LogError("[Progression] WaveRunnerまたはEnemySpawnerが見つかりません。");
+                yield break;
+            }
+
+            _currentState = GameProgressionState.Battle;
+
+            Time.timeScale = 1f;
+            Time.fixedDeltaTime = 0.02f;
+
+            WaveDataSO waveData = _waveSequence[waveIndex];
+
+            Debug.Log($"[Progression] ===== Wave {waveIndex + 1} 開始：{waveData.WaveName} =====");
+
+            yield return StartCoroutine(_waveRunner.PlayWave(waveData, _enemySpawner));
+
+            if (!_waveRunner.LastRunSucceeded)
+            {
+                _currentState = GameProgressionState.Setup;
+                Debug.LogError($"[Progression] Wave「{waveData.WaveName}」の実行に失敗しました。", waveData);
+                yield break;
+            }
+
+            bool isFinalWave = waveIndex + 1 >= _waveSequence.Count;
+
+            if (!isFinalWave)
+            {
+                EventBus.Publish(new PlayerTiltEvent(25f));
+            }
+
+            yield return StartCoroutine(AnimateWaveClearRoutine(isFinalWave, waveData.CompleteDelay));
         }
+
 
         private void OnDefenseLineBroken(DefLineBreakReactionEvent ev)
         {
@@ -217,11 +222,13 @@ namespace Game.Core.Management
         /// <summary>
         /// クリア演出コルーチン
         /// </summary>
-        private IEnumerator AnimateWaveClearRoutine(bool isFinalWave)
+        private IEnumerator AnimateWaveClearRoutine(bool isFinalWave, float completeDelay)
         {
+            float validCompleteDelay = Mathf.Max(0f, completeDelay);
+
             // 一時的に状態を逃がす
             _currentState = GameProgressionState.Setup;
-            Debug.Log($"[Progression] 最後の敵の撃破を検知！ 弾の着弾猶予として {_clearDelayDuration} 秒間スローモーション演出を行うぜよ。");
+            Debug.Log($"[Progression] 最後の敵の撃破を検知！ 弾の着弾猶予として {validCompleteDelay} 秒間スローモーション演出を行うぜよ。");
 
 
             // --- 最終ウェーブクリア時の処理 ---
@@ -238,7 +245,7 @@ namespace Game.Core.Management
                     Time.timeScale = _slowMotionTimeScale;
                     Time.fixedDeltaTime = 0.02f * Time.timeScale;
 
-                    yield return new WaitForSecondsRealtime(_clearDelayDuration);
+                    yield return new WaitForSecondsRealtime(validCompleteDelay);
 
                     Time.timeScale = 1f;
                     Time.fixedDeltaTime = 0.02f;
@@ -258,7 +265,7 @@ namespace Game.Core.Management
             Time.fixedDeltaTime = 0.02f * Time.timeScale;
 
             // 2. コンボが切れるまでの時間を実時間で待機
-            yield return new WaitForSecondsRealtime(_clearDelayDuration);
+            yield return new WaitForSecondsRealtime(validCompleteDelay);
 
             // 3. 猶予が終了したら、進行処理へ
             // 屋台演出へ繋ぐ
@@ -373,6 +380,7 @@ namespace Game.Core.Management
             if (_currentState != GameProgressionState.Roguelike) return;
 
             StartCoroutine(UnloadRoguelikeAndAdvanceRoutine());
+            EventBus.Publish(new PlayerTiltEvent(0.0f));
         }
 
         private IEnumerator UnloadRoguelikeAndAdvanceRoutine()
@@ -420,7 +428,7 @@ namespace Game.Core.Management
             _currentWaveIndex++;
 
             // 次のウェーブがあるかチェック
-            if (_currentWaveIndex < _spawnerDefinition.WaveDatas.Count)
+            if (_currentWaveIndex < _waveSequence.Count)
             {
                 // マウスカーソルをロック
                 Cursor.lockState = CursorLockMode.Locked;
@@ -458,21 +466,61 @@ namespace Game.Core.Management
         }
 
         /// <summary>
-        /// 加算ロードされた別シーンの初期化が完全に終わるのを待ってからウェーブを開始する
+        /// 加算ロード完了後、StageDataSOからWave順を生成して開始します。
         /// </summary>
         private IEnumerator WaitAndStartFirstWaveRoutine()
         {
+            // 初期化
             _currentWaveIndex = 0;
             _currentState = GameProgressionState.Setup;
 
-            // EnemySpawner が見つかるまで毎フレーム待機
-            while (_enemySpawner == null)
+            // 参照取得
+            StageSceneContext stageContext = null;
+            PlayerFacade player = null;
+
+            // 参照が揃うまで待機
+            while (_enemySpawner == null || stageContext == null || player == null)
             {
-                _enemySpawner = UnityEngine.Object.FindFirstObjectByType<EnemySpawner>();
+                if (_enemySpawner == null) _enemySpawner = Object.FindFirstObjectByType<EnemySpawner>();
+                if (stageContext == null) stageContext = Object.FindFirstObjectByType<StageSceneContext>();
+                if (player == null) player = Object.FindFirstObjectByType<PlayerFacade>();
+
                 yield return null;
             }
 
-            // スポーナーが見つかったら、最初のウェーブを開始
+            // WaveRunnerの参照がまだなら取得
+            if (_waveRunner == null) _waveRunner = GetComponent<WaveRunner>();
+
+            if (_waveRunner == null)
+            {
+                Debug.LogError("[Progression] WaveRunnerがGameProgressionManagerと同じGameObjectにありません。");
+                yield break;
+            }
+
+
+            if (stageContext.ManualTestMode)
+            {
+                Debug.Log("[Progression] 手動テストモードのため、自動Wave進行をスキップします");
+                yield break;
+            }
+
+
+            // StageDataSOからWave順を生成
+            int seed = stageContext.CreateSeed();
+
+            // Wave順の生成に失敗した場合はエラーをログに出して終了
+            if (!StageWaveSequenceBuilder.TryBuild(stageContext.StageData, seed, out List<WaveDataSO> waveSequence, out string errorMessage))
+            {
+                Debug.LogError($"[Progression] Wave順の生成に失敗しました。\n{errorMessage}", stageContext);
+                yield break;
+            }
+
+            // Wave順の生成に成功した場合は、生成されたWave順を保持
+            _waveSequence = waveSequence;
+
+            Debug.Log($"[Progression] Stage開始：{stageContext.StageData.StageName} / Seed：{seed} / Wave数：{_waveSequence.Count}");
+
+            // 最初のWaveを開始
             StartBattleWave(_currentWaveIndex);
         }
 

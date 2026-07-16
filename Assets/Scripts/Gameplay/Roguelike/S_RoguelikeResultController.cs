@@ -9,6 +9,8 @@
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using UnityEngine;
 using Game.Gameplay.Player;
+using Game.Data.Player;
+
 
 public class S_RoguelikeResultController : MonoBehaviour
 {
@@ -29,6 +31,8 @@ public class S_RoguelikeResultController : MonoBehaviour
 
     [Tooltip("終了時呼び出し")]
     [SerializeField] private S_CameraSetUp _cameraSetUp;
+
+
 
     //____________________________________
     // basic functions
@@ -55,7 +59,7 @@ public class S_RoguelikeResultController : MonoBehaviour
     /// 選択された強化を取得済みリストに反映する関数
     /// </summary>
     /// <param name="selectedCard">選択された強化データ</param>
-    public void SelectUpgrade(SO_UpgradeCardData selectedCard)
+    public void SelectUpgrade(UpgradeData selectedCard)
     {
         if(selectedCard == null)
         {
@@ -72,13 +76,8 @@ public class S_RoguelikeResultController : MonoBehaviour
             return;
         }
 
-        if(selectedCard.SourceUpgrade == null)
-        {
-            Debug.LogWarning($"[S_RoguelikeResultController] {selectedCard.DisplayName}にSourceUpgradeが設定されていません。");
-            return;
-        }
 
-        _playerFacade.ApplyUpgrade(selectedCard.SourceUpgrade);
+        _playerFacade.ApplyUpgrade(selectedCard);
     }
 
     /// <summary>
@@ -103,8 +102,4 @@ public class S_RoguelikeResultController : MonoBehaviour
         }
 
     }
-
-
-
-
 }

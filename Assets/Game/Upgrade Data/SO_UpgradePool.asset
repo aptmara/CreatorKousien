@@ -13,6 +13,12 @@ MonoBehaviour:
   m_Name: SO_UpgradePool
   m_EditorClassIdentifier: Assembly-CSharp::SO_UpgradePool
   _upgrades:
-  - {fileID: 11400000, guid: 31febac24645b3847a83268c3d317a09, type: 2}
-  - {fileID: 11400000, guid: d1a12762e98a03c43ae4a25e8cedaf7e, type: 2}
-  - {fileID: 11400000, guid: cb5ea5d511e906e49b1aace6ed8651ff, type: 2}
+  - {fileID: 11400000, guid: f1b67b4d7e645de4486132b7e03dbefc, type: 2}
+  - {fileID: 11400000, guid: 3eb356ae382577446ad0902736a6f86d, type: 2}
+  - {fileID: 11400000, guid: 6e66dea60e4b11f42bec6c13bd82ca6d, type: 2}
+  - {fileID: 11400000, guid: c3aba4ff29c964b4a80b38847fe3fb5b, type: 2}
+  - {fileID: 11400000, guid: cfb90f7ef167bae42a75a5cff11a19c6, type: 2}
+  - {fileID: 11400000, guid: a09d151951efcb441a4b813506d70fdc, type: 2}
+  - {fileID: 11400000, guid: 3860ce00779daae4f99f3fa64955203b, type: 2}
+  - {fileID: 11400000, guid: d65a4f7f38000ad4f91e9404df8ef3f3, type: 2}
+  - {fileID: 11400000, guid: 02cdb0be26d13da4d9dbc3b3b1fe7407, type: 2}

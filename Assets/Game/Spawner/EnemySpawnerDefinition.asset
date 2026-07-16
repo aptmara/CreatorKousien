@@ -18,6 +18,15 @@ MonoBehaviour:
     _spawnInterval: 1
     _spawnEnemies:
     - {fileID: 11400000, guid: 5d78bca46e2c39648841f11362a49081, type: 2}
+    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+    - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
     _maxAliveEnemies: 3
     _minDistanceFromOtherEnemies: 5
   - _hpRate: 1

@@ -101,6 +101,7 @@ MonoBehaviour:
   _minimumHitSpeed: 0.75
   _bodyDamageMultiplier: 2.5
   _despawnItemOnHit: 1
+  UIWorldOffset: {x: 0, y: 2.81, z: 0.19}
 --- !u!95 &3090767071386169047
 Animator:
   serializedVersion: 7
@@ -140,6 +141,9 @@ MonoBehaviour:
   _addHitAnimationTime: 1
   _dropDuration: 0.3
   _dropRot: {x: -180, y: 0, z: 0}
+  _postFlipDelay: 0.25
+  _useCartoonFeedback: 1
+  _flipOvershoot: {x: -25, y: 0, z: 0}
 --- !u!136 &3699580084391280425
 CapsuleCollider:
   m_ObjectHideFlags: 0
