@@ -9,6 +9,7 @@
 // - 開幕演出はボス戦全体で1回だけ再生する。
 // - イバラタックルと同じAnimatorステートを使用する。
 // - 演出中は棘を表示せず、バリアへの攻撃判定も開始しない。
+// - カメラはボス戦開始時に引き位置へ移動し、3フェーズ終了まで維持する。
 // - カメラ位置は通常の固定位置からの相対オフセットで指定する。
 // ------------------------------------------------------------
 using System;
@@ -45,19 +46,19 @@ namespace Game.Data.Enemy.Boss
 
         [SerializeField]
         [Tooltip("Phase 1の最初のイバラタックル開始位置へ加えるローカル座標オフセット")]
-        private Vector3 _bossStartLocalPositionOffset = new Vector3(0f, 4f, 0f);
+        private Vector3 _bossStartLocalPositionOffset = new Vector3(0f, 12f, 0f);
 
         [SerializeField]
         [Min(0.01f)]
         [Tooltip("開幕アニメーションの再生速度")]
-        private float _animationSpeed = 0.25f;
+        private float _animationSpeed = 0.3f;
 
 
         [Header("--- カメラ設定 ---")]
 
         [SerializeField]
         [Tooltip("通常カメラ位置からのオフセット")]
-        private Vector3 _cameraPositionOffset = new Vector3(0f, 4f, -8f);
+        private Vector3 _cameraPositionOffset = new Vector3(0f, -1f, -4f);
 
         [SerializeField]
         [Min(0f)]
@@ -77,6 +78,8 @@ namespace Game.Data.Enemy.Boss
         [Min(0f)]
         [Tooltip("カメラ移動の進み方を制御するカーブの時間をスケーリングする係数")]
         private float _afterAnimationDelay = 0.25f;
+
+
 
 
         // 公開プロパティ

@@ -54,6 +54,10 @@ namespace Game.Gameplay.Enemy.Boss
         private BossDownPresentationController _downPresentationController;
 
         [SerializeField]
+        [Tooltip("ボスの開幕アニメーションとボス戦中の引きカメラを管理するコンポーネント")]
+        private BossIntroPresentationController _introPresentationController;
+
+        [SerializeField]
         [Tooltip("複数の棘の抽選・復活・全破壊判定を管理するコンポーネント")]
         private BossThornGroupController _thornGroupController;
 
@@ -354,6 +358,11 @@ namespace Game.Gameplay.Enemy.Boss
             {
                 _mouthHitReceiver = GetComponentInChildren<BossMouthHitReceiver>(true);
             }
+
+            if (_introPresentationController == null)
+            {
+                _introPresentationController = GetComponentInChildren<BossIntroPresentationController>(true);
+            }
         }
 
 
@@ -471,17 +480,29 @@ namespace Game.Gameplay.Enemy.Boss
                 return false;
             }
 
+            // --- ボス戦全体の進行状態を初期化 ---
             _successfulDownCount = 0;
             _hasPublishedDefeatedEvent = false;
+
+            _currentPhaseIndex = -1;
+            _currentPhaseData = null;
+            _currentThornAttackStepIndex = -1;
+
+            _shouldEnterAngryBite = false;
+            _didCurrentAngryBiteSucceed = false;
+
             _isBattleRunning = true;
 
-            // ボス戦は第1フェーズから開始する
-            if (!BeginPhase(0))
-            {
-                _isBattleRunning = false;
-                Debug.LogError($"[{nameof(BossBattleController)}] ボス戦の開始に失敗しました。第1フェーズの開始に失敗しています。");
-                return false;
-            }
+            // 開幕演出中は口への攻撃を受け付けない
+            _mouthHealth.CancelChallenge();
+
+            // 開幕演出中は棘からバリアへダメージを与えない
+            _thornGroupController.EndAttackStep();
+
+            ChangeState(BossBattleState.Intro);
+
+            // 開幕演出終了後に第1フェーズを開始する
+            _stateRoutine = StartCoroutine(PlayIntroSequence());
 
             return true;
         }
@@ -507,9 +528,40 @@ namespace Game.Gameplay.Enemy.Boss
                 return false;
             }
 
+            if (_battleData.IntroPresentationData == null)
+            {
+                Debug.LogError($"[{nameof(BossBattleController)}] 開幕演出設定がありません。");
+
+                return false;
+            }
+
+            if (!_battleData.TryGetPhaseData( 0, out BossPhaseData firstPhaseData))
+            {
+                Debug.LogError($"[{nameof(BossBattleController)}] 第1フェーズの設定を取得できません。");
+
+                return false;
+            }
+
+            if (firstPhaseData.ThornAttackSteps == null ||
+                firstPhaseData.ThornAttackSteps.Count <= 0 ||
+                firstPhaseData.ThornAttackSteps[0] == null)
+            {
+                Debug.LogError($"[{nameof(BossBattleController)}] 開幕演出の基準にする第1フェーズ最初の攻撃設定がありません。");
+
+                return false;
+            }
+
             if (_animationController == null)
             {
                 Debug.LogError($"[{nameof(BossBattleController)}] ボスアニメーション制御コンポーネントが設定されていません。");
+
+                return false;
+            }
+
+            if (_introPresentationController == null)
+            {
+                Debug.LogError($"[{nameof(BossBattleController)}] BossIntroPresentationControllerが設定されていません。");
+
                 return false;
             }
 
@@ -583,6 +635,55 @@ namespace Game.Gameplay.Enemy.Boss
             StartThornAttackSequence();
 
             return true;
+        }
+
+        private IEnumerator PlayIntroSequence()
+        {
+            if (_battleData == null || _battleData.IntroPresentationData == null)
+            {
+                Debug.LogError($"[{nameof(BossBattleController)}] 開幕演出の設定がありません。");
+                _stateRoutine = null;
+                StopBattle();
+                yield break;
+            }
+
+            if (!_battleData.TryGetPhaseData(0, out BossPhaseData firstPhaseData))
+            {
+                Debug.LogError($"[{nameof(BossBattleController)}] 第1フェーズの設定を取得できません。");
+                _stateRoutine = null;
+                StopBattle();
+                yield break;
+            }
+
+            if (firstPhaseData.ThornAttackSteps == null || firstPhaseData.ThornAttackSteps.Count <= 0 || firstPhaseData.ThornAttackSteps[0] == null)
+            {
+                Debug.LogError($"[{nameof(BossBattleController)}] 開幕演出の基準にする第1フェーズ最初の攻撃設定がありません。");
+                _stateRoutine = null;
+                StopBattle();
+                yield break;
+            }
+
+            BossIntroPresentationData introData = _battleData.IntroPresentationData;
+
+            BossThornAttackStepData baseStepData = firstPhaseData.ThornAttackSteps[0];
+
+            yield return _introPresentationController.PlayPresentation(baseStepData, introData);
+
+            // 演出中にボス戦が停止された場合はフェーズを開始しない
+            if (!_isBattleRunning)
+            {
+                yield break;
+            }
+
+            _stateRoutine = null;
+
+            // 開幕演出終了後、第1フェーズを開始する
+            if (!BeginPhase(0))
+            {
+                Debug.LogError($"[{nameof(BossBattleController)}] 開幕演出後の第1フェーズ開始に失敗しました。", this);
+
+                StopBattle();
+            }
         }
 
 
@@ -1003,6 +1104,11 @@ namespace Game.Gameplay.Enemy.Boss
                 _animationController.CancelCurrentAnimation();
             }
 
+            if (_introPresentationController != null)
+            {
+                _introPresentationController.ReleaseCameraForBattleCompletion();
+            }
+
             ChangeState(BossBattleState.Defeated);
 
             if (!_hasPublishedDefeatedEvent && !string.IsNullOrEmpty(_bossInstanceId))
@@ -1031,6 +1137,11 @@ namespace Game.Gameplay.Enemy.Boss
             {
                 StopCoroutine(_stateRoutine);
                 _stateRoutine = null;
+            }
+
+            if (_introPresentationController != null)
+            {
+                _introPresentationController.CancelPresentationAndRestoreCamera();
             }
 
             // ダウン中にボス戦が停止された場合、生成したエフェクトも破棄

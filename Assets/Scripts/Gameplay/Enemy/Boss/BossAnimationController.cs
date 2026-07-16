@@ -310,6 +310,39 @@ namespace Game.Gameplay.Enemy.Boss
         }
 
 
+        public bool PlayBossIntro(BossThornAttackStepData baseStepData, BossIntroPresentationData introData)
+        {
+            // --- 引数チェック ---
+            if (baseStepData == null)
+            {
+                Debug.LogWarning($"[{nameof(BossAnimationController)}] PlayBossIntro: baseStepData が null です。");
+                return false;
+            }
+
+            if (introData == null)
+            {
+                Debug.LogWarning($"[{nameof(BossAnimationController)}] PlayBossIntro: introData が null です。");
+                return false;
+            }
+
+
+            // --- 開始位置を設定 ---
+            BossAttackSide introSide = introData.PlayFromLeft ? BossAttackSide.Left : BossAttackSide.Right;
+
+            // --- 基準となるイバラタックル開始位置から、開幕演出用のオフセットを加算する ---
+            Vector3 baseStartLocalPosition = introSide == BossAttackSide.Left ? baseStepData.LeftStartLocalPosition : baseStepData.RightStartLocalPosition;
+
+            // ---- 基準となる角度 はそのまま使用する ----
+            Vector3 startEulerAngles = introSide == BossAttackSide.Left ? baseStepData.LeftStartEulerAngles : baseStepData.RightStartEulerAngles;
+
+            // 通常の開始位置へ開幕演出用の高さなどを加える
+            Vector3 introStartLocalPosition = baseStartLocalPosition + introData.BossStartLocalPositionOffset;
+
+            // イバラタックルと同じAnimatorステートを開幕演出用の位置で再生する
+            return TryPlayAnimation(_thornAttackStateHash, _thornAttackStateName, introData.AnimationSpeed, true, introStartLocalPosition, startEulerAngles);
+        }
+
+
 
         // アングリバイト再生
         // ------------------------------------------------------------

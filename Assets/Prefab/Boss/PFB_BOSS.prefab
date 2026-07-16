@@ -334,6 +334,7 @@ GameObject:
   - component: {fileID: 6602237408296608932}
   - component: {fileID: 7696647767596055215}
   - component: {fileID: 956854224720955098}
+  - component: {fileID: 2715236107957273556}
   m_Layer: 0
   m_Name: PFB_BOSS
   m_TagString: Untagged
@@ -416,6 +417,7 @@ MonoBehaviour:
   _battleData: {fileID: 11400000, guid: 0f4d968dfd0017748a53e92d2379ae3c, type: 2}
   _animationController: {fileID: 3049542023914037592}
   _downPresentationController: {fileID: 956854224720955098}
+  _introPresentationController: {fileID: 2715236107957273556}
   _thornGroupController: {fileID: 6602237408296608932}
   _mouthHealth: {fileID: 7521006716136607607}
   _mouthHitReceiver: {fileID: 2692876526948297543}
@@ -433,6 +435,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossDownPresentationController
   _animationController: {fileID: 3049542023914037592}
   _effectAnchor: {fileID: 8867850497472635730}
+--- !u!114 &2715236107957273556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8373035013781116987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 378eb35d330667144ab8e82bbe1bd0f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossIntroPresentationController
+  _animationController: {fileID: 3049542023914037592}
+  _targetCamera: {fileID: 0}
+  _cameraRigController: {fileID: 0}
 --- !u!1 &8550809187659737705
 GameObject:
   m_ObjectHideFlags: 0
