@@ -10,28 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c359e2404c41384c91cd27762a269b0, type: 3}
-  m_Name: Enemy_01_Definition
+  m_Name: Enemy_03_Bat
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyDefinition
-  EnemyId: Enemy_01
+  EnemyId: Enemy_03
   IsBoss: 0
-  EnemyBody: {fileID: 2892064686585189634, guid: 25a29f82bac9b504aaf2a33899654094, type: 3}
-  MaxHp: 500
+  EnemyBody: {fileID: 269210808596640868, guid: f2c960d73bab68b48ab6c3201a16cf81, type: 3}
+  MaxHp: 200
   ExpRate: 1
-  DownDuration: 7
+  DownDuration: 5
   HasBarrier: 0
-  MaxGauge: 250
+  MaxGauge: 100
   BarrierBody: {fileID: 180197807806133772, guid: 23a14d1624590fe49b83c3dd3bfc3c36, type: 3}
   barrierBreakMaxLossRate: 0.7
-  AttackPower: 3
-  Attackinterval: 1
+  AttackPower: 1
+  Attackinterval: 3
   AttackMotionTime: 1.3
-  AttackStartUpTime: 0.75
+  AttackStartUpTime: 1
   HealRegenWaitTime: 7
   HealPower: 30
-  RiseDuration: 25
-  DropDuration: 1.2
-  BarrierBreakDuration: 0.8
-  DamageDropDuration: 0.04
+  RiseDuration: 30
+  DropDuration: 1
+  BarrierBreakDuration: 0.5
+  DamageDropDuration: 0.2
   RiseCurve:
     serializedVersion: 2
     m_Curve:
@@ -61,7 +61,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1.00093
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -69,17 +69,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.6343099
-      value: 0.5010447
-      inSlope: -1.489193
-      outSlope: -1.489193
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.19497961
-    - serializedVersion: 3
       time: 1
-      value: -0.0009651184
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -101,15 +92,6 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0
       outWeight: 0
-    - serializedVersion: 3
-      time: 0.33926126
-      value: 0.3110488
-      inSlope: -1.3974444
-      outSlope: -1.3974444
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
       value: 0
