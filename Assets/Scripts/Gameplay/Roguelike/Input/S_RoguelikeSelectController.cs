@@ -4,8 +4,11 @@
 //
 // auther : Takitani Shohei
 // date   : 2026/07/12 - begin.
+//        : 2026/07/15 - マウスクリックをレイキャスト判定に変更
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using UnityEngine;
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 public class S_RoguelikeSelectController : MonoBehaviour
 {
@@ -26,6 +29,13 @@ public class S_RoguelikeSelectController : MonoBehaviour
     private float _cooldownTimer = 0.0f;
     private bool _isNavigateReleased = true;
 
+    private readonly List<RaycastResult> _raycastResults = new();
+
+
+
+    //______________________________
+    // private function
+
     private void OnEnable()
     {
         _currentIndex = 0;
@@ -38,10 +48,7 @@ public class S_RoguelikeSelectController : MonoBehaviour
         HandleNavigate();
         HandleSubmit();
         HandleExit();
-
-        // 二重処理の防止
-        // 入力を消費させる
-        _input.ConsumeClick();
+        HandleClick();
     }
 
     /// <summary>
@@ -120,6 +127,33 @@ public class S_RoguelikeSelectController : MonoBehaviour
         {
             _selectionUI.OnFinishButtonPressed();
         }
+    }
+
+    private void HandleClick()
+    {
+        if (!_input.ConsumeClick()) return;
+
+        if (EventSystem.current == null) return;
+
+        PointerEventData pointerData = new PointerEventData(EventSystem.current)
+        {
+            position = _input.MousePosition
+        };
+
+        _raycastResults.Clear();
+        EventSystem.current.RaycastAll(pointerData, _raycastResults);
+
+        foreach (var result in _raycastResults)
+        {
+            S_UpgradeCard card = result.gameObject.GetComponentInChildren<S_UpgradeCard>();
+            if(card != null)
+            {
+                _selectionUI.TriggerSelectByCard(card);
+                return;
+            }
+        }
+
+
     }
 
     private void MoveFocus(int dir)

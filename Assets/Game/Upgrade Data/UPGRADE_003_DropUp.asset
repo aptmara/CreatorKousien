@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
   Id: 3
   DisplayName: DropUp
-  Description: 
+  Description: "\u3042"
   Modifiers:
   - TargetStat: 0
     Operation: 0
