@@ -20,10 +20,10 @@ MonoBehaviour:
     candidates:
     - isEnabled: 1
       waveData: {fileID: 11400000, guid: 148348ed5000b0841882e2517af60d5a, type: 2}
-      weight: 1
+      weight: 3
     - isEnabled: 1
       waveData: {fileID: 11400000, guid: 8e3a295bf6045e84b89b36d5913dff2d, type: 2}
-      weight: 1
+      weight: 2
     - isEnabled: 1
       waveData: {fileID: 11400000, guid: dc9cab9867d86df43a28fc0981843fb7, type: 2}
       weight: 1
