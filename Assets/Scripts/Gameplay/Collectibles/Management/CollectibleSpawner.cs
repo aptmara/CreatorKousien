@@ -62,13 +62,20 @@ namespace Game.Gameplay.Collectibles
         public void SpawnTestItems100() => SpawnCollectibles(100);
 
 
-        private void Awake()
+        private void OnEnable()
         {
-            _eventChannel.OnExecuteInt += SpawnCollectibles;
+            if (_eventChannel != null)
+            {
+                _eventChannel.OnExecuteInt += SpawnCollectibles;
+            }
         }
+
         private void OnDisable()
         {
-            _eventChannel.OnExecuteInt -= SpawnCollectibles;
+            if (_eventChannel != null)
+            {
+                _eventChannel.OnExecuteInt -= SpawnCollectibles;
+            }
         }
 
         private void Update()
@@ -85,13 +92,17 @@ namespace Game.Gameplay.Collectibles
         /// </summary>
         public void SpawnCollectibles(int count)
         {
-            if (!CanSpawn())
+            if (count <= 0)
             {
                 return;
             }
 
-            int spawnCount = Mathf.Max(0, count);
-            for (int i = 0; i < spawnCount; i++)
+            if (!CanSpawnInArea())
+            {
+                return;
+            }
+
+            for (int i = 0; i < count; i++)
             {
                 SpawnOne();
             }
@@ -102,13 +113,18 @@ namespace Game.Gameplay.Collectibles
         /// </summary>
         public void SpawnCollectiblesAt(Vector3 position, int count)
         {
-            if (!CanSpawn())
+            if (count <= 0)
+            {
+                return;
+            }
+
+            if (!CanSpawnAtPosition())
             {
                 return;
             }
 
             position = GetHeightAdjustedPosition(position);
-            for (int i = 0; i < Mathf.Max(0, count); i++)
+            for (int i = 0; i < count; i++)
             {
                 SpawnOne(position);
             }
@@ -193,14 +209,55 @@ namespace Game.Gameplay.Collectibles
         }
 
         /// <summary>
-        /// Spawnに必要な参照と設定が揃っているか確認する。
+        /// 通常生成に必要な参照が揃っているか確認します。
         /// </summary>
-        /// <returns>Spawn可能ならtrue</returns>
-        private bool CanSpawn()
+        /// <returns>通常生成が可能な場合はtrue</returns>
+        private bool CanSpawnInArea()
         {
-            if (_pool == null || _registry == null || _spawnAreas == null || _spawnAreas.Length == 0 || _spawnableData == null || _spawnableData.Length == 0)
+            if (!HasCoreSpawnDependencies())
             {
-                Debug.LogError("[CollectibleSpawner] 必要な参照またはデータが設定されていません。");
+                return false;
+            }
+
+            if (_spawnAreas == null || _spawnAreas.Length == 0)
+            {
+                Debug.LogError("[CollectibleSpawner] 通常生成に必要なSpawnAreaが設定されていません。");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 位置指定生成に必要な参照が揃っているか確認します。
+        /// </summary>
+        /// <returns>位置指定生成が可能な場合はtrue</returns>
+        private bool CanSpawnAtPosition()
+        {
+            return HasCoreSpawnDependencies();
+        }
+
+        /// <summary>
+        /// 生成処理の共通必須参照が揃っているか確認します。
+        /// </summary>
+        /// <returns>共通必須参照が揃っている場合はtrue</returns>
+        private bool HasCoreSpawnDependencies()
+        {
+            if (_pool == null)
+            {
+                Debug.LogError("[CollectibleSpawner] 生成に必要なCollectiblePoolが設定されていません。");
+                return false;
+            }
+
+            if (_registry == null)
+            {
+                Debug.LogError("[CollectibleSpawner] 生成に必要なCollectibleRegistryが設定されていません。");
+                return false;
+            }
+
+            if (_spawnableData == null || _spawnableData.Length == 0)
+            {
+                Debug.LogError("[CollectibleSpawner] 生成に必要なCollectibleDataが設定されていません。");
                 return false;
             }
 

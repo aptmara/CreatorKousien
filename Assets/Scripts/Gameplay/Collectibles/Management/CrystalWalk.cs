@@ -3,6 +3,7 @@ using Game.Gameplay.Stage;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 using System.Collections.Generic;
 
 public class CrystalWalk : MonoBehaviour, ICrystalBreakable
@@ -46,6 +47,7 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     private float _currentWaitTime = 0.0f;
     private int _lastSegmentIndex = -1;
     private bool _isReturning = false;
+    private bool _isMovementSuspended = false;
 
     private int segmentCount = 32;
 
@@ -72,19 +74,48 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     [SerializeField] public float power;
     [SerializeField] private GameObject VFX;
     [SerializeField] private Vector3 _scale;
-    [SerializeField]private SceneEventChannel _channel;
+    [SerializeField] private SceneEventChannel _channel;
 
     [Header("フィールドの傾き")]
     [SerializeField] private FieldData _fieldData;
 
-    [Header("欠片のあつまる中心")]
-    [SerializeField] private Transform _fieldCenter;
+    [Header("Collectible射出方向")]
+    [Tooltip("CollectibleをこのTransformの位置へ向けて射出します。未設定の場合はステージ中心へ向けます。")]
+    [FormerlySerializedAs("_fieldCenter")]
+    [SerializeField] private Transform _collectibleEmissionTarget;
     [SerializeField] private float _emitOffset = 1.5f;
     [SerializeField] private float _upBias = 1.5f;
 
-    private Vector3 FieldCenter => _fieldCenter != null ? _fieldCenter.position : Vector3.zero;
+    [Header("通常移動中のCollectible生成")]
+    [Tooltip("通常移動中にCollectibleを自動生成するかどうかです。")]
+    [SerializeField] private bool _emitCollectiblesWhileMoving = true;
+
+    [Tooltip("通常移動中に1秒あたり生成するCollectibleの数です。")]
+    [SerializeField, Min(0f)] private float _movementCollectiblesPerSecond = 6f;
+
+    [Tooltip("初期移動中・通常移動中に生成するCollectibleの射出力です。")]
+    [SerializeField, Min(0f)] private float _movementEmissionPower = 500f;
+
+    [Tooltip("初期移動中・通常移動中の生成位置を、射出先へ向けて内側にずらす距離です。")]
+    [SerializeField, Min(0f)] private float _movementEmissionInwardOffset = 2f;
+
+    private float _movementCollectibleEmissionAccumulator;
+
+    private Vector3 CollectibleEmissionTargetPosition => _collectibleEmissionTarget != null
+        ? _collectibleEmissionTarget.position
+        : FieldContext.IsReady ? FieldContext.Center : Vector3.zero;
 
     public void Break(Vector3 hitPoint, Vector3 hitDirection) => Emits(hitPoint);
+
+    /// <summary>
+    /// クリスタル本体の移動だけを一時停止または再開します。
+    /// Break や Emits、初期化、イベント購読は停止しません。
+    /// </summary>
+    /// <param name="isSuspended">true の場合は移動を停止し、false の場合は移動を再開します。</param>
+    public void SetMovementSuspended(bool isSuspended)
+    {
+        _isMovementSuspended = isSuspended;
+    }
 
     private Quaternion FieldRotation
     {
@@ -113,18 +144,20 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         float exactSegment = initT * pathSegments.Count;
         _lastSegmentIndex = Mathf.FloorToInt(exactSegment);
 
-        if(_channel != null)
+        if (_channel != null)
             _channel.OnExecuteFloat += Multiply;
     }
 
     private void OnDisable()
     {
-        if(_channel != null)
+        if (_channel != null)
             _channel.OnExecuteFloat -= Multiply;
     }
 
     void Update()
     {
+        if (Keyboard.current.spaceKey.wasPressedThisFrame) Emits(transform.position);
+        if (_isMovementSuspended) return;
         if (pathSegments == null || pathSegments.Count == 0) return;
 
         // 1. 一時停止（待機）タイマーの処理
@@ -185,8 +218,10 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         // パス上の座標計算
         Vector3 flatPoint = EvaluatePath(totalT);
         Vector3 worldPoint = FieldRotation * flatPoint;
-        Vector3 moveDir = worldPoint - transform.position;
+        Vector3 previousPosition = transform.position;
+        Vector3 moveDir = worldPoint - previousPosition;
         gameObject.transform.position = worldPoint;
+        UpdateMovementCollectibleEmission(previousPosition, worldPoint, Time.deltaTime);
 
         // 時間進行とヒットストップ処理
         if (_currentHitStop > 0.0f)
@@ -200,8 +235,6 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         }
 
         if (_currentHitStop <= 0.0f) _currentHitStop = 0.0f;
-
-        if (Keyboard.current.spaceKey.wasPressedThisFrame) Emits(transform.position);
 
         Vector3 fieldUp = FieldRotation * Vector3.up;
         if (moveDir.sqrMagnitude > 0.0001f)
@@ -293,14 +326,13 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         }
 
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(FieldCenter, 0.5f);
+        Gizmos.DrawWireSphere(CollectibleEmissionTargetPosition, 0.5f);
 
-        Vector3 toCenter = Vector3.ProjectOnPlane(FieldCenter - transform.position, Vector3.up);
-        if (toCenter.sqrMagnitude > 0.0001f)
+        Vector3 launchDirection = CreateFieldCenterLaunchDirection(transform.position);
+        if (launchDirection.sqrMagnitude > 0.0001f)
         {
-            Vector3 launchDir = (toCenter.normalized + Vector3.up * _upBias).normalized;
             Gizmos.color = Color.magenta;
-            Gizmos.DrawLine(transform.position, transform.position + launchDir * 3.0f);
+            Gizmos.DrawLine(transform.position, transform.position + launchDirection * 3.0f);
         }
     }
 
@@ -313,23 +345,175 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     [ContextMenu("DEBUG: Emit Shards")]
     private void DebugEmit() => Emits(transform.position);
 
+    /// <summary>
+    /// 移動経路上の指定位置からCollectibleを1個生成します。
+    /// </summary>
+    /// <param name="spawnPosition">Collectibleを生成する基準位置です。</param>
+    public void EmitMovementCollectible(Vector3 spawnPosition)
+    {
+        if (_emitter == null)
+        {
+            return;
+        }
+
+        Vector3 adjustedSpawnPosition = CreateMovementEmissionSpawnPosition(spawnPosition);
+        Vector3 direction = CreateFieldCenterLaunchDirection(adjustedSpawnPosition);
+
+        _emitter.EmitFromHit(adjustedSpawnPosition, direction, _spreadAngle, _movementEmissionPower, null);
+    }
+
+    /// <summary>
+    /// 初期移動中のCollectibleを、指定Targetまたはフィールド下方向へ1個生成します。
+    /// </summary>
+    /// <param name="spawnPosition">Collectibleを生成する基準位置です。</param>
+    /// <param name="emissionTarget">射出先です。未設定の場合はフィールド下方向を使用します。</param>
+    public void EmitInitialTraversalCollectible(Vector3 spawnPosition, Transform emissionTarget)
+    {
+        if (_emitter == null)
+        {
+            return;
+        }
+
+        Vector3 adjustedSpawnPosition = CreateMovementEmissionSpawnPosition(spawnPosition);
+        Vector3 direction = CreateInitialTraversalLaunchDirection(adjustedSpawnPosition, emissionTarget);
+
+        _emitter.EmitFromHit(adjustedSpawnPosition, direction, _spreadAngle, _movementEmissionPower, null);
+    }
+
+    /// <summary>
+    /// 初期移動中のCollectible射出方向を計算します。
+    /// </summary>
+    /// <param name="spawnPosition">Collectibleの生成位置です。</param>
+    /// <param name="emissionTarget">射出先です。未設定の場合はフィールド下方向を使用します。</param>
+    /// <returns>初期移動中に使用する正規化済み射出方向です。</returns>
+    private Vector3 CreateInitialTraversalLaunchDirection(Vector3 spawnPosition, Transform emissionTarget)
+    {
+        Vector3 fieldDown = -(FieldRotation * Vector3.up);
+        if (emissionTarget == null)
+        {
+            return fieldDown;
+        }
+
+        Vector3 directionToTarget = emissionTarget.position - spawnPosition;
+        return directionToTarget.sqrMagnitude > 0.0001f
+            ? directionToTarget.normalized
+            : fieldDown;
+    }
+
+    /// <summary>
+    /// 常時生成用の座標を、フィールド面に沿って射出先側へ移動します。
+    /// </summary>
+    /// <param name="spawnPosition">移動経路上の生成予定座標です。</param>
+    /// <returns>射出先を通り越さない範囲で内側へ移動した生成座標です。</returns>
+    private Vector3 CreateMovementEmissionSpawnPosition(Vector3 spawnPosition)
+    {
+        float inwardOffset = Mathf.Max(0f, _movementEmissionInwardOffset);
+        if (inwardOffset <= 0f)
+        {
+            return spawnPosition;
+        }
+
+        Vector3 fieldUp = FieldRotation * Vector3.up;
+        Vector3 directionToTarget = Vector3.ProjectOnPlane(
+            CollectibleEmissionTargetPosition - spawnPosition,
+            fieldUp);
+        float distanceToTarget = directionToTarget.magnitude;
+        if (distanceToTarget <= 0.0001f)
+        {
+            return spawnPosition;
+        }
+
+        float moveDistance = Mathf.Min(inwardOffset, distanceToTarget);
+        return spawnPosition + directionToTarget / distanceToTarget * moveDistance;
+    }
+
+    /// <summary>
+    /// 指定位置からフィールド中心へ向かう射出方向を計算します。
+    /// </summary>
+    /// <param name="spawnPosition">Collectibleの生成位置です。</param>
+    /// <returns>フィールド面に沿う中心方向へ上向き補正を加えた正規化済み方向です。</returns>
+    private Vector3 CreateFieldCenterLaunchDirection(Vector3 spawnPosition)
+    {
+        Vector3 fieldUp = FieldRotation * Vector3.up;
+        Vector3 directionToCenter = Vector3.ProjectOnPlane(
+            CollectibleEmissionTargetPosition - spawnPosition,
+            fieldUp);
+        Vector3 launchDirection = directionToCenter + fieldUp * _upBias;
+
+        return launchDirection.sqrMagnitude > 0.0001f
+            ? launchDirection.normalized
+            : fieldUp;
+    }
+
+    /// <summary>
+    /// 通常移動中の経過時間に応じてCollectibleを生成します。
+    /// </summary>
+    /// <param name="previousPosition">このフレームの移動前座標です。</param>
+    /// <param name="currentPosition">このフレームの移動後座標です。</param>
+    /// <param name="deltaTime">このフレームの経過時間です。</param>
+    private void UpdateMovementCollectibleEmission(Vector3 previousPosition, Vector3 currentPosition, float deltaTime)
+    {
+        if (!_emitCollectiblesWhileMoving || _movementCollectiblesPerSecond <= 0f)
+        {
+            _movementCollectibleEmissionAccumulator = 0f;
+            return;
+        }
+
+        if ((currentPosition - previousPosition).sqrMagnitude <= 0.00000001f)
+        {
+            return;
+        }
+
+        float previousAccumulator = _movementCollectibleEmissionAccumulator;
+        float emissionAmount = _movementCollectiblesPerSecond * deltaTime;
+        float accumulatedAmount = previousAccumulator + emissionAmount;
+        int emissionCount = Mathf.FloorToInt(accumulatedAmount);
+        _movementCollectibleEmissionAccumulator = accumulatedAmount - emissionCount;
+
+        for (int index = 0; index < emissionCount; index++)
+        {
+            float movementTime = (1f - previousAccumulator + index) / emissionAmount;
+            Vector3 spawnPosition = Vector3.Lerp(previousPosition, currentPosition, Mathf.Clamp01(movementTime));
+            EmitMovementCollectible(spawnPosition);
+        }
+    }
+
+    /// <summary>
+    /// クリスタルを殴ったときと同じ位置・方向・力で、指定数のCollectibleを生成します。
+    /// VFXとヒットストップは発生させません。
+    /// </summary>
+    /// <param name="count">生成するCollectible数です。</param>
+    public void EmitHitStyleCollectibles(int count)
+    {
+        EmitHitStyleCollectibles(transform.position, count);
+    }
+
+    /// <summary>
+    /// 指定したヒット地点を基準に、殴打時設定でCollectibleを生成します。
+    /// </summary>
+    /// <param name="hitPoint">生成位置補正の基準となるヒット地点です。</param>
+    /// <param name="count">生成するCollectible数です。</param>
+    private void EmitHitStyleCollectibles(Vector3 hitPoint, int count)
+    {
+        if (_emitter == null || count <= 0)
+        {
+            return;
+        }
+
+        Vector3 outward = hitPoint - transform.position;
+        outward = outward.sqrMagnitude > 0.0001f ? outward.normalized : Vector3.up;
+        Vector3 spawnPosition = hitPoint + outward * _emitOffset;
+        Vector3 direction = CreateFieldCenterLaunchDirection(spawnPosition);
+
+        for (int index = 0; index < count; index++)
+        {
+            _emitter.EmitFromHit(spawnPosition, direction, _spreadAngle, power, null);
+        }
+    }
+
     public void Emits(Vector3 hitPoint)
     {
-        if (_emitter != null)
-        {
-            Vector3 toCenter = FieldCenter - transform.position;
-            Vector3 horizontal = Vector3.ProjectOnPlane(toCenter, Vector3.up);
-            horizontal = horizontal.sqrMagnitude > 0.0001f ? horizontal.normalized : Vector3.zero;
-
-            Vector3 dir = (horizontal + Vector3.up * _upBias).normalized;
-
-            Vector3 outward = hitPoint - transform.position;
-            outward = outward.sqrMagnitude > 0.0001f ? outward.normalized : Vector3.up;
-            Vector3 spawnPos = hitPoint + outward * _emitOffset;
-
-            for (int i = 0; i < curShardCount; i++)
-                _emitter.EmitFromHit(spawnPos, dir, _spreadAngle, power, null);
-        }
+        EmitHitStyleCollectibles(hitPoint, curShardCount);
         _currentHitStop = _hitStop;
         InitShardCount();
         PlayEffect(hitPoint, _scale.x);
