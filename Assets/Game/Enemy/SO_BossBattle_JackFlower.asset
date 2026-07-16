@@ -1,0 +1,134 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10af1aab3dc5c3145b434cc80bb1e8d0, type: 3}
+  m_Name: SO_BossBattle_JackFlower
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Enemy.Boss.BossBattleDataSO
+  _battleName: Jack Flower Boss
+  _plannerMemo: "\u30DC\u30B9\u6226\u306E\u8AAC\u660E\u3084\u8ABF\u6574\u5185\u5BB9\u3092\u3053\u3053\u306B\u8A18\u5165\u3057\u3066\u3061\u3087\u3093\u307E\u3052\uFF01"
+  _phases:
+  - _phaseName: Phase 1
+    _plannerMemo: "\u30D5\u30A7\u30FC\u30BA\u306E\u8AAC\u660E\u3084\u8ABF\u6574\u5185\u5BB9\u3092\u3053\u3053\u306B\u8A18\u5165\u3057\u3066\u3061\u3087\u3093\u307E\u3052\uFF01"
+    _activeThornCount: 1
+    _thornMaxHp: 100
+    _barrierDamagePerThorn: 10
+    _rerollThornsOnRetry: 1
+    _thornAttackSteps:
+    - _stepName: Thorn Attack 1
+      _leftStartLocalPosition: {x: -35, y: -25, z: 0}
+      _leftStartEulerAngles: {x: 0, y: -90, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -25, z: 0}
+      _rightStartEulerAngles: {x: 0, y: 90, z: 0}
+      _animationSpeed: 1.2
+      _canDamageBarrier: 0
+    - _stepName: Thorn Attack 2
+      _leftStartLocalPosition: {x: -35, y: -21, z: 0}
+      _leftStartEulerAngles: {x: 0, y: -90, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -21, z: 0}
+      _rightStartEulerAngles: {x: 0, y: 90, z: 0}
+      _animationSpeed: 1
+      _canDamageBarrier: 0
+    - _stepName: Thorn Attack 3
+      _leftStartLocalPosition: {x: -35, y: -16, z: 0}
+      _leftStartEulerAngles: {x: 0, y: -90, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -16, z: 0}
+      _rightStartEulerAngles: {x: 0, y: 90, z: 0}
+      _animationSpeed: 0.8
+      _canDamageBarrier: 1
+    _angryBiteData:
+      _startLocalPosition: {x: 0, y: -14, z: 0}
+      _startEulerAngles: {x: 0, y: 180, z: 0}
+      _openAnimationSpeed: 1
+      _closeAnimationSpeed: 1
+      _downAnimationSpeed: 1
+      _requiredCollectibleCount: 50
+      _mouthOpenDuration: 8
+      _failureBarrierDamage: 30
+      _downDuration: 1
+      _spitCollectibleCount: 40
+  - _phaseName: Phase 2
+    _plannerMemo: "\u30D5\u30A7\u30FC\u30BA\u306E\u8AAC\u660E\u3084\u8ABF\u6574\u5185\u5BB9\u3092\u3053\u3053\u306B\u8A18\u5165\u3057\u3066\u3061\u3087\u3093\u307E\u3052\uFF01"
+    _activeThornCount: 1
+    _thornMaxHp: 100
+    _barrierDamagePerThorn: 10
+    _rerollThornsOnRetry: 1
+    _thornAttackSteps:
+    - _stepName: Thorn Attack 1
+      _leftStartLocalPosition: {x: -35, y: -25, z: 0}
+      _leftStartEulerAngles: {x: 0, y: -90, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -25, z: 0}
+      _rightStartEulerAngles: {x: 0, y: 90, z: 0}
+      _animationSpeed: 1.2
+      _canDamageBarrier: 0
+    - _stepName: Thorn Attack 2
+      _leftStartLocalPosition: {x: -35, y: -21, z: 0}
+      _leftStartEulerAngles: {x: 0, y: -90, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -21, z: 0}
+      _rightStartEulerAngles: {x: 0, y: 90, z: 0}
+      _animationSpeed: 1
+      _canDamageBarrier: 0
+    - _stepName: Thorn Attack 3
+      _leftStartLocalPosition: {x: -35, y: -16, z: 0}
+      _leftStartEulerAngles: {x: 0, y: -90, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -16, z: 0}
+      _rightStartEulerAngles: {x: 0, y: 90, z: 0}
+      _animationSpeed: 0.8
+      _canDamageBarrier: 1
+    _angryBiteData:
+      _startLocalPosition: {x: 0, y: -14, z: 0}
+      _startEulerAngles: {x: 0, y: 180, z: 0}
+      _openAnimationSpeed: 1
+      _closeAnimationSpeed: 1
+      _downAnimationSpeed: 1
+      _requiredCollectibleCount: 50
+      _mouthOpenDuration: 8
+      _failureBarrierDamage: 30
+      _downDuration: 1
+      _spitCollectibleCount: 40
+  - _phaseName: Phase 3
+    _plannerMemo: "\u30D5\u30A7\u30FC\u30BA\u306E\u8AAC\u660E\u3084\u8ABF\u6574\u5185\u5BB9\u3092\u3053\u3053\u306B\u8A18\u5165\u3057\u3066\u3061\u3087\u3093\u307E\u3052\uFF01"
+    _activeThornCount: 1
+    _thornMaxHp: 100
+    _barrierDamagePerThorn: 10
+    _rerollThornsOnRetry: 1
+    _thornAttackSteps:
+    - _stepName: Thorn Attack 1
+      _leftStartLocalPosition: {x: -35, y: -25, z: 0}
+      _leftStartEulerAngles: {x: 0, y: -90, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -25, z: 0}
+      _rightStartEulerAngles: {x: 0, y: 90, z: 0}
+      _animationSpeed: 1.2
+      _canDamageBarrier: 0
+    - _stepName: Thorn Attack 2
+      _leftStartLocalPosition: {x: -35, y: -21, z: 0}
+      _leftStartEulerAngles: {x: 0, y: -90, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -21, z: 0}
+      _rightStartEulerAngles: {x: 0, y: 90, z: 0}
+      _animationSpeed: 1
+      _canDamageBarrier: 0
+    - _stepName: Thorn Attack 3
+      _leftStartLocalPosition: {x: -35, y: -16, z: 0}
+      _leftStartEulerAngles: {x: 0, y: -90, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -16, z: 0}
+      _rightStartEulerAngles: {x: 0, y: 90, z: 0}
+      _animationSpeed: 0.8
+      _canDamageBarrier: 1
+    _angryBiteData:
+      _startLocalPosition: {x: 0, y: -14, z: 0}
+      _startEulerAngles: {x: 0, y: 180, z: 0}
+      _openAnimationSpeed: 1
+      _closeAnimationSpeed: 1
+      _downAnimationSpeed: 1
+      _requiredCollectibleCount: 50
+      _mouthOpenDuration: 8
+      _failureBarrierDamage: 30
+      _downDuration: 1
+      _spitCollectibleCount: 40
