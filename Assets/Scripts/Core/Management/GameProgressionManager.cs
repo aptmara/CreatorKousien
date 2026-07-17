@@ -12,15 +12,16 @@
 using Game.Core.Enemy;
 using Game.Core.Events;
 using Game.Gameplay.Cameras;
+using Game.Gameplay.Player;
 using Game.Gameplay.Shop;
 using Game.Gameplay.Stage;
-using System.Collections;
-using UnityEngine;
-using UnityEngine.SceneManagement;
 using Game.Presentation.GameClearCinematic;
-using System.Collections.Generic;
-using Game.Gameplay.Player;
 using Game.WaveSystem;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 namespace Game.Core.Management
 {
@@ -153,6 +154,26 @@ namespace Game.Core.Management
             if (_shopCinematicCameraController != null)
             {
                 _shopCinematicCameraController.OnCompleteCameraWork -= HandleCameraWorkComplete;
+            }
+        }
+
+        private void Update()
+        {
+            // ESCでマウスカーソル解放
+            if (Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+
+            // バトル中にマウスクリックで再ロック
+            if (_currentState == GameProgressionState.Battle)
+            {
+                if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+                {
+                    Cursor.lockState = CursorLockMode.Locked;
+                    Cursor.visible = false;
+                }
             }
         }
 
