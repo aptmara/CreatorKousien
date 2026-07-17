@@ -70,6 +70,30 @@ namespace Game.Gameplay.Enemy.Boss
         private BossMouthHitReceiver _mouthHitReceiver;
 
 
+        [Header("--- アングリバイト失敗時のカメラシェイク ---")]
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("バリアを噛んだときの揺れの継続時間(秒)")]
+        private float _biteImpactShakeDuration = 0.35f;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("揺れの位置の強さ(単位: メートル)")]
+        private float _biteImpactShakePositionStrength = 0.32f;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("揺れの回転の強さ(単位: 度)")]
+        private float _biteImpactShakeRotationStrength = 4.5f;
+
+        [SerializeField]
+        [Min(1f)]
+        [Tooltip("揺れの振動数(単位: Hz)")]
+        private float _biteImpactShakeFrequency = 26f;
+
+
+
         // ランタイム状態
         // ------------------------------------------------------------
 
@@ -760,12 +784,33 @@ namespace Game.Gameplay.Enemy.Boss
 
                 ThornAttackStepStarted?.Invoke(_currentPhaseIndex, _currentThornAttackStepIndex, attackSide, stepData);
 
-                yield return new WaitForFixedUpdate();
+                // イバラタックル接近中イベントを発火する
+                EventBus.Publish(new BossThornWarningStartedEvent());
+                bool isWarningActive = true;
 
-                // アニメーションが終了するまで待機する
-                while (!_animationController.IsCurrentAnimationFinished())
+                try
                 {
-                    yield return null;
+                    yield return new WaitForFixedUpdate();
+
+                    while (!_animationController.IsCurrentAnimationFinished())
+                    {
+                        // ボスが画面内に入ったら警告演出を終了する
+                        if (isWarningActive && IsBossVisibleOnScreen())
+                        {
+                            EventBus.Publish(new BossThornWarningEndedEvent());
+                            isWarningActive = false;
+                        }
+
+                        yield return null;
+                    }
+                }
+                finally
+                {
+                    // イバラタックルが終了する前にボスが画面内に入らなかった場合は、警告演出を終了する
+                    if (isWarningActive)
+                    {
+                        EventBus.Publish(new BossThornWarningEndedEvent());
+                    }
                 }
 
                 // 1段階の攻撃が終了したら、棘の攻撃判定を終了する
@@ -779,6 +824,23 @@ namespace Game.Gameplay.Enemy.Boss
 
             EntryAngryBiteState();
         }
+
+
+        private bool IsBossVisibleOnScreen()
+        {
+            Camera mainCamera = Camera.main;
+            Transform motionRoot = _animationController != null ? _animationController.MotionRoot : null;
+
+            if (mainCamera == null || motionRoot == null)
+            {
+                return true;
+            }
+
+            Vector3 viewportPoint = mainCamera.WorldToViewportPoint(motionRoot.position);
+
+            return viewportPoint.z > 0f && viewportPoint.x >= 0f && viewportPoint.x <= 1f && viewportPoint.y >= 0f && viewportPoint.y <= 1f;
+        }
+
 
         /// <summary>
         /// 次のイバラタックルでボスが登場する方向を取得する
@@ -951,6 +1013,13 @@ namespace Game.Gameplay.Enemy.Boss
                 EventBus.Publish(new RuleBarrierAttackEvent(
                     failureBarrierDamage,
                     _mouthHitReceiver.transform.position));
+
+                // バリア攻撃の衝撃をカメラシェイク
+                EventBus.Publish(new CameraShakeRequestedEvent(
+                    _biteImpactShakeDuration,
+                    _biteImpactShakePositionStrength,
+                    _biteImpactShakeRotationStrength,
+                    _biteImpactShakeFrequency));
             }
 
             float failureHoldDuration = MathF.Max(0f, biteData.FailureHoldDuration);
