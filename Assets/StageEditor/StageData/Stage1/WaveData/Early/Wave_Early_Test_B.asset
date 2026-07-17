@@ -21,13 +21,33 @@ MonoBehaviour:
   maxAliveEnemies: 0
   minDistanceFromOtherEnemies: 3
   groups:
-  - groupName: 
+  - groupName: Stage_Early_Hello
     plannerMemo: 
-    delayBeforeStart: 0
+    delayBeforeStart: 3
     advanceType: 0
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-      spawnCount: 3
+      spawnCount: 4
       startDelay: 0
-      spawnInterval: 1
+      spawnInterval: 5
+  - groupName: Stage_Early_Helloo
+    plannerMemo: 
+    delayBeforeStart: 3
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 4
+      startDelay: 0
+      spawnInterval: 5
+  - groupName: Stage_Early_Hellooo
+    plannerMemo: 
+    delayBeforeStart: 3
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 4
+      startDelay: 0
+      spawnInterval: 4

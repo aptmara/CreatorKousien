@@ -21,13 +21,47 @@ MonoBehaviour:
   maxAliveEnemies: 0
   minDistanceFromOtherEnemies: 3
   groups:
-  - groupName: 
+  - groupName: Wave_Late_Hello
     plannerMemo: 
     delayBeforeStart: 0
     advanceType: 0
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-      spawnCount: 3
+      spawnCount: 6
       startDelay: 0
-      spawnInterval: 1
+      spawnInterval: 4
+  - groupName: Wave_Late_Helloo
+    plannerMemo: 
+    delayBeforeStart: 0
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 6
+      startDelay: 0
+      spawnInterval: 4
+  - groupName: Wave_Late_Hellooo
+    plannerMemo: 
+    delayBeforeStart: 0
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 6
+      startDelay: 0
+      spawnInterval: 3
+  - groupName: Wave_Late_Helloooo
+    plannerMemo: 
+    delayBeforeStart: 0
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 1
+      startDelay: 0
+      spawnInterval: 0
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 7
+      startDelay: 15
+      spawnInterval: 4

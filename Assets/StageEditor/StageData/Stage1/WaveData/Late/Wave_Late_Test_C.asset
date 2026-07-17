@@ -21,7 +21,7 @@ MonoBehaviour:
   maxAliveEnemies: 0
   minDistanceFromOtherEnemies: 3
   groups:
-  - groupName: 
+  - groupName: Wave_Late_GoodEvening
     plannerMemo: 
     delayBeforeStart: 0
     advanceType: 0
@@ -30,4 +30,36 @@ MonoBehaviour:
     - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
       spawnCount: 3
       startDelay: 0
-      spawnInterval: 1
+      spawnInterval: 2
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 3
+      startDelay: 1
+      spawnInterval: 2
+  - groupName: Wave_Late_GoodEvening
+    plannerMemo: 
+    delayBeforeStart: 0
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 3
+      startDelay: 1
+      spawnInterval: 2
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 3
+      startDelay: 0
+      spawnInterval: 2
+  - groupName: Wave_Late_GoodEvening
+    plannerMemo: 
+    delayBeforeStart: 0
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 3
+      startDelay: 1
+      spawnInterval: 2
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 5
+      startDelay: 0
+      spawnInterval: 6

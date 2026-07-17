@@ -21,13 +21,41 @@ MonoBehaviour:
   maxAliveEnemies: 0
   minDistanceFromOtherEnemies: 3
   groups:
-  - groupName: 
+  - groupName: Wave_Middle_GoodEvening
+    plannerMemo: 
+    delayBeforeStart: 0
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 3
+      startDelay: 0
+      spawnInterval: 4
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 2
+      startDelay: 5
+      spawnInterval: 5
+  - groupName: Wave_Middle_GoodEveening
+    plannerMemo: 
+    delayBeforeStart: 0
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 3
+      startDelay: 0
+      spawnInterval: 4
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 3
+      startDelay: 5
+      spawnInterval: 5
+  - groupName: Wave_Middle_GoodEveeening
     plannerMemo: 
     delayBeforeStart: 0
     advanceType: 0
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
-      spawnCount: 3
-      startDelay: 0
-      spawnInterval: 1
+      spawnCount: 4
+      startDelay: 5
+      spawnInterval: 5
