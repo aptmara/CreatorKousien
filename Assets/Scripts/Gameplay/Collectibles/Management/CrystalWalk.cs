@@ -162,13 +162,13 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         _lastSegmentIndex = Mathf.FloorToInt(exactSegment);
 
         if (_channel != null)
-            _channel.OnExecuteFloat += Multiply;
+            _channel.OnExecuteFloat += BaseMultiply;
     }
 
     private void OnDisable()
     {
         if (_channel != null)
-            _channel.OnExecuteFloat -= Multiply;
+            _channel.OnExecuteFloat -= BaseMultiply;
     }
 
     void Update()
