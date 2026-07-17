@@ -34,6 +34,7 @@ namespace Game.Presentation.UI
         [SerializeField] private float _hitPunchScaleAmount = 1.5f;
         [SerializeField] private float _hitPunchReturnSpeed = 12f;
 
+        // 敵ごとの個別コンボトラッカー
         private readonly Dictionary<string, int> _enemyLocalComboTracker = new Dictionary<string, int>();
         private readonly Dictionary<string, GameObject> _activePopupsTracker = new Dictionary<string, GameObject>();
 
@@ -58,7 +59,12 @@ namespace Game.Presentation.UI
         {
             if (_popupPrefab == null || _popupContainer == null || string.IsNullOrEmpty(ev.EnemyId)) return;
 
-            if (!_enemyLocalComboTracker.ContainsKey(ev.EnemyId)) _enemyLocalComboTracker[ev.EnemyId] = 0;
+            // コンボが新たに始まった、または敵が新たにヒットした場合、ローカルコンボカウントを初期化
+            if (!_enemyLocalComboTracker.ContainsKey(ev.EnemyId))
+            {
+                _enemyLocalComboTracker[ev.EnemyId] = 0;
+            }
+
             _enemyLocalComboTracker[ev.EnemyId] += ev.HitCount;
             int localHitCount = _enemyLocalComboTracker[ev.EnemyId];
 
@@ -156,31 +162,34 @@ namespace Game.Presentation.UI
         {
             if (string.IsNullOrEmpty(ev.EnemyId)) return;
 
-            if (_enemyLocalComboTracker.ContainsKey(ev.EnemyId)) _enemyLocalComboTracker.Remove(ev.EnemyId);
-
             if (_activePopupsTracker.TryGetValue(ev.EnemyId, out GameObject existingPopup) && existingPopup != null)
             {
                 if (existingPopup.TryGetComponent<ActivePopupFeedbackBridge>(out var bridge))
                 {
                     bridge.DisconnectTargetOnDeath();
                 }
-                _activePopupsTracker.Remove(ev.EnemyId);
             }
         }
 
         private void OnComboChanged(ComboChangedEvent ev)
         {
             _currentGlobalDurationRatio = ev.DurationRatio;
+
             if (ev.CurrentCombo == 0)
             {
-                _enemyLocalComboTracker.Clear();
-                _activePopupsTracker.Clear();
+                Debug.Log("[HitPopupPresenter] グローバルコンボがリセットされました。新規コンボ開始まで現行ポップアップの状態を維持します。");
             }
         }
 
         public void NotifyPopupDestroyed(string enemyId)
         {
             if (_activePopupsTracker.ContainsKey(enemyId)) _activePopupsTracker.Remove(enemyId);
+            // 消滅した時点でトラッカーから安全に除外
+            if (_enemyLocalComboTracker.ContainsKey(enemyId) && !_activePopupsTracker.ContainsKey(enemyId))
+            {
+                _enemyLocalComboTracker.Remove(enemyId);
+                Debug.Log($"[HitPopupPresenter] 敵: {enemyId} のポップアップ寿命消滅。トラッカーを安全に解放しました。");
+            }
         }
 
         public float GetCurrentDurationRatio() => _currentGlobalDurationRatio;

@@ -19,17 +19,29 @@ public class MoneyData : ScriptableObject
 
     public void AddMoney(int Combo)
     {
-        int addValue = 0;
-        addValue += (int)(Combo + (Combo * _moneyMagni));
-        moneyOnHand+= addValue;
-        Debug.Log("Money On Hand : " + moneyOnHand +
-            "\nComboVal : " + Combo +
-            "\nAddVal : " + (Combo * _moneyMagni));
+        if (Combo <= 0) return;
+
+        // 素のコンボ報酬
+        float basePayout = Combo;
+        // コンボボーナス分
+        float bonusPayout = Combo * _moneyMagni;
+        int addValue = Mathf.RoundToInt(basePayout + bonusPayout);
+
+        // １ゴールドは保証
+        if (addValue <= 0) addValue = 1;
+
+        moneyOnHand += addValue;
+
+        Debug.Log($"[MoneyData] 💰 お金が加算されました 💰\n" +
+                  $" - 精算グローバルコンボ数: {Combo}\n" +
+                  $" - 基本報酬: {basePayout} / ボーナス内訳: {bonusPayout:F2} (倍率: {_moneyMagni * 100}%)\n" +
+                  $" - 四捨五入後合計加算額: {addValue}\n" +
+                  $" - 現在の総所持金 (moneyOnHand): {moneyOnHand}");
     }
 
     public void SubtractMoney(int subVal)
     {
         moneyOnHand -= subVal;
-        Debug.Log("Money On Hand : " + moneyOnHand);
+        Debug.Log($"[MoneyData] 💸 お金が消費されました。消費額: {subVal} / 残高: {moneyOnHand}");
     }
 }
