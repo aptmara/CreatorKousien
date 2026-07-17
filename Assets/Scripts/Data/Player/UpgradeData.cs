@@ -33,7 +33,8 @@ namespace Game.Data.Player
 
         [Header("Effects")]
         [Tooltip("この強化で適用するステータス変化（複数可）")]
-        public StatModifier[] Modifiers;
+        public PlayerStatModifier[] Modifiers;
+
 
         [Header("UI表示(ローグライク選択画面用)")]
         [Tooltip("強化の最大回数")]
