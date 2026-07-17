@@ -1,4 +1,5 @@
 using UnityEngine;
+using Game.Core.Roguelike;
 
 [CreateAssetMenu(fileName = "MoneyData", menuName = "Scriptable Objects/MoneyData")]
 public class MoneyData : ScriptableObject
@@ -41,7 +42,7 @@ public class MoneyData : ScriptableObject
 
         // コンボボーナス分
         float bonusPayout = Combo * dynamicMagni;
-        int addValue = Mathf.RoundToInt(basePayout + bonusPayout);
+        int addValue = Mathf.RoundToInt((basePayout + bonusPayout) * RoguelikeUpgradeRuntime.CoinGainMultiplier);
 
         // １ゴールドは保証
         if (addValue <= 0) addValue = 1;

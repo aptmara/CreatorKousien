@@ -10,6 +10,7 @@
 using UnityEngine;
 using Game.Gameplay.Player;
 using Game.Data.Player;
+using Game.Core.Roguelike;
 
 
 public class S_RoguelikeResultController : MonoBehaviour
@@ -59,25 +60,26 @@ public class S_RoguelikeResultController : MonoBehaviour
     /// 選択された強化を取得済みリストに反映する関数
     /// </summary>
     /// <param name="selectedCard">選択された強化データ</param>
-    public void SelectUpgrade(UpgradeData selectedCard)
+    public bool SelectUpgrade(UpgradeData selectedCard)
     {
         if(selectedCard == null)
         {
             Debug.LogWarning("[S_RoguelikeResultController] 選択された強化がnullです。");
-            return;
+            return false;
         }
-
-        _upgradeRuntimeState.AddOrLevelUp(selectedCard);
-
 
         if(_playerFacade == null)
         {
             Debug.LogError("[S_RoguelikeResultController] PlayerFacadeが未設定です。");
-            return;
+            return false;
         }
 
+        _upgradeRuntimeState.AddOrLevelUp(selectedCard);
+        int level = _upgradeRuntimeState.GetLevel(selectedCard);
 
         _playerFacade.ApplyUpgrade(selectedCard);
+        RoguelikeUpgradeRuntime.Apply(selectedCard.Id, level, selectedCard.GameplayValue);
+        return true;
     }
 
     /// <summary>

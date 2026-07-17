@@ -5,6 +5,7 @@ using Game.Gameplay.Collectibles;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Game.Core.Roguelike;
 
 namespace Game.Core.Enemy
 {
@@ -100,7 +101,12 @@ namespace Game.Core.Enemy
 
             float baseDamage = Mathf.Max(1f, collectible.DamageAmount);
             float speedFactor = Mathf.Max(1f, hitSpeed);
-            float bodyDamage = baseDamage * speedFactor * _bodyDamageMultiplier;
+            float targetMultiplier = _controller != null && !_controller.IsBoss
+                ? RoguelikeUpgradeRuntime.NormalEnemyDamageMultiplier
+                : 1f;
+            float bodyDamage = baseDamage * speedFactor * _bodyDamageMultiplier
+                * RoguelikeUpgradeRuntime.CollectibleDamageMultiplier
+                * targetMultiplier;
 
             bool isHitProcessed = collectible.ExecuteHitImpact(_enemyId, bodyDamage, hitPosition, transform);
 

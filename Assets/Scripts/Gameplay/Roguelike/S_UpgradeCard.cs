@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Game.Data.Player;
+using Game.Core.Roguelike;
 
 public class S_UpgradeCard : MonoBehaviour
 {
@@ -82,7 +83,7 @@ public class S_UpgradeCard : MonoBehaviour
         _descriptionText.text = _cardData.GetEffectText(nextLevel);
         _levelText.text = $"Lv.{currentLevel}/{_cardData.MaxLevel}";
 
-        int cost = _cardData.GetCost(currentLevel);
+        int cost = RoguelikeUpgradeRuntime.GetDiscountedCost(_cardData.GetCost(currentLevel));
         if(isMaxed)
         {
             _costText.text = $"Level Max";

@@ -280,6 +280,23 @@ namespace Game.Core.Events
         }
     }
 
+    /// <summary>
+    /// 防衛ラインの現在HPと最大HPが変化したことを通知する。
+    /// </summary>
+    public readonly struct DefenseLineHealthChangedEvent
+    {
+        public readonly float CurrentHp;
+        public readonly float MaxHp;
+        public readonly float Ratio;
+
+        public DefenseLineHealthChangedEvent(float currentHp, float maxHp)
+        {
+            CurrentHp = currentHp;
+            MaxHp = maxHp;
+            Ratio = maxHp > 0f ? currentHp / maxHp : 0f;
+        }
+    }
+
 
 
 

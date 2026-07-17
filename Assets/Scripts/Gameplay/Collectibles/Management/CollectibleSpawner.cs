@@ -10,6 +10,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Data.Collectibles;
+using Game.Core.Roguelike;
 
 namespace Game.Gameplay.Collectibles
 {
@@ -167,7 +168,8 @@ namespace Game.Gameplay.Collectibles
         private void SpawnOne()
         {
             CollectibleSpawnArea area = _spawnAreas[Random.Range(0, _spawnAreas.Length)];
-            CollectibleData data = _spawnableData[Random.Range(0, _spawnableData.Length)];
+            CollectibleData data = GetRandomUnlockedData();
+            if (data == null) return;
             CollectibleObject obj = _pool.Get();
 
             obj.transform.position = area.GetRandomPosition();
@@ -183,7 +185,8 @@ namespace Game.Gameplay.Collectibles
         /// </summary>
         private void SpawnOne(Vector3 position)
         {
-            CollectibleData data = _spawnableData[Random.Range(0, _spawnableData.Length)];
+            CollectibleData data = GetRandomUnlockedData();
+            if (data == null) return;
             CollectibleObject obj = _pool.Get();
 
             obj.transform.position = position;
@@ -208,6 +211,33 @@ namespace Game.Gameplay.Collectibles
 
             float speed = Random.Range(_minInitialSpeed, _maxInitialSpeed);
             return new Vector3(direction.x * speed, _initialUpwardSpeed, direction.y * speed);
+        }
+
+        private CollectibleData GetRandomUnlockedData()
+        {
+            int unlockedCount = 0;
+            foreach (CollectibleData data in _spawnableData)
+            {
+                if (data != null && RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)data.Type))
+                {
+                    unlockedCount++;
+                }
+            }
+
+            if (unlockedCount == 0)
+            {
+                Debug.LogError("[CollectibleSpawner] 解禁済みのCollectibleDataがありません。", this);
+                return null;
+            }
+
+            int selectedIndex = Random.Range(0, unlockedCount);
+            foreach (CollectibleData data in _spawnableData)
+            {
+                if (data == null || !RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)data.Type)) continue;
+                if (selectedIndex-- == 0) return data;
+            }
+
+            return null;
         }
 
         /// <summary>

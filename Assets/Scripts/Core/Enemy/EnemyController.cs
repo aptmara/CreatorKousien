@@ -49,6 +49,7 @@ namespace Game.Core.Enemy
         [SerializeField]
         [Tooltip("この敵に適用するEnemyDefinition。実行時にInitialize(def)で差し替えも可能。")]
         private EnemyDefinition _definition;
+        public bool IsBoss => _definition != null && _definition.IsBoss;
 
         /// <summary>
         /// 実行時に割り当てられる一意の敵ID。複数敵がいる場合のイベントのルーティングに使用する。

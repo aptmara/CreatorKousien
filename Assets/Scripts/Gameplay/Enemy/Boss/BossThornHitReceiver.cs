@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using Game.Data.Collectibles;
 using Game.Gameplay.Collectibles;
 using UnityEngine;
+using Game.Core.Roguelike;
 
 namespace Game.Gameplay.Enemy.Boss
 {
@@ -251,7 +252,8 @@ namespace Game.Gameplay.Enemy.Boss
 
             float speedMultiplier = Mathf.Max(1f, hitSpeed);
 
-            float thornDamage = baseDamage * speedMultiplier * _damageMultiplier;
+            float thornDamage = baseDamage * speedMultiplier * _damageMultiplier
+                * RoguelikeUpgradeRuntime.CollectibleDamageMultiplier;
 
             // BossControllerからIDが設定されている場合は通常敵と同じヒットイベントや落とし物固有効果を実行する
             if (!string.IsNullOrEmpty(_bossInstanceId))
