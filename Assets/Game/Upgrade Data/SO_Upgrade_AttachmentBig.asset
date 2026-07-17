@@ -13,9 +13,14 @@ MonoBehaviour:
   m_Name: SO_Upgrade_AttachmentBig
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
   Id: 1
-  DisplayName: "\u30A2\u30BF\u30C3\u30C1\u30E1\u30F3\u30C8\u5F37\u5316"
-  Description: "\u30A2\u30BF\u30C3\u30C1\u30E1\u30F3\u30C8\u306E\u30B5\u30A4\u30BA\u30921.2\u500D\u306B\u3059\u308B\u305E\uFF01"
+  DisplayName: "\u8155\u62E1\u5927"
+  Description: "\u8155\u304C\u5927\u304D\u304F\u306A\u308A\u3001\u30A2\u30A4\u30C6\u30E0\u304C\u96C6\u3081\u3084\u3059\u304F\uFF01"
   Modifiers:
   - TargetStat: 2
     Operation: 1
     Value: 1.2
+  MaxLevel: 5
+  Icon: {fileID: 0}
+  Category: 0
+  Cost: 10
+  CostMagni: 1.2

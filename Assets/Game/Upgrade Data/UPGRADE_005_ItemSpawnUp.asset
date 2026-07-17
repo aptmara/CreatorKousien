@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: UPGRADE_005_ItemSpawnUp
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
   Id: 5
-  DisplayName: ItemSpawnUp
-  Description: "\u3042"
+  DisplayName: "\u51FA\u73FE\u6570\u5897\u52A0"
+  Description: "\u304B\u307C\u3061\u3083\u304C\u843D\u3068\u3059\u30AA\u30C8\u30B7\u30E2\u30CE\u304C\u5897\u3048\u308B\uFF01"
   Modifiers: []
   MaxLevel: 7
   Icon: {fileID: 21300000, guid: fb7eb5d1eea30ce4882af06cc7c2b412, type: 3}
