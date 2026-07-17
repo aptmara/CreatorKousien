@@ -211,10 +211,10 @@ namespace Game.Presentation.UI.Loading
 
             CreateDecorations(loadingRoot);
 
-            Image logoImage = CreateImage("LoadingLogo", loadingRoot, LoadSprite("UI_Title_Logo"));
+            Image logoImage = CreateImage("LoadingLogo", loadingRoot, LoadSprite("UI_Title_Logo_ALL"));
             _logo = logoImage.rectTransform;
             _logo.anchorMin = _logo.anchorMax = new Vector2(0.5f, 0.52f);
-            _logo.sizeDelta = new Vector2(620f, 350f);
+            _logo.sizeDelta = new Vector2(620f, 410f);
             _logo.anchoredPosition = Vector2.zero;
             logoImage.preserveAspect = true;
 
