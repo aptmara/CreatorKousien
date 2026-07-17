@@ -25,15 +25,23 @@ namespace Game.Gameplay.Collectibles
         [Tooltip("敵撃破時に実際に生成される個数です。基礎値と倍率から自動計算されます。")]
         [SerializeField, Min(0)] private int _enemyDefeatActualSpawnCount = 3;
 
-        [Header("コンボ終了ドロップ設定")]
-        [Tooltip("コンボ終了時に生成するCollectible数の基礎値です。")]
-        [SerializeField, Min(0)] private int _comboEndBaseSpawnCount = 3;
+        [Tooltip("敵撃破時の生成位置を、CrystalWalkからプレイヤー方向へ内側に寄せる距離です。")]
+        [SerializeField, Min(0f)] private float _enemyDefeatSpawnInwardOffset = 2f;
 
-        [Tooltip("コンボ終了時の基礎値へ掛ける倍率です。")]
+        [Header("コンボ閾値ドロップ設定")]
+        [Tooltip("このコンボ数へ到達するたびにCollectibleを生成します。")]
+        [SerializeField, Min(1)] private int _requiredComboCount = 100;
+
+        [Tooltip("必要コンボ数へ掛ける生成数の基礎値です。")]
+        [SerializeField, Min(0f)] private float _comboSpawnBaseValue = 0.3f;
+
+        [Tooltip("必要コンボ数と基礎値から求めた生成数へ掛ける外部倍率です。")]
         [SerializeField, Min(0f)] private float _comboEndSpawnMultiplier = 1f;
 
-        [Tooltip("コンボ終了時に実際に生成される個数です。基礎値と倍率から自動計算されます。")]
-        [SerializeField, Min(0)] private int _comboEndActualSpawnCount = 3;
+        [Tooltip("必要コンボ数へ到達するたびに実際に生成される個数です。自動計算されます。")]
+        [SerializeField, Min(0)] private int _comboThresholdActualSpawnCount = 30;
+
+        private int _completedComboThresholdCount;
 
         /// <summary>
         /// 敵撃破時の生成数倍率を外部から設定します。
@@ -52,6 +60,12 @@ namespace Game.Gameplay.Collectibles
         public void SetComboEndSpawnMultiplier(float multiplier)
         {
             _comboEndSpawnMultiplier = Mathf.Max(0f, multiplier);
+            RefreshActualSpawnCounts();
+        }
+
+        public void SetRequiredComboCount(int requiredComboCount)
+        {
+            _requiredComboCount = Mathf.Max(1, requiredComboCount);
             RefreshActualSpawnCounts();
         }
 
@@ -82,7 +96,7 @@ namespace Game.Gameplay.Collectibles
         private void OnEnable()
         {
             EventBus.Subscribe<EnemyDefeatedEvent>(OnEnemyDefeated);
-            EventBus.Subscribe<ComboEndedEvent>(OnComboEnded);
+            EventBus.Subscribe<ComboChangedEvent>(OnComboChanged);
         }
 
         /// <summary>
@@ -91,7 +105,7 @@ namespace Game.Gameplay.Collectibles
         private void OnDisable()
         {
             EventBus.Unsubscribe<EnemyDefeatedEvent>(OnEnemyDefeated);
-            EventBus.Unsubscribe<ComboEndedEvent>(OnComboEnded);
+            EventBus.Unsubscribe<ComboChangedEvent>(OnComboChanged);
         }
 
         /// <summary>
@@ -112,7 +126,9 @@ namespace Game.Gameplay.Collectibles
                 return;
             }
 
-            _crystalWalk.EmitHitStyleCollectibles(_enemyDefeatActualSpawnCount);
+            _crystalWalk.EmitInwardHitStyleCollectibles(
+                _enemyDefeatActualSpawnCount,
+                _enemyDefeatSpawnInwardOffset);
         }
 
         /// <summary>
@@ -127,17 +143,34 @@ namespace Game.Gameplay.Collectibles
         }
 
         /// <summary>
-        /// コンボ終了イベントを受け取り、設定数に応じてCollectible生成を中継する。
+        /// コンボ数の更新を受け取り、新しく到達した閾値回数分のCollectible生成を中継する。
         /// </summary>
-        /// <param name="ev">コンボ終了イベント。</param>
-        private void OnComboEnded(ComboEndedEvent ev)
+        /// <param name="ev">コンボ更新イベント。</param>
+        private void OnComboChanged(ComboChangedEvent ev)
         {
-            if (!CanEmitDrop(nameof(ComboEndedEvent), _comboEndActualSpawnCount))
+            if (ev.CurrentCombo <= 0)
+            {
+                _completedComboThresholdCount = 0;
+                return;
+            }
+
+            int reachedThresholdCount = ev.CurrentCombo / Mathf.Max(1, _requiredComboCount);
+            int newlyReachedThresholdCount = reachedThresholdCount - _completedComboThresholdCount;
+            if (newlyReachedThresholdCount <= 0 || _comboThresholdActualSpawnCount <= 0)
             {
                 return;
             }
 
-            _spawner.SpawnCollectiblesAt(ev.Position, _comboEndActualSpawnCount);
+            ResolveCrystalWalkIfNeeded();
+            if (_crystalWalk == null)
+            {
+                Debug.LogWarning("[CollectibleEventDropEmitter] コンボ閾値へ到達しましたが、CrystalWalk が見つからないため Collectible を生成できません。", this);
+                return;
+            }
+
+            _completedComboThresholdCount = reachedThresholdCount;
+            _crystalWalk.EmitHitStyleCollectibles(
+                _comboThresholdActualSpawnCount * newlyReachedThresholdCount);
         }
 
         /// <summary>
@@ -148,9 +181,10 @@ namespace Game.Gameplay.Collectibles
             _enemyDefeatActualSpawnCount = CalculateActualSpawnCount(
                 _enemyDefeatBaseSpawnCount,
                 _enemyDefeatSpawnMultiplier);
-            _comboEndActualSpawnCount = CalculateActualSpawnCount(
-                _comboEndBaseSpawnCount,
-                _comboEndSpawnMultiplier);
+            _comboThresholdActualSpawnCount = Mathf.FloorToInt(
+                Mathf.Max(1, _requiredComboCount)
+                * Mathf.Max(0f, _comboSpawnBaseValue)
+                * Mathf.Max(0f, _comboEndSpawnMultiplier));
         }
 
         /// <summary>

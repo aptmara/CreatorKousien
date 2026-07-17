@@ -3,7 +3,12 @@ guid: 0db13d4b5cf9e174ca76be48456d4b56
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: poison_tex
+    second: {fileID: 2100000, guid: c363decec3434234ca13841fc96680b1, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

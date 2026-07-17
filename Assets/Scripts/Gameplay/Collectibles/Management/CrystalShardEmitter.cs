@@ -277,6 +277,33 @@ namespace Game.Gameplay.Collectibles
             _registry.Register(shard);
         }
 
+        public void EmitFromWorldPosition(
+            Vector3 worldPosition,
+            Vector3 direction,
+            float randomRange,
+            float movementAmount,
+            WeightedShardData[] shardTable,
+            Vector3 spawnUp)
+        {
+            ResolveReferencesIfNeeded();
+            if (!CanUseSpawnApi()) return;
+
+            if (!TrySelectWeightedShardData(shardTable, out CollectibleData data))
+            {
+                data = GetSelectedCollectibleData();
+            }
+
+            if (data == null) return;
+
+            CollectibleObject shard = _pool.Get();
+            shard.transform.position = CreateOrientedSpawnPosition(worldPosition, spawnUp);
+            shard.transform.rotation = UnityEngine.Random.rotation;
+            shard.Initialize(data, ReturnToPool, _canBeCollectedByPlayer);
+            shard.SetInitialMotion(CreateWeightedVelocity(direction, randomRange, movementAmount), CreateAngularVelocity());
+
+            _registry.Register(shard);
+        }
+
         private CollectibleData GetSelectedCollectibleData()
         {
             if (_collectibleTable != null)
@@ -371,6 +398,21 @@ namespace Game.Gameplay.Collectibles
             Vector3 offset = UnityEngine.Random.insideUnitSphere * _spawnRadius;
             offset.y = Mathf.Abs(offset.y);
             return basePosition + offset;
+        }
+
+        private Vector3 CreateOrientedSpawnPosition(Vector3 worldPosition, Vector3 spawnUp)
+        {
+            Vector3 normalizedUp = spawnUp.sqrMagnitude > 0.0001f
+                ? spawnUp.normalized
+                : Vector3.up;
+            Vector3 offset = UnityEngine.Random.insideUnitSphere * _spawnRadius;
+            float upwardAmount = Vector3.Dot(offset, normalizedUp);
+            if (upwardAmount < 0f)
+            {
+                offset -= normalizedUp * (upwardAmount * 2f);
+            }
+
+            return worldPosition + offset;
         }
 
         /// <summary>
