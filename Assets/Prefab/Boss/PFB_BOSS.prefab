@@ -103,6 +103,59 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossThornBarrierAttacker
   _thorn: {fileID: 7455662598261104584}
+--- !u!1 &1421607036308681273
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 902035538064918081}
+  - component: {fileID: 2117839383095877287}
+  m_Layer: 0
+  m_Name: Col_CorpseMouth
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &902035538064918081
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1421607036308681273}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4843692269579601933}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &2117839383095877287
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1421607036308681273}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.09, y: 0.09, z: 0.09}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3881577146436917802
 GameObject:
   m_ObjectHideFlags: 0
@@ -425,7 +478,6 @@ MonoBehaviour:
   _biteImpactShakePositionStrength: 0.32
   _biteImpactShakeRotationStrength: 4.5
   _biteImpactShakeFrequency: 26
-  _bossHiddenLocalX: 36
 --- !u!114 &956854224720955098
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -660,6 +712,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -5932077761984754295, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       insertIndex: 0
       addedObject: {fileID: 3225674299080318745}
+    - targetCorrespondingSourceObject: {fileID: -5932077761984754295, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
+      insertIndex: 1
+      addedObject: {fileID: 902035538064918081}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       insertIndex: -1
