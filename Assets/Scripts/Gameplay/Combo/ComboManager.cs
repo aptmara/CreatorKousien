@@ -112,8 +112,15 @@ namespace Game.Gameplay.Combo
         /// </summary>
         public void ResetCombo()
         {
-            float multiValue = 1.0f + _currentCombo * multiRatio;
-            EventChannel?.ExecuteEvent(multiValue);
+            // 平方根カーブを用いたインフレ倍率
+            float dynamicMagni = multiRatio + (Mathf.Sqrt(_currentCombo) * 0.04f);
+
+            // 倍率制限を適用
+            if (dynamicMagni > 0.5f)
+            {
+                dynamicMagni = 0.5f;
+            }
+            EventChannel?.ExecuteEvent(dynamicMagni + 1.0f);
             _currentCombo = 0;
             _remainingDuration = 0f;
             OnComboReset?.Invoke();
