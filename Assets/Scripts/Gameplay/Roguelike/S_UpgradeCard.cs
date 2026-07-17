@@ -112,9 +112,13 @@ public class S_UpgradeCard : MonoBehaviour
         {
             _scaleAnimator.SetHighlighted(isHighlighted);
         }
+        else
+        {
+            Debug.LogWarning($"[S_UpgradeCard] _scaleAnimatorが未設定です({gameObject.name})");
+        }
 
         // 旧Frame方式
-        if(_useFrameHighlight && _highlightFrame != null)
+        if (_useFrameHighlight && _highlightFrame != null)
         {
             _highlightFrame.SetActive(isHighlighted);
         }

@@ -1,4 +1,5 @@
 // 制作者: 山内陽
+// 7.16 - BOSSの情報追加
 using Game.Core.Events;
 using Game.Presentation.UI;
 using System;
@@ -189,6 +190,38 @@ namespace Game.Core.Enemy
 
             return InstanceEnemyId;
         }
+
+
+        /// <summary>
+        /// ボス用のEnemyDefinitionで初期化する。通常の敵と異なり、Update処理は無効化される。
+        /// </summary>
+        /// <param name="definition">ボスに設定されているEnemyDefinition</param>
+        /// <returns>Wave管理やイベント通知に使用するボス固有のID</returns>
+        public string InitializeForBoss(EnemyDefinition definition)
+        {
+            if (definition == null)
+            {
+                Debug.LogError("[EnemyController] Boss用のEnemyDefinitionがnullです。", this);
+                return string.Empty;
+            }
+
+            if (!definition.IsBoss)
+            {
+                Debug.LogError("[EnemyController] Boss用のEnemyDefinitionではありません。", this);
+                return string.Empty;
+            }
+
+            _definition = definition;
+            InstanceEnemyId = $"{definition.EnemyId}_{GetInstanceID()}";
+
+            // 通常敵用のUpdate処理はボスでは使用しない
+            enabled = false;
+
+            Debug.Log($"[{nameof(EnemyController)}] ボス「{InstanceEnemyId}」をWave管理用として初期化しました。", this);
+
+            return InstanceEnemyId;
+        }
+
 
         public bool BarrierInitialize(EnemyDefinition definition, SpawnSummary spawnSummary, GameObject barrierObject)
         {
@@ -949,7 +982,7 @@ namespace Game.Core.Enemy
 
                     }
 
-                    
+
 
                 }
 

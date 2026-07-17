@@ -187,6 +187,11 @@ namespace Game.Gameplay.Enemy.Boss
         /// <param name="other">接触情報</param>
         private void OnTriggerEnter(Collider other)
         {
+            // 棘と防衛バリアのTrigger接触が通知されているか確認する
+            DefenseLineReaction defenseLine = other.GetComponentInParent<DefenseLineReaction>();
+
+            Debug.Log($"[ThornBarrierDebug] Trigger接触を受信しました。ThornId={_thorn?.ThornId}, Other={other.name}, AttackWindow={_isAttackWindowOpen}, Damageable={_thorn != null && _thorn.IsDamageable}, DefenseLineFound={defenseLine != null}", this);
+
             Vector3 hitPosition = other.ClosestPoint(_thorn.transform.position);
 
             TryAttackBarrier(other, hitPosition);

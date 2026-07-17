@@ -159,6 +159,14 @@ namespace Game.Gameplay.Enemy.Boss
         /// <param name="collision"></param>
         private void OnCollisionEnter(Collision collision)
         {
+            Debug.Log(
+                $"[ThornDebug] 落とし物との衝突を受信しました。" +
+                $" ThornId={_thorn?.ThornId}," +
+                $" Other={collision.collider.name}," +
+                $" Damageable={_thorn != null && _thorn.IsDamageable}," +
+                $" Speed={collision.relativeVelocity.magnitude:F2}",
+                this);
+
             CollectibleObject collectible = collision.collider.GetComponentInParent<CollectibleObject>();
 
             if (collectible == null)

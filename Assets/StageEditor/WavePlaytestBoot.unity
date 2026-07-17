@@ -148,7 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd3245b837c9d2b4eaa940b7349a1d27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.WaveTester
-  testWave: {fileID: 0}
+  testWave: {fileID: 11400000, guid: 13bfd27def824fc468a8ad95ae4add70, type: 2}
   waveRunner: {fileID: 0}
   enemySpawner: {fileID: 0}
 --- !u!4 &1283636159
@@ -160,7 +160,7 @@ Transform:
   m_GameObject: {fileID: 1283636157}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -15.1901, y: -0, z: -22.5785}
+  m_LocalPosition: {x: 0, y: -0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -199,7 +199,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Infrastructure.Bootstrap.PrototypeSceneFlowController
   _gameplayShellScene: GameplayShell
   _stageScene: Stage
-  _uiScene: Falu_Gauge_Proto
+  _uiScene: UI_HUD
   _debugScene: DebugOverlay
   _cameraConfig: {fileID: 11400000, guid: aa330ccda141b004cb12309afff5dbbb, type: 2}
   _cameraProjectionMode: 1

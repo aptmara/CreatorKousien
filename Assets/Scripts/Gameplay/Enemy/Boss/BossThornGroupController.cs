@@ -14,6 +14,7 @@
 // ------------------------------------------------------------
 using System;
 using System.Collections.Generic;
+using Game.Core.Events;
 using Game.Data.Enemy.Boss;
 using UnityEngine;
 
@@ -88,7 +89,7 @@ namespace Game.Gameplay.Enemy.Boss
 
                 foreach (BossThorn thorn in _selectedThorns)
                 {
-                    if (thorn != null || !thorn.IsBroken)
+                    if (thorn != null && !thorn.IsBroken)
                     {
                         remainingCount++;
                     }
@@ -364,6 +365,9 @@ namespace Game.Gameplay.Enemy.Boss
                 return;
             }
 
+            // 有効な棘が1本破壊された瞬間にカメラのシェイクを行う
+            RequestThornBreakCameraShake();
+
             // 同じ挑戦中に全破壊イベントを複数回発火させないようにする
             if (_hasNotifiedAllThornsBroken)
             {
@@ -378,6 +382,29 @@ namespace Game.Gameplay.Enemy.Boss
             _hasNotifiedAllThornsBroken = true;
 
             AllActiveThornsBroken?.Invoke();
+        }
+
+
+        private void RequestThornBreakCameraShake()
+        {
+            // 棘破壊時のカメラシェイクが無効化されている場合は何もしない
+            if (_currentPhaseData == null || !_currentPhaseData.EnableThornBreakCameraShake)
+            {
+                return;
+            }
+
+            // 制限時間が0秒の場合はシェイクを行わない
+            if (_currentPhaseData.ThornBreakShakeDuration <= 0f)
+            {
+                return;
+            }
+
+            // カメラシェイクをリクエストする
+            EventBus.Publish(new CameraShakeRequestedEvent(
+                _currentPhaseData.ThornBreakShakeDuration,
+                _currentPhaseData.ThornBreakShakePositionStrength,
+                _currentPhaseData.ThornBreakShakeRotationStrength,
+                _currentPhaseData.ThornBreakShakeFrequency));
         }
 
 

@@ -15,6 +15,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Game.Core.Enemy;
 using Game.Core.Events;
+using Game.Gameplay.Enemy.Boss;
 using UnityEngine;
 
 namespace Game.WaveSystem
@@ -360,9 +361,18 @@ namespace Game.WaveSystem
                         return false;
                     }
 
-                    if (!entry.EnemyDefinition.EnemyBody.TryGetComponent(out EnemyBodyController _))
+                    if (entry.EnemyDefinition.IsBoss)
+                    {
+                        if (!entry.EnemyDefinition.EnemyBody.TryGetComponent(out BossBattleController _))
+                        {
+                            errorMessage = $"敵「{entry.EnemyDefinition.EnemyId}」はボスとして設定されていますが、EnemyBodyにBossControllerがアタッチされていません。";
+                            return false;
+                        }
+                    }
+                    else if (!entry.EnemyDefinition.EnemyBody.TryGetComponent(out EnemyBodyController _))
                     {
                         errorMessage = $"敵「{entry.EnemyDefinition.EnemyId}」のEnemyBodyにEnemyBodyControllerがありません。";
+
                         return false;
                     }
                 }

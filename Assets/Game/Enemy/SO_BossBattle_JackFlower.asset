@@ -14,121 +14,400 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Enemy.Boss.BossBattleDataSO
   _battleName: Jack Flower Boss
   _plannerMemo: "\u30DC\u30B9\u6226\u306E\u8AAC\u660E\u3084\u8ABF\u6574\u5185\u5BB9\u3092\u3053\u3053\u306B\u8A18\u5165\u3057\u3066\u3061\u3087\u3093\u307E\u3052\uFF01"
+  _introPresentationData:
+    _isEnabled: 1
+    _playFromLeft: 0
+    _bossStartLocalPositionOffset: {x: 0, y: 9, z: 0}
+    _animationSpeed: 0.4
+    _cameraPositionOffset: {x: 0, y: -1, z: -4}
+    _cameraMoveDuration: 0.6
+    _cameraReturnDuration: 0.6
+    _cameraBlendCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _afterAnimationDelay: 0.25
   _phases:
   - _phaseName: Phase 1
     _plannerMemo: "\u30D5\u30A7\u30FC\u30BA\u306E\u8AAC\u660E\u3084\u8ABF\u6574\u5185\u5BB9\u3092\u3053\u3053\u306B\u8A18\u5165\u3057\u3066\u3061\u3087\u3093\u307E\u3052\uFF01"
     _activeThornCount: 1
-    _thornMaxHp: 100
+    _thornMaxHp: 400
     _barrierDamagePerThorn: 10
     _rerollThornsOnRetry: 1
+    _enableThornBreakCameraShake: 1
+    _thornBreakShakeDuration: 0.16
+    _thornBreakShakePositionStrength: 0.18
+    _thornBreakShakeRotationStrength: 3.5
+    _thornBreakShakeFrequency: 45
     _thornAttackSteps:
     - _stepName: Thorn Attack 1
-      _leftStartLocalPosition: {x: -35, y: -25, z: 0}
+      _leftStartLocalPosition: {x: -35, y: -23, z: -4}
       _leftStartEulerAngles: {x: 0, y: -90, z: 0}
-      _rightStartLocalPosition: {x: 35, y: -25, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -23, z: -4}
       _rightStartEulerAngles: {x: 0, y: 90, z: 0}
-      _animationSpeed: 1.2
+      _animationSpeed: 0.5
       _canDamageBarrier: 0
     - _stepName: Thorn Attack 2
-      _leftStartLocalPosition: {x: -35, y: -21, z: 0}
+      _leftStartLocalPosition: {x: -35, y: -18, z: -4}
       _leftStartEulerAngles: {x: 0, y: -90, z: 0}
-      _rightStartLocalPosition: {x: 35, y: -21, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -18, z: -4}
       _rightStartEulerAngles: {x: 0, y: 90, z: 0}
-      _animationSpeed: 1
+      _animationSpeed: 0.4
       _canDamageBarrier: 0
     - _stepName: Thorn Attack 3
-      _leftStartLocalPosition: {x: -35, y: -16, z: 0}
+      _leftStartLocalPosition: {x: -35, y: -14, z: -4}
       _leftStartEulerAngles: {x: 0, y: -90, z: 0}
-      _rightStartLocalPosition: {x: 35, y: -16, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -14, z: -4}
       _rightStartEulerAngles: {x: 0, y: 90, z: 0}
-      _animationSpeed: 0.8
+      _animationSpeed: 0.3
       _canDamageBarrier: 1
     _angryBiteData:
-      _startLocalPosition: {x: 0, y: -14, z: 0}
+      _startLocalPosition: {x: 0, y: -18, z: -8}
       _startEulerAngles: {x: 0, y: 180, z: 0}
+      _barrierReachLocalPosition: {x: 0, y: 9, z: -8}
+      _riseCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       _openAnimationSpeed: 1
       _closeAnimationSpeed: 1
       _downAnimationSpeed: 1
-      _requiredCollectibleCount: 50
+      _mouthMaxHp: 700
       _mouthOpenDuration: 8
       _failureBarrierDamage: 30
-      _downDuration: 1
+      _failureHoldDuration: 1.5
+      _failureRetreatDuration: 1.5
+      _downDuration: 3.5
       _spitCollectibleCount: 40
+    _downPresentationData:
+      _downEffectPrefab: {fileID: 4148052385838451594, guid: 16d7e6146392f494abd0b5e58383d213, type: 3}
+      _downEffectLocalOffset: {x: 0, y: 0, z: 0}
+      _downEffectStartDelay: 0
+      _downEffectRotationOffset: {x: 0, y: 0, z: 0}
+      _downEffectScaleMultiplier: 1
+      _angerEffectPrefab: {fileID: 2765139239787536520, guid: 3551cca060d467543a9c32d81a67be44, type: 3}
+      _angerEffectLocalOffset: {x: 4, y: 3, z: 5.5}
+      _angerEffectRotationOffset: {x: 0, y: 0, z: 0}
+      _angerEffectScaleMultiplier: 1
+      _angerEffectStartDelay: 0
+      _roarEffectPrefab: {fileID: 3146755379517784675, guid: b943566d474f7914c804ec053de153d4, type: 3}
+      _roarEffectLocalOffset: {x: 0, y: 0, z: 0}
+      _roarEffectRotationOffset: {x: 0, y: 0, z: 0}
+      _roarEffectScaleMultiplier: 1
+      _roarEffectStartDelay: 0.9
+      _enableCameraShake: 1
+      _cameraShakeStartDelay: 0
+      _cameraShakeDuration: 0.35
+      _cameraShakePositionStrength: 0.2
+      _cameraShakeRotationStrength: 3
+      _cameraShakeFrequency: 35
+      _fallStartDelay: 2.5
+      _fallDistance: 15
+      _fallCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _fallEulerAngles: {x: 0, y: 0, z: 15}
+      _spitStartDelay: 0.2
   - _phaseName: Phase 2
     _plannerMemo: "\u30D5\u30A7\u30FC\u30BA\u306E\u8AAC\u660E\u3084\u8ABF\u6574\u5185\u5BB9\u3092\u3053\u3053\u306B\u8A18\u5165\u3057\u3066\u3061\u3087\u3093\u307E\u3052\uFF01"
-    _activeThornCount: 1
-    _thornMaxHp: 100
+    _activeThornCount: 2
+    _thornMaxHp: 400
     _barrierDamagePerThorn: 10
     _rerollThornsOnRetry: 1
+    _enableThornBreakCameraShake: 1
+    _thornBreakShakeDuration: 0.16
+    _thornBreakShakePositionStrength: 0.18
+    _thornBreakShakeRotationStrength: 3.5
+    _thornBreakShakeFrequency: 45
     _thornAttackSteps:
     - _stepName: Thorn Attack 1
-      _leftStartLocalPosition: {x: -35, y: -25, z: 0}
+      _leftStartLocalPosition: {x: -35, y: -23, z: -4}
       _leftStartEulerAngles: {x: 0, y: -90, z: 0}
-      _rightStartLocalPosition: {x: 35, y: -25, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -23, z: -4}
       _rightStartEulerAngles: {x: 0, y: 90, z: 0}
-      _animationSpeed: 1.2
+      _animationSpeed: 0.5
       _canDamageBarrier: 0
     - _stepName: Thorn Attack 2
-      _leftStartLocalPosition: {x: -35, y: -21, z: 0}
+      _leftStartLocalPosition: {x: -35, y: -18, z: -4}
       _leftStartEulerAngles: {x: 0, y: -90, z: 0}
-      _rightStartLocalPosition: {x: 35, y: -21, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -18, z: -4}
       _rightStartEulerAngles: {x: 0, y: 90, z: 0}
-      _animationSpeed: 1
+      _animationSpeed: 0.4
       _canDamageBarrier: 0
     - _stepName: Thorn Attack 3
-      _leftStartLocalPosition: {x: -35, y: -16, z: 0}
+      _leftStartLocalPosition: {x: -35, y: -14, z: -4}
       _leftStartEulerAngles: {x: 0, y: -90, z: 0}
-      _rightStartLocalPosition: {x: 35, y: -16, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -14, z: -4}
       _rightStartEulerAngles: {x: 0, y: 90, z: 0}
-      _animationSpeed: 0.8
+      _animationSpeed: 0.3
       _canDamageBarrier: 1
     _angryBiteData:
-      _startLocalPosition: {x: 0, y: -14, z: 0}
+      _startLocalPosition: {x: 0, y: -18, z: -8}
       _startEulerAngles: {x: 0, y: 180, z: 0}
+      _barrierReachLocalPosition: {x: 0, y: 7, z: -8}
+      _riseCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       _openAnimationSpeed: 1
       _closeAnimationSpeed: 1
       _downAnimationSpeed: 1
-      _requiredCollectibleCount: 50
+      _mouthMaxHp: 700
       _mouthOpenDuration: 8
       _failureBarrierDamage: 30
-      _downDuration: 1
+      _failureHoldDuration: 1.5
+      _failureRetreatDuration: 1.5
+      _downDuration: 3.5
       _spitCollectibleCount: 40
+    _downPresentationData:
+      _downEffectPrefab: {fileID: 4148052385838451594, guid: 16d7e6146392f494abd0b5e58383d213, type: 3}
+      _downEffectLocalOffset: {x: 0, y: 0, z: 0}
+      _downEffectStartDelay: 0
+      _downEffectRotationOffset: {x: 0, y: 0, z: 0}
+      _downEffectScaleMultiplier: 1
+      _angerEffectPrefab: {fileID: 2765139239787536520, guid: 3551cca060d467543a9c32d81a67be44, type: 3}
+      _angerEffectLocalOffset: {x: 4, y: 3, z: 5.5}
+      _angerEffectRotationOffset: {x: 0, y: 0, z: 0}
+      _angerEffectScaleMultiplier: 1
+      _angerEffectStartDelay: 0
+      _roarEffectPrefab: {fileID: 3146755379517784675, guid: b943566d474f7914c804ec053de153d4, type: 3}
+      _roarEffectLocalOffset: {x: 0, y: 0, z: 0}
+      _roarEffectRotationOffset: {x: 0, y: 0, z: 0}
+      _roarEffectScaleMultiplier: 1
+      _roarEffectStartDelay: 0.5
+      _enableCameraShake: 1
+      _cameraShakeStartDelay: 0
+      _cameraShakeDuration: 0.35
+      _cameraShakePositionStrength: 0.2
+      _cameraShakeRotationStrength: 3
+      _cameraShakeFrequency: 35
+      _fallStartDelay: 2.5
+      _fallDistance: 15
+      _fallCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _fallEulerAngles: {x: 0, y: 0, z: 15}
+      _spitStartDelay: 0.2
   - _phaseName: Phase 3
     _plannerMemo: "\u30D5\u30A7\u30FC\u30BA\u306E\u8AAC\u660E\u3084\u8ABF\u6574\u5185\u5BB9\u3092\u3053\u3053\u306B\u8A18\u5165\u3057\u3066\u3061\u3087\u3093\u307E\u3052\uFF01"
-    _activeThornCount: 1
-    _thornMaxHp: 100
+    _activeThornCount: 3
+    _thornMaxHp: 400
     _barrierDamagePerThorn: 10
     _rerollThornsOnRetry: 1
+    _enableThornBreakCameraShake: 1
+    _thornBreakShakeDuration: 0.16
+    _thornBreakShakePositionStrength: 0.18
+    _thornBreakShakeRotationStrength: 3.5
+    _thornBreakShakeFrequency: 45
     _thornAttackSteps:
     - _stepName: Thorn Attack 1
-      _leftStartLocalPosition: {x: -35, y: -25, z: 0}
+      _leftStartLocalPosition: {x: -35, y: -23, z: -4}
       _leftStartEulerAngles: {x: 0, y: -90, z: 0}
-      _rightStartLocalPosition: {x: 35, y: -25, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -23, z: -4}
       _rightStartEulerAngles: {x: 0, y: 90, z: 0}
-      _animationSpeed: 1.2
+      _animationSpeed: 0.5
       _canDamageBarrier: 0
     - _stepName: Thorn Attack 2
-      _leftStartLocalPosition: {x: -35, y: -21, z: 0}
+      _leftStartLocalPosition: {x: -35, y: -18, z: -4}
       _leftStartEulerAngles: {x: 0, y: -90, z: 0}
-      _rightStartLocalPosition: {x: 35, y: -21, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -18, z: -4}
       _rightStartEulerAngles: {x: 0, y: 90, z: 0}
-      _animationSpeed: 1
+      _animationSpeed: 0.4
       _canDamageBarrier: 0
     - _stepName: Thorn Attack 3
-      _leftStartLocalPosition: {x: -35, y: -16, z: 0}
+      _leftStartLocalPosition: {x: -35, y: -14, z: -4}
       _leftStartEulerAngles: {x: 0, y: -90, z: 0}
-      _rightStartLocalPosition: {x: 35, y: -16, z: 0}
+      _rightStartLocalPosition: {x: 35, y: -14, z: -4}
       _rightStartEulerAngles: {x: 0, y: 90, z: 0}
-      _animationSpeed: 0.8
+      _animationSpeed: 0.3
       _canDamageBarrier: 1
     _angryBiteData:
-      _startLocalPosition: {x: 0, y: -14, z: 0}
+      _startLocalPosition: {x: 0, y: -18, z: -8}
       _startEulerAngles: {x: 0, y: 180, z: 0}
+      _barrierReachLocalPosition: {x: 0, y: 7, z: -8}
+      _riseCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       _openAnimationSpeed: 1
       _closeAnimationSpeed: 1
       _downAnimationSpeed: 1
-      _requiredCollectibleCount: 50
+      _mouthMaxHp: 700
       _mouthOpenDuration: 8
       _failureBarrierDamage: 30
-      _downDuration: 1
+      _failureHoldDuration: 1.5
+      _failureRetreatDuration: 1.5
+      _downDuration: 3.5
       _spitCollectibleCount: 40
+    _downPresentationData:
+      _downEffectPrefab: {fileID: 4148052385838451594, guid: 16d7e6146392f494abd0b5e58383d213, type: 3}
+      _downEffectLocalOffset: {x: 0, y: 0, z: 0}
+      _downEffectStartDelay: 0
+      _downEffectRotationOffset: {x: 0, y: 0, z: 0}
+      _downEffectScaleMultiplier: 1
+      _angerEffectPrefab: {fileID: 2765139239787536520, guid: 3551cca060d467543a9c32d81a67be44, type: 3}
+      _angerEffectLocalOffset: {x: 4, y: 3, z: 5.5}
+      _angerEffectRotationOffset: {x: 0, y: 0, z: 0}
+      _angerEffectScaleMultiplier: 1
+      _angerEffectStartDelay: 0
+      _roarEffectPrefab: {fileID: 3146755379517784675, guid: b943566d474f7914c804ec053de153d4, type: 3}
+      _roarEffectLocalOffset: {x: 0, y: 0, z: 0}
+      _roarEffectRotationOffset: {x: 0, y: 0, z: 0}
+      _roarEffectScaleMultiplier: 1
+      _roarEffectStartDelay: 0.5
+      _enableCameraShake: 1
+      _cameraShakeStartDelay: 0
+      _cameraShakeDuration: 0.35
+      _cameraShakePositionStrength: 0.2
+      _cameraShakeRotationStrength: 3
+      _cameraShakeFrequency: 35
+      _fallStartDelay: 2.4
+      _fallDistance: 15
+      _fallCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      _fallEulerAngles: {x: 0, y: 0, z: 15}
+      _spitStartDelay: 0.2
