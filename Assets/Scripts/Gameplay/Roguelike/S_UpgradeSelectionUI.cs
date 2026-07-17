@@ -204,8 +204,12 @@ public class S_UpgradeSelectionUI : MonoBehaviour
 
         // お金が足りなければ処理しない
         int nowMoney = _moneyData.moneyOnHand;
-        if (nowMoney < subtractMoney)    return;
 
+        if (nowMoney < subtractMoney)
+        {
+            _upgradeDetail.ChangeReactionNotEnouthMoney();
+            return;
+        }
 
         // 所持金を減らす
         Debug.Log($"[S_UpgradeSelectionUI] '{selectedCard.DisplayName}'購入！");
@@ -264,6 +268,7 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         {
             _spawnedCards[i].SetHighlighted(i == index);
         }
+
 
         // カードの詳細を表示
         if(index >= 0 && index < _spawnedCards.Count)

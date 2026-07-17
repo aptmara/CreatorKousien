@@ -145,6 +145,28 @@ public class S_UpgradeDetail : MonoBehaviour
 
     }
 
+    public void ChangeReactionSoldOut()
+    {
+        string str = "全部売り切れだよ";
+
+        _descriptionText.text = str;
+
+        _nameText.text = "";
+        _levelText.text = "";
+        _costText.text = "";
+    }
+
+    public void ChangeReactionNotEnouthMoney()
+    {
+        string str = "お金が足りないよ";
+
+        _descriptionText.text = str;
+
+        _nameText.text = "";
+        _levelText.text = "";
+        _costText.text = "";
+    }
+
     private void PlaySpawnAnimation()
     {
         if(_animationCoroutine != null)
