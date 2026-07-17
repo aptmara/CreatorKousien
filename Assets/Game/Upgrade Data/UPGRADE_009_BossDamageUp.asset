@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 730422566b7cc734ea8529d8457fd466, type: 3}
-  m_Name: UPGRADE_006_GetCoinUp
+  m_Name: UPGRADE_009_BossDamageUp
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
-  Id: 6
-  DisplayName: "\u30B3\u30A4\u30F3\u53D6\u5F97\u91CF\u5897\u52A0"
-  Description: "\u30B3\u30A4\u30F3\u306E\u7372\u5F97\u91CF\u304C\u5897\u52A0\u3059\u308B\uFF01"
+  Id: 
+  DisplayName: "\u30DC\u30B9\u7279\u653B"
+  Description: "\u30DC\u30B9\u306B\u5BFE\u3059\u308B\u30C0\u30E1\u30FC\u30B8\u304C\u5897\u52A0\uFF01"
   Modifiers: []
   MaxLevel: 5
-  Icon: {fileID: 21300000, guid: 1aae3659e1c0694469a693d848e93a7f, type: 3}
+  Icon: {fileID: 0}
   Category: 0
   Cost: 10
   CostMagni: 1.2

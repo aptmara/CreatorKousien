@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: UPGRADE_003_AddDropItem
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
   Id: 3
-  DisplayName: AddDropItem
-  Description: "\u3042"
+  DisplayName: "\u30E2\u30CE\u306E\u7A2E\u985E\u5897\u52A0"
+  Description: "\u51FA\u73FE\u3059\u308B\u30AA\u30C8\u30B7\u30E2\u30CE\u306E\u7A2E\u985E\u304C\u5897\u3048\u308B\uFF01\n\u6226\u7565\u304C\u3072\u308D\u304C\u308B\u305E\uFF01"
   Modifiers:
   - TargetStat: 0
     Operation: 0
