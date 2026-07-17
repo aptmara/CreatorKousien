@@ -148,6 +148,11 @@ namespace Game.Gameplay.Enemy.Boss
         /// </summary>
         public bool IsBattleCameraActive => _isBattleCameraActive;
 
+        /// <summary>
+        /// 画面内判定に使用するボス本体のRenderer
+        /// </summary>
+        public Renderer BossBodyRenderer => _bossBodyRenderer;
+
 
         // Unityイベント
         // ------------------------------------------------------------
