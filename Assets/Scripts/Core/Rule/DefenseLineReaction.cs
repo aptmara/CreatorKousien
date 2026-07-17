@@ -268,7 +268,7 @@ namespace Game.Core.DefenceLine
                 reactionEvent.RemainingHpRatio,
                 reactionEvent.AttackPosition);
             PlayHitReaction(data);
-            SoundManager.instance.PlaySE("BarrierBreak_01");
+            SoundManager.instance?.PlaySE("BarrierBreak_01");
         }
 
         private void OnPlayBreakReaction(DefLineBreakReactionEvent breakEvent)

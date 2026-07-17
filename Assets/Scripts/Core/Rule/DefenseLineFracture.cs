@@ -488,8 +488,8 @@ namespace Game.Core.DefenceLine
 
         private void PlayBreakAudio()
         {
-            SoundManager.instance.StopBGM();
-            SoundManager.instance.PlaySE("Barrier_01");
+            SoundManager.instance?.StopBGM();
+            SoundManager.instance?.PlaySE("Barrier_01");
             StartCoroutine(PlayTailAudio());
             if (_audioSource == null) return;
 
@@ -510,7 +510,7 @@ namespace Game.Core.DefenceLine
             {
                 yield return new WaitForSeconds(_breakTailDelay);
             }
-            SoundManager.instance.PlaySE("Barrier_02");
+            SoundManager.instance?.PlaySE("Barrier_02");
             if (_audioSource != null && _breakTailClip != null)
             {
                 //_audioSource.PlayOneShot(_breakTailClip, _breakTailVolume);

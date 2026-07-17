@@ -601,7 +601,7 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         {
             return;
         }
-        SoundManager.instance.PlaySE("PumpkinShot_Big");
+        SoundManager.instance?.PlaySE("PumpkinShot_Big");
         Vector3 outward = hitPoint - transform.position;
         outward = outward.sqrMagnitude > 0.0001f ? outward.normalized : Vector3.up;
         Vector3 spawnPosition = hitPoint + outward * _emitOffset;

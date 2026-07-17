@@ -243,7 +243,7 @@ namespace Game.Core.Management
             if (isFinalWave)
             {
                 // 最終ウェーブクリア時は、ゲームクリア演出を再生する
-                SoundManager.instance.StopBGM();
+                SoundManager.instance?.StopBGM();
                 if (_gameClearCinematicController != null)
                 {
                     yield return StartCoroutine(_gameClearCinematicController.PlayRoutine());
@@ -279,7 +279,7 @@ namespace Game.Core.Management
             // 3. 猶予が終了したら、進行処理へ
             // 屋台演出へ繋ぐ
             yield return StartCoroutine(ShopPresentationSequenceRoutine());
-            SoundManager.instance.SoundVolume(0.3f);
+            SoundManager.instance?.SoundVolume(0.3f);
         }
 
         /// <summary>
@@ -450,7 +450,7 @@ namespace Game.Core.Management
                 // 次のウェーブを開始
                 StartBattleWave(_currentWaveIndex);
             }
-            SoundManager.instance.SoundVolume(1.0f);
+            SoundManager.instance?.SoundVolume(1.0f);
         }
 
         /// <summary>
