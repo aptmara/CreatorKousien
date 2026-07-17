@@ -91,19 +91,22 @@ namespace Game.Gameplay.Collectibles
             }
         }
 
-        private void OnCollisionEnter(Collision collision)
-        {
-            if (IsFieldWall(collision.transform)
-                && !IsEnemySideWall(collision.transform))
-            {
-                MoveInsideField(collision.collider);
-            }
-        }
-
         private void OnTriggerEnter(Collider other)
         {
-            if (IsFieldWall(other.transform)
-                && !IsEnemySideWall(other.transform))
+            if (!IsFieldWall(other.transform)
+                || IsEnemySideWall(other.transform))
+            {
+                return;
+            }
+
+            ResolveFieldWallBoundsIfNeeded();
+            if (_fieldWallRoot == null || !_hasFieldWallBounds)
+            {
+                return;
+            }
+
+            Vector3 localPosition = _fieldWallRoot.InverseTransformPoint(transform.position);
+            if (IsOutsideFieldBounds(localPosition))
             {
                 MoveInsideField(other);
             }
@@ -231,11 +234,15 @@ namespace Game.Gameplay.Collectibles
                     Mathf.Clamp(localPosition.z, _fieldWallLocalBounds.min.z, _fieldWallLocalBounds.max.z));
                 Vector3 clampedWorldPosition = _fieldWallRoot.TransformPoint(clampedPosition);
                 Vector3 inwardDirection = (fieldCenter - clampedWorldPosition).normalized;
-                SetPositionOnly(clampedWorldPosition + inwardDirection * insideClearance);
+                SetPositionAndRemoveOutwardVelocity(
+                    clampedWorldPosition + inwardDirection * insideClearance,
+                    outwardDirection);
                 return;
             }
 
-            SetPositionOnly(innerWallPoint - outwardDirection * insideClearance);
+            SetPositionAndRemoveOutwardVelocity(
+                innerWallPoint - outwardDirection * insideClearance,
+                outwardDirection);
         }
 
         private bool TryGetInnerWallPoint(
@@ -296,11 +303,22 @@ namespace Game.Gameplay.Collectibles
                 + Mathf.Abs(direction.z) * extents.z;
         }
 
-        private void SetPositionOnly(Vector3 position)
+        private void SetPositionAndRemoveOutwardVelocity(
+            Vector3 position,
+            Vector3 outwardDirection)
         {
             if (_rigidbody != null)
             {
                 _rigidbody.position = position;
+
+                float outwardSpeed = Vector3.Dot(
+                    _rigidbody.linearVelocity,
+                    outwardDirection);
+                if (outwardSpeed > 0f)
+                {
+                    _rigidbody.linearVelocity -= outwardDirection * outwardSpeed;
+                }
+
                 return;
             }
 
