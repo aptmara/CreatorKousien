@@ -204,7 +204,11 @@ public class S_UpgradeSelectionUI : MonoBehaviour
 
         // お金が足りなければ処理しない
         int nowMoney = _moneyData.moneyOnHand;
-        if (nowMoney < subtractMoney)    return;
+        if (nowMoney < subtractMoney)
+        {
+            _upgradeDetail.ChangeReactionNotEnouthMoney();
+            return;
+        }
 
 
         // 所持金を減らす
