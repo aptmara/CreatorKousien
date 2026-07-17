@@ -98,8 +98,8 @@ MonoBehaviour:
           inWeight: 0
           outWeight: 0
         - serializedVersion: 3
-          time: 0.972943
-          value: 0.76477367
+          time: 0.9562804
+          value: 0.7623475
           inSlope: -0.025314743
           outSlope: -0.025314743
           tangentMode: 0
@@ -107,8 +107,8 @@ MonoBehaviour:
           inWeight: 0.20508385
           outWeight: 1
         - serializedVersion: 3
-          time: 0.98758954
-          value: 1.0090525
+          time: 0.97507733
+          value: 1.0139086
           inSlope: 8.943002
           outSlope: 8.943002
           tangentMode: 0
@@ -132,7 +132,7 @@ MonoBehaviour:
       _downAnimationSpeed: 1
       _mouthMaxHp: 1400
       _mouthOpenDuration: 8
-      _failureBarrierDamage: 30
+      _failureBarrierDamage: 20
       _failureHoldDuration: 1.5
       _failureRetreatDuration: 1.5
       _downDuration: 3.5
@@ -271,7 +271,7 @@ MonoBehaviour:
       _downAnimationSpeed: 1
       _mouthMaxHp: 1700
       _mouthOpenDuration: 8
-      _failureBarrierDamage: 30
+      _failureBarrierDamage: 20
       _failureHoldDuration: 1.5
       _failureRetreatDuration: 1.5
       _downDuration: 3.5
@@ -410,7 +410,7 @@ MonoBehaviour:
       _downAnimationSpeed: 1
       _mouthMaxHp: 2000
       _mouthOpenDuration: 8.5
-      _failureBarrierDamage: 30
+      _failureBarrierDamage: 20
       _failureHoldDuration: 1.5
       _failureRetreatDuration: 1.5
       _downDuration: 3.5

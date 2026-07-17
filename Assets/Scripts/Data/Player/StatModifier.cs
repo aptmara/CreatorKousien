@@ -12,6 +12,10 @@ using System;
 
 namespace Game.Data.Player
 {
+
+    //____________________________________
+    // statType
+
     /// <summary>
     /// 強化対象となるプレイヤーステータスの種別。
     /// PlayerRuntimeDataのプロパティと1対1で対応する。
@@ -21,7 +25,43 @@ namespace Game.Data.Player
         MaxHp,                      ///< 最大HP
         MoveSpeed,                  ///< 移動速度
         AttachmentScale,            ///< アタッチメントのサイズ倍率
+        Looks,
+
+        None,
     }
+
+    public enum CollectableStatType
+    {
+        BossDamage,
+        NormalDamage,
+        BarrierPinchDamage,
+        AddDropItem,
+        Damage,
+        SpawnItem,
+
+        None,
+    }
+
+    public enum BarrierStatType
+    {
+        Life,
+        RepairSpeed,
+        Hard,
+
+        None,
+    }
+
+    public enum ShopStatType
+    {
+        RerollCost,
+        CostDown,
+
+        None,
+    }
+
+
+    //__________________________________________
+    // 
 
     /// <summary>
     /// ステータス変化の演算方法。
@@ -30,6 +70,7 @@ namespace Game.Data.Player
     {
         Add,                        ///< 加算（現在値 + Value）
         Multiply,                   ///< 乗算（現在値 * Value）
+        SubTract,                   ///< 減算（現在地 - Value）
     }
 
     /// <summary>
@@ -40,6 +81,30 @@ namespace Game.Data.Player
     public struct StatModifier
     {
         public PlayerStatType TargetStat;       ///< 変化させる対象ステータス
+        public ModifierOperation Operation;     ///< 演算方法（加算 or 乗算）
+        public float Value;                     ///< 変化量
+    }
+
+    [Serializable]
+    public struct CollectableStatModifier
+    {
+        public CollectableStatType TargetStat;       ///< 変化させる対象ステータス
+        public ModifierOperation Operation;     ///< 演算方法（加算 or 乗算）
+        public float Value;                     ///< 変化量
+    }
+
+    [Serializable]
+    public struct BarrierStatModifier
+    {
+        public BarrierStatType TargetStat;       ///< 変化させる対象ステータス
+        public ModifierOperation Operation;     ///< 演算方法（加算 or 乗算）
+        public float Value;                     ///< 変化量
+    }
+
+    [Serializable]
+    public struct ShopStatModifier
+    {
+        public ShopStatType TargetStat;       ///< 変化させる対象ステータス
         public ModifierOperation Operation;     ///< 演算方法（加算 or 乗算）
         public float Value;                     ///< 変化量
     }
