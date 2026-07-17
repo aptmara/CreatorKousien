@@ -1167,7 +1167,8 @@ namespace Game.Gameplay.Enemy.Boss
 
             Debug.Log($"[{nameof(BossBattleController)}] フェーズ{_currentPhaseIndex + 1}のダウン演出を開始しました。", this);
 
-            yield return _downPresentationController.PlayPresentation(biteData, downPresentationData);
+            // 最終フェーズのダウン（＝撃破）の場合は、落下開始でクリア演出が始まるようにボスのIDを渡す
+            yield return _downPresentationController.PlayPresentation(biteData, downPresentationData, isFinalPhase ? _bossInstanceId : null);
 
             if (isFinalPhase)
             {
