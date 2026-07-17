@@ -21,6 +21,8 @@ MonoBehaviour:
     Name: CollectableHit
   - AudioClip: {fileID: 8300000, guid: c014529fecd86ec46b1650f4b44fdc67, type: 3}
     Name: PumpkinShot
+  - AudioClip: {fileID: 8300000, guid: a632356e2e4c3264ba925b78d3f0830f, type: 3}
+    Name: PumpkinShot_Big
   BGMDataList:
   - AudioClip: {fileID: 8300000, guid: 84b5d2a1020afd046a2475d7450af8a4, type: 3}
     Name: InGame
