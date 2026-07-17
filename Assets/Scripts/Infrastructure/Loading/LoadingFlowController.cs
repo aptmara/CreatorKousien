@@ -44,7 +44,7 @@ namespace Game.Infrastructure.Loading
             }
 
             yield return null;
-            Shader.WarmupAllShaders();
+            //Shader.WarmupAllShaders();
             yield return null;
 
             float remainingDuration = MinimumLoadingDuration - (Time.realtimeSinceStartup - loadingStartedAt);
