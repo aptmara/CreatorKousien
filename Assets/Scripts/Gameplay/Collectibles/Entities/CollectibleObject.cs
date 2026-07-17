@@ -11,6 +11,7 @@ using Game.Data.Collectibles;
 using Game.Core.Events;
 using System;
 using System.Collections.Generic;
+using Game.Core.Roguelike;
 
 namespace Game.Gameplay.Collectibles
 {
@@ -133,6 +134,7 @@ namespace Game.Gameplay.Collectibles
             _returnAction = returnAction;
             CanBeCollectedByPlayer = canBeCollectedByPlayer;
             _currentBounceCount = 0;
+            transform.localScale *= RoguelikeUpgradeRuntime.CollectibleScaleMultiplier;
 
             UpdateVisual();
             ApplySpecialPhysics();

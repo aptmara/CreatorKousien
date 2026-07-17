@@ -15,6 +15,8 @@
 using UnityEngine;
 using Game.Gameplay.Player.Progression;
 using System.Collections;
+using Game.Core.Events;
+using Game.Core.Roguelike;
 
 namespace Game.Gameplay.Player
 {
@@ -101,6 +103,17 @@ namespace Game.Gameplay.Player
         private bool _isShrunkInternal;                 ///< 内部的な拡大縮小状態のフラグ（SetShrunk()で更新される）
         private float _forceLargeUntil;                 ///< 強制的に拡大状態にする時間（0以下なら強制拡大状態ではない）
         private bool _forceLargeByPunch;                ///< パンチによる強制拡大状態のフラグ（trueなら強制拡大状態、falseなら通常状態）
+        private float _defenseLineHpRatio = 1f;
+
+        private void OnEnable()
+        {
+            EventBus.Subscribe<DefenseLineHealthChangedEvent>(OnDefenseLineHealthChanged);
+        }
+
+        private void OnDisable()
+        {
+            EventBus.Unsubscribe<DefenseLineHealthChangedEvent>(OnDefenseLineHealthChanged);
+        }
 
         // 関数処理
         // ------------------------------------------------------------
@@ -139,7 +152,12 @@ namespace Game.Gameplay.Player
 
             // 入力していない時だけ強化倍率を乗せない。
             // 入力中/強制拡大中は腕強化を反映する。
-            float finalScaleMultiplier = useExpandedScale ? upgradeScale : 1f;
+            float pinchRatio = Mathf.InverseLerp(0.25f, 0f, _defenseLineHpRatio);
+            float pinchMultiplier = Mathf.Lerp(
+                1f,
+                RoguelikeUpgradeRuntime.PinchAttachmentMultiplier,
+                pinchRatio);
+            float finalScaleMultiplier = useExpandedScale ? upgradeScale * pinchMultiplier : 1f;
 
             _targetScale = baseScale * finalScaleMultiplier;
 
@@ -181,6 +199,11 @@ namespace Game.Gameplay.Player
         public void SetRuntimeData(PlayerRuntimeData runtimeData)
         {
             _runtimeData = runtimeData;
+        }
+
+        private void OnDefenseLineHealthChanged(DefenseLineHealthChangedEvent ev)
+        {
+            _defenseLineHpRatio = ev.Ratio;
         }
 
 

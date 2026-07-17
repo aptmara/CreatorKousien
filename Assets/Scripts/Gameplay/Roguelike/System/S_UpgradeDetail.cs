@@ -9,6 +9,7 @@ using Game.Data.Player;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using Game.Core.Roguelike;
 
 public class S_UpgradeDetail : MonoBehaviour
 {
@@ -138,7 +139,7 @@ public class S_UpgradeDetail : MonoBehaviour
         }
         else
         {
-            int cost = upgrade.GetCost(level);
+            int cost = RoguelikeUpgradeRuntime.GetDiscountedCost(upgrade.GetCost(level));
             _levelText.text = $"Level : {level} / {upgrade.MaxLevel}";
             _costText.text = $"Cost : {cost}";
         }

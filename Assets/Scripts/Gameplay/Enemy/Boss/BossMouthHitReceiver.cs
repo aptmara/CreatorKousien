@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using Game.Gameplay.Collectibles;
 using UnityEngine;
+using Game.Core.Roguelike;
 
 namespace Game.Gameplay.Enemy.Boss
 {
@@ -239,7 +240,8 @@ namespace Game.Gameplay.Enemy.Boss
 
             float speedMultiplier = Mathf.Max(1f, hitSpeed);
 
-            float mouthDamage = baseDamage * speedMultiplier * _damageMultiplier;
+            float mouthDamage = baseDamage * speedMultiplier * _damageMultiplier
+                * RoguelikeUpgradeRuntime.CollectibleDamageMultiplier;
 
             // ボス個体IDがある場合はヒットイベントから、落ち物固有効果を実行する
             if (!string.IsNullOrEmpty(_bossInstanceId))
