@@ -68,6 +68,8 @@ namespace Game.Gameplay.Player
 
         private Vector3 _desiredFaceDir;        ///< 向きたい方向
 
+        private System.Func<Vector3, Vector3, Vector3> _autoRotationDirectionConstraint;  ///< 外部から設定される自動回転方向の補正処理
+
         private Vector3 Up => FieldContext.IsReady ? FieldContext.Up : Vector3.up;   ///< フィールドの上方向
 
         /// <summary>
@@ -92,6 +94,28 @@ namespace Game.Gameplay.Player
         public Vector3 Velocity
         {
             get { return _rigidbody.linearVelocity; }
+        }
+
+
+
+        /// <summary>
+        /// 自動回転方向の補正処理を設定する
+        /// </summary>
+        internal void SetAutoRotationDirectionConstraint(System.Func<Vector3, Vector3, Vector3> constraint)
+        {
+            _autoRotationDirectionConstraint = constraint;
+        }
+
+
+        /// <summary>
+        /// 自動回転方向の補正処理を解除する
+        /// </summary>
+        internal void ClearAutoRotationDirectionConstraint(System.Func<Vector3, Vector3, Vector3> constraint)
+        {
+            if (_autoRotationDirectionConstraint == constraint)
+            {
+                _autoRotationDirectionConstraint = null;
+            }
         }
 
 
@@ -229,13 +253,36 @@ namespace Game.Gameplay.Player
 
             bool shouldRotate = _desiredFaceDir.sqrMagnitude > 0.001f && (hasInput || completeAfterRelease);
 
-            // 向きたい方向がある場合は自動回転する
-            if (shouldRotate)
+            // 向きたい方向がある場合、または外部制限が現在向きを補正する場合は自動回転する
+            if (shouldRotate || _autoRotationDirectionConstraint != null)
             {
-                Quaternion targetRotation = Quaternion.LookRotation(_desiredFaceDir, up);
+                Vector3 currentDirection = Vector3.ProjectOnPlane(_rigidbody.rotation * Vector3.forward, up).normalized;
+                Vector3 requestedDirection = shouldRotate ? _desiredFaceDir : currentDirection;
+                Vector3 rotationDirection = GetLimitedAutoRotationDirection(requestedDirection, up);
+
+                if (!shouldRotate && Vector3.Angle(currentDirection, rotationDirection) < 0.01f)
+                {
+                    return;
+                }
+
+                Quaternion targetRotation = Quaternion.LookRotation(rotationDirection, up);
                 Quaternion nextRotation = Quaternion.RotateTowards(_rigidbody.rotation, targetRotation, autoRotationSpeed * Time.fixedDeltaTime);
                 _rigidbody.MoveRotation(nextRotation);
             }
+        }
+
+
+        /// <summary>
+        /// 自動回転制限を反映した向きを取得する
+        /// </summary>
+        private Vector3 GetLimitedAutoRotationDirection(Vector3 direction, Vector3 up)
+        {
+            if (_autoRotationDirectionConstraint == null)
+            {
+                return direction;
+            }
+
+            return _autoRotationDirectionConstraint(direction, up);
         }
 
 
