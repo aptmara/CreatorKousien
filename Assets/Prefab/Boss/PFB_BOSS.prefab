@@ -113,13 +113,14 @@ GameObject:
   m_Component:
   - component: {fileID: 902035538064918081}
   - component: {fileID: 2117839383095877287}
+  - component: {fileID: 3777118113278723170}
   m_Layer: 0
   m_Name: Col_CorpseMouth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &902035538064918081
 Transform:
   m_ObjectHideFlags: 0
@@ -128,8 +129,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1421607036308681273}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0.515806, y: 0.4312075, z: -0.57249355, w: -0.46931368}
+  m_LocalPosition: {x: -0.03069288, y: -0.005467635, z: 0.00034714577}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -150,12 +151,94 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 0.09, y: 0.09, z: 0.09}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &3777118113278723170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1421607036308681273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 375262bf5c253094c8979b48792a21a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossCorpseHitReceiver
+  _minimumHitSpeed: 0.75
+  _displayDamageMultiplier: 2.5
+--- !u!1 &3703863168836400070
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1746099544815668018}
+  - component: {fileID: 7118297182939296078}
+  - component: {fileID: 1231899950330143600}
+  m_Layer: 0
+  m_Name: Col_CorpseThorn1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &1746099544815668018
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3703863168836400070}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.000000029802315, y: -0.000000030267977, z: -0.000000024232572, w: 1}
+  m_LocalPosition: {x: -0.032100003, y: -0.052400053, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5913930895178749422}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &7118297182939296078
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3703863168836400070}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.09, y: 0.09, z: 0.09}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1231899950330143600
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3703863168836400070}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 375262bf5c253094c8979b48792a21a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossCorpseHitReceiver
+  _minimumHitSpeed: 0.75
+  _displayDamageMultiplier: 2.5
 --- !u!1 &3881577146436917802
 GameObject:
   m_ObjectHideFlags: 0
@@ -474,10 +557,17 @@ MonoBehaviour:
   _thornGroupController: {fileID: 6602237408296608932}
   _mouthHealth: {fileID: 7521006716136607607}
   _mouthHitReceiver: {fileID: 2692876526948297543}
+  _corpseHitReceivers:
+  - {fileID: 3777118113278723170}
+  - {fileID: 1231899950330143600}
+  - {fileID: 178259898787923910}
+  - {fileID: 986245597216902049}
   _biteImpactShakeDuration: 0.35
   _biteImpactShakePositionStrength: 0.32
   _biteImpactShakeRotationStrength: 4.5
   _biteImpactShakeFrequency: 26
+  _bossHiddenLocalX: 25
+  _bossVisibleLocalY: -12
 --- !u!114 &956854224720955098
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -617,6 +707,142 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossThornBarrierAttacker
   _thorn: {fileID: 9098273043879594755}
+--- !u!1 &8976793637244947748
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8619648662487320926}
+  - component: {fileID: 5447376305988211289}
+  - component: {fileID: 178259898787923910}
+  m_Layer: 0
+  m_Name: Col_CorpseThorn2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &8619648662487320926
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8976793637244947748}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.057784498, y: 0.00000090838876, z: -0.00013315993, w: 0.99832916}
+  m_LocalPosition: {x: 0.008699988, y: -0.054300003, z: 0.006299987}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4686207444974572381}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &5447376305988211289
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8976793637244947748}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.09, y: 0.09, z: 0.09}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &178259898787923910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8976793637244947748}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 375262bf5c253094c8979b48792a21a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossCorpseHitReceiver
+  _minimumHitSpeed: 0.75
+  _displayDamageMultiplier: 2.5
+--- !u!1 &9209415691005371314
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2893508351158510219}
+  - component: {fileID: 6771498711968796429}
+  - component: {fileID: 986245597216902049}
+  m_Layer: 0
+  m_Name: Col_CorpseThorn3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &2893508351158510219
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9209415691005371314}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.0815232, y: -0.011463294, z: -0.0011540955, w: 0.99660486}
+  m_LocalPosition: {x: 0.024700038, y: -0.0481, z: -0.0074000102}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7418592085755770641}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &6771498711968796429
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9209415691005371314}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.09, y: 0.09, z: 0.09}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &986245597216902049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9209415691005371314}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 375262bf5c253094c8979b48792a21a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossCorpseHitReceiver
+  _minimumHitSpeed: 0.75
+  _displayDamageMultiplier: 2.5
 --- !u!1001 &7968352909127484804
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -702,19 +928,28 @@ PrefabInstance:
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: -8619497217415073131, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       insertIndex: 0
+      addedObject: {fileID: 2893508351158510219}
+    - targetCorrespondingSourceObject: {fileID: -8619497217415073131, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
+      insertIndex: 1
       addedObject: {fileID: 6682158053812453278}
     - targetCorrespondingSourceObject: {fileID: 3431045924552349401, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       insertIndex: 0
+      addedObject: {fileID: 8619648662487320926}
+    - targetCorrespondingSourceObject: {fileID: 3431045924552349401, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
+      insertIndex: 1
       addedObject: {fileID: 3018142709706974663}
     - targetCorrespondingSourceObject: {fileID: 4361672537900896362, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       insertIndex: 0
+      addedObject: {fileID: 1746099544815668018}
+    - targetCorrespondingSourceObject: {fileID: 4361672537900896362, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
+      insertIndex: 1
       addedObject: {fileID: 6007186247314356272}
     - targetCorrespondingSourceObject: {fileID: -5932077761984754295, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       insertIndex: 0
-      addedObject: {fileID: 3225674299080318745}
+      addedObject: {fileID: 902035538064918081}
     - targetCorrespondingSourceObject: {fileID: -5932077761984754295, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       insertIndex: 1
-      addedObject: {fileID: 902035538064918081}
+      addedObject: {fileID: 3225674299080318745}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
       insertIndex: -1
