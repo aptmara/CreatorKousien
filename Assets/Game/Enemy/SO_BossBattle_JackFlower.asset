@@ -16,7 +16,7 @@ MonoBehaviour:
   _plannerMemo: "\u30DC\u30B9\u6226\u306E\u8AAC\u660E\u3084\u8ABF\u6574\u5185\u5BB9\u3092\u3053\u3053\u306B\u8A18\u5165\u3057\u3066\u3061\u3087\u3093\u307E\u3052\uFF01"
   _introPresentationData:
     _isEnabled: 1
-    _playFromLeft: 1
+    _playFromLeft: 0
     _bossStartLocalPositionOffset: {x: 0, y: 9, z: 0}
     _animationSpeed: 0.4
     _cameraPositionOffset: {x: 0, y: -1, z: -4}
@@ -84,7 +84,7 @@ MonoBehaviour:
     _angryBiteData:
       _startLocalPosition: {x: 0, y: -18, z: -8}
       _startEulerAngles: {x: 0, y: 180, z: 0}
-      _barrierReachLocalPosition: {x: 0, y: 15, z: -8}
+      _barrierReachLocalPosition: {x: 0, y: 9, z: -8}
       _riseCurve:
         serializedVersion: 2
         m_Curve:
@@ -205,7 +205,7 @@ MonoBehaviour:
     _angryBiteData:
       _startLocalPosition: {x: 0, y: -18, z: -8}
       _startEulerAngles: {x: 0, y: 180, z: 0}
-      _barrierReachLocalPosition: {x: 0, y: 15, z: -8}
+      _barrierReachLocalPosition: {x: 0, y: 7, z: -8}
       _riseCurve:
         serializedVersion: 2
         m_Curve:
@@ -326,7 +326,7 @@ MonoBehaviour:
     _angryBiteData:
       _startLocalPosition: {x: 0, y: -18, z: -8}
       _startEulerAngles: {x: 0, y: 180, z: 0}
-      _barrierReachLocalPosition: {x: 0, y: 15, z: -8}
+      _barrierReachLocalPosition: {x: 0, y: 7, z: -8}
       _riseCurve:
         serializedVersion: 2
         m_Curve:

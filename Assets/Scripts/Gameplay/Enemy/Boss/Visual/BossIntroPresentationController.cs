@@ -392,7 +392,7 @@ namespace Game.Gameplay.Enemy.Boss
 
             StopCameraRestoreRoutine();
 
-            if (!isActiveAndEnabled || _currentPresentationData == null || _currentPresentationData.CameraReturnDuration <= 0f)
+            if (!gameObject.activeInHierarchy || !isActiveAndEnabled || _currentPresentationData == null || _currentPresentationData.CameraReturnDuration <= 0f)
             {
                 RestoreCameraImmediately();
                 return;
