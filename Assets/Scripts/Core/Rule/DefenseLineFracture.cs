@@ -488,11 +488,14 @@ namespace Game.Core.DefenceLine
 
         private void PlayBreakAudio()
         {
+            SoundManager.instance.StopBGM();
+            SoundManager.instance.PlaySE("Barrier_01");
+            StartCoroutine(PlayTailAudio());
             if (_audioSource == null) return;
 
             if (_breakPrimaryClip != null)
             {
-                _audioSource.PlayOneShot(_breakPrimaryClip, _breakPrimaryVolume);
+                //_audioSource.PlayOneShot(_breakPrimaryClip, _breakPrimaryVolume);
             }
 
             if (_breakTailClip != null)
@@ -507,10 +510,10 @@ namespace Game.Core.DefenceLine
             {
                 yield return new WaitForSeconds(_breakTailDelay);
             }
-
+            SoundManager.instance.PlaySE("Barrier_02");
             if (_audioSource != null && _breakTailClip != null)
             {
-                _audioSource.PlayOneShot(_breakTailClip, _breakTailVolume);
+                //_audioSource.PlayOneShot(_breakTailClip, _breakTailVolume);
             }
         }
 

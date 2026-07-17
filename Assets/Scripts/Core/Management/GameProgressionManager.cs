@@ -213,7 +213,7 @@ namespace Game.Core.Management
 
             if (!isFinalWave)
             {
-                EventBus.Publish(new PlayerTiltEvent(25f));
+                
             }
 
             yield return StartCoroutine(AnimateWaveClearRoutine(isFinalWave, waveData.CompleteDelay));
@@ -243,6 +243,7 @@ namespace Game.Core.Management
             if (isFinalWave)
             {
                 // 最終ウェーブクリア時は、ゲームクリア演出を再生する
+                SoundManager.instance.StopBGM();
                 if (_gameClearCinematicController != null)
                 {
                     yield return StartCoroutine(_gameClearCinematicController.PlayRoutine());
@@ -278,6 +279,7 @@ namespace Game.Core.Management
             // 3. 猶予が終了したら、進行処理へ
             // 屋台演出へ繋ぐ
             yield return StartCoroutine(ShopPresentationSequenceRoutine());
+            SoundManager.instance.SoundVolume(0.3f);
         }
 
         /// <summary>
@@ -286,6 +288,9 @@ namespace Game.Core.Management
         private IEnumerator ShopPresentationSequenceRoutine()
         {
             Debug.Log("[Progression] ショップ登場演出シーケンスを開始するぜよ！");
+
+            // プレイヤーの角度をフィールドに合わせる
+            EventBus.Publish(new PlayerTiltEvent(25f));
 
             // バトル固定画角を退避
             if (Camera.main != null)
@@ -445,6 +450,7 @@ namespace Game.Core.Management
                 // 次のウェーブを開始
                 StartBattleWave(_currentWaveIndex);
             }
+            SoundManager.instance.SoundVolume(1.0f);
         }
 
         /// <summary>
