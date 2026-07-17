@@ -413,7 +413,7 @@ MonoBehaviour:
       _failureBarrierDamage: 20
       _failureHoldDuration: 1.5
       _failureRetreatDuration: 1.5
-      _downDuration: 3.5
+      _downDuration: 1
       _spitCollectibleCount: 40
     _downPresentationData:
       _downEffectPrefab: {fileID: 4148052385838451594, guid: 16d7e6146392f494abd0b5e58383d213, type: 3}
@@ -437,7 +437,7 @@ MonoBehaviour:
       _cameraShakePositionStrength: 0.2
       _cameraShakeRotationStrength: 3
       _cameraShakeFrequency: 35
-      _fallStartDelay: 2.5
+      _fallStartDelay: 0.5
       _fallDistance: 15
       _fallCurve:
         serializedVersion: 2

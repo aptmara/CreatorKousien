@@ -388,6 +388,10 @@ namespace Game.Core.Enemy
             _rising.ResumeMove();
             _rising.DropStart(transform);
             OnDropStarted?.Invoke();
+
+            // 撃破落下の開始を通知する（Waveの最後の敵ならクリア演出がここから始まる）
+            EventBus.Publish(new EnemyDefeatDropStartedEvent(InstanceEnemyId, transform));
+            Debug.Log($"[DropDebug] {InstanceEnemyId} 撃破落下開始 time={Time.time:F2}"); // TODO: 動作確認後に削除
         }
 
 

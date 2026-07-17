@@ -131,8 +131,9 @@ namespace Game.Gameplay.Enemy.Boss
         /// </summary>
         /// <param name="biteData">アングリバイトとダウン時間の設定</param>
         /// <param name="presentationData">ダウン演出の設定</param>
+        /// <param name="defeatDropEnemyId">最終フェーズのダウン（＝撃破）の場合に指定するボスのID。落下開始時にEnemyDefeatDropStartedEventを発行する</param>
         /// <returns>ダウン演出が終了するまで待機するIEnumerator</returns>
-        public IEnumerator PlayPresentation(BossAngryBiteData biteData, BossDownPresentationData presentationData)
+        public IEnumerator PlayPresentation(BossAngryBiteData biteData, BossDownPresentationData presentationData, string defeatDropEnemyId = null)
         {
             if (biteData == null || presentationData == null)
             {
@@ -177,11 +178,23 @@ namespace Game.Gameplay.Enemy.Boss
             // カメラシェイク要求を複数回答発行しないようにするためのフラグ
             bool didRequestCameraShake = false;
 
+            // 撃破落下の開始通知を1回だけ発行するためのフラグ
+            bool didPublishDefeatDrop = false;
+
             float elapsedTime = 0f;
 
             // ダウン演出の再生ループ
             while (elapsedTime < totalDuration && !_isCancellationRequested)
             {
+                // 最終フェーズのダウンでは、落下が始まった瞬間に撃破落下の開始を通知する
+                // （Wave側がこれを検知してクリア演出を落下の頭から開始する）
+                if (!didPublishDefeatDrop && !string.IsNullOrEmpty(defeatDropEnemyId) && elapsedTime >= fallStartTime)
+                {
+                    didPublishDefeatDrop = true;
+                    EventBus.Publish(new EnemyDefeatDropStartedEvent(defeatDropEnemyId, motionRoot));
+                    Debug.Log($"[DropDebug] ボス撃破落下開始 {defeatDropEnemyId} time={Time.time:F2}"); // TODO: 動作確認後に削除
+                }
+
                 // 設定された開始時間へ到達したエフェクトを1回だけ生成する
                 TrySpawnEffect(presentationData.DownEffectPrefab, presentationData.DownEffectLocalOffset, presentationData.DownEffectStartDelay, elapsedTime, ref didSpawnDownEffect);
 

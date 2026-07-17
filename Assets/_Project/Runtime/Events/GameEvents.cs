@@ -219,6 +219,22 @@ namespace Game.Core.Events
     }
 
     /// <summary>
+    /// 撃破された敵が落下を開始した通知。EnemyControllerが発行する。
+    /// Wave側が「最後の敵の落下開始」を検知してクリア演出を早出しするために使用する。
+    /// </summary>
+    public readonly struct EnemyDefeatDropStartedEvent
+    {
+        public readonly string EnemyId;
+        public readonly Transform EnemyTransform;
+
+        public EnemyDefeatDropStartedEvent(string enemyId, Transform enemyTransform)
+        {
+            EnemyId = enemyId;
+            EnemyTransform = enemyTransform;
+        }
+    }
+
+    /// <summary>
     /// 敵のゲージMAX到達による攻撃発動通知。
     /// Phase2以降でプレイヤーへのダメージ処理を受け取るために用意する。
     /// </summary>

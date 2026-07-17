@@ -151,6 +151,7 @@ MonoBehaviour:
   testWave: {fileID: 11400000, guid: 13bfd27def824fc468a8ad95ae4add70, type: 2}
   waveRunner: {fileID: 0}
   enemySpawner: {fileID: 0}
+  _playResultFlowOnClear: 1
 --- !u!4 &1283636159
 Transform:
   m_ObjectHideFlags: 0

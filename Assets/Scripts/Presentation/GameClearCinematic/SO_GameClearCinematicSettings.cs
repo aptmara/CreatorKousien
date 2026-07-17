@@ -60,6 +60,28 @@ namespace Game.Presentation.GameClearCinematic
         };
 
 
+        [Header("前半: 敵フォーカスと落下見届け")]
+        [Tooltip("スロー開始からカメラが寄り始めるまでの待ち時間（秒・実時間）")]
+        [SerializeField, Min(0f)]
+        private float _enemyFocusStartDelay = 0.4f;
+
+        [Tooltip("敵へカメラが寄る時間（秒・実時間）")]
+        [SerializeField, Min(0.01f)]
+        private float _enemyFocusDuration = 0.5f;
+
+        [Tooltip("敵から見たカメラの位置オフセット")]
+        [SerializeField]
+        private Vector3 _enemyCameraOffset = new Vector3(2.5f, 1.5f, -5f);
+
+        [Tooltip("敵の注視点オフセット")]
+        [SerializeField]
+        private Vector3 _enemyLookAtOffset = Vector3.zero;
+
+        [Tooltip("落下を見届ける時間（秒・実時間）")]
+        [SerializeField, Min(0f)]
+        private float _enemyFallWatchDuration = 1.5f;
+
+
         [Header("後半: プレイヤー寄り")]
         [SerializeField, Min(0f)]
         private float _zoomDuration = 1.0f;
@@ -91,6 +113,12 @@ namespace Game.Presentation.GameClearCinematic
         public float ShakeFrequency => _shakeFrequency;                         ///< カメラシェイクの周波数
 
         public FlashTiming[] FlashTimings => _flashTimings;                     ///< フラッシュのタイミングを表す構造体の配列
+
+        public float EnemyFocusStartDelay => _enemyFocusStartDelay;             ///< スロー開始からカメラが寄り始めるまでの待ち時間（秒・実時間）
+        public float EnemyFocusDuration => _enemyFocusDuration;                 ///< 敵へカメラが寄る時間（秒・実時間）
+        public Vector3 EnemyCameraOffset => _enemyCameraOffset;                 ///< 敵から見たカメラの位置オフセット
+        public Vector3 EnemyLookAtOffset => _enemyLookAtOffset;                 ///< 敵の注視点オフセット
+        public float EnemyFallWatchDuration => _enemyFallWatchDuration;         ///< 落下を見届ける時間（秒・実時間）
 
         public float ZoomDuration => _zoomDuration;                             ///< ズームの持続時間（秒）
         public Vector3 PlayerCameraOffset => _playerCameraOffset;               ///< プレイヤーのカメラ位置オフセット
