@@ -14,6 +14,7 @@
 // ------------------------------------------------------------
 using System.Collections;
 using Game.Data.Enemy.Boss;
+using Game.Core.Events;
 using Game.Gameplay.Cameras;
 using UnityEngine;
 
@@ -40,6 +41,10 @@ namespace Game.Gameplay.Enemy.Boss
         [Tooltip("ボスのAnimatorと開始位置を管理するコンポーネント")]
         private BossAnimationController _animationController;
 
+        [SerializeField]
+        [Tooltip("画面内判定に使用するボス本体のRenderer")]
+        private Renderer _bossBodyRenderer;
+
 
         [Header("--- カメラ参照 ---")]
 
@@ -50,6 +55,38 @@ namespace Game.Gameplay.Enemy.Boss
         [SerializeField]
         [Tooltip("通常のカメラ制御を停止するCameraRigController。未設定の場合は実行時に自動取得する")]
         private CameraRigController _cameraRigController;
+
+
+        [Header("--- 開幕中のカメラ振動 ---")]
+
+        [SerializeField]
+        [Tooltip("開幕演出中, ボスが画面内にいる間カメラを振動させる")]
+        private bool _isRumbleEnabled = true;
+
+        [SerializeField]
+        [Min(0.05f)]
+        [Tooltip("振動パルスを発行する間隔(秒)")]
+        private float _rumblePulseInterval = 0.1f;
+
+        [SerializeField]
+        [Min(0.05f)]
+        [Tooltip("振動パルスの持続時間(秒)")]
+        private float _rumblePulseDuration = 0.25f;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("揺れの位置の強さ(単位: メートル)")]
+        private float _rumblePositionStrength = 0.06f;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("揺れの回転の強さ(単位: 度)")]
+        private float _rumbleRotationStrength = 0.8f;
+
+        [SerializeField]
+        [Min(1f)]
+        [Tooltip("揺れの振動数(単位: Hz)")]
+        private float _rumbleFrequency = 25f;
 
 
         // ランタイム状態
@@ -89,6 +126,13 @@ namespace Game.Gameplay.Enemy.Boss
         /// 通常カメラ位置へ復帰させているコルーチン
         /// </summary>
         private Coroutine _cameraRestoreRoutine;
+
+        /// <summary>
+        /// 開幕中のカメラ振動を管理しているコルーチン
+        /// </summary>
+        private Coroutine _introRumbleRoutine;
+
+
 
 
         // 公開プロパティ
@@ -146,6 +190,7 @@ namespace Game.Gameplay.Enemy.Boss
             IsPlaying = false;
 
             StopCameraRestoreRoutine();
+            StopIntroRumbleRoutine();
 
             if (_hasSavedNormalCameraPose)
             {
@@ -165,6 +210,11 @@ namespace Game.Gameplay.Enemy.Boss
             if (_animationController == null)
             {
                 _animationController = GetComponentInChildren<BossAnimationController>();
+            }
+
+            if (_bossBodyRenderer == null && _animationController != null)
+            {
+                _bossBodyRenderer = _animationController.GetComponentInChildren<Renderer>();
             }
         }
 
@@ -262,9 +312,15 @@ namespace Game.Gameplay.Enemy.Boss
                 }
             }
 
+            if (_isRumbleEnabled && didStartAnimation)
+            {
+                StopIntroRumbleRoutine();
+                _introRumbleRoutine = StartCoroutine(PlayIntroRumbleRoutine());
+            }
+
+
             // ボスを開幕開始位置へ移した後で、カメラをボス戦用の引き位置へ移動する
-            yield return MoveCameraToBattlePosition(
-                presentationData);
+            yield return MoveCameraToBattlePosition(presentationData);
 
             if (_isCancellationRequested)
             {
@@ -275,8 +331,7 @@ namespace Game.Gameplay.Enemy.Boss
             // カメラ移動中から再生している開幕アニメーションが1回分終了するまで待機する
             if (didStartAnimation)
             {
-                while (!_isCancellationRequested &&
-                       !_animationController.IsCurrentAnimationFinished())
+                while (!_isCancellationRequested && !_animationController.IsCurrentAnimationFinished())
                 {
                     yield return null;
                 }
@@ -308,7 +363,7 @@ namespace Game.Gameplay.Enemy.Boss
             Vector3 moveStartPosition = cameraTransform.position;
             Quaternion moveStartRotation = cameraTransform.rotation;
 
-            Vector3 targetPosition =  _normalCameraPosition + presentationData.CameraPositionOffset;
+            Vector3 targetPosition = _normalCameraPosition + presentationData.CameraPositionOffset;
 
             Quaternion targetRotation = _normalCameraRotation;
 
@@ -391,6 +446,7 @@ namespace Game.Gameplay.Enemy.Boss
             }
 
             StopCameraRestoreRoutine();
+            StopIntroRumbleRoutine();
 
             if (!gameObject.activeInHierarchy || !isActiveAndEnabled || _currentPresentationData == null || _currentPresentationData.CameraReturnDuration <= 0f)
             {
@@ -478,6 +534,7 @@ namespace Game.Gameplay.Enemy.Boss
             IsPlaying = false;
 
             StopCameraRestoreRoutine();
+            StopIntroRumbleRoutine();
 
             _hasSavedNormalCameraPose = false;
             _isBattleCameraActive = false;
@@ -514,6 +571,64 @@ namespace Game.Gameplay.Enemy.Boss
 
             StopCoroutine(_cameraRestoreRoutine);
             _cameraRestoreRoutine = null;
+        }
+
+
+        // 開幕中のカメラ振動
+        // ------------------------------------------------------------
+
+        /// <summary>
+        /// ボスが画面内にいる間、カメラを振動させるコルーチン
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerator PlayIntroRumbleRoutine()
+        {
+            while (IsPlaying && !_isCancellationRequested)
+            {
+                if (IsBossVisibleOnScreen())
+                {
+                    EventBus.Publish(new CameraShakeRequestedEvent(_rumblePulseDuration, _rumblePositionStrength, _rumbleRotationStrength, _rumbleFrequency));
+
+                    yield return new WaitForSeconds(_rumblePulseInterval);
+                }
+                else
+                {
+                    yield return null;
+                }
+            }
+
+            _introRumbleRoutine = null;
+        }
+
+        /// <summary>
+        /// ボスがカメラの画面内に表示されているかどうかを判定する
+        /// </summary>
+        /// <returns></returns>
+        private bool IsBossVisibleOnScreen()
+        {
+            if (_targetCamera == null || _bossBodyRenderer == null)
+            {
+                return false;
+            }
+
+            Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(_targetCamera);
+
+            // ボスの描画範囲が少しでも画面に入っていれば「見えている」とみなす
+            return GeometryUtility.TestPlanesAABB(frustumPlanes, _bossBodyRenderer.bounds);
+        }
+
+        /// <summary>
+        /// 実行中のカメラ振動コルーチンを停止する
+        /// </summary>
+        private void StopIntroRumbleRoutine()
+        {
+            if (_introRumbleRoutine == null)
+            {
+                return;
+            }
+
+            StopCoroutine(_introRumbleRoutine);
+            _introRumbleRoutine = null;
         }
     }
 }
