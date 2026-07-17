@@ -18,7 +18,7 @@ MonoBehaviour:
   - AudioClip: {fileID: 8300000, guid: cf29fe9369c74b9479679b3dd60c39fd, type: 3}
     Name: Barrier_02
   - AudioClip: {fileID: 8300000, guid: d486ae6690f2e67499f80769c9820ca7, type: 3}
-    Name: Drop
+    Name: CollectableHit
   - AudioClip: {fileID: 8300000, guid: c014529fecd86ec46b1650f4b44fdc67, type: 3}
     Name: PumpkinShot
   BGMDataList:

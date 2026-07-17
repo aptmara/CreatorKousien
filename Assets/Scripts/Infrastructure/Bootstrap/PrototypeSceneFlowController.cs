@@ -194,6 +194,7 @@ namespace Game.Infrastructure.Bootstrap
 
             GameProgressionManager progression = Object.FindFirstObjectByType<GameProgressionManager>();
             progression?.BeginPreparedGame();
+            SoundManager.instance.PlayBGM("InGame");
         }
 
         private static void SetPlayerMovement(PlayerFacade player, bool canMove)
