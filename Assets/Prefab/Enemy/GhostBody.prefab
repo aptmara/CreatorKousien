@@ -163,7 +163,7 @@ MonoBehaviour:
   _maxHitAnimationTime: 2
   _addHitAnimationTime: 1
   _dropDuration: 0.5
-  _dropRot: {x: 0, y: 90, z: -180}
+  _dropRot: {x: 0, y: 180, z: -180}
   _postFlipDelay: 0.25
   _useCartoonFeedback: 1
   _squashTarget: {fileID: 0}
