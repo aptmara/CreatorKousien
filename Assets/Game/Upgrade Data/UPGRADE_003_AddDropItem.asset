@@ -10,14 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 730422566b7cc734ea8529d8457fd466, type: 3}
-  m_Name: UPGRADE_009_SpawnUp
+  m_Name: UPGRADE_003_AddDropItem
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
-  Id: 9
-  DisplayName: SpawnUp
+  Id: 3
+  DisplayName: AddDropItem
   Description: "\u3042"
-  Modifiers: []
+  Modifiers:
+  - TargetStat: 0
+    Operation: 0
+    Value: 1
   MaxLevel: 5
-  Icon: {fileID: 21300000, guid: fd70149658b75ae41a5809f717d5ed99, type: 3}
+  Icon: {fileID: 21300000, guid: e99c6213aa393d24c92be25281166c93, type: 3}
   Category: 0
-  Cost: 10
+  Cost: 20
   CostMagni: 1.2
