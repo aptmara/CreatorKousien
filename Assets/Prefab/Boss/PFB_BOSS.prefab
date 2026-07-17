@@ -421,6 +421,11 @@ MonoBehaviour:
   _thornGroupController: {fileID: 6602237408296608932}
   _mouthHealth: {fileID: 7521006716136607607}
   _mouthHitReceiver: {fileID: 2692876526948297543}
+  _biteImpactShakeDuration: 0.35
+  _biteImpactShakePositionStrength: 0.32
+  _biteImpactShakeRotationStrength: 4.5
+  _biteImpactShakeFrequency: 26
+  _bossHiddenLocalX: 36
 --- !u!114 &956854224720955098
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -448,8 +453,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossIntroPresentationController
   _animationController: {fileID: 3049542023914037592}
+  _bossBodyRenderer: {fileID: 4231583593598017069}
   _targetCamera: {fileID: 0}
   _cameraRigController: {fileID: 0}
+  _isRumbleEnabled: 1
+  _rumblePulseInterval: 0.1
+  _rumblePulseDuration: 0.25
+  _rumblePositionStrength: 0.06
+  _rumbleRotationStrength: 0.8
+  _rumbleFrequency: 25
 --- !u!1 &8550809187659737705
 GameObject:
   m_ObjectHideFlags: 0
@@ -656,6 +668,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2040337422880406849}
   m_SourcePrefab: {fileID: 100100000, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
+--- !u!137 &4231583593598017069 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -3157907228213027927, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}
+  m_PrefabInstance: {fileID: 7968352909127484804}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &4686207444974572381 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3431045924552349401, guid: b7b0fd6d06b0d57468901654c3458274, type: 3}

@@ -20,7 +20,7 @@ MonoBehaviour:
     Operation: 0
     Value: 1
   MaxLevel: 5
-  Icon: {fileID: 21300000, guid: e99c6213aa393d24c92be25281166c93, type: 3}
+  Icon: {fileID: 21300000, guid: 7d1f0bf9a0d5ba648b50678eba730c9e, type: 3}
   Category: 0
-  Cost: 20
+  Cost: 50
   CostMagni: 1.2

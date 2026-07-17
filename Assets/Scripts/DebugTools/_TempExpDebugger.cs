@@ -41,11 +41,13 @@ namespace Game.DebugTools
 
         private void Update()
         {
+#if UNITY_EDITOR
             if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
             {
                 EventBus.Publish(new ExpGainedEvent(_expPerPress, "debug"));
                 Debug.Log($"[TempExpDebugger] Rキー → ExpGainedEvent({_expPerPress}) を発火");
             }
+#endif
         }
 
         private void OnExpChanged(PlayerExpChangedEvent e)

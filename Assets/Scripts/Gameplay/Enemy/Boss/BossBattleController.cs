@@ -93,6 +93,18 @@ namespace Game.Gameplay.Enemy.Boss
         private float _biteImpactShakeFrequency = 26f;
 
 
+        [Header("--- イバラタックル警告の画面内判定 ---")]
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("ボスが「画面外」とみなすMotionRootのローカルXの絶対値。これより内側へ来たら「見えた」扱い(待機位置は±35)")]
+        private float _bossHiddenLocalX = 25f;
+
+        [SerializeField]
+        [Tooltip("ボスが見えたとみなすRootMotionのローカルY")]
+        private float _bossVisibleLocalY = -12f;
+
+
 
         // ランタイム状態
         // ------------------------------------------------------------
@@ -826,19 +838,26 @@ namespace Game.Gameplay.Enemy.Boss
         }
 
 
+        /// <summary>
+        /// ボスの頭(口の当たり判定)がカメラの画面内へ入ったかどうかを判定する
+        /// </summary>
         private bool IsBossVisibleOnScreen()
         {
             Camera mainCamera = Camera.main;
-            Transform motionRoot = _animationController != null ? _animationController.MotionRoot : null;
+            Transform headTransform = _mouthHitReceiver != null ? _mouthHitReceiver.transform : null;
 
-            if (mainCamera == null || motionRoot == null)
+            if (mainCamera == null || headTransform == null)
             {
-                return true;
+                return true; // 判定できない場合は演出を出しっぱなしにしない
             }
 
-            Vector3 viewportPoint = mainCamera.WorldToViewportPoint(motionRoot.position);
+            Vector3 viewportPoint = mainCamera.WorldToViewportPoint(headTransform.position);
 
-            return viewportPoint.z > 0f && viewportPoint.x >= 0f && viewportPoint.x <= 1f && viewportPoint.y >= 0f && viewportPoint.y <= 1f;
+
+            // 頭が画面(下端より上・左右の範囲内)に入ったら「見えた」とみなす
+            return viewportPoint.z > 0f
+                && viewportPoint.x >= 0f && viewportPoint.x <= 1f
+                && viewportPoint.y >= 0f;
         }
 
 
