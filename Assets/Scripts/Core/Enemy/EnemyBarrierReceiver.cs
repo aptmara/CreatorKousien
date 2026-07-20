@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Game.Core.Events;
 using Game.Gameplay.Collectibles;
 using UnityEngine;
+using Game.Core.Roguelike;
 
 namespace Game.Core.Enemy
 {
@@ -103,13 +104,20 @@ namespace Game.Core.Enemy
 
             float baseDamage = Mathf.Max(1f, collectible.DamageAmount);
             float speedFactor = Mathf.Max(1f, hitSpeed);
-            float gaugeDamage = baseDamage * speedFactor * _gaugeDamageMultiplier;
+            float targetMultiplier = _controller != null && !_controller.IsBoss
+                ? RoguelikeUpgradeRuntime.NormalEnemyDamageMultiplier
+                : 1f;
+            float gaugeDamage = baseDamage * speedFactor * _gaugeDamageMultiplier
+                * RoguelikeUpgradeRuntime.CollectibleDamageMultiplier
+                * targetMultiplier;
 
             // とげ玉のバリア特攻パラメータ計算
             var itemData = collectible.GetCollectableData();
             if (itemData != null && itemData.Type == Game.Data.Collectibles.CollectibleType.Toge)
             {
-                gaugeDamage = itemData.BarrierDamageAmount * speedFactor * _gaugeDamageMultiplier;
+                gaugeDamage = itemData.BarrierDamageAmount * speedFactor * _gaugeDamageMultiplier
+                    * RoguelikeUpgradeRuntime.CollectibleDamageMultiplier
+                    * targetMultiplier;
             }
 
             if (_controller != null)

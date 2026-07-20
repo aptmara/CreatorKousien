@@ -11,6 +11,8 @@
 using UnityEngine;
 using System.Collections;
 using Game.Core.Enemy;
+using Game.Core.Management;
+using Game.Presentation.GameClearCinematic;
 
 namespace Game.WaveSystem
 {
@@ -24,6 +26,11 @@ namespace Game.WaveSystem
         [Header("--- 参照 ---")]
         [SerializeField] private WaveRunner waveRunner;
         [SerializeField] private EnemySpawner enemySpawner;
+
+        [Header("--- リザルトフローのテスト ---")]
+        [SerializeField]
+        [Tooltip("Wave完了後にクリア演出とリザルト遷移まで再生するかどうか")]
+        private bool _playResultFlowOnClear;
 
         private Coroutine runningRoutine;
 
@@ -73,7 +80,39 @@ namespace Game.WaveSystem
             Debug.Log($"[WaveTester] Wave「{testWave.WaveName}」を開始します", this);
             yield return StartCoroutine(waveRunner.PlayWave(testWave, enemySpawner));
 
+            // Waveが正常完了した場合はリザルトフローを再生する
+            if (_playResultFlowOnClear && waveRunner.LastRunSucceeded)
+            {
+                yield return StartCoroutine(PlayResultFlowRoutine());
+            }
+
             runningRoutine = null;
+        }
+
+
+        /// <summary>
+        /// 本番の最終Waveクリアと同じ流れ（クリア演出→リザルト遷移）を再生する
+        /// </summary>
+        /// <returns></returns>
+        private System.Collections.IEnumerator PlayResultFlowRoutine()
+        {
+            SoundManager.instance?.StopBGM();
+
+            GameClearCinematicController cinematic = Object.FindFirstObjectByType<GameClearCinematicController>();
+
+            if (cinematic != null)
+            {
+                yield return StartCoroutine(cinematic.PlayRoutine());
+            }
+
+            if (GameProgressionManager.Instance != null)
+            {
+                GameProgressionManager.Instance.GoToResult(true);
+            }
+            else
+            {
+                Debug.LogWarning("[WaveTester] GameProgressionManagerが見つからないため、リザルトへ遷移できません", this);
+            }
         }
 
 

@@ -9,6 +9,7 @@
 // - 基盤制作
 // ------------------------------------------------------------
 using System.Collections;
+using Game.Core.Events;
 using Game.Gameplay.Cameras;
 using Game.Gameplay.Player;
 using Game.Gameplay.Stage;
@@ -59,11 +60,55 @@ namespace Game.Presentation.GameClearCinematic
 
         private float _noiseSeed;                                                ///< ノイズシード値
 
+        private Transform _lastHitEnemyTransform;                               ///< 最後にヒットした敵（＝トドメを刺した敵）のTransform
+
+        private Transform _droppingEnemyTransform;                              ///< 撃破落下を開始した敵のTransform（こちらを優先して使用する）
+
         private void Awake()
         {
             _noiseSeed = Random.value * 1000f;
             ResolveReferences();
             SetFlashAlpha(0f);
+        }
+
+
+        private void OnEnable()
+        {
+            EventBus.Subscribe<EnemyHitBatchEvent>(OnEnemyHitForFocus);
+            EventBus.Subscribe<EnemyDefeatDropStartedEvent>(OnEnemyDefeatDropStarted);
+        }
+
+
+        private void OnDisable()
+        {
+            EventBus.Unsubscribe<EnemyHitBatchEvent>(OnEnemyHitForFocus);
+            EventBus.Unsubscribe<EnemyDefeatDropStartedEvent>(OnEnemyDefeatDropStarted);
+        }
+
+
+        /// <summary>
+        /// 撃破落下を開始した敵を記録しておき、クリア演出のフォーカス対象として最優先で使用する
+        /// </summary>
+        /// <param name="ev">撃破落下開始イベント</param>
+        private void OnEnemyDefeatDropStarted(EnemyDefeatDropStartedEvent ev)
+        {
+            if (ev.EnemyTransform != null)
+            {
+                _droppingEnemyTransform = ev.EnemyTransform;
+            }
+        }
+
+
+        /// <summary>
+        /// 最後にヒットした敵を記録しておき、クリア演出のフォーカス対象にする
+        /// </summary>
+        /// <param name="ev">敵ヒットイベント</param>
+        private void OnEnemyHitForFocus(EnemyHitBatchEvent ev)
+        {
+            if (ev.EnemyTransform != null)
+            {
+                _lastHitEnemyTransform = ev.EnemyTransform;
+            }
         }
 
 
@@ -105,8 +150,25 @@ namespace Game.Presentation.GameClearCinematic
 
             _playerController?.RetractClearAttachment();
 
-            // プレイヤーのアニメーションをクリア状態に設定
-            yield return StartCoroutine(PlaySlowMotionPart(cameraTransform));
+            // 撃破落下中の敵が分かる場合は、最後にヒットした敵よりもそちらを優先してフォーカスする
+            if (_droppingEnemyTransform != null)
+            {
+                _lastHitEnemyTransform = _droppingEnemyTransform;
+            }
+
+            Debug.Log($"[DropDebug] クリア演出開始 target={(_lastHitEnemyTransform != null ? _lastHitEnemyTransform.name : "null")} time={Time.time:F2}"); // TODO: 動作確認後に削除
+
+            // 倒した敵が分かる場合は敵フォーカス演出、分からない場合は従来のスロー演出を再生する
+            if (_lastHitEnemyTransform != null)
+            {
+                yield return StartCoroutine(PlayEnemyFocusPart(cameraTransform));
+                yield return StartCoroutine(PlayEnemyFallWatchPart(cameraTransform));
+            }
+            else
+            {
+                yield return StartCoroutine(PlaySlowMotionPart(cameraTransform));
+            }
+
             yield return StartCoroutine(PlayPlayerZoomPart(cameraTransform));
 
             // プレイヤーのアニメーションをクリア状態に設定
@@ -131,6 +193,115 @@ namespace Game.Presentation.GameClearCinematic
 
         // 内部処理
         // ------------------------------------------------------------
+
+        /// <summary>
+        /// スローモーションを開始し、倒した敵へカメラを寄せるコルーチン
+        /// </summary>
+        /// <param name="cameraTransform">カメラのTransform</param>
+        /// <returns></returns>
+        private IEnumerator PlayEnemyFocusPart(Transform cameraTransform)
+        {
+            Time.timeScale = _settings.SlowMotionTimeScale;
+            Time.fixedDeltaTime = DefaultFixedDeltaTime * Time.timeScale;
+
+            // スローに入った直後は現在の画角のまま少し見せてから、カメラを寄せ始める
+            float startDelay = Mathf.Max(0f, _settings.EnemyFocusStartDelay);
+            float delayElapsed = 0f;
+
+            while (delayElapsed < startDelay && _lastHitEnemyTransform != null)
+            {
+                delayElapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            Vector3 startPosition = cameraTransform.position;
+            Quaternion startRotation = cameraTransform.rotation;
+
+            float duration = Mathf.Max(0.01f, _settings.EnemyFocusDuration);
+            float elapsed = 0f;
+
+            while (elapsed < duration && _lastHitEnemyTransform != null)
+            {
+                elapsed += Time.unscaledDeltaTime;
+
+                float easedT = EaseInOut(Mathf.Clamp01(elapsed / duration));
+
+                // 落下中の敵を毎フレーム追いかけて目標を更新する
+                Vector3 targetPosition = GetEnemyCameraPosition();
+                Quaternion targetRotation = GetLookAtEnemyRotation(targetPosition);
+
+                cameraTransform.position = Vector3.Lerp(startPosition, targetPosition, easedT);
+                cameraTransform.rotation = Quaternion.Slerp(startRotation, targetRotation, easedT);
+
+                yield return null;
+            }
+        }
+
+
+        /// <summary>
+        /// フラッシュを焚きながら、敵が落下していくのを見届けるコルーチン
+        /// </summary>
+        /// <param name="cameraTransform">カメラのTransform</param>
+        /// <returns></returns>
+        private IEnumerator PlayEnemyFallWatchPart(Transform cameraTransform)
+        {
+            float duration = _settings.EnemyFallWatchDuration;
+            float elapsed = 0f;
+
+            while (elapsed < duration && _lastHitEnemyTransform != null)
+            {
+                elapsed += Time.unscaledDeltaTime;
+
+                // カメラ位置は固定し、落下していく敵を向きだけで追い続ける
+                Quaternion lookRotation = GetLookAtEnemyRotation(cameraTransform.position);
+                Quaternion shakeRotation = CalculateShakeRotation(elapsed);
+
+                cameraTransform.rotation = lookRotation * shakeRotation;
+
+                SetFlashAlpha(CalculateFlashAlpha(elapsed));
+
+                yield return null;
+            }
+
+            SetFlashAlpha(0f);
+
+            Time.timeScale = 1f;
+            Time.fixedDeltaTime = DefaultFixedDeltaTime;
+        }
+
+
+        /// <summary>
+        /// 敵を写すカメラ座標を取得する
+        /// </summary>
+        /// <returns>カメラ座標</returns>
+        private Vector3 GetEnemyCameraPosition()
+        {
+            Quaternion fieldRotation = FieldContext.IsReady ? FieldContext.Rotation : Quaternion.identity;
+            return _lastHitEnemyTransform.position + fieldRotation * _settings.EnemyCameraOffset;
+        }
+
+
+        /// <summary>
+        /// 敵を見つめる回転を取得する
+        /// </summary>
+        /// <param name="cameraPosition">カメラ座標</param>
+        /// <returns>敵を見つめる回転</returns>
+        private Quaternion GetLookAtEnemyRotation(Vector3 cameraPosition)
+        {
+            Vector3 up = FieldContext.IsReady ? FieldContext.Up : Vector3.up;
+            Quaternion fieldRotation = FieldContext.IsReady ? FieldContext.Rotation : Quaternion.identity;
+            Vector3 lookTarget = _lastHitEnemyTransform.position + fieldRotation * _settings.EnemyLookAtOffset;
+
+            Vector3 lookDirection = lookTarget - cameraPosition;
+
+            if (lookDirection.sqrMagnitude < 0.001f)
+            {
+                return Quaternion.LookRotation(Vector3.down, up);
+            }
+
+            return Quaternion.LookRotation(lookDirection.normalized, up);
+        }
+
 
         /// <summary>
         /// スローモーション部分のコルーチンを再生する

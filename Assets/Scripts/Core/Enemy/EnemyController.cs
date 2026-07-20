@@ -49,6 +49,7 @@ namespace Game.Core.Enemy
         [SerializeField]
         [Tooltip("この敵に適用するEnemyDefinition。実行時にInitialize(def)で差し替えも可能。")]
         private EnemyDefinition _definition;
+        public bool IsBoss => _definition != null && _definition.IsBoss;
 
         /// <summary>
         /// 実行時に割り当てられる一意の敵ID。複数敵がいる場合のイベントのルーティングに使用する。
@@ -388,6 +389,10 @@ namespace Game.Core.Enemy
             _rising.ResumeMove();
             _rising.DropStart(transform);
             OnDropStarted?.Invoke();
+
+            // 撃破落下の開始を通知する（Waveの最後の敵ならクリア演出がここから始まる）
+            EventBus.Publish(new EnemyDefeatDropStartedEvent(InstanceEnemyId, transform));
+            Debug.Log($"[DropDebug] {InstanceEnemyId} 撃破落下開始 time={Time.time:F2}"); // TODO: 動作確認後に削除
         }
 
 

@@ -9,6 +9,7 @@ using Game.Data.Player;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using Game.Core.Roguelike;
 
 public class S_UpgradeDetail : MonoBehaviour
 {
@@ -46,9 +47,22 @@ public class S_UpgradeDetail : MonoBehaviour
     private GameObject _spawnedInstance;
 
 
+    private int _soldOutTxtOutputCount;
+    private int _notEnouthMoneyTextCount;
+
+    private UpgradeData _oldUpgrade;
+
 
     public void SpawnDetail(UpgradeData upgrade, bool playAnime = true)
     {
+        if (_oldUpgrade != null && upgrade.Id != _oldUpgrade.Id)
+        {
+            _notEnouthMoneyTextCount = 0;
+            _soldOutTxtOutputCount = 0;
+
+        }
+
+
         if (_spawnedInstance != null)
         {
             if (playAnime)
@@ -102,6 +116,9 @@ public class S_UpgradeDetail : MonoBehaviour
         if (playAnime)
             PlaySpawnAnimation();
         ChangeDetail(upgrade);
+
+
+        _oldUpgrade = upgrade;
     }
 
     /// <summary>
@@ -138,10 +155,42 @@ public class S_UpgradeDetail : MonoBehaviour
         }
         else
         {
-            int cost = upgrade.GetCost(level);
+            int cost = RoguelikeUpgradeRuntime.GetDiscountedCost(upgrade.GetCost(level));
             _levelText.text = $"Level : {level} / {upgrade.MaxLevel}";
             _costText.text = $"Cost : {cost}";
         }
+
+    }
+
+    public void ChangeReactionSoldOut()
+    {
+        string str = "全部売り切れだよ";
+
+        _descriptionText.text = str;
+
+        _nameText.text = "";
+        _levelText.text = "";
+        _costText.text = "";
+    }
+
+    public void ChangeReactionNotEnouthMoney()
+    {
+        _notEnouthMoneyTextCount++;
+        int count = _notEnouthMoneyTextCount;
+
+        string str;
+        if (count >= 1 && count < 3) str = "お金が足りないよ";
+        else if (count >= 4 && count < 7) str = "無料ではあげられないよ";
+        else if (count >= 8 && count < 12) str = "話聞いてる？？";
+        else str = "………………………………";
+
+        _descriptionText.text = str;
+
+        _nameText.text = "";
+        _levelText.text = "";
+        _costText.text = "";
+
+
 
     }
 

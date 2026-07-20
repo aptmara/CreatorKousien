@@ -11,6 +11,7 @@
 // ------------------------------------------------------------
 using System.Collections;
 using Game.Core.Management;
+using Game.Core.Roguelike;
 using Game.Gameplay.Cameras;
 using Game.Gameplay.Collectibles;
 using Game.Gameplay.Player;
@@ -77,6 +78,7 @@ namespace Game.Infrastructure.Bootstrap
             }
 
             _isBootstrapped = true;
+            RoguelikeUpgradeRuntime.Reset();
 
             yield return LoadSceneIfNeeded(_gameplayShellScene);
             yield return LoadSceneIfNeeded(_stageScene);

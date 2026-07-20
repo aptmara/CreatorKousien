@@ -35,6 +35,9 @@ namespace Game.WaveSystem
         // 現在のWaveから出現し、まだ倒されていない敵
         private readonly HashSet<string> aliveWaveEnemyIds = new HashSet<string>();
 
+        // 撃破されて落下を開始した敵（EnemyDefeatedEvent発行前の落下中の敵）
+        private readonly HashSet<string> defeatDroppingEnemyIds = new HashSet<string>();
+
         // EnemyIDとその敵が所属するGroupの実行状態を対応付ける
         private readonly Dictionary<string, GroupRuntimeState> groupByEnemyId = new();
 
@@ -64,11 +67,13 @@ namespace Game.WaveSystem
         private void OnEnable()
         {
             EventBus.Subscribe<EnemyDefeatedEvent>(OnEnemyDefeated);
+            EventBus.Subscribe<EnemyDefeatDropStartedEvent>(OnEnemyDefeatDropStarted);
         }
 
         private void OnDisable()
         {
             EventBus.Unsubscribe<EnemyDefeatedEvent>(OnEnemyDefeated);
+            EventBus.Unsubscribe<EnemyDefeatDropStartedEvent>(OnEnemyDefeatDropStarted);
             StopAllCoroutines();
             ResetRuntimeState();
         }
@@ -167,7 +172,11 @@ namespace Game.WaveSystem
             }
 
             // Wave自体はすべてのGroupの実行が完了した時点で終了とする
-            yield return new WaitUntil(() => activeSpawnRoutineCount == 0 && aliveWaveEnemyIds.Count == 0);
+            // 全滅、または残っている敵が全て撃破落下を開始した時点でWave完了とみなす
+            // （最後の敵の落下中にクリア演出やスローモーション猶予を開始できるようにするため）
+            yield return new WaitUntil(() =>
+                activeSpawnRoutineCount == 0 &&
+                (aliveWaveEnemyIds.Count == 0 || aliveWaveEnemyIds.IsSubsetOf(defeatDroppingEnemyIds)));
 
 
             LastRunSucceeded = true;
@@ -273,11 +282,29 @@ namespace Game.WaveSystem
 
 
         /// <summary>
+        /// WaveRunnerが管理している生存敵のうち、指定されたEnemyIdの敵が撃破落下を開始したことを記録します。
+        /// </summary>
+        /// <param name="ev"></param>
+        private void OnEnemyDefeatDropStarted(EnemyDefeatDropStartedEvent ev)
+        {
+            if (aliveWaveEnemyIds.Contains(ev.EnemyId))
+            {
+                defeatDroppingEnemyIds.Add(ev.EnemyId);
+            }
+
+            Debug.Log($"[DropDebug] WaveRunner受信: {ev.EnemyId} tracked={aliveWaveEnemyIds.Contains(ev.EnemyId)} alive={aliveWaveEnemyIds.Count} dropping={defeatDroppingEnemyIds.Count} spawning={activeSpawnRoutineCount} time={Time.time:F2}"); // TODO: 動作確認後に削除
+        }
+
+
+
+        /// <summary>
         /// WaveRunnerが管理している生存敵のうち、指定されたEnemyIdの敵が倒されたことを通知します。
         /// </summary>
         /// <param name="ev"></param>
         private void OnEnemyDefeated(EnemyDefeatedEvent ev)
         {
+            defeatDroppingEnemyIds.Remove(ev.EnemyId);
+
             if (!aliveWaveEnemyIds.Remove(ev.EnemyId))
             {
                 // 現在のWave以外から出現した敵は無視する
@@ -399,6 +426,7 @@ namespace Game.WaveSystem
         private void ResetRuntimeState()
         {
             aliveWaveEnemyIds.Clear();
+            defeatDroppingEnemyIds.Clear();
             groupByEnemyId.Clear();
             activeSpawnRoutineCount = 0;
             IsRunning = false;

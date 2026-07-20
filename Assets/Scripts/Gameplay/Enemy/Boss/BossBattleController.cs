@@ -69,6 +69,10 @@ namespace Game.Gameplay.Enemy.Boss
         [Tooltip("口へ入った落とし物のヒット判定を管理するコンポーネント")]
         private BossMouthHitReceiver _mouthHitReceiver;
 
+        [SerializeField]
+        [Tooltip("死体蹴り用のヒット受け口（複数可）")]
+        private BossCorpseHitReceiver[] _corpseHitReceivers;
+
 
         [Header("--- アングリバイト失敗時のカメラシェイク ---")]
 
@@ -395,6 +399,11 @@ namespace Game.Gameplay.Enemy.Boss
                 _mouthHitReceiver = GetComponentInChildren<BossMouthHitReceiver>(true);
             }
 
+            if (_corpseHitReceivers == null || _corpseHitReceivers.Length == 0)
+            {
+                _corpseHitReceivers = GetComponentsInChildren<BossCorpseHitReceiver>(true);
+            }
+
             if (_introPresentationController == null)
             {
                 _introPresentationController = GetComponentInChildren<BossIntroPresentationController>(true);
@@ -466,6 +475,14 @@ namespace Game.Gameplay.Enemy.Boss
             _thornGroupController.Initialize(_bossInstanceId);
 
             _mouthHitReceiver.Initialize(_bossInstanceId);
+
+            foreach (BossCorpseHitReceiver corpseHitReceiver in _corpseHitReceivers)
+            {
+                if (corpseHitReceiver != null)
+                {
+                    corpseHitReceiver.Initialize(_bossInstanceId);
+                }
+            }
 
             _isInitialized = true;
 
@@ -1150,7 +1167,8 @@ namespace Game.Gameplay.Enemy.Boss
 
             Debug.Log($"[{nameof(BossBattleController)}] フェーズ{_currentPhaseIndex + 1}のダウン演出を開始しました。", this);
 
-            yield return _downPresentationController.PlayPresentation(biteData, downPresentationData);
+            // 最終フェーズのダウン（＝撃破）の場合は、落下開始でクリア演出が始まるようにボスのIDを渡す
+            yield return _downPresentationController.PlayPresentation(biteData, downPresentationData, isFinalPhase ? _bossInstanceId : null);
 
             if (isFinalPhase)
             {
@@ -1284,6 +1302,17 @@ namespace Game.Gameplay.Enemy.Boss
             if (_currentState == nextState)
             {
                 return;
+            }
+
+            // ダウン中と撃破後だけ死体蹴りを受け付ける
+            bool isCorpseKickActive = nextState == BossBattleState.Down || nextState == BossBattleState.Defeated;
+
+            foreach (BossCorpseHitReceiver corpseHitReceiver in _corpseHitReceivers)
+            {
+                if (corpseHitReceiver != null)
+                {
+                    corpseHitReceiver.gameObject.SetActive(isCorpseKickActive);
+                }
             }
 
             BossBattleState previousState = _currentState;

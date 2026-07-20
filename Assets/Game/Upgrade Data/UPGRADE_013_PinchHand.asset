@@ -15,10 +15,8 @@ MonoBehaviour:
   Id: 13
   DisplayName: "\u4F4E\u8010\u4E45\u6642\u8155\u62E1\u5927"
   Description: "\u30D0\u30EA\u30A2\u306E\u8010\u4E45\u304C\u4E0B\u304C\u308B\u307B\u3069\u3001\u8155\u304C\u5927\u304D\u304F\u306A\u308B\uFF01"
-  Modifiers:
-  - TargetStat: 0
-    Operation: 1
-    Value: 1.1
+  Modifiers: []
+  GameplayValue: 1.1
   MaxLevel: 5
   Icon: {fileID: 21300000, guid: de514b271adc3ac478eb0677072580d7, type: 3}
   Category: 0

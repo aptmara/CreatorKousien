@@ -219,6 +219,22 @@ namespace Game.Core.Events
     }
 
     /// <summary>
+    /// 撃破された敵が落下を開始した通知。EnemyControllerが発行する。
+    /// Wave側が「最後の敵の落下開始」を検知してクリア演出を早出しするために使用する。
+    /// </summary>
+    public readonly struct EnemyDefeatDropStartedEvent
+    {
+        public readonly string EnemyId;
+        public readonly Transform EnemyTransform;
+
+        public EnemyDefeatDropStartedEvent(string enemyId, Transform enemyTransform)
+        {
+            EnemyId = enemyId;
+            EnemyTransform = enemyTransform;
+        }
+    }
+
+    /// <summary>
     /// 敵のゲージMAX到達による攻撃発動通知。
     /// Phase2以降でプレイヤーへのダメージ処理を受け取るために用意する。
     /// </summary>
@@ -261,6 +277,23 @@ namespace Game.Core.Events
         {
             Damage = damage;
             AttackPosition = attackPosition;
+        }
+    }
+
+    /// <summary>
+    /// 防衛ラインの現在HPと最大HPが変化したことを通知する。
+    /// </summary>
+    public readonly struct DefenseLineHealthChangedEvent
+    {
+        public readonly float CurrentHp;
+        public readonly float MaxHp;
+        public readonly float Ratio;
+
+        public DefenseLineHealthChangedEvent(float currentHp, float maxHp)
+        {
+            CurrentHp = currentHp;
+            MaxHp = maxHp;
+            Ratio = maxHp > 0f ? currentHp / maxHp : 0f;
         }
     }
 

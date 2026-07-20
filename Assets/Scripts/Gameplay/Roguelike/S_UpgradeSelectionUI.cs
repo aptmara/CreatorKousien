@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using Game.Core.Events;
 using Game.Data.Player;
 using UnityEngine.UI;
+using Game.Core.Roguelike;
 
 public class S_UpgradeSelectionUI : MonoBehaviour
 {
@@ -95,6 +96,11 @@ public class S_UpgradeSelectionUI : MonoBehaviour
 
     private void Start()
     {
+        if (RoguelikeUpgradeRuntime.ConsumeRuntimeStateClearRequest())
+        {
+            _upgradeRuntimeState.Clear();
+        }
+
         _panelRoot.SetActive(false);
         OpenSelection();
     }
@@ -199,34 +205,38 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         if (nowLevel >= selectedCard.MaxLevel) return;
 
         // 減らす量を計算
-        int subtractMoney = selectedCard.GetCost(nowLevel);
+        int subtractMoney = RoguelikeUpgradeRuntime.GetDiscountedCost(selectedCard.GetCost(nowLevel));
 
 
         // お金が足りなければ処理しない
         int nowMoney = _moneyData.moneyOnHand;
-        if (nowMoney < subtractMoney)    return;
+        if (nowMoney < subtractMoney)
+        {
+            _upgradeDetail.ChangeReactionNotEnouthMoney();
+            return;
+        }
 
 
-        // 所持金を減らす
+        if (!_resultController.SelectUpgrade(selectedCard)) return;
+
+        // 強化反映に成功した場合だけ所持金を減らす
         Debug.Log($"[S_UpgradeSelectionUI] '{selectedCard.DisplayName}'購入！");
-        _moneyData.SubtractMoney((int)subtractMoney);
+        _moneyData.SubtractMoney(subtractMoney);
         _moneyUI.ChangeMoneyUI(_moneyData.moneyOnHand);
 
-        _resultController.SelectUpgrade(selectedCard);
-
         // 選択したカードのみ表示を更新
-        int newLevel = _upgradeRuntimeState.GetLevel(selectedCard);
-
         // 詳細を更新
         _upgradeDetail.SpawnDetail(selectedCard, false);
 
         foreach (var card in _spawnedCards)
         {
-            if(_cardToData.TryGetValue(card, out var data) && data == selectedCard)
+            if(_cardToData.TryGetValue(card, out var data))
             {
-                card.Refresh(newLevel);
-                card.PlaySelectedAnimation();
-                break;
+                card.Refresh(_upgradeRuntimeState.GetLevel(data));
+                if (data == selectedCard)
+                {
+                    card.PlaySelectedAnimation();
+                }
             }
         }
     }

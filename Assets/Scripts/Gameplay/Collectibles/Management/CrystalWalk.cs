@@ -2,6 +2,7 @@ using Game.Gameplay.Collectibles;
 using Game.Gameplay.Stage;
 using Unity.VisualScripting;
 using UnityEngine;
+using Game.Core.Roguelike;
 using UnityEngine.Serialization;
 using System.Collections.Generic;
 
@@ -616,7 +617,8 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
 
     public void Emits(Vector3 hitPoint)
     {
-        EmitHitStyleCollectibles(hitPoint, curShardCount, 0f);
+        int hitDropCount = curShardCount + RoguelikeUpgradeRuntime.AdditionalPumpkinDropCount;
+        EmitHitStyleCollectibles(hitPoint, hitDropCount, 0f);
         _currentHitStop = _hitStop;
         InitShardCount();
     }

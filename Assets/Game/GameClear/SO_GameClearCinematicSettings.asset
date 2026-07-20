@@ -31,6 +31,11 @@ MonoBehaviour:
   - StartTime: 2.4
     Duration: 0.15
     Alpha: 1
+  _enemyFocusStartDelay: 0.4
+  _enemyFocusDuration: 0.5
+  _enemyCameraOffset: {x: 0, y: 10, z: -6}
+  _enemyLookAtOffset: {x: 0, y: 0, z: 0}
+  _enemyFallWatchDuration: 1.5
   _zoomDuration: 2
   _playerCameraOffset: {x: 0, y: 9, z: -8}
   _playerLookAtOffset: {x: 0, y: 3, z: 0}
