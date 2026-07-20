@@ -1,11 +1,27 @@
+<div align="center">
+
 # CreatorKousien
 
-[![Unity](https://img.shields.io/badge/Unity-6000.3.7f1-000000?logo=unity&logoColor=white)](https://unity.com/)
-[![CI](https://github.com/aptmara/CreatorKousien/actions/workflows/ci.yml/badge.svg)](https://github.com/aptmara/CreatorKousien/actions/workflows/ci.yml)
-![Status](https://img.shields.io/badge/status-prototype-f59e0b)
-![License](https://img.shields.io/badge/license-private-64748b)
+### 集める。圧縮する。まとめて叩き込む。
 
-大量のオブジェクトを集め、まとめて解放し、敵のゲージ・ダウン・ステージ変化へ連鎖させる見下ろし型3DアクションのUnityプロトタイプです。
+大量のオブジェクトを集め、まとめて解放し、敵のゲージ・ダウン・ステージ変化へ連鎖させる<br>
+見下ろし型3DアクションのUnityプロトタイプです。
+
+[![Unity](https://img.shields.io/badge/Unity-6000.3.7f1-000000?style=for-the-badge&logo=unity&logoColor=white)](https://unity.com/)
+[![CI](https://img.shields.io/github/actions/workflow/status/aptmara/CreatorKousien/ci.yml?style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/aptmara/CreatorKousien/actions/workflows/ci.yml)
+![Status](https://img.shields.io/badge/status-prototype-f59e0b?style=for-the-badge)
+![License](https://img.shields.io/badge/license-private-64748b?style=for-the-badge)
+
+<sub>Unity 6 · Universal Render Pipeline · Input System · Windows Editor</sub>
+
+</div>
+
+---
+
+| 🎮 ゲームを始める | 🧭 設計を理解する | 📦 素材を取り込む | ✅ 品質を確認する |
+| :---: | :---: | :---: | :---: |
+| [Quick start](#quick-start) | [アーキテクチャ](#アーキテクチャ概要) | [Asset Intake](#unitypackageを受け取ったら) | [品質基準](#品質基準) |
+| [ゲームプレイ仕様](docs/GAMEPLAY.md) | [シーン構成](docs/SCENES.md) | [運用ガイド](docs/ASSET_WORKFLOW.md) | [テストガイド](docs/TESTING.md) |
 
 このREADMEは、リポジトリの唯一の入口です。セットアップ、設計、フォルダ配置、UnityPackageの受け入れ、シーン、ゲーム仕様、開発運用、テスト、問題解決の各文書へ、すべてここから移動できます。
 
@@ -15,7 +31,9 @@
 - [現在の状態](#現在の状態)
 - [Quick start](#quick-start)
 - [ゲームのコアループ](#ゲームのコアループ)
+- [プレイ進行](#プレイ進行)
 - [アーキテクチャ概要](#アーキテクチャ概要)
+- [シーン構成](#シーン構成)
 - [リポジトリ構成](#リポジトリ構成)
 - [UnityPackageを受け取ったら](#unitypackageを受け取ったら)
 - [開発フロー](#開発フロー)
@@ -49,6 +67,35 @@
 詳細は[ゲームプレイ仕様](docs/GAMEPLAY.md)を参照してください。
 
 ## 現在の状態
+
+```mermaid
+flowchart LR
+    subgraph Ready["✅ 実装・検証済み"]
+        Scene["Additive Scene基盤"]
+        Game["ゲームプレイ領域"]
+        Data["ScriptableObjectデータ"]
+        Intake["Asset Intake"]
+        Test["EditMode / PlayModeテスト"]
+        CI["meta検査CI"]
+    end
+
+    subgraph Transition["🚧 移行中"]
+        Code["コード配置の統合"]
+        Legacy["Legacy / Development Scene"]
+        Review["DuplicateCandidates / _Recovery"]
+        Addressables["Addressables運用"]
+    end
+
+    CI -. "継続的な整理" .-> Code
+
+    classDef ready fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef transition fill:#fef3c7,stroke:#d97706,color:#78350f
+    class Scene,Game,Data,Intake,Test,CI ready
+    class Code,Legacy,Review,Addressables transition
+```
+
+> [!NOTE]
+> この図は進捗率ではなく、現在確認できる実装領域と移行領域を示します。削除判断が必要な保留領域は「未実装」と同一視しません。
 
 ### 実装・検証済みの基盤
 
@@ -111,9 +158,38 @@ flowchart LR
     Gauge --> Down["ダウン／本体ダメージ"]
     Down --> Chain["撃破・崩落・演出"]
     Chain --> Spawn
+
+    classDef action fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef impact fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    class Spawn,Collect,Hold action
+    class Release,Hit,Gauge,Down,Chain impact
 ```
 
 プレイヤーの判断は、単に全回収することではなく、保持量、解放タイミング、敵状態、バリア、アップグレード、ステージ状況の組み合わせから生まれることを目標にしています。
+
+## プレイ進行
+
+```mermaid
+stateDiagram-v2
+    [*] --> Title
+    Title --> Loading: Start
+    Loading --> Gameplay: 初期化完了
+    Gameplay --> Collect: ステージ開始
+    Collect --> Battle: Payloadを解放
+    Battle --> Collect: 敵／Wave継続
+    Battle --> Roguelike: 強化選択
+    Roguelike --> Collect: 強化を適用
+    Battle --> Result: Clear / Game Over
+    Result --> Title: タイトルへ戻る
+    Result --> Loading: Retry
+```
+
+| フェーズ | プレイヤーの主な判断 | 実装領域 |
+| --- | --- | --- |
+| Collect | 何を、どれだけ保持するか | Player / Collectibles / Stage |
+| Battle | いつ、どの敵へ解放するか | Enemy / Boss / Combo / Wave |
+| Roguelike | 所持金をどの強化へ使うか | Upgrade / Runtime State / UI |
+| Result | 結果確認、復帰または再挑戦 | Progression / Result UI |
 
 ## アーキテクチャ概要
 
@@ -131,6 +207,13 @@ flowchart TB
     Gameplay --> Data
     Infrastructure --> Core
     Infrastructure --> Gameplay
+
+    classDef view fill:#f3e8ff,stroke:#9333ea,color:#581c87
+    classDef logic fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef base fill:#dcfce7,stroke:#16a34a,color:#14532d
+    class Presentation view
+    class Gameplay,Infrastructure logic
+    class Core,Data base
 ```
 
 基本原則は以下です。
@@ -143,6 +226,33 @@ flowchart TB
 - 大量オブジェクトを常時すべて物理演算せず、データ表現・表示上限・Poolを使い分ける。
 
 レイヤー、依存方向、データ所有権、Event設計の詳細は[アーキテクチャ](docs/ARCHITECTURE.md)を参照してください。
+
+## シーン構成
+
+```mermaid
+flowchart LR
+    Title["Title\nエントリ画面"] --> Loading["Loading\n遷移表示"]
+    Loading -->|Additive Load| Boot["Boot\nサービス初期化"]
+
+    Boot --> Shell["GameplayShell\n接続点"]
+    Shell --> Player["Player"]
+    Shell --> Stage["Stage"]
+    Shell --> UI["UI"]
+    Shell --> Roguelike["Roguelike"]
+
+    Player <--> Stage
+    Stage -->|Clear / Game Over| Result["Result"]
+    Result --> Title
+
+    classDef app fill:#e0e7ff,stroke:#4f46e5,color:#312e81
+    classDef additive fill:#ecfeff,stroke:#0891b2,color:#164e63
+    classDef result fill:#fef3c7,stroke:#d97706,color:#78350f
+    class Title,Loading,Boot,Shell app
+    class Player,Stage,UI,Roguelike additive
+    class Result result
+```
+
+`GameplayShell`がAdditive Scene間の接続点となり、`Boot`が必要なSceneを構成します。Sceneごとの責務、Build Settingsの順序、所有権は[シーン構成](docs/SCENES.md)を参照してください。
 
 ## リポジトリ構成
 
@@ -178,6 +288,31 @@ CreatorKousien/
 
 アート素材の受け入れは、Unityの`Tools > CreatorKousien > Asset Intake`（`Ctrl/Cmd + Shift + I`）へ統一しています。
 
+```mermaid
+flowchart LR
+    Package[".unitypackage"] --> Inspect["Import前検査"]
+    Direct["Unityへ直接Import"] --> Diff["差分検出"]
+
+    Inspect --> Judge{"安全判定"}
+    Diff --> Judge
+    Judge -->|新規アート| Incoming["_Incomingへ隔離"]
+    Judge -->|導入済み| Skip["自動スキップ"]
+    Judge -->|更新候補| Compare["比較用に書き出し"]
+    Judge -->|Script / DLL / 衝突| Danger["危険項目として保留"]
+
+    Incoming --> Classify["Domain / Entity / Category分類"]
+    Classify --> Review["配置先レビュー"]
+    Review --> Promote["正式配置"]
+    Promote --> Verify["GUID / 依存GUID検証"]
+
+    classDef safe fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef hold fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef danger fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    class Incoming,Classify,Review,Promote,Verify,Skip safe
+    class Compare hold
+    class Danger danger
+```
+
 1. `.unitypackage`をウィンドウへドロップするか、`ファイルを選ぶ…`で指定する。
 2. Import前の安全確認で、新規・導入済み・更新候補・危険な衝突を自動判定し、Script／DLLやScene混入を確認する。
 3. 問題がなければ`Assets/_Incoming`へ隔離展開する。
@@ -206,6 +341,29 @@ Projectウィンドウ内の`.unitypackage`を開いた場合はAsset Intakeへ�
 ## 品質基準
 
 最低限、PR前に次を確認します。
+
+```mermaid
+flowchart LR
+    Change["変更"] --> Console{"Console Error = 0"}
+    Console -->|Yes| Scene{"Scene / Prefab正常"}
+    Console -->|No| Fix["修正"]
+    Scene -->|Yes| Tests{"関連テスト成功"}
+    Scene -->|No| Fix
+    Tests -->|Yes| Assets{"meta / GUID / LFS正常"}
+    Tests -->|No| Fix
+    Assets -->|Yes| Diff{"差分が依頼範囲内"}
+    Assets -->|No| Fix
+    Diff -->|Yes| PR["Review ready"]
+    Diff -->|No| Fix
+    Fix --> Change
+
+    classDef gate fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e
+    classDef pass fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef retry fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    class Console,Scene,Tests,Assets,Diff gate
+    class PR pass
+    class Fix retry
+```
 
 - Unity ConsoleのコンパイルErrorが0件。
 - 変更したScene／Prefabに新しいMissing ScriptやBroken Prefabがない。
