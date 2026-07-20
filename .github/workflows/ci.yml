@@ -39,20 +39,20 @@ jobs:
           # アセットフォルダ内の全ファイルをリストし、対応する .meta ファイルが存在するか確認する
           # .git や Packages, ProjectSettings 以外（主に Assets）を対象
           EXIT_CODE=0
-          find Assets -name "*" ! -name "*.meta" -type f | while read file; do
+          while IFS= read -r -d '' file; do
             if [ ! -f "$file.meta" ]; then
               echo "Error: Missing .meta file for $file"
               EXIT_CODE=1
             fi
-          done
+          done < <(find Assets -name "*" ! -name "*.meta" -type f -print0)
           
           # フォルダ自体の .meta ファイルもチェック
-          find Assets -type d | while read dir; do
+          while IFS= read -r -d '' dir; do
             if [ "$dir" != "Assets" ] && [ ! -f "$dir.meta" ]; then
               echo "Error: Missing .meta file for directory $dir"
               EXIT_CODE=1
             fi
-          done
+          done < <(find Assets -type d -print0)
           
           if [ $EXIT_CODE -ne 0 ]; then
             exit 1

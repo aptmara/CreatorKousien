@@ -8,6 +8,8 @@
 /[Uu]ser[Ss]ettings/
 /[Mm]emoryCaptures/
 /[Aa]ssets/Plugins/Editor/JetBrains*
+/IncomingPackages/
+/Assets/_Incoming/
 
 # Visual Studio / IDE
 .vs/
