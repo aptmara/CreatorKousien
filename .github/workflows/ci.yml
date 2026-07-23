@@ -44,7 +44,7 @@ jobs:
               echo "Error: Missing .meta file for $file"
               EXIT_CODE=1
             fi
-          done < <(find Assets -name "*" ! -name "*.meta" -type f -print0)
+          done < <(find Assets -type d -name "*.bundle" -prune -o -type f ! -name "*.meta" -print0)
           
           # フォルダ自体の .meta ファイルもチェック
           while IFS= read -r -d '' dir; do
@@ -52,7 +52,7 @@ jobs:
               echo "Error: Missing .meta file for directory $dir"
               EXIT_CODE=1
             fi
-          done < <(find Assets -type d -print0)
+          done < <(find Assets -type d \( -name "*.bundle" -print0 -prune -o -print0 \))
           
           if [ $EXIT_CODE -ne 0 ]; then
             exit 1
