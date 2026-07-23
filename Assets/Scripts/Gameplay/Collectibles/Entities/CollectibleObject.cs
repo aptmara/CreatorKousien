@@ -458,7 +458,6 @@ namespace Game.Gameplay.Collectibles
         {
             if (_data == null) return false;
 
-            SoundManager.instance?.PlaySE("CollectableHit");
             // 1. グミの最大連鎖数チェック
             if (_data.Type == CollectibleType.Gummy)
             {

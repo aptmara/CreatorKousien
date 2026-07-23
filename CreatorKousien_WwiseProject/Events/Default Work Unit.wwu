@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{46773E5F-6A4A-47C0-8477-09A1BC8161C7}" SchemaVersion="133">
+	<Events>
+		<WorkUnit Name="Default Work Unit" ID="{46773E5F-6A4A-47C0-8477-09A1BC8161C7}" PersistMode="Standalone">
+			<ChildrenList>
+				<Event Name="Play_CollectableHit" ID="{E6CB4FD2-2BD8-471D-B534-FF0CA102C6E2}">
+					<ChildrenList>
+						<Action Name="" ID="{41C89107-73D2-4DFC-A7D0-62A445171801}" ShortID="512471423">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="CollectableDrop" ID="{25EF4029-4600-4AF2-B0B6-3634F6B788C0}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+			</ChildrenList>
+		</WorkUnit>
+	</Events>
+</WwiseDocument>

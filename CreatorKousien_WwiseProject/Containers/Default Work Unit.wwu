@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}" SchemaVersion="133">
+	<Containers>
+		<WorkUnit Name="Default Work Unit" ID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}" PersistMode="Standalone">
+			<ChildrenList>
+				<Sound Name="CollectableDrop" ID="{25EF4029-4600-4AF2-B0B6-3634F6B788C0}" ShortID="434356072">
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="CollectableDrop" ID="{93E05756-CF7C-4E60-9110-900E0F35A165}">
+							<Language>SFX</Language>
+							<AudioFile>CollectableDrop.wav</AudioFile>
+							<MediaIDList>
+								<MediaID ID="340697464"/>
+							</MediaIDList>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="CollectableDrop" ID="{93E05756-CF7C-4E60-9110-900E0F35A165}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+			</ChildrenList>
+		</WorkUnit>
+	</Containers>
+</WwiseDocument>
