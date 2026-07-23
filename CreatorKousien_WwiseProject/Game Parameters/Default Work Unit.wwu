@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{802BB985-D786-4CF0-BC05-4064AFAB2D22}" SchemaVersion="133">
+	<GameParameters>
+		<WorkUnit Name="Default Work Unit" ID="{802BB985-D786-4CF0-BC05-4064AFAB2D22}" PersistMode="Standalone">
+			<ChildrenList>
+				<GameParameter Name="HitStreak" ID="{F1A2F44D-09DE-4FF8-8ED8-D69005BABD0A}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+					</PropertyList>
+				</GameParameter>
+			</ChildrenList>
+		</WorkUnit>
+	</GameParameters>
+</WwiseDocument>
