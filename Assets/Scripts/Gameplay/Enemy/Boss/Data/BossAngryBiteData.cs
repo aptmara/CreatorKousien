@@ -71,6 +71,11 @@ namespace Game.Data.Enemy.Boss
         [Tooltip("ダウンアニメーションの再生速度")]
         private float _downAnimationSpeed = 1f;
 
+        [SerializeField]
+        [Min(0.01f)]
+        [Tooltip("アングリバイト成功後に下降するアニメーションの再生速度")]
+        private float _failureRetreatAnimationSpeed = 0.65f;
+
 
         [Header("--- 口の耐久値 ---")]
 
@@ -103,6 +108,10 @@ namespace Game.Data.Enemy.Boss
         [Min(0.01f)]
         [Tooltip("バリアを噛んだ後、現在位置からアングリバイト開始位置まで下降する時間（秒）")]
         private float _failureRetreatDuration = 1.5f;
+
+        [SerializeField]
+        [Tooltip("アングリバイト成功後の下降移動カーブ")]
+        private AnimationCurve _failureRetreatCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
 
         [Header("--- アングリバイト成功・ダウン状態 ---")]
@@ -193,5 +202,16 @@ namespace Game.Data.Enemy.Boss
         /// アングリバイト中の上昇速度を制御するカーブ。横軸が経過時間、縦軸が上昇速度倍率。
         /// </summary>
         public AnimationCurve RiseCurve => _riseCurve;
+
+        /// <summary>
+        /// アングリバイト成功後の下降アニメーション速度
+        /// </summary>
+        public float FailureRetreatAnimationSpeed => _failureRetreatAnimationSpeed;
+
+        /// <summary>
+        /// アングリバイト成功後の下降移動カーブ
+        /// </summary>
+        public AnimationCurve FailureRetreatCurve => _failureRetreatCurve;
+
     }
 }

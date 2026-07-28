@@ -514,6 +514,9 @@ MonoBehaviour:
   _angryBiteOpenStateName: Base Layer.AngryBiteOpen
   _angryBiteCloseStateName: Base Layer.AngryBiteClose
   _downStateName: Base Layer.Down
+  _angryBiteRetreatStateName: Base Layer.AngryBiteRetreat
+  _spawnHiddenLocalPosition: {x: 0, y: -50, z: -8}
+  _spawnHiddenEulerAngles: {x: 0, y: 0, z: 0}
 --- !u!114 &6602237408296608932
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -562,12 +565,17 @@ MonoBehaviour:
   - {fileID: 1231899950330143600}
   - {fileID: 178259898787923910}
   - {fileID: 986245597216902049}
+  _biteWarningShakeDuration: 0.28
+  _biteWarningShakePositionStrength: 0.04
+  _biteWarningShakeRotationStrength: 0.6
+  _biteWarningShakeFrequency: 22
   _biteImpactShakeDuration: 0.35
   _biteImpactShakePositionStrength: 0.32
   _biteImpactShakeRotationStrength: 4.5
   _biteImpactShakeFrequency: 26
   _bossHiddenLocalX: 25
   _bossVisibleLocalY: -12
+  _thornWarningMinimumDuration: 0.9
 --- !u!114 &956854224720955098
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -600,10 +608,40 @@ MonoBehaviour:
   _cameraRigController: {fileID: 0}
   _isRumbleEnabled: 1
   _rumblePulseInterval: 0.1
-  _rumblePulseDuration: 0.25
+  _rumblePulseDuration: 0.18
   _rumblePositionStrength: 0.06
   _rumbleRotationStrength: 0.8
   _rumbleFrequency: 25
+  _rumbleEdgeStrengthMultiplier: 0.2
+  _rumbleCenterStrengthMultiplier: 1.8
+  _rumbleCenterCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _rumbleBreathingAmount: 0.12
+  _rumbleBreathingCycleDuration: 0.7
+  _warningLeadInDuration: 0.5
+  _warningFadeOutWaitDuration: 0.3
 --- !u!1 &8550809187659737705
 GameObject:
   m_ObjectHideFlags: 0

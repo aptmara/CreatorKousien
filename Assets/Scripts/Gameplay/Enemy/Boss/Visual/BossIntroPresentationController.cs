@@ -88,6 +88,46 @@ namespace Game.Gameplay.Enemy.Boss
         [Tooltip("揺れの振動数(単位: Hz)")]
         private float _rumbleFrequency = 25f;
 
+        [SerializeField]
+        [Range(0f, 1f)]
+        [Tooltip("ボスが画面端にいるときの振動倍率")]
+        private float _rumbleEdgeStrengthMultiplier = 0.2f;
+
+        [SerializeField]
+        [Min(1f)]
+        [Tooltip("ボスが画面中央にいるときの振動倍率")]
+        private float _rumbleCenterStrengthMultiplier = 1.8f;
+
+        [SerializeField]
+        [Range(0.25f, 4f)]
+        [Tooltip("山の形。大きいほど中央だけ強くなる")]
+        private float _rumbleMountainSharpness = 1.3f;
+
+        [SerializeField]
+        [Tooltip("画面端から中央へ移動するときの振動変化")]
+        private AnimationCurve _rumbleCenterCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+        [SerializeField]
+        [Range(0f, 0.5f)]
+        [Tooltip("一定の揺れにならないように加える細かな強弱")]
+        private float _rumbleBreathingAmount = 0.12f;
+
+        [SerializeField]
+        [Min(0.01f)]
+        [Tooltip("細かな強弱が一周する時間")]
+        private float _rumbleBreathingCycleDuration = 0.7f;
+
+
+        [Header("--- 開幕警告UI ---")]
+
+        [SerializeField, Min(0f)]
+        [Tooltip("警告開始からカメラが引き始めるまでの時間")]
+        private float _warningLeadInDuration = 0.5f;
+
+        [SerializeField, Min(0f)]
+        [Tooltip("警告終了からボスが上昇し始めるまでの時間")]
+        private float _warningFadeOutWaitDuration = 0.3f;
+
 
         // ランタイム状態
         // ------------------------------------------------------------
@@ -132,6 +172,15 @@ namespace Game.Gameplay.Enemy.Boss
         /// </summary>
         private Coroutine _introRumbleRoutine;
 
+        /// <summary>
+        /// 開幕警告UIが表示中かどうか
+        /// </summary>
+        private bool _isIntroWarningActive;
+
+        /// <summary>
+        /// アニメーション開始まで隠しておくボスのRenderer
+        /// </summary>
+        private Renderer[] _bossVisualRenderers;
 
 
 
@@ -182,6 +231,11 @@ namespace Game.Gameplay.Enemy.Boss
         {
             FindLocalReferences();
             ResolveRuntimeReferences();
+
+            CacheBossVisualRenderers();
+
+            // 生成された瞬間から見た目だけ非表示
+            SetBossVisualsHidden(true);
         }
 
 
@@ -193,6 +247,8 @@ namespace Game.Gameplay.Enemy.Boss
         {
             _isCancellationRequested = true;
             IsPlaying = false;
+
+            SetBossVisualsHidden(false);
 
             StopCameraRestoreRoutine();
             StopIntroRumbleRoutine();
@@ -245,6 +301,41 @@ namespace Game.Gameplay.Enemy.Boss
             }
         }
 
+        /// <summary>
+        /// Animator配下のボスモデルRendererを取得する
+        /// </summary>
+        private void CacheBossVisualRenderers()
+        {
+            if (_animationController == null || _animationController.Animator == null)
+            {
+                _bossVisualRenderers = null;
+                return;
+            }
+
+            _bossVisualRenderers = _animationController.Animator.GetComponentsInChildren<Renderer>(true);
+        }
+
+        /// <summary>
+        /// Animatorや当たり判定を止めず、見た目だけ非表示にする
+        /// </summary>
+        private void SetBossVisualsHidden(bool isHidden)
+        {
+            if (_bossVisualRenderers == null)
+            {
+                return;
+            }
+
+            foreach (Renderer bossRenderer in _bossVisualRenderers)
+            {
+                if (bossRenderer == null)
+                {
+                    continue;
+                }
+
+                bossRenderer.forceRenderingOff = isHidden;
+            }
+        }
+
 
         // 開幕演出
         // ------------------------------------------------------------
@@ -285,6 +376,7 @@ namespace Game.Gameplay.Enemy.Boss
 
             // 前回のカメラ復帰処理が残っている場合は停止する
             StopCameraRestoreRoutine();
+            StopIntroRumbleRoutine();
 
             _currentPresentationData = presentationData;
             _isCancellationRequested = false;
@@ -302,38 +394,115 @@ namespace Game.Gameplay.Enemy.Boss
             _isBattleCameraActive = true;
 
             bool didStartAnimation = false;
+            bool didPrepareIntroPose = false;
+
+            // ボスを画面外の開始位置へ配置
+            // ------------------------------------------------------------
 
             if (presentationData.IsEnabled)
             {
-                // 前回のAnimator姿勢やRoot Motionを初期化する
                 _animationController.ResetForPhaseStart();
 
-                // 開幕開始位置を即座に適用して、カメラ移動と同時に開幕アニメーションを開始する
-                didStartAnimation = _animationController.PlayBossIntro(baseStepData, presentationData);
+                // ボスを画面外の開始位置に移動させる
+                didPrepareIntroPose = _animationController.PrepareBossIntroPose(baseStepData, presentationData);
 
-                if (!didStartAnimation)
+                if (!didPrepareIntroPose)
                 {
-                    Debug.LogWarning($"[{nameof(BossIntroPresentationController)}] 開幕アニメーションの再生に失敗しました。", this);
+                    Debug.LogWarning($"[{nameof(BossIntroPresentationController)}] 開幕アニメーションの開始位置の準備に失敗しました。", this);
                 }
             }
 
-            if (_isRumbleEnabled && didStartAnimation)
+
+            // 警告UIを先に表示
+            // ------------------------------------------------------------
+
+            if (didPrepareIntroPose)
             {
-                StopIntroRumbleRoutine();
-                _introRumbleRoutine = StartCoroutine(PlayIntroRumbleRoutine());
+                StartIntroWarning();
+
+                // 警告を見せてからカメラを動かす
+                yield return WaitForPresentationSeconds(_warningLeadInDuration);
             }
-
-
-            // ボスを開幕開始位置へ移した後で、カメラをボス戦用の引き位置へ移動する
-            yield return MoveCameraToBattlePosition(presentationData);
 
             if (_isCancellationRequested)
             {
+                EndIntroWarning();
                 IsPlaying = false;
                 yield break;
             }
 
-            // カメラ移動中から再生している開幕アニメーションが1回分終了するまで待機する
+
+            // 警告を表示したままカメラを引く
+            // ------------------------------------------------------------
+
+            yield return MoveCameraToBattlePosition(presentationData);
+
+            if (_isCancellationRequested)
+            {
+                EndIntroWarning();
+                IsPlaying = false;
+                yield break;
+            }
+
+
+            // カメラが引き終わったら警告を消す
+            // ------------------------------------------------------------
+
+            if (didPrepareIntroPose)
+            {
+                // カメラが引き終わったら警告を終了する
+                EndIntroWarning();
+
+                yield return WaitForPresentationSeconds(_warningFadeOutWaitDuration);
+            }
+
+            if (_isCancellationRequested)
+            {
+                EndIntroWarning();
+                IsPlaying = false;
+                yield break;
+            }
+
+
+            // 警告が消えてからボスの上昇開始
+            // ------------------------------------------------------------
+
+            if (didPrepareIntroPose)
+            {
+                didStartAnimation = _animationController.PlayBossIntro(baseStepData, presentationData);
+
+                if (didStartAnimation)
+                {
+                    // Animator.Playが反映されるまで1フレーム待つ
+                    yield return WaitForPresentationSeconds(0.1f);
+
+                    // アニメーションが開始された姿勢から表示
+                    SetBossVisualsHidden(false);
+                }
+                else
+                {
+                    // 再生失敗時に非表示のまま残さない
+                    SetBossVisualsHidden(false);
+
+                    Debug.LogWarning($"[{nameof(BossIntroPresentationController)}] 開幕アニメーションの再生に失敗しました。", this);
+                }
+            }
+            else
+            {
+                // 開始姿勢の準備失敗時にも非表示を解除
+                SetBossVisualsHidden(false);
+            }
+
+            // ボスが画面へ入ったらカメラを振動させる
+            if (_isRumbleEnabled && didStartAnimation)
+            {
+                _introRumbleRoutine = StartCoroutine(PlayIntroRumbleRoutine());
+            }
+
+
+            // 上昇アニメショーンの終了を待つ
+            // ------------------------------------------------------------
+
             if (didStartAnimation)
             {
                 while (!_isCancellationRequested && !_animationController.IsCurrentAnimationFinished())
@@ -342,17 +511,56 @@ namespace Game.Gameplay.Enemy.Boss
                 }
             }
 
-            float afterAnimationDelay = Mathf.Max(0f, presentationData.AfterAnimationDelay);
-
-            float delayElapsedTime = 0f;
-
-            while (!_isCancellationRequested && delayElapsedTime < afterAnimationDelay)
+            if (_isCancellationRequested)
             {
-                delayElapsedTime += Time.deltaTime;
-                yield return null;
+                IsPlaying = false;
+                yield break;
             }
 
+
+            // 上昇後の余韻
+            // ------------------------------------------------------------
+
+            float afterAnimationDelay = Mathf.Max(0f, presentationData.AfterAnimationDelay);
+
+            yield return WaitForPresentationSeconds(afterAnimationDelay);
+
+
+            // イントロ終了
+            // ------------------------------------------------------------
+
+            EndIntroWarning();
+
             IsPlaying = false;
+            StopIntroRumbleRoutine();
+        }
+
+
+        private float CalculateIntroRumbleMultiplier(out float mountainAmount)
+        {
+            mountainAmount = 0f;
+
+            if (_targetCamera == null || _bossBodyRenderer == null)
+            {
+                return 0f;
+            }
+
+            Vector3 viewportPosition = _targetCamera.WorldToViewportPoint(_bossBodyRenderer.bounds.center);
+
+            if (viewportPosition.z <= 0f)
+            {
+                return 0f;
+            }
+
+            float viewportX = Mathf.Clamp01(viewportPosition.x);
+
+            // X=0で0、X=0.5で1、X=1で0になる山型
+            mountainAmount = Mathf.Sin(viewportX * Mathf.PI);
+
+            // 山の尖り具合を調整
+            mountainAmount = Mathf.Pow(mountainAmount, _rumbleMountainSharpness);
+
+            return Mathf.Lerp(_rumbleEdgeStrengthMultiplier, _rumbleCenterStrengthMultiplier, mountainAmount);
         }
 
 
@@ -370,10 +578,9 @@ namespace Game.Gameplay.Enemy.Boss
 
             Vector3 targetPosition = _normalCameraPosition + presentationData.CameraPositionOffset;
 
-            Quaternion targetRotation = _normalCameraRotation;
+            Quaternion targetRotation = _normalCameraRotation * Quaternion.Euler(presentationData.CameraEulerAnglesOffset);
 
-            float moveDuration =
-                Mathf.Max(0f, presentationData.CameraMoveDuration);
+            float moveDuration = Mathf.Max(0f, presentationData.CameraMoveDuration);
 
             if (moveDuration <= 0f)
             {
@@ -439,6 +646,8 @@ namespace Game.Gameplay.Enemy.Boss
         {
             _isCancellationRequested = true;
             IsPlaying = false;
+
+            SetBossVisualsHidden(false);
 
             if (_animationController != null)
             {
@@ -592,7 +801,20 @@ namespace Game.Gameplay.Enemy.Boss
             {
                 if (IsBossVisibleOnScreen())
                 {
-                    EventBus.Publish(new CameraShakeRequestedEvent(_rumblePulseDuration, _rumblePositionStrength, _rumbleRotationStrength, _rumbleFrequency));
+                    float rumbleMultiplier = CalculateIntroRumbleMultiplier(out float centerAmount);
+
+                    float positionStrength = _rumblePositionStrength * rumbleMultiplier;
+
+                    float rotationStrength = _rumbleRotationStrength * rumbleMultiplier;
+
+                    // 中央へ近づくほど振動を少し細かくする
+                    float frequency = Mathf.Lerp(_rumbleFrequency * 0.7f, _rumbleFrequency * 1.15f, centerAmount);
+
+                    EventBus.Publish(new CameraShakeRequestedEvent(
+                        _rumblePulseDuration,
+                        positionStrength,
+                        rotationStrength,
+                        frequency));
 
                     yield return new WaitForSeconds(_rumblePulseInterval);
                 }
@@ -604,6 +826,23 @@ namespace Game.Gameplay.Enemy.Boss
 
             _introRumbleRoutine = null;
         }
+
+
+        /// <summary>
+        /// 開幕演出がキャンセルされていない間だけ、指定された秒数待機する
+        /// </summary>
+        private IEnumerator WaitForPresentationSeconds(float duration)
+        {
+            float safeDuration = Mathf.Max(0f, duration);
+            float elapsedTime = 0f;
+
+            while (!_isCancellationRequested && elapsedTime < safeDuration)
+            {
+                elapsedTime += Time.deltaTime;
+                yield return null;
+            }
+        }
+
 
         /// <summary>
         /// ボスがカメラの画面内に表示されているかどうかを判定する
@@ -627,13 +866,42 @@ namespace Game.Gameplay.Enemy.Boss
         /// </summary>
         private void StopIntroRumbleRoutine()
         {
-            if (_introRumbleRoutine == null)
+            if (_introRumbleRoutine != null)
+            {
+                StopCoroutine(_introRumbleRoutine);
+                _introRumbleRoutine = null;
+            }
+
+            // イントロ中断時にも警告を残さない
+            EndIntroWarning();
+        }
+
+        /// <summary>
+        /// 開幕警告UIを表示する
+        /// </summary>
+        private void StartIntroWarning()
+        {
+            if (_isIntroWarningActive)
+            {
+                return;
+            }
+            _isIntroWarningActive = true;
+            EventBus.Publish(new BossThornWarningStartedEvent());
+        }
+
+
+        /// <summary>
+        /// 開幕警告UIを非表示にする
+        /// </summary>
+        private void EndIntroWarning()
+        {
+            if (!_isIntroWarningActive)
             {
                 return;
             }
 
-            StopCoroutine(_introRumbleRoutine);
-            _introRumbleRoutine = null;
+            _isIntroWarningActive = false;
+            EventBus.Publish(new BossThornWarningEndedEvent());
         }
     }
 }

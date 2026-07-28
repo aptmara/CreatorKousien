@@ -61,6 +61,10 @@ namespace Game.Data.Enemy.Boss
         private Vector3 _cameraPositionOffset = new Vector3(0f, -1f, -4f);
 
         [SerializeField]
+        [Tooltip("通常カメラ角度へ加えるボス戦用の角度。Xを正にすると下向き")]
+        private Vector3 _cameraEulerAnglesOffset = new Vector3(10f, 0f, 0f);
+
+        [SerializeField]
         [Min(0f)]
         [Tooltip("通常位置から開幕演出用の位置へカメラを移動させる時間(秒)")]
         private float _cameraMoveDuration = 0.6f;
@@ -98,8 +102,12 @@ namespace Game.Data.Enemy.Boss
         /// <summary>
         /// 通常攻撃位置へ加えるボスのローカル座標オフセット。
         /// </summary>
-        public Vector3 BossStartLocalPositionOffset =>
-            _bossStartLocalPositionOffset;
+        public Vector3 BossStartLocalPositionOffset => _bossStartLocalPositionOffset;
+
+        /// <summary>
+        /// 通常カメラ角度へ加えるボス戦用の角度。
+        /// </summary>
+        public Vector3 CameraEulerAnglesOffset => _cameraEulerAnglesOffset;
 
         /// <summary>
         /// 開幕アニメーションの再生速度。

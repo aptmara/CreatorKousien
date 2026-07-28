@@ -70,6 +70,21 @@ namespace Game.Gameplay.Enemy.Boss
         [Tooltip("ダウンアニメーションのフルパス名")]
         private string _downStateName = "Base Layer.Down";
 
+        [SerializeField]
+        [Tooltip("アングリバイト成功後に下降するアニメーションのフルパス名")]
+        private string _angryBiteRetreatStateName = "Base Layer.AngryBiteRetreat";
+
+
+        [Header("--- 生成直後の待機位置 ---")]
+
+        [SerializeField]
+        [Tooltip("生成直後からイントロ準備までボスを待機させる画面外位置")]
+        private Vector3 _spawnHiddenLocalPosition = new Vector3(0f, -50f, -8f);
+
+        [SerializeField]
+        [Tooltip("生成直後の待機角度")]
+        private Vector3 _spawnHiddenEulerAngles = Vector3.zero;
+
 
         // ランタイム状態
         // ------------------------------------------------------------
@@ -143,6 +158,12 @@ namespace Game.Gameplay.Enemy.Boss
         /// 口閉じ開始時のAnimatorローカル回転
         /// </summary>
         private Quaternion _lockedAnimatorLocalRotation;
+
+        /// <summary>
+        /// アングリバイト成功後の下降Animatorステート
+        /// </summary>
+        private int _angryBiteRetreatStateHash;
+
 
 
         // 公開プロパティ
@@ -226,6 +247,30 @@ namespace Game.Gameplay.Enemy.Boss
             CancelCurrentAnimation();
         }
 
+
+        // 公開メソッド
+        // ------------------------------------------------------------
+
+        /// <summary>
+        /// 生成直後のボスを一時的な画面外位置へ移動させる
+        /// </summary>
+        /// <returns></returns>
+        public bool PrepareSpawnHiddenPose()
+        {
+            if (_motionRoot == null)
+            {
+                Debug.LogWarning($"[{nameof(BossAnimationController)}] PrepareSpawnHiddenPose: MotionRoot が設定されていません。");
+                return false;
+            }
+
+            ResetForPhaseStart();
+
+            ApplyStartPose(_spawnHiddenLocalPosition, _spawnHiddenEulerAngles);
+
+            return true;
+        }
+
+
         // 参照とHash値のキャッシュ
         // ------------------------------------------------------------
 
@@ -261,6 +306,8 @@ namespace Game.Gameplay.Enemy.Boss
             _angryBiteOpenStateHash = GetStateHash(_angryBiteOpenStateName);
 
             _angryBiteCloseStateHash = GetStateHash(_angryBiteCloseStateName);
+
+            _angryBiteRetreatStateHash = GetStateHash(_angryBiteRetreatStateName);
 
             _downStateHash = GetStateHash(_downStateName);
         }
@@ -307,6 +354,44 @@ namespace Game.Gameplay.Enemy.Boss
 
             // --- アニメーション再生 ---
             return TryPlayAnimation(_thornAttackStateHash, _thornAttackStateName, stepData.AnimationSpeed, true, startLocalPosition, startEulerAngles);
+        }
+
+
+        /// <summary>
+        /// イバラタックルの開始位置を設定して、開幕演出用の姿勢を適用する
+        /// </summary>
+        /// <param name="baseStepData">イバラアタックの基準データ</param>
+        /// <param name="introData">開幕演出データ</param>
+        /// <returns>適用できたかどうか</returns>
+        public bool PrepareBossIntroPose(BossThornAttackStepData baseStepData, BossIntroPresentationData introData)
+        {
+            // --- 引数チェック ---
+            if (baseStepData == null)
+            {
+                Debug.LogWarning($"[{nameof(BossAnimationController)}] PrepareBossIntroPose: baseStepData が null です。");
+                return false;
+            }
+            if (introData == null)
+            {
+                Debug.LogWarning($"[{nameof(BossAnimationController)}] PrepareBossIntroPose: introData が null です。");
+                return false;
+            }
+
+            // --- 開始位置を設定 ---
+            BossAttackSide introSide = introData.PlayFromLeft ? BossAttackSide.Left : BossAttackSide.Right;
+
+            // --- 基準となるイバラタックル開始位置から、開幕演出用のオフセットを加算する ---
+            Vector3 baseStartLocalPosition = introSide == BossAttackSide.Left ? baseStepData.LeftStartLocalPosition : baseStepData.RightStartLocalPosition;
+
+            // ---- 基準となる角度 はそのまま使用する ----
+            Vector3 startEulerAngles = introSide == BossAttackSide.Left ? baseStepData.LeftStartEulerAngles : baseStepData.RightStartEulerAngles;
+
+            // 通常の開始位置へ開幕演出用の高さなどを加える
+            Vector3 introStartLocalPosition = baseStartLocalPosition + introData.BossStartLocalPositionOffset;
+
+            ApplyStartPose(introStartLocalPosition, startEulerAngles);
+
+            return true;
         }
 
 
@@ -415,9 +500,20 @@ namespace Game.Gameplay.Enemy.Boss
             // 下降の進行度を0～1に制限する
             float retreatProgress = Mathf.Clamp01(normalizedTime);
 
-            AnimationCurve retreatCurve = biteData.RiseCurve;
+            AnimationCurve retreatCurve = biteData.FailureRetreatCurve;
 
-            float moveProgress = retreatCurve != null ? retreatCurve.Evaluate(retreatProgress) : retreatProgress;
+            float moveProgress;
+
+            if (retreatProgress >= 1f)
+            {
+                // 最後は必ず開始位置へ正確に到達させる
+                moveProgress = 1f;
+            }
+            else
+            {
+                // カーブが未設定の場合は、一定速度で下降させる
+                moveProgress = retreatCurve != null ? retreatCurve.Evaluate(retreatProgress) : retreatProgress;
+            }
 
             _motionRoot.localPosition = Vector3.LerpUnclamped(retreatStartLocalPosition, biteData.StartLocalPosition, moveProgress);
 
@@ -440,6 +536,24 @@ namespace Game.Gameplay.Enemy.Boss
 
             // 口を閉じるアニメーションは現在位置を維持する！！
             return TryPlayAnimation(_angryBiteCloseStateHash, _angryBiteCloseStateName, biteData.CloseAnimationSpeed, false, Vector3.zero, Vector3.zero);
+        }
+
+
+        /// <summary>
+        /// バリア攻撃後の下降アニメーションを再生する
+        /// </summary>
+        /// <param name="biteData">アングリバイトの1回分の設定</param>
+        /// <returns></returns>
+        public bool PlayAngryBiteRetreat(BossAngryBiteData biteData)
+        {
+            if (biteData == null)
+            {
+                Debug.LogWarning($"[{nameof(BossAnimationController)}] PlayAngryBiteRetreat: biteData が null です。");
+                return false;
+            }
+
+            // 現在の頂点位置を維持したままアニメーションを開始するため、applyStartPoseはfalseにする
+            return TryPlayAnimation(_angryBiteRetreatStateHash, _angryBiteRetreatStateName, biteData.FailureRetreatAnimationSpeed, false, Vector3.zero, Vector3.zero);
         }
 
 
@@ -619,7 +733,6 @@ namespace Game.Gameplay.Enemy.Boss
 
         // 開始姿勢
         // ------------------------------------------------------------
-
 
         public void ResetForPhaseStart()
         {

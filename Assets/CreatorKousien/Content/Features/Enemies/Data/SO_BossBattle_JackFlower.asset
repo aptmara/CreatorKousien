@@ -19,7 +19,8 @@ MonoBehaviour:
     _playFromLeft: 0
     _bossStartLocalPositionOffset: {x: 0, y: 9, z: 0}
     _animationSpeed: 0.4
-    _cameraPositionOffset: {x: 0, y: -1, z: -4}
+    _cameraPositionOffset: {x: 0, y: 2, z: -4}
+    _cameraEulerAnglesOffset: {x: 3, y: 0, z: 0}
     _cameraMoveDuration: 0.6
     _cameraReturnDuration: 0.6
     _cameraBlendCurve:
@@ -65,21 +66,21 @@ MonoBehaviour:
       _leftStartEulerAngles: {x: 0, y: -90, z: 0}
       _rightStartLocalPosition: {x: 35, y: -23, z: -4}
       _rightStartEulerAngles: {x: 0, y: 90, z: 0}
-      _animationSpeed: 0.4
+      _animationSpeed: 0.35
       _canDamageBarrier: 0
     - _stepName: Thorn Attack 2
       _leftStartLocalPosition: {x: -35, y: -18, z: -4}
       _leftStartEulerAngles: {x: 0, y: -90, z: 0}
       _rightStartLocalPosition: {x: 35, y: -18, z: -4}
       _rightStartEulerAngles: {x: 0, y: 90, z: 0}
-      _animationSpeed: 0.35
+      _animationSpeed: 0.3
       _canDamageBarrier: 0
     - _stepName: Thorn Attack 3
       _leftStartLocalPosition: {x: -35, y: -14, z: -4}
       _leftStartEulerAngles: {x: 0, y: -90, z: 0}
       _rightStartLocalPosition: {x: 35, y: -14, z: -4}
       _rightStartEulerAngles: {x: 0, y: 90, z: 0}
-      _animationSpeed: 0.3
+      _animationSpeed: 0.25
       _canDamageBarrier: 1
     _angryBiteData:
       _startLocalPosition: {x: 0, y: -23, z: -8}
@@ -130,11 +131,36 @@ MonoBehaviour:
       _openAnimationSpeed: 1
       _closeAnimationSpeed: 4
       _downAnimationSpeed: 1
+      _failureRetreatAnimationSpeed: 0.65
       _mouthMaxHp: 1400
       _mouthOpenDuration: 8
       _failureBarrierDamage: 20
       _failureHoldDuration: 1.5
-      _failureRetreatDuration: 1.5
+      _failureRetreatDuration: 3.5
+      _failureRetreatCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 2
+          outSlope: 2
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       _downDuration: 3.5
       _spitCollectibleCount: 40
     _downPresentationData:
@@ -204,14 +230,14 @@ MonoBehaviour:
       _leftStartEulerAngles: {x: 0, y: -90, z: 0}
       _rightStartLocalPosition: {x: 35, y: -23, z: -4}
       _rightStartEulerAngles: {x: 0, y: 90, z: 0}
-      _animationSpeed: 0.4
+      _animationSpeed: 0.35
       _canDamageBarrier: 0
     - _stepName: Thorn Attack 2
       _leftStartLocalPosition: {x: -35, y: -18, z: -4}
       _leftStartEulerAngles: {x: 0, y: -90, z: 0}
       _rightStartLocalPosition: {x: 35, y: -18, z: -4}
       _rightStartEulerAngles: {x: 0, y: 90, z: 0}
-      _animationSpeed: 0.35
+      _animationSpeed: 0.38
       _canDamageBarrier: 0
     - _stepName: Thorn Attack 3
       _leftStartLocalPosition: {x: -35, y: -14, z: -4}
@@ -269,11 +295,36 @@ MonoBehaviour:
       _openAnimationSpeed: 1
       _closeAnimationSpeed: 4
       _downAnimationSpeed: 1
+      _failureRetreatAnimationSpeed: 0.65
       _mouthMaxHp: 1700
       _mouthOpenDuration: 8
       _failureBarrierDamage: 20
       _failureHoldDuration: 1.5
-      _failureRetreatDuration: 1.5
+      _failureRetreatDuration: 3.5
+      _failureRetreatCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       _downDuration: 3.5
       _spitCollectibleCount: 40
     _downPresentationData:
@@ -357,7 +408,7 @@ MonoBehaviour:
       _leftStartEulerAngles: {x: 0, y: -90, z: 0}
       _rightStartLocalPosition: {x: 35, y: -14, z: -4}
       _rightStartEulerAngles: {x: 0, y: 90, z: 0}
-      _animationSpeed: 0.3
+      _animationSpeed: 0.28
       _canDamageBarrier: 1
     _angryBiteData:
       _startLocalPosition: {x: 0, y: -23, z: -8}
@@ -408,11 +459,36 @@ MonoBehaviour:
       _openAnimationSpeed: 1
       _closeAnimationSpeed: 4
       _downAnimationSpeed: 1
+      _failureRetreatAnimationSpeed: 0.65
       _mouthMaxHp: 2000
       _mouthOpenDuration: 8.5
       _failureBarrierDamage: 20
       _failureHoldDuration: 1.5
-      _failureRetreatDuration: 1.5
+      _failureRetreatDuration: 3.5
+      _failureRetreatCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       _downDuration: 1
       _spitCollectibleCount: 40
     _downPresentationData:
