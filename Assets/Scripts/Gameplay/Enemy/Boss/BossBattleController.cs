@@ -74,6 +74,25 @@ namespace Game.Gameplay.Enemy.Boss
         private BossCorpseHitReceiver[] _corpseHitReceivers;
 
 
+        [Header("--- アングリバイト開始時の警告シェイク ---")]
+
+        [SerializeField, Min(0f)]
+        [Tooltip("アングリバイトのシェイクの長さ")]
+        private float _biteWarningShakeDuration = 0.28f;
+
+        [SerializeField, Min(0f)]
+        [Tooltip("アングリバイトのシェイクの位置の強さ(単位: メートル)")]
+        private float _biteWarningShakePositionStrength = 0.04f;
+
+        [SerializeField, Min(0f)]
+        [Tooltip("アングリバイトのシェイクの回転の強さ(単位: 度)")]
+        private float _biteWarningShakeRotationStrength = 0.6f;
+
+        [SerializeField, Min(1f)]
+        [Tooltip("アングリバイトのシェイクの振動数(単位: Hz)")]
+        private float _biteWarningShakeFrequency = 22f;
+
+
         [Header("--- アングリバイト失敗時のカメラシェイク ---")]
 
         [SerializeField]
@@ -107,6 +126,11 @@ namespace Game.Gameplay.Enemy.Boss
         [SerializeField]
         [Tooltip("ボスが見えたとみなすRootMotionのローカルY")]
         private float _bossVisibleLocalY = -12f;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("赤い警告UIを最低限表示する時間")]
+        private float _thornWarningMinimumDuration = 0.9f;
 
 
 
@@ -505,6 +529,12 @@ namespace Game.Gameplay.Enemy.Boss
                 return false;
             }
 
+            // 画面外へ退避
+            if (!_animationController.PrepareSpawnHiddenPose())
+            {
+                Debug.LogError($"[{nameof(BossBattleController)}] ボスの退避姿勢を設定できません。");
+            }
+
             return BeginBattle();
         }
 
@@ -532,6 +562,20 @@ namespace Game.Gameplay.Enemy.Boss
                 Debug.LogWarning($"[{nameof(BossBattleController)}] ボス戦を開始するための条件が揃っていません。");
                 return false;
             }
+
+            // --- ボスを画面外へ移動 ---
+            BossIntroPresentationData introData = _battleData.IntroPresentationData;
+
+            if (introData.IsEnabled && _battleData.TryGetPhaseData(0, out BossPhaseData firstPhaseData))
+            {
+                BossThornAttackStepData baseStepData = firstPhaseData.ThornAttackSteps[0];
+
+
+            }
+
+            // 以下は元の処理
+            _successfulDownCount = 0;
+
 
             // --- ボス戦全体の進行状態を初期化 ---
             _successfulDownCount = 0;
@@ -722,7 +766,7 @@ namespace Game.Gameplay.Enemy.Boss
 
             yield return _introPresentationController.PlayPresentation(baseStepData, introData);
 
-            // 演出中にボス戦が停止された場合はフェーズを開始しない
+            // 演出中にボス戦が停止された場合は開始しない
             if (!_isBattleRunning)
             {
                 yield break;
@@ -730,10 +774,10 @@ namespace Game.Gameplay.Enemy.Boss
 
             _stateRoutine = null;
 
-            // 開幕演出終了後、第1フェーズを開始する
+            // イントロ終了後、第1フェーズを開始する
             if (!BeginPhase(0))
             {
-                Debug.LogError($"[{nameof(BossBattleController)}] 開幕演出後の第1フェーズ開始に失敗しました。", this);
+                Debug.LogError($"[{nameof(BossBattleController)}] 第1フェーズの開始に失敗しました。", this);
 
                 StopBattle();
             }
@@ -821,10 +865,16 @@ namespace Game.Gameplay.Enemy.Boss
                 {
                     yield return new WaitForFixedUpdate();
 
+                    float warningElapsedTime = 0f;
+
                     while (!_animationController.IsCurrentAnimationFinished())
                     {
+                        warningElapsedTime += Time.deltaTime;
+
+                        bool canEndWarning = warningElapsedTime >= _thornWarningMinimumDuration;
+
                         // ボスが画面内に入ったら警告演出を終了する
-                        if (isWarningActive && IsBossVisibleOnScreen())
+                        if (isWarningActive && canEndWarning && IsBossVisibleOnScreen())
                         {
                             EventBus.Publish(new BossThornWarningEndedEvent());
                             isWarningActive = false;
@@ -873,8 +923,10 @@ namespace Game.Gameplay.Enemy.Boss
 
             // 頭が画面(下端より上・左右の範囲内)に入ったら「見えた」とみなす
             return viewportPoint.z > 0f
-                && viewportPoint.x >= 0f && viewportPoint.x <= 1f
-                && viewportPoint.y >= 0f;
+                && viewportPoint.x >= 0f
+                && viewportPoint.x <= 1f
+                && viewportPoint.y >= 0f
+                && viewportPoint.y <= 1f;
         }
 
 
@@ -957,23 +1009,41 @@ namespace Game.Gameplay.Enemy.Boss
 
             AngryBiteStarted?.Invoke(_currentPhaseIndex, biteData);
 
-            float elapsedTime = 0f;
-            float challengeDuration = MathF.Max(0.01f, biteData.MouthOpenDuration);
+            // 警告UI開始
+            EventBus.Publish(new BossThornWarningStartedEvent());
 
-            // アングリバイト開始時は、必ず上昇開始位置へ合わせる
-            _animationController.UpdateAngryBiteRisePosition(biteData, 0f);
+            // 開始時に軽く1回揺らす
+            EventBus.Publish(new CameraShakeRequestedEvent(
+                _biteWarningShakeDuration,
+                _biteWarningShakePositionStrength,
+                _biteWarningShakeRotationStrength,
+                _biteWarningShakeFrequency));
 
-            while (elapsedTime < challengeDuration && !_mouthHealth.IsDepleted)
+            try
             {
-                elapsedTime += Time.deltaTime;
+                float elapsedTime = 0f;
+                float challengeDuration = MathF.Max(0.01f, biteData.MouthOpenDuration);
 
-                // Mouth Open Duration に対する 0 - 1 の進行度を計算する
-                float riseProgress = Mathf.Clamp01(elapsedTime / challengeDuration);
+                // アングリバイト開始時は、必ず上昇開始位置へ合わせる
+                _animationController.UpdateAngryBiteRisePosition(biteData, 0f);
 
-                // 口の上昇位置を計算し、アニメーションコントローラーに反映する
-                _animationController.UpdateAngryBiteRisePosition(biteData, riseProgress);
+                while (elapsedTime < challengeDuration && !_mouthHealth.IsDepleted)
+                {
+                    elapsedTime += Time.deltaTime;
 
-                yield return null;
+                    // Mouth Open Duration に対する 0 - 1 の進行度を計算する
+                    float riseProgress = Mathf.Clamp01(elapsedTime / challengeDuration);
+
+                    // 口の上昇位置を計算し、アニメーションコントローラーに反映する
+                    _animationController.UpdateAngryBiteRisePosition(biteData, riseProgress);
+
+                    yield return null;
+                }
+            }
+            finally
+            {
+                // 成功・失敗・途中停止のどの場合でも、警告UIを終了する
+                EventBus.Publish(new BossThornWarningEndedEvent());
             }
 
             _didCurrentAngryBiteSucceed = _mouthHealth.IsDepleted;
@@ -1066,6 +1136,14 @@ namespace Game.Gameplay.Enemy.Boss
             }
 
             _animationController.EndAngryBiteClosePositionLock();
+
+            // 落下アニメーション
+            bool didStartRetreatAnimation = _animationController.PlayAngryBiteRetreat(biteData);
+
+            if (!didStartRetreatAnimation)
+            {
+                Debug.LogWarning($"[{nameof(BossBattleController)}] フェーズ{_currentPhaseIndex + 1}のアングリバイト失敗後の下降アニメーション再生に失敗しました。", this);
+            }
 
             Transform motionRoot = _animationController.MotionRoot;
 
