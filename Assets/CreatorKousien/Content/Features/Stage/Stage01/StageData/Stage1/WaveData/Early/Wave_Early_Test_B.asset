@@ -38,7 +38,7 @@ MonoBehaviour:
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-      spawnCount: 4
+      spawnCount: 8
       startDelay: 0
       spawnInterval: 5
   - groupName: Stage_Early_Hellooo
@@ -48,6 +48,6 @@ MonoBehaviour:
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-      spawnCount: 4
+      spawnCount: 12
       startDelay: 0
       spawnInterval: 4

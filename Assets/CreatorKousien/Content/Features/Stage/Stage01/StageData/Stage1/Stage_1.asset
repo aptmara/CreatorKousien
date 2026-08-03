@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Stage_1
   m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.StageDataSO
   stageName: Stage_1
-  plannerMemo: 
+  plannerMemo: "2026/08/01\u3000\u521D\u671F\u30B9\u30C6\u30FC\u30B8\u3068\u3044\u3046\u3053\u3068\u3082\u3042\u308A\u3001\u5927\u5E45\u306B\u4FEE\u6B63\u3057\u307E\u3057\u305F\u3002\n\u5168\u4F53\u7684\u306B\u7C21\u5358\u304B\u3064\u77ED\u3081\u306B\u4F5C\u308A\u76F4\u3057\u307E\u3057\u305F\u3002"
   earlyWavePool:
     selectionCount: 3
     allowDuplicateSelection: 0
@@ -33,24 +33,15 @@ MonoBehaviour:
     candidates:
     - isEnabled: 1
       waveData: {fileID: 11400000, guid: 4ff6717b57df9fd4ca01931405487085, type: 2}
-      weight: 1
+      weight: 3
     - isEnabled: 1
       waveData: {fileID: 11400000, guid: ca4c88f0d9adc6242b67e281585adbd8, type: 2}
-      weight: 1
-    - isEnabled: 1
-      waveData: {fileID: 11400000, guid: 409f641bb892f6c43afe28322d942a21, type: 2}
-      weight: 1
+      weight: 2
   lateWavePool:
     selectionCount: 3
     allowDuplicateSelection: 0
     candidates:
     - isEnabled: 1
       waveData: {fileID: 11400000, guid: c476aaacfdd56de4185d6fdfcd616183, type: 2}
-      weight: 1
-    - isEnabled: 1
-      waveData: {fileID: 11400000, guid: 74d4c4020dcd4684996c7cba2ed5d8b5, type: 2}
-      weight: 5
-    - isEnabled: 1
-      waveData: {fileID: 11400000, guid: 4d1574cd8932fc74eb3de78f5051a1de, type: 2}
-      weight: 1
+      weight: 3
   bossWave: {fileID: 11400000, guid: 13bfd27def824fc468a8ad95ae4add70, type: 2}

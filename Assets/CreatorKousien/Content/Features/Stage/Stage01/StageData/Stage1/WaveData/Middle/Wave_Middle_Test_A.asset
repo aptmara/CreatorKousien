@@ -22,7 +22,7 @@ MonoBehaviour:
   minDistanceFromOtherEnemies: 3
   groups:
   - groupName: Wave_Middle_GoodMorning
-    plannerMemo: "\u7B2C2\u30A6\u30A7\u30FC\u30D6\u306E1\u6CE2\u76EE\u3002\n\u3053\u3053\u304B\u3089\u30BE\u30F3\u30D3\u3092\u51FA\u3057\u3066\u3044\u304D\u3001\u5C11\u3057\u305A\u3064\u30D7\u30EC\u30A4\u306B\u6B6F\u3054\u305F\u3048\u3092\u51FA\u3057\u3066\u3044\u304F\u3002"
+    plannerMemo: 
     delayBeforeStart: 0
     advanceType: 0
     timeUntilNextGroup: 0
@@ -31,35 +31,35 @@ MonoBehaviour:
       spawnCount: 3
       startDelay: 0
       spawnInterval: 5
-    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
-      spawnCount: 1
-      startDelay: 7
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 3
+      startDelay: 5
       spawnInterval: 1
   - groupName: Wave_Middle_GoodMoorning
-    plannerMemo: "\u7B2C2\u30A6\u30A7\u30FC\u30D6\u306E2\u6CE2\u76EE\u3002\n\u3053\u3053\u304B\u3089\u30BE\u30F3\u30D3\u3092\u51FA\u3057\u3066\u3044\u304D\u3001\u5C11\u3057\u305A\u3064\u30D7\u30EC\u30A4\u306B\u6B6F\u3054\u305F\u3048\u3092\u51FA\u3057\u3066\u3044\u304F\u3002"
+    plannerMemo: 
     delayBeforeStart: 0
     advanceType: 0
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-      spawnCount: 3
+      spawnCount: 5
       startDelay: 2
       spawnInterval: 4
-    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
-      spawnCount: 1
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 5
       startDelay: 8
-      spawnInterval: 1
+      spawnInterval: 4
   - groupName: Wave_Middle_GoodMooorning
-    plannerMemo: "\u7B2C2\u30A6\u30A7\u30FC\u30D6\u306E3\u6CE2\u76EE\u3002\n\u3053\u3053\u304B\u3089\u30BE\u30F3\u30D3\u3092\u51FA\u3057\u3066\u3044\u304D\u3001\u5C11\u3057\u305A\u3064\u30D7\u30EC\u30A4\u306B\u6B6F\u3054\u305F\u3048\u3092\u51FA\u3057\u3066\u3044\u304F\u3002"
+    plannerMemo: 
     delayBeforeStart: 0
     advanceType: 0
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-      spawnCount: 3
+      spawnCount: 8
       startDelay: 2
       spawnInterval: 5
-    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
-      spawnCount: 1
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 8
       startDelay: 8
       spawnInterval: 1
