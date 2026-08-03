@@ -24,10 +24,20 @@ namespace Game.Gameplay.Collectibles
     {
         private const string FieldWallRootName = "FIELD_WALL";
         private const string EnemySideWallName = "Wall_Front";
+        private const string FieldLeftFrontAnchorTag = "Field_LeftFront";
+        private const string FieldRightFrontAnchorTag = "Field_RightFront";
+        private const float GummyTargetWorldY = 6f;
+        private const float GummyBounceDuration = 3.0f;
 
         [Header("--- データ ---")]
         [Tooltip("このオブジェクトのマスターデータ")]
         [SerializeField] private CollectibleData _data;
+
+        [Header("--- グミ反射設定 ---")]
+        [Tooltip("グミが横へ跳ねる最小距離")]
+        [SerializeField, Min(0f)] private float _gummyMinHorizontalDistance = 4f;
+        [Tooltip("グミが横へ跳ねる最大距離")]
+        [SerializeField, Min(0f)] private float _gummyMaxHorizontalDistance = 12f;
 
         [Header("--- 落下自動回収設定 ---")]
         [Tooltip("このY座標を下回ったら、自動でプールへ戻すデッドライン")]
@@ -57,6 +67,14 @@ namespace Game.Gameplay.Collectibles
 
         // --- 特殊効果用のランタイム変数 ---
         private int _currentBounceCount = 0;
+        private bool _isGummyBounceActive;
+        private float _gummyBounceElapsed;
+        private Vector3 _gummyBounceStartPosition;
+        private Vector3 _gummyBounceTargetPosition;
+        private float _gummyBaseBounceHeight;
+        private CollectableGravity _collectableGravity;
+        private bool _restoreCollectableGravityAfterBounce;
+        private bool _isCollectableGravitySuspendedForBounce;
 
         public string Id => _data != null ? _data.Id : string.Empty;
         public float DamageAmount => _data != null ? _data.DamageAmount : 0f;
@@ -69,11 +87,14 @@ namespace Game.Gameplay.Collectibles
         {
             _rigidbody = GetComponent<Rigidbody>();
             _collider = GetComponent<Collider>();
+            _collectableGravity = GetComponent<CollectableGravity>();
             _initialScale = transform.localScale;
         }
 
         private void FixedUpdate()
         {
+            UpdateGummyBounce();
+
             // アイテムがステージ外へ落下した場合は自動クリーンアップ
             if (transform.position.y < _fallDeadLineY)
             {
@@ -134,6 +155,7 @@ namespace Game.Gameplay.Collectibles
             _returnAction = returnAction;
             CanBeCollectedByPlayer = canBeCollectedByPlayer;
             _currentBounceCount = 0;
+            ResetGummyBounceState();
             transform.localScale *= RoguelikeUpgradeRuntime.CollectibleScaleMultiplier;
 
             UpdateVisual();
@@ -458,15 +480,10 @@ namespace Game.Gameplay.Collectibles
         {
             if (_data == null) return false;
 
-            // 1. グミの最大連鎖数チェック
-            if (_data.Type == CollectibleType.Gummy)
+            // 1. グミの反射と最大連鎖数チェック
+            if (_data.Type == CollectibleType.Gummy && !TryQueueGummyBounce())
             {
-                if (_currentBounceCount >= _data.MaxBounceChainCount)
-                {
-                    Despawn();
-                    return false;
-                }
-                _currentBounceCount++;
+                return false;
             }
 
             // 2. イベントを発行
@@ -479,6 +496,214 @@ namespace Game.Gameplay.Collectibles
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// グミを命中位置のZ座標に留め、規定高さを頂点とする曲線で跳ね返らせる。
+        /// </summary>
+        /// <returns>反射を予約できた場合はtrue</returns>
+        public bool TryQueueGummyBounce()
+        {
+            if (_data == null || _data.Type != CollectibleType.Gummy)
+            {
+                return false;
+            }
+
+            if (_currentBounceCount >= _data.MaxBounceChainCount)
+            {
+                Despawn();
+                return false;
+            }
+
+            if (_rigidbody == null)
+            {
+                _rigidbody = GetComponent<Rigidbody>();
+            }
+
+            _currentBounceCount++;
+
+            SuspendCollectableGravity();
+            _isGummyBounceActive = true;
+            _gummyBounceElapsed = 0f;
+            _gummyBounceStartPosition = _rigidbody.position;
+            _gummyBounceTargetPosition = GetGummyBounceTarget(_gummyBounceStartPosition);
+            _rigidbody.linearVelocity = Vector3.zero;
+            return true;
+        }
+
+        private Vector3 GetGummyBounceTarget(Vector3 startPosition)
+        {
+            Transform leftFrontAnchor = FindStageAnchor(FieldLeftFrontAnchorTag);
+            Transform rightFrontAnchor = FindStageAnchor(FieldRightFrontAnchorTag);
+            if (_currentBounceCount == 1)
+            {
+                _gummyBaseBounceHeight = Mathf.Max(
+                    0f,
+                    GummyTargetWorldY - startPosition.y);
+            }
+
+            float bounceHeight = _gummyBaseBounceHeight
+                * Mathf.Pow(0.5f, _currentBounceCount - 1);
+            float targetY = startPosition.y + bounceHeight;
+
+            if (leftFrontAnchor == null && rightFrontAnchor == null)
+            {
+                return new Vector3(startPosition.x, targetY, startPosition.z);
+            }
+
+            Vector3 leftPosition = leftFrontAnchor != null
+                ? leftFrontAnchor.position
+                : rightFrontAnchor.position;
+            Vector3 rightPosition = rightFrontAnchor != null
+                ? rightFrontAnchor.position
+                : leftFrontAnchor.position;
+            float targetX = GetRandomGummyTargetX(
+                startPosition.x,
+                Mathf.Min(leftPosition.x, rightPosition.x),
+                Mathf.Max(leftPosition.x, rightPosition.x));
+            return new Vector3(targetX, targetY, startPosition.z);
+        }
+
+        private float GetRandomGummyTargetX(
+            float startX,
+            float stageMinX,
+            float stageMaxX)
+        {
+            float minDistance = Mathf.Min(
+                _gummyMinHorizontalDistance,
+                _gummyMaxHorizontalDistance);
+            float maxDistance = Mathf.Max(
+                _gummyMinHorizontalDistance,
+                _gummyMaxHorizontalDistance);
+            float availableLeft = Mathf.Min(
+                maxDistance,
+                Mathf.Max(0f, startX - stageMinX));
+            float availableRight = Mathf.Min(
+                maxDistance,
+                Mathf.Max(0f, stageMaxX - startX));
+            bool canMoveLeft = availableLeft >= minDistance;
+            bool canMoveRight = availableRight >= minDistance;
+
+            if (!canMoveLeft && !canMoveRight)
+            {
+                return Mathf.Clamp(startX, stageMinX, stageMaxX);
+            }
+
+            bool moveRight = canMoveRight
+                && (!canMoveLeft || UnityEngine.Random.value >= 0.5f);
+            float availableDistance = moveRight
+                ? availableRight
+                : availableLeft;
+            float distance = UnityEngine.Random.Range(
+                minDistance,
+                availableDistance);
+            return startX + (moveRight ? distance : -distance);
+        }
+
+        private static Transform FindStageAnchor(string tag)
+        {
+            try
+            {
+                GameObject anchor = GameObject.FindGameObjectWithTag(tag);
+                return anchor != null ? anchor.transform : null;
+            }
+            catch (UnityException)
+            {
+                return null;
+            }
+        }
+
+        private void UpdateGummyBounce()
+        {
+            if (!_isGummyBounceActive || _rigidbody == null)
+            {
+                return;
+            }
+
+            _gummyBounceElapsed = Mathf.Min(
+                _gummyBounceElapsed + Time.fixedDeltaTime,
+                GummyBounceDuration);
+            float bounceRate = _gummyBounceElapsed / GummyBounceDuration;
+            float horizontalRate = Mathf.SmoothStep(0f, 1f, bounceRate);
+            float heightRate;
+            if (bounceRate <= 0.5f)
+            {
+                heightRate = Mathf.SmoothStep(0f, 1f, bounceRate * 2f);
+            }
+            else
+            {
+                float fallRate = (bounceRate - 0.5f) * 2f;
+                heightRate = 1f - fallRate * fallRate;
+            }
+
+            float bounceHeight = _gummyBounceTargetPosition.y
+                - _gummyBounceStartPosition.y;
+            Vector3 nextPosition = new Vector3(
+                Mathf.Lerp(
+                    _gummyBounceStartPosition.x,
+                    _gummyBounceTargetPosition.x,
+                    horizontalRate),
+                Mathf.Lerp(
+                    _gummyBounceStartPosition.y,
+                    _gummyBounceTargetPosition.y,
+                    heightRate),
+                _gummyBounceStartPosition.z);
+
+            _rigidbody.linearVelocity = Vector3.zero;
+            _rigidbody.MovePosition(nextPosition);
+
+            if (_gummyBounceElapsed < GummyBounceDuration)
+            {
+                return;
+            }
+
+            _isGummyBounceActive = false;
+            _rigidbody.linearVelocity = Vector3.down
+                * (4f * bounceHeight / GummyBounceDuration);
+            RestoreCollectableGravity();
+        }
+
+        private void SuspendCollectableGravity()
+        {
+            if (_collectableGravity == null)
+            {
+                _collectableGravity = GetComponent<CollectableGravity>();
+            }
+
+            if (_collectableGravity == null || _isGummyBounceActive)
+            {
+                return;
+            }
+
+            _restoreCollectableGravityAfterBounce = _collectableGravity.enabled;
+            _collectableGravity.enabled = false;
+            _isCollectableGravitySuspendedForBounce = true;
+        }
+
+        private void RestoreCollectableGravity()
+        {
+            if (!_isCollectableGravitySuspendedForBounce)
+            {
+                return;
+            }
+
+            if (_collectableGravity != null)
+            {
+                _collectableGravity.enabled = _restoreCollectableGravityAfterBounce;
+            }
+
+            _restoreCollectableGravityAfterBounce = false;
+            _isCollectableGravitySuspendedForBounce = false;
+        }
+
+        private void ResetGummyBounceState()
+        {
+            _isGummyBounceActive = false;
+            _gummyBounceElapsed = 0f;
+            _gummyBounceStartPosition = Vector3.zero;
+            _gummyBounceTargetPosition = Vector3.zero;
+            _gummyBaseBounceHeight = 0f;
+            RestoreCollectableGravity();
         }
 
         /// <summary>
@@ -594,6 +819,7 @@ namespace Game.Gameplay.Collectibles
             }
 
             CanBeCollectedByPlayer = true;
+            ResetGummyBounceState();
             _rigidbody.linearVelocity = Vector3.zero;
             _rigidbody.angularVelocity = Vector3.zero;
             transform.localScale = _initialScale;

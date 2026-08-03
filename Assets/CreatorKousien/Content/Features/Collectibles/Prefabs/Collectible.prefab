@@ -147,6 +147,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Collectibles.CollectibleObject
   _data: {fileID: 0}
+  _gummyMinHorizontalDistance: 4
+  _gummyMaxHorizontalDistance: 12
   _fallDeadLineY: -20
   _spawnLayer: CollectibleSpawning
   _normalLayer: Collectible

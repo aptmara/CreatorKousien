@@ -120,6 +120,13 @@ namespace Game.Core.Enemy
                     * targetMultiplier;
             }
 
+            bool isGummy = itemData != null
+                && itemData.Type == Game.Data.Collectibles.CollectibleType.Gummy;
+            if (isGummy && !collectible.TryQueueGummyBounce())
+            {
+                return false;
+            }
+
             if (_controller != null)
             {
                 _controller.OnBarrierHit(gaugeDamage);
@@ -127,7 +134,7 @@ namespace Game.Core.Enemy
 
             // グミの場合は消滅させずに跳ね返らせる
             bool shouldDespawn = _despawnItemOnHit;
-            if (itemData != null && itemData.Type == Game.Data.Collectibles.CollectibleType.Gummy)
+            if (isGummy)
             {
                 shouldDespawn = false;
             }
@@ -136,7 +143,7 @@ namespace Game.Core.Enemy
             {
                 collectible.Despawn();
             }
-            else
+            else if (!isGummy)
             {
                 Rigidbody rb = collectible.GetComponent<Rigidbody>();
                 if (rb != null)
