@@ -6,6 +6,9 @@ Shader "Custom/SH_Sway_Lit"
         [MainTexture] _BaseMap("Base Map", 2D) = "white" {}
         _Saturation ("Saturation",Range(0,2)) = 1.2
 
+        [Header(Sway)]
+        _Beat("Beat",Float) = 1.0
+
         [Header(Shadow)]
         _ShadowColor("Shadow Color",Color) = (0.4,0.2,0.6,1.0)
         _ShadeThreshold ("Shade Threshold" , Range(0,1)) = 0.5
@@ -87,29 +90,43 @@ Shader "Custom/SH_Sway_Lit"
                 float _Cutoff;
             CBUFFER_END
 
-            Varyings vert(Attributes IN)
-            {
-                Varyings OUT;
-                float4 localPos = IN.positionOS;
+            float _Beat;
+            #define TWO_PI 6.28318530718
 
-                float t = smoothstep(0.0f,1.0f,localPos.y);
-                float wave = sin(_Time.y * 5.0f - t * 0.6f);
+            float3 JellyVertex(float3 pos)
+            {
+                float t = smoothstep(0.0f,1.0f,pos.y);
+                float wave = sin(_Beat * TWO_PI - t * 0.6f);
+                //float wave = sin(_Time.y * 0.6f);
+
 
                 float center = 1.0f - abs(wave);
 
                 float scaleY = lerp(1.0f,0.85f,center);
                 float scaleX = lerp(1.0f,1.10f,center);
 
-                localPos.x *= scaleX;
-                localPos.y *= scaleY;
+                float3 result = pos;
 
-                localPos.x += wave * 0.1f * t;
+                result.x *= scaleX;
+                result.y *= scaleY;
+
+                result.x += wave * 0.1f * t;
+
+                return result;
+            }
+
+            Varyings vert(Attributes IN)
+            {
+                Varyings OUT;
+                float4 localPos = float4(JellyVertex(IN.positionOS.xyz),1.0f);
                 
                 OUT.positionHCS = TransformObjectToHClip(localPos.xyz);
                 OUT.normalWS = TransformObjectToWorldNormal(IN.normalOS);
-                OUT.viewDirWS = GetWorldSpaceViewDir(OUT.positionHCS);
+
+                float3 positionWS = TransformObjectToWorld(localPos.xyz);
+                OUT.viewDirWS = GetWorldSpaceViewDir(positionWS);
                 OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
-                OUT.height = t;
+                OUT.height = smoothstep(0.0f,1.0f,localPos.y);
                 return OUT;
             }
 
@@ -156,6 +173,97 @@ Shader "Custom/SH_Sway_Lit"
             #endif
                 return half4(diffuse,tex.a * _BaseColor.a);
             }
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "ShadowCaster"
+
+            Tags
+            {
+                "LightMode" = "ShadowCaster"
+            }
+
+            ZWrite On
+            ColorMask 0
+
+            HLSLPROGRAM
+            #pragma vertex ShadowVertex
+            #pragma fragment ShadowFragment
+            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
+
+            struct ShadowVaryings
+            {
+                float4 positionCS : SV_POSITION;
+                float4 shadowCoords : TEXCOORD3;
+            };
+
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+                float3 normalOS : NORMAL;
+                float2 uv : TEXCOORD0;
+            };
+
+            CBUFFER_START(UnityPerMaterial)
+
+            CBUFFER_END
+
+            float _Beat;
+            #define TWO_PI 6.28318530718
+
+            float3 JellyVertex(float3 pos)
+            {
+                float t = smoothstep(0.0f,1.0f,pos.y);
+                float wave = sin(_Beat * TWO_PI - t * 0.6f);
+
+                float center = 1.0f - abs(wave);
+
+                float scaleY = lerp(1.0f,0.85f,center);
+                float scaleX = lerp(1.0f,1.10f,center);
+
+                float3 result = pos;
+
+                result.x *= scaleX;
+                result.y *= scaleY;
+
+                result.x += wave * 0.1f * t;
+
+                return result;
+            }
+
+            ShadowVaryings ShadowVertex(Attributes IN)
+            {
+                ShadowVaryings OUT;
+
+                float3 pos = JellyVertex(IN.positionOS.xyz);
+
+                OUT.positionCS = TransformObjectToHClip(pos);
+
+                // Get the VertexPositionInputs for the vertex position  
+                VertexPositionInputs positions = GetVertexPositionInputs(pos);
+
+                // Convert the vertex position to a position on the shadow map
+                float4 shadowCoordinates = GetShadowCoord(positions);
+
+                // Pass the shadow coordinates to the fragment shader
+                OUT.shadowCoords = shadowCoordinates;
+
+                return OUT;
+            }
+
+            half4 ShadowFragment(ShadowVaryings IN) : SV_Target
+            {
+                half shadowAmount = MainLightRealtimeShadow(IN.shadowCoords);
+
+                // Set the fragment color to the shadow value
+                return shadowAmount;
+            }
+
             ENDHLSL
         }
     }

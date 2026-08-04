@@ -16,6 +16,7 @@ public class SoundData : ScriptableObject
     {
         public AudioClip AudioClip;
         public string Name;
+        public int bpm;
     }
 
     [SerializeField]
