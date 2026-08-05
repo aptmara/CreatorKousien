@@ -6,16 +6,15 @@
 // Created  : 2026-07-15
 //
 // Notes:
-// - 1回の実行で1つのWaveDataSOを処理します。
-// - 各EnemySpawnEntryは同じGroup内で並行して実行します。
-// - 敵の生成処理自体は既存EnemySpawnerへ依頼します。
-// - EnemyDefeatedEventを利用して生存敵を追跡します。
+// - 1回の実行で1つのWaveDataSOを処理します！
+// - 各EnemySpawnEntryは同じGroup内で並行して実行します！
+// - 敵の生成処理自体は既存EnemySpawnerへ依頼します！
+// - EnemyDefeatedEventを利用して生存敵を追跡します！
 // ------------------------------------------------------------
 using System.Collections;
 using System.Collections.Generic;
 using Game.Core.Enemy;
 using Game.Core.Events;
-using Game.Gameplay.Enemy.Boss;
 using UnityEngine;
 
 namespace Game.WaveSystem
@@ -43,6 +42,9 @@ namespace Game.WaveSystem
 
         // まだスポーンが完了していないEnemySpawnEntryの数
         private int activeSpawnRoutineCount;
+
+        // 検証結果の一時バッファ
+        private readonly List<ValidationIssue> validationResults = new();
 
         public bool IsRunning { get; private set; }             ///< WaveRunnerがWaveを実行中かどうか
         public bool LastRunSucceeded { get; private set; }      ///< WaveRunnerの最後の実行が成功したかどうか
@@ -102,9 +104,11 @@ namespace Game.WaveSystem
             }
 
             // WaveDataSOの検証
-            if (!TryValidateWaveData(waveData, out string errorMessage))
+            WaveValidator.Validate(waveData, validationResults);
+
+            if (ValidationIssueUtility.HasError(validationResults))
             {
-                Debug.LogError($"[WaveRunner] WaveDataSOの検証に失敗しました。{errorMessage}", waveData);
+                Debug.LogError($"[WaveRunner] WaveDataSOの検証に失敗しました。\n{ValidationIssueUtility.BuildErrorText(validationResults)}", waveData);
                 yield break;
             }
 
@@ -319,94 +323,6 @@ namespace Game.WaveSystem
             }
         }
 
-
-
-        /// <summary>
-        /// WaveDataSOの内容を検証します。
-        /// </summary>
-        /// <param name="waveData">WaveDataのSO</param>
-        /// <param name="errorMessage">エラーメッセージ</param>
-        /// <returns></returns>
-        private static bool TryValidateWaveData(WaveDataSO waveData, out string errorMessage)
-        {
-            errorMessage = string.Empty;
-
-            if (waveData == null)
-            {
-                errorMessage = "WaveDataSOが設定されていません。";
-
-                return false;
-            }
-
-            if (waveData.Groups == null || waveData.Groups.Count == 0)
-            {
-                errorMessage = $"Wave「{waveData.WaveName}」にWaveGroupが設定されていません。";
-
-                return false;
-            }
-
-            for (int groupIndex = 0; groupIndex < waveData.Groups.Count; groupIndex++)
-            {
-                WaveGroupData group = waveData.Groups[groupIndex];
-
-                if (group == null)
-                {
-                    errorMessage = $"Wave「{waveData.WaveName}」のGroup[{groupIndex}]がnullです。";
-                    return false;
-                }
-
-                if (group.SpawnEntries == null || group.SpawnEntries.Count == 0)
-                {
-                    errorMessage = $"Wave「{waveData.WaveName}」のGroup「{group.GroupName}」にEnemySpawnEntryが設定されていません。";
-                    return false;
-                }
-
-                for (int entryIndex = 0; entryIndex < group.SpawnEntries.Count; entryIndex++)
-                {
-                    EnemySpawnEntry entry = group.SpawnEntries[entryIndex];
-                    if (entry == null)
-                    {
-                        errorMessage = $"Wave「{waveData.WaveName}」のGroup「{group.GroupName}」のEnemySpawnEntry[{entryIndex}]がnullです。";
-                        return false;
-                    }
-
-                    if (entry.EnemyDefinition == null)
-                    {
-                        errorMessage = $"Group 「{group.GroupName}」のEnemySpawnEntry[{entryIndex + 1}]にEnemyDefinitionが設定されていません。";
-                        return false;
-                    }
-
-                    if (entry.SpawnCount <= 0)
-                    {
-                        errorMessage = $"Group 「{group.GroupName}」のEnemySpawnEntry[{entryIndex + 1}]のSpawnCountが0以下です。";
-                        return false;
-                    }
-
-                    if (entry.EnemyDefinition.EnemyBody == null)
-                    {
-                        errorMessage = $"敵「{entry.EnemyDefinition.EnemyId}」のEnemyDefinitionにEnemyBodyが設定されていません。";
-                        return false;
-                    }
-
-                    if (entry.EnemyDefinition.IsBoss)
-                    {
-                        if (!entry.EnemyDefinition.EnemyBody.TryGetComponent(out BossBattleController _))
-                        {
-                            errorMessage = $"敵「{entry.EnemyDefinition.EnemyId}」はボスとして設定されていますが、EnemyBodyにBossControllerがアタッチされていません。";
-                            return false;
-                        }
-                    }
-                    else if (!entry.EnemyDefinition.EnemyBody.TryGetComponent(out EnemyBodyController _))
-                    {
-                        errorMessage = $"敵「{entry.EnemyDefinition.EnemyId}」のEnemyBodyにEnemyBodyControllerがありません。";
-
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
 
 
         /// <summary>
