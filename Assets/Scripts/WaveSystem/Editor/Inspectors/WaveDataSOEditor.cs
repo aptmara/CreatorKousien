@@ -41,6 +41,7 @@ namespace Game.WaveSystem.Editor
             // インライン編集とフィールド描画で同じSerializedObjectを使うので、Updateを呼んで最新化しておく
             serializedObject.Update();
 
+            EditorGUI.BeginChangeCheck();
 
             // WaveDataSOのInspectorを描画する
             EditorGUILayout.LabelField("検証結果", WaveEditorStyles.SectionHeader);
@@ -89,7 +90,7 @@ namespace Game.WaveSystem.Editor
                 DrawMetricsRow("バリア合計", metrics.TotalBarrier.ToString("N0"), "バリアゲージの合計です。Barrier Rateをあげるとここが増えます！！");
             }
 
-            DrawMetricsRow("経験値合計", metrics.TotalExp.ToString("N0"), "倒したときに得られる経験値の合計。Exp Rateをあげるとここが増えます！！");
+            DrawMetricsRow("経験値合計", metrics.TotalExp.ToString("N0"), "倒したときに得られる経験値の合計。敵側のExp Rateをあげるとここが増えます！！");
 
             DrawMetricsRow("防衛ラインへのダメージ", $"{metrics.AttackPressure:0.0} / 秒", "すべての敵が生存し続けた場合に、防衛ラインが毎秒受けるダメージ。実数値じゃなくて理論値ですっ！");
 

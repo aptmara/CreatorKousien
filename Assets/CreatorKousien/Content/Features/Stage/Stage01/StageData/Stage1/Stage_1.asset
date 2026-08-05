@@ -29,7 +29,7 @@ MonoBehaviour:
       weight: 1
   middleWavePool:
     selectionCount: 3
-    allowDuplicateSelection: 0
+    allowDuplicateSelection: 1
     candidates:
     - isEnabled: 1
       waveData: {fileID: 11400000, guid: 4ff6717b57df9fd4ca01931405487085, type: 2}
@@ -39,7 +39,7 @@ MonoBehaviour:
       weight: 2
   lateWavePool:
     selectionCount: 3
-    allowDuplicateSelection: 0
+    allowDuplicateSelection: 1
     candidates:
     - isEnabled: 1
       waveData: {fileID: 11400000, guid: c476aaacfdd56de4185d6fdfcd616183, type: 2}
