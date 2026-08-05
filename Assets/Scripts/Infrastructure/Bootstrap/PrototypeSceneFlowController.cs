@@ -15,6 +15,7 @@ using Game.Core.Roguelike;
 using Game.Gameplay.Cameras;
 using Game.Gameplay.Collectibles;
 using Game.Gameplay.Player;
+using Game.WaveSystem;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -115,6 +116,15 @@ namespace Game.Infrastructure.Bootstrap
             SpawnCollectibles();
 
             yield return WaitForRuntimeInitialization();
+
+            StageSceneContext stageContext = Object.FindFirstObjectByType<StageSceneContext>();
+            if (stageContext == null)
+            {
+                Debug.LogError("[PrototypeSceneFlowController] StageSceneContextが見つかりません。");
+                PreparationFailed = true;
+                yield break;
+            }
+            stageContext.RegisterStageData(stageContext.StageData);
 
             GameProgressionManager progression = Object.FindFirstObjectByType<GameProgressionManager>();
             if (progression == null)
