@@ -23,7 +23,7 @@ namespace Game.Presentation.UI.Title
         [SerializeField] private Button _startButton;
 
         [Header("--- 遷移先のシーン ---")]
-        [SerializeField] private string _loadingSceneName = "Loading";
+        [SerializeField] private string _selectSceneName = "StageSelect";
 
         public void OnEnable()
         {
@@ -37,8 +37,8 @@ namespace Game.Presentation.UI.Title
         /// </summary>
         public void OnClickNewGame()
         {
-            Debug.Log("New Game が押されたぜよ。シーン遷移: " + _loadingSceneName);
-            SceneManager.LoadScene(_loadingSceneName);
+            Debug.Log("New Game が押されたぜよ。シーン遷移: " + _selectSceneName);
+            SceneManager.LoadScene(_selectSceneName);
         }
 
         /// <summary>
