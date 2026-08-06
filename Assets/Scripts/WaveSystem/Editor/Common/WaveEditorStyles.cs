@@ -9,6 +9,8 @@
 // - GUIStyleはドメインリロードで破棄されるため、遅延初期化！
 // - Inspectorのスキン（Light/Dark）の両方で読める色を選んでいます！
 // - 色はここだけで定義し、各Viewは必ずこのクラスを経由する予定です！
+//
+// - EditorWindow用に色を追加！ (8/6: Asano)
 // ------------------------------------------------------------
 using UnityEditor;
 using UnityEngine;
@@ -120,6 +122,24 @@ namespace Game.WaveSystem.Editor
             EditorGUIUtility.isProSkin
                 ? new Color(0.55f, 0.55f, 0.55f)
                 : new Color(0.45f, 0.45f, 0.45f);
+
+
+        /// <summary>
+        /// ツリーで選択中の行を示す色
+        /// </summary>
+        public static Color SelectionColor =>
+            EditorGUIUtility.isProSkin
+                ? new Color(0.24f, 0.48f, 0.90f, 0.45f)
+                : new Color(0.24f, 0.48f, 0.90f, 0.30f);
+
+
+        /// <summary>
+        /// ペインの境界線に使う色
+        /// </summary>
+        private static Color SplitterColor =>
+            EditorGUIUtility.isProSkin
+                ? new Color(0.13f, 0.13f, 0.13f)
+                : new Color(0.60f, 0.60f, 0.60f);
 
 
         /// <summary>
