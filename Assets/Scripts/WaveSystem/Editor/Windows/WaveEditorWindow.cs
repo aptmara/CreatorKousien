@@ -9,6 +9,7 @@
 // - 右ペインはCustomEditorをそのまま呼ぶため、Inspectorと表示が一致するようにします！
 // - 左ペインでStageの構成をツリー表示し、クリックで編集対象を切り替えられるようにします！
 // ------------------------------------------------------------
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -39,6 +40,16 @@ namespace Game.WaveSystem.Editor
         /// </summary>
         private const float SplitterWidth = 4f;
 
+        /// <summary>
+        /// 検証バッジの幅
+        /// </summary>
+        private const float BadgeWidth = 40f;
+
+        /// <summary>
+        /// 保持する履歴の最大数
+        /// </summary>
+        private const int MaxHistoryCount = 32;
+
 
         [SerializeField]
         [Tooltip("編集対象のStage")]
@@ -67,6 +78,20 @@ namespace Game.WaveSystem.Editor
 
         // 境界線をドラッグ中かどうか
         private bool isDraggingSplitter;
+
+        // ツリーのバッジ計算に使う一時バッファ
+        private readonly List<ValidationIssue> treeIssueBuffer = new();
+
+
+        [SerializeField]
+        [Tooltip("Undo/Redoで保持する履歴")]
+        private List<Object> history = new();
+
+
+        [SerializeField]
+        [Tooltip("履歴の現在位置")]
+        private int historyIndex = -1;
+
 
 
         /// <summary>
@@ -147,6 +172,23 @@ namespace Game.WaveSystem.Editor
         private void DrawToolbar()
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+
+            // 履歴の戻る/進むボタンを描画する
+            using (new EditorGUI.DisabledScope(!CanGoBack))
+            {
+                if (GUILayout.Button(new GUIContent("◀", "一個前の対象に戻る"), EditorStyles.toolbarButton, GUILayout.Width(26f)))
+                {
+                    GoBack();
+                }
+            }
+
+            using (new EditorGUI.DisabledScope(!CanGoForward))
+            {
+                if (GUILayout.Button(new GUIContent("▶", "戻る前の対象に進む"), EditorStyles.toolbarButton, GUILayout.Width(26f)))
+                {
+                    GoForward();
+                }
+            }
 
             EditorGUILayout.LabelField("Stage", EditorStyles.miniLabel, GUILayout.Width(38f));
 
@@ -241,9 +283,84 @@ namespace Game.WaveSystem.Editor
         /// <param name="target">編集する対象</param>
         private void SetSelectedTarget(Object target)
         {
+            // 同じ対象を選びなおした場合は何もしない
+            if (target == selectedTarget)
+            {
+                return;
+            }
+
             selectedTarget = target;
 
+            PushHistory(target);
+
             GUI.FocusControl(null);
+        }
+
+
+        /// <summary>
+        /// 履歴に対象を追加します
+        /// </summary>
+        /// <param name="target">追加する対象</param>
+        private void PushHistory(Object target)
+        {
+            // 戻った状態から別の対象を選んだ場合は、進む先の履歴は捨てる
+            if (historyIndex >= 0 && historyIndex < history.Count - 1)
+            {
+                history.RemoveRange(historyIndex + 1, history.Count - historyIndex - 1);
+            }
+
+            history.Add(target);
+
+            // 古い履歴から捨てる
+            if (history.Count > MaxHistoryCount)
+            {
+                history.RemoveAt(0);
+            }
+
+            historyIndex = history.Count - 1;
+        }
+
+
+        /// <summary>
+        /// 戻れる履歴があるかどうか
+        /// </summary>
+        private bool CanGoBack => historyIndex > 0;
+
+        /// <summary>
+        /// 進める履歴があるかどうか
+        /// </summary>
+        private bool CanGoForward => historyIndex >= 0 && historyIndex < history.Count - 1;
+
+
+        /// <summary>
+        /// 履歴のひとつ前に戻る(Undo)
+        /// </summary>
+        private void GoBack()
+        {
+            if (!CanGoBack)
+            {
+                return;
+            }
+
+            historyIndex--;
+
+            // 履歴に積んだ後にアセットが削除されていた場合は、nullを選択する
+            selectedTarget = history[historyIndex];
+        }
+
+        /// <summary>
+        /// 1つ先の履歴に進む(Redo)
+        /// </summary>
+        private void GoForward()
+        {
+            if (!CanGoForward)
+            {
+                return;
+            }
+            historyIndex++;
+
+            // 履歴に積んだ後にアセットが削除されていた場合は、nullを選択する
+            selectedTarget = history[historyIndex];
         }
 
 
@@ -297,7 +414,7 @@ namespace Game.WaveSystem.Editor
             headerRect.width -= IndentWidth;
 
             // Poolのラベルと選択数を表示する
-            poolExpanded[poolIndex] = EditorGUI.Foldout(headerRect, poolExpanded[poolIndex], $"{poolLabel} ({pool.SelectionCount}個を選択", true);
+            poolExpanded[poolIndex] = EditorGUI.Foldout(headerRect, poolExpanded[poolIndex], $"{poolLabel} ({pool.SelectionCount}個を選択)", true);
 
             if (!poolExpanded[poolIndex] || pool.Candidates == null)
             {
@@ -365,13 +482,78 @@ namespace Game.WaveSystem.Editor
                 EditorGUI.DrawRect(rowRect, WaveEditorStyles.SelectionColor);
             }
 
-            Rect labelRect = new Rect(rowRect.x + indentLevel * IndentWidth, rowRect.y, rowRect.width - indentLevel * IndentWidth, rowRect.height);
+            float indent = indentLevel * IndentWidth;
 
-            // レベル風のボタンにして、行全体をクリックできるように
+            // バッジと重ならないように、ラベルの幅を狭めておく
+            Rect labelRect = new Rect(rowRect.x + indent, rowRect.y, rowRect.width - indent - BadgeWidth, rowRect.height);
+
+            // ラベル風のボタンにして、行全体をクリックできるように
             if (GUI.Button(labelRect, new GUIContent(label, label), EditorStyles.label))
             {
                 SetSelectedTarget(target);
             }
+
+            Rect badgeRect = new Rect(rowRect.x + rowRect.width - BadgeWidth, rowRect.y, BadgeWidth, rowRect.height);
+
+            DrawIssueBadge(badgeRect, target);
+        }
+
+
+        /// <summary>
+        /// 検証結果のバッジを描画します
+        /// </summary>
+        /// <param name="badgeRect">バッジを描く領域</param>
+        /// <param name="target">検証する対象</param>
+        private void DrawIssueBadge(Rect badgeRect, Object target)
+        {
+            if (!TryValidateTarget(target))
+            {
+                return;
+            }
+
+            // バッジのテキストと色を決定するために、treeIssueBufferからエラーと警告の件数を数える
+            int errorCount = ValidationIssueUtility.CountOf(treeIssueBuffer, IssueSeverity.Error);
+            int warningCount = ValidationIssueUtility.CountOf(treeIssueBuffer, IssueSeverity.Warning);
+
+            if (errorCount == 0 && warningCount == 0)
+            {
+                return;
+            }
+
+            // エラーがある場合はエラー件数を、警告しかない場合は警告件数を表示する
+            bool hasError = errorCount > 0;
+            string text = hasError ? $"✕:{errorCount}" : $"⚠:{warningCount}";
+            string tooltip = hasError ? $"エラー: {errorCount}件。Playが失敗します" : $"警告: {warningCount}件。Playはできますが、意図しない挙動になる可能性があります";
+            Color previousColor = GUI.color;
+            GUI.color = WaveEditorStyles.GetSeverityColor(hasError ? IssueSeverity.Error : IssueSeverity.Warning);
+
+            // バッジを描画する
+            GUI.Label(badgeRect, new GUIContent(text, tooltip), EditorStyles.miniLabel);
+
+            GUI.color = previousColor;
+        }
+
+
+        /// <summary>
+        /// 対象の種類に応じた検証を行い、結果をtreeIssueBufferに格納します
+        /// </summary>
+        /// <param name="target">検証する対象</param>
+        /// <returns>検証できた場合はtrue</returns>
+        private bool TryValidateTarget(Object target)
+        {
+            if (target is WaveDataSO waveData)
+            {
+                WaveValidator.Validate(waveData, treeIssueBuffer);
+                return true;
+            }
+
+            if (target is StageDataSO stageData)
+            {
+                StagePlanValidator.Validate(stageData, treeIssueBuffer);
+                return true;
+            }
+
+            return false;
         }
 
 
@@ -382,7 +564,7 @@ namespace Game.WaveSystem.Editor
         {
             Rect splitterRect = GUILayoutUtility.GetRect(SplitterWidth, SplitterWidth, GUILayout.Width(SplitterWidth), GUILayout.ExpandHeight(true));
 
-            EditorGUI.DrawRect(splitterRect, WaveEditorStyles.SelectionColor);
+            EditorGUI.DrawRect(splitterRect, WaveEditorStyles.SplitterColor);
 
             EditorGUIUtility.AddCursorRect(splitterRect, MouseCursor.ResizeHorizontal);
 

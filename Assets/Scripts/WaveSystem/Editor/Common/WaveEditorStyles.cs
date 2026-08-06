@@ -136,7 +136,7 @@ namespace Game.WaveSystem.Editor
         /// <summary>
         /// ペインの境界線に使う色
         /// </summary>
-        private static Color SplitterColor =>
+        public static Color SplitterColor =>
             EditorGUIUtility.isProSkin
                 ? new Color(0.13f, 0.13f, 0.13f)
                 : new Color(0.60f, 0.60f, 0.60f);
