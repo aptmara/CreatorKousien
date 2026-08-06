@@ -1,6 +1,7 @@
 using System.Collections;
 using Game.Infrastructure.Bootstrap;
 using Game.Presentation.UI.Loading;
+using Game.WaveSystem;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -12,12 +13,23 @@ namespace Game.Infrastructure.Loading
 
         [SerializeField] private string _bootSceneName = "Boot";
 
-        private IEnumerator Start()
+        private void Start()
+        {
+            LoadingView view = gameObject.AddComponent<LoadingView>();
+            view.Initialize();
+        }
+
+        public void LoadBootScene(StageDataSO stageData)
+        {
+            StartCoroutine(Load(stageData));
+        }
+
+        IEnumerator Load(StageDataSO stageData)
         {
             Time.timeScale = 1f;
 
-            LoadingView view = gameObject.AddComponent<LoadingView>();
-            view.Initialize();
+            LoadingView view = gameObject.GetComponent<LoadingView>();
+
             float loadingStartedAt = Time.realtimeSinceStartup;
 
             AsyncOperation bootLoad = SceneManager.LoadSceneAsync(_bootSceneName, LoadSceneMode.Additive);

@@ -50,7 +50,7 @@ namespace Game.WaveSystem
         public bool ManualTestMode => manualTestMode;
 
 
-
+        private bool isRegisteredStageData;            ///< データが登録済みかどうかを取得します。
         private bool hasCreatedSeed;        ///< Seedを生成済みかどうかを取得します。
         private int createdSeed;            ///< 生成済みのSeedの値を取得します。
 
@@ -73,6 +73,17 @@ namespace Game.WaveSystem
             hasCreatedSeed = true;
 
             return createdSeed;
+        }
+
+        /// <summary>
+        /// 一度のみステージデータを登録します。
+        /// </summary>
+        public void RegisterStageData(StageDataSO stageData)
+        {
+            if (isRegisteredStageData) return;
+            isRegisteredStageData = true;
+            Debug.Log("StageContextに" + stageData.name + "を登録しました。");
+            this.stageData = stageData;
         }
     }
 }
