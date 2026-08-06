@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d9e8f28dc60aba48847e6f259811f22, type: 3}
   m_Name: Stage_1
   m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.StageDataSO
+  requiredWaveCount: 7
   stageName: Stage_1
   plannerMemo: "2026/08/01\u3000\u521D\u671F\u30B9\u30C6\u30FC\u30B8\u3068\u3044\u3046\u3053\u3068\u3082\u3042\u308A\u3001\u5927\u5E45\u306B\u4FEE\u6B63\u3057\u307E\u3057\u305F\u3002\n\u5168\u4F53\u7684\u306B\u7C21\u5358\u304B\u3064\u77ED\u3081\u306B\u4F5C\u308A\u76F4\u3057\u307E\u3057\u305F\u3002"
   earlyWavePool:
@@ -28,7 +29,7 @@ MonoBehaviour:
       waveData: {fileID: 11400000, guid: dc9cab9867d86df43a28fc0981843fb7, type: 2}
       weight: 1
   middleWavePool:
-    selectionCount: 3
+    selectionCount: 2
     allowDuplicateSelection: 0
     candidates:
     - isEnabled: 1
@@ -38,7 +39,7 @@ MonoBehaviour:
       waveData: {fileID: 11400000, guid: ca4c88f0d9adc6242b67e281585adbd8, type: 2}
       weight: 2
   lateWavePool:
-    selectionCount: 3
+    selectionCount: 1
     allowDuplicateSelection: 0
     candidates:
     - isEnabled: 1

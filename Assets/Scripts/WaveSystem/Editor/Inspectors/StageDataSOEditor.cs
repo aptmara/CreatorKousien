@@ -6,9 +6,9 @@
 // Created	: 2026-07-15
 //
 // Notes	:
-// - 「Inspectorが緑」⟺「Playで必ずWave生成成功」を目標に検証します。
-// - 検証条件は StageWaveSequenceBuilder と同じにします。
-// - ランタイムのコードは変更せず、既存プロパティから計算します。
+// - 甲斐のミスをなくすべく「Inspectorが緑」⟺「Playで必ずWave生成成功」を目標に検証します！
+// - 検証条件は StageWaveSequenceBuilder と同じにします！！
+// - ランタイムのコードは変更せず、既存プロパティから計算する方針でつくります！
 // ------------------------------------------------------------
 using UnityEngine;
 using UnityEditor;
@@ -16,28 +16,61 @@ using System.Collections.Generic;
 
 namespace Game.WaveSystem.Editor
 {
+    /// <summary>
+    /// StageDataSOのInspector拡張
+    /// </summary>
     [CustomEditor(typeof(StageDataSO))]
     public sealed class StageDataSOEditor : UnityEditor.Editor
     {
+        /// <summary>
+        /// 抽選確率バーの高さ
+        /// </summary>
+        private const float WeightBarHeight = 12f;
+
+        /// <summary>
+        /// 毎フレーム使いまわして、GCの発生をおさえる
+        /// </summary>
+        private readonly List<ValidationIssue> issues = new();
+
+        /// <summary>
+        /// インライン編集を開いている項目のパス
+        /// </summary>
+        private string openedPropertyPath;
+
         /// <summary>
         /// インスペクターのGUI
         /// </summary>
         public override void OnInspectorGUI()
         {
-            // 通常のフィールドはそのまま描画
-            DrawDefaultInspector();
-
             StageDataSO stage = (StageDataSO)target;
 
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Wave構成チェック", EditorStyles.boldLabel);
+            StagePlanValidator.Validate(stage, issues);
 
+            serializedObject.Update();
+
+            EditorGUI.BeginChangeCheck();
+
+            EditorGUILayout.LabelField("検証結果", WaveEditorStyles.SectionHeader);
+            openedPropertyPath = ValidationIssueView.Draw(issues, serializedObject, openedPropertyPath);
+
+            EditorGUILayout.LabelField("Wave構成", WaveEditorStyles.SectionHeader);
             DrawWaveCountSummary(stage);
-            DrawBossCheck(stage);
 
-            DrawPoolSection(stage.EarlyWavePool,  "序盤WavePool");
-            DrawPoolSection(stage.MiddleWavePool, "中盤WavePool");
-            DrawPoolSection(stage.LateWavePool,   "終盤WavePool");
+            EditorGUILayout.LabelField("抽選確率", WaveEditorStyles.SectionHeader);
+            DrawPoolWeights(stage.EarlyWavePool, "序盤WavePool");
+            DrawPoolWeights(stage.MiddleWavePool, "中盤WavePool");
+            DrawPoolWeights(stage.LateWavePool, "終盤WavePool");
+
+            EditorGUILayout.LabelField("設定", WaveEditorStyles.SectionHeader);
+            DrawPropertiesExcluding(serializedObject, "m_Script");
+
+            serializedObject.ApplyModifiedProperties();
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                // 値が変わったら、上の検証結果と見積もりを更新するために再描画する
+                Repaint();
+            }
         }
 
 
@@ -52,16 +85,28 @@ namespace Game.WaveSystem.Editor
             int late = stage.LateWavePool != null ? stage.LateWavePool.SelectionCount : 0;
             int boss = stage.BossWave != null ? 1 : 0;
 
-            string breakdown = $"序盤 {early} + 中盤 {middle} + 終盤 {late} + Boss {boss} " + $"= 合計 {stage.TotalWaveCount} / 必要 {StageDataSO.RequiredWaveCount}";
+            int total = stage.TotalWaveCount;
+            int required = stage.RequiredWaveCount;
 
-            if (stage.HasRequiredWaveCount)
-            {
-                EditorGUILayout.HelpBox($"✅{breakdown}", MessageType.Info);
-            }
-            else
-            {
-                EditorGUILayout.HelpBox($"⚠ 合計Wave数が{StageDataSO.RequiredWaveCount} になっていません\n{breakdown}", MessageType.Error);
-            }
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+            // 各区間のWave数を表示
+            EditorGUILayout.LabelField(
+                new GUIContent("序盤 / 中盤 / 終盤 / Boss", "各区間から選ばれるWaveの数です。各PoolのSelection Countで変えられます。"),
+                new GUIContent($"{early} / {middle} / {late} / {boss}"),
+                WaveEditorStyles.ValueLabel);
+
+            // 合計Wave数を表示
+            // TODO: 現在は10固定だけど、いつかね、変わるときがくるかもしれんから置いておくぜよ
+            // 報われたぞ！！これを役立つ時が来た！！(8/6 - Asano)
+            string totalText = total == required ? $"{total} / {required}" : $"{total} / {required} ({(total > required ? "+" : "")}{total - required})";
+
+            EditorGUILayout.LabelField(
+                new GUIContent("合計Wave数", "左が現在の合計、右がこのStageに設定した数です。一致させてください。"),
+                new GUIContent(totalText),
+                WaveEditorStyles.ValueLabel);
+
+            EditorGUILayout.EndVertical();
         }
 
 
@@ -157,7 +202,7 @@ namespace Game.WaveSystem.Editor
 
         private static void DrawPoolWeights(WavePoolData pool, string poolName)
         {
-            if (pool == null || pool.Candidates == null)
+            if (pool == null || pool.Candidates == null || pool.SelectionCount <= 0)
             {
                 return;
             }
@@ -166,8 +211,10 @@ namespace Game.WaveSystem.Editor
 
             // 有効候補のWeightの合計を計算
             long totalWeight = 0;
-            foreach (WeightedWaveEntry entry in candidates)
+            for (int i = 0; i < candidates.Count; i++)
             {
+                WeightedWaveEntry entry = candidates[i];
+
                 if (entry != null && entry.IsSelectable)
                 {
                     totalWeight += entry.Weight;
@@ -178,27 +225,74 @@ namespace Game.WaveSystem.Editor
             if (totalWeight <= 0)
                 return;
 
+            string duplicateText = pool.AllowDuplicateSelection ? "重複可" : "重複不可";
+
             EditorGUILayout.LabelField($"{poolName}の有効候補のWeight合計: {totalWeight}", EditorStyles.miniBoldLabel);
             EditorGUI.indentLevel++;
 
-            foreach (WeightedWaveEntry entry in candidates)
+            int colorIndex = 0;
+
+            for (int i = 0; i < candidates.Count; i++)
             {
+                WeightedWaveEntry entry = candidates[i];
+
                 if (entry == null || !entry.IsSelectable)
                     continue;
 
-                float percent = (float)entry.Weight / totalWeight * 100f;
+                float ratio = (float)entry.Weight / totalWeight;
 
-                EditorGUILayout.LabelField(entry.WaveData.name, $"Weight {entry.Weight} → {percent: 0.0}%");
+                DrawWeightRow(entry, ratio, colorIndex);
+
+                colorIndex++;
             }
+
             EditorGUI.indentLevel--;
-
-            if (!pool.AllowDuplicateSelection)
-            {
-                EditorGUILayout.LabelField("※重複禁止のため、同じWaveが複数回選ばれることはありません", EditorStyles.miniLabel);
-            }
         }
 
 
+        /// <summary>
+        /// 1つの候補の抽選確率バーを描画
+        /// </summary>
+        /// <param name="entry">描画対象の候補</param>
+        /// <param name="ratio">確率の割合</param>
+        /// <param name="colorIndex">色のインデックス</param>
+        private static void DrawWeightRow(WeightedWaveEntry entry, float ratio, int colorIndex)
+        {
+            string waveName = string.IsNullOrWhiteSpace(entry.WaveData.WaveName) ? entry.WaveData.name : entry.WaveData.WaveName;
+
+            Rect row = EditorGUILayout.GetControlRect(true, WeightBarHeight + 2f);
+
+            row = EditorGUI.IndentedRect(row);
+
+            // --- 左: Wave名 ---
+            Rect nameRect = new Rect(row.x, row.y, row.width * 0.42f, row.height);
+
+            GUI.Label(nameRect, new GUIContent(waveName, waveName), EditorStyles.miniLabel);
+
+
+            // --- 中央: 確率バー ---
+            Rect barArea = new Rect(nameRect.xMax + 4f, row.y + 1f, row.width * 0.36f, WeightBarHeight);
+
+            Color background = WaveEditorStyles.PanelBackgroundColor;
+
+            EditorGUI.DrawRect(barArea, background);
+
+            Rect fill = new Rect(barArea.x, barArea.y, barArea.width * Mathf.Clamp01(ratio), barArea.height);
+
+            EditorGUI.DrawRect(fill, WaveEditorStyles.GetGroupColor(colorIndex));
+
+
+            // --- 右: 確率テキスト ---
+            Rect valueRect = new Rect(barArea.xMax + 4f, row.y, row.xMax - barArea.xMax - 4f, row.height);
+
+            GUI.Label(valueRect, $"{ratio * 100f:0.0}%  (Weight {entry.Weight})", EditorStyles.miniLabel);
+        }
+
+
+        /// <summary>
+        /// BossWaveの設定を検証し、未設定の場合はエラーを表示
+        /// </summary>
+        /// <param name="stage">ステージのデータSO</param>
         private static void DrawBossCheck(StageDataSO stage)
         {
             if (stage.BossWave == null)
