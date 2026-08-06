@@ -87,7 +87,14 @@ namespace Game.WaveSystem
             int late = GetSelectionCount(stageData.LateWavePool);
             int boss = stageData.BossWave != null ? 1 : 0;
 
-            results.Add(ValidationIssue.Error($"合計Wave数が{StageDataSO.RequiredWaveCount}になっていません。序盤 {early} + 中盤 {middle} + 終盤 {late} + Boss {boss} = 合計 {stageData.TotalWaveCount}", "earlyWavePool", stageData));
+            // 合計Wave数と設定値の差を計算する
+            int total = stageData.TotalWaveCount;
+            int required = stageData.RequiredWaveCount;
+            int diff = total - required;
+
+            string diffText = diff > 0 ? $"多すぎます(+{diff})" : $"少なすぎます({diff})";
+
+            results.Add(ValidationIssue.Error($"合計Wave数が設定値と一致していません({diffText})。序盤: {early} + 中盤: {middle} + 終盤: {late} + Boss: {boss} = 合計: {total} / 設定値: {required}。各PoolのSelection Countを調整するか、Required Wave Countを変更してください。", "requiredWaveCount", stageData));
         }
 
 

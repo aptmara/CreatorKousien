@@ -35,7 +35,7 @@ namespace Game.WaveSystem
         /// <returns>成功した場合はtrue</returns>
         public static bool TryBuild(StageDataSO stageData, int seed, out List<WaveDataSO> waveSequence, out string errorMessage)
         {
-            waveSequence = new List<WaveDataSO>(StageDataSO.RequiredWaveCount);
+            waveSequence = new List<WaveDataSO>(StageDataSO.DefaultWaveCount);
             errorMessage = string.Empty;
 
             // 判定はStagePlanValidatorに任せる

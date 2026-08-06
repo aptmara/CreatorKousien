@@ -53,6 +53,9 @@ namespace Game.WaveSystem.Editor
             EditorGUILayout.LabelField("検証結果", WaveEditorStyles.SectionHeader);
             openedPropertyPath = ValidationIssueView.Draw(issues, serializedObject, openedPropertyPath);
 
+            EditorGUILayout.LabelField("Wave構成", WaveEditorStyles.SectionHeader);
+            DrawWaveCountSummary(stage);
+
             EditorGUILayout.LabelField("抽選確率", WaveEditorStyles.SectionHeader);
             DrawPoolWeights(stage.EarlyWavePool, "序盤WavePool");
             DrawPoolWeights(stage.MiddleWavePool, "中盤WavePool");
@@ -82,6 +85,9 @@ namespace Game.WaveSystem.Editor
             int late = stage.LateWavePool != null ? stage.LateWavePool.SelectionCount : 0;
             int boss = stage.BossWave != null ? 1 : 0;
 
+            int total = stage.TotalWaveCount;
+            int required = stage.RequiredWaveCount;
+
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
             // 各区間のWave数を表示
@@ -92,9 +98,12 @@ namespace Game.WaveSystem.Editor
 
             // 合計Wave数を表示
             // TODO: 現在は10固定だけど、いつかね、変わるときがくるかもしれんから置いておくぜよ
+            // 報われたぞ！！これを役立つ時が来た！！(8/6 - Asano)
+            string totalText = total == required ? $"{total} / {required}" : $"{total} / {required} ({(total > required ? "+" : "")}{total - required})";
+
             EditorGUILayout.LabelField(
-                new GUIContent("合計Wave数", $"このゲームの1Stageは{StageDataSO.RequiredWaveCount}Wave構成です。"),
-                new GUIContent($"{stage.TotalWaveCount} / {StageDataSO.RequiredWaveCount}"),
+                new GUIContent("合計Wave数", "左が現在の合計、右がこのStageに設定した数です。一致させてください。"),
+                new GUIContent(totalText),
                 WaveEditorStyles.ValueLabel);
 
             EditorGUILayout.EndVertical();
