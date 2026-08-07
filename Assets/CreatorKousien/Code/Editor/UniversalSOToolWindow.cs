@@ -114,11 +114,27 @@ public class UniversalSOToolWindow : EditorWindow
             SerializedObject serializedObject = new SerializedObject(_tempInstance);
             var inspectorElement = new InspectorElement(serializedObject);
             _createFieldContainer.Add(inspectorElement);
+
+
+            if(typeof(EnemyData).IsAssignableFrom(scriptType))
+            {
+                var demoSpawnButton = new Button(DemoSpawn)
+                {
+                    text = "Demo Spawn",
+                    style = {height = 30,marginTop = 10, marginBottom = 10}
+                };
+            }
         }
         else
         {
             _createFieldContainer.Add(new Label("WARN ScriptableObject を継承したスクリプトを選択してください。"));
         }
+
+
+    }
+
+    private void DemoSpawn()
+    {
 
     }
 
