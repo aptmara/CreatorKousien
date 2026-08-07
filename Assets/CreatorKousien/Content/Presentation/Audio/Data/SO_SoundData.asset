@@ -31,4 +31,4 @@ MonoBehaviour:
   BGMDataList:
   - AudioClip: {fileID: 8300000, guid: 84b5d2a1020afd046a2475d7450af8a4, type: 3}
     Name: InGame
-    bpm: 100
+    bpm: 50
