@@ -21,6 +21,11 @@ namespace Game.WaveSystem
     public static class StageWaveSequenceBuilder
     {
         /// <summary>
+        /// 検証結果の一時バッファ
+        /// </summary>
+        private static readonly List<ValidationIssue> validationResults = new();
+
+        /// <summary>
         /// 指定されたStageDataSOから、ウェーブのシーケンスを構築します。
         /// </summary>
         /// <param name="stageData">抽選元のStageDataSO</param>
@@ -30,65 +35,77 @@ namespace Game.WaveSystem
         /// <returns>成功した場合はtrue</returns>
         public static bool TryBuild(StageDataSO stageData, int seed, out List<WaveDataSO> waveSequence, out string errorMessage)
         {
-            waveSequence = new List<WaveDataSO>(StageDataSO.RequiredWaveCount);
-
+            waveSequence = new List<WaveDataSO>(StageDataSO.DefaultWaveCount);
             errorMessage = string.Empty;
 
-            if (stageData == null)
+            // 判定はStagePlanValidatorに任せる
+            StagePlanValidator.Validate(stageData, validationResults);
+
+            if (ValidationIssueUtility.HasError(validationResults))
             {
-                errorMessage = "StageDataSOが設定されていません。";
+                errorMessage = ValidationIssueUtility.BuildErrorText(validationResults);
                 return false;
             }
 
-            if (stageData.BossWave == null)
-            {
-                errorMessage =
-                    $"Stage「{stageData.StageName}」にBoss Waveが設定されていません。";
-
-                return false;
-            }
-
-            if (!stageData.HasRequiredWaveCount)
-            {
-                errorMessage =
-                    $"Stage「{stageData.StageName}」のウェーブ数が不足しています。" +
-                    $"現在のウェーブ数: {stageData.TotalWaveCount} / " +
-                    $"必要なウェーブ数: {StageDataSO.RequiredWaveCount}, ";
-
-                return false;
-            }
-
-
-            // 乱数生成器を初期化
             Random random = new Random(seed);
 
+            // 各PoolからWaveを抽選してwaveSequenceに追加
+            AppendPool(stageData.EarlyWavePool, random, waveSequence);
+            AppendPool(stageData.MiddleWavePool, random, waveSequence);
+            AppendPool(stageData.LateWavePool, random, waveSequence);
 
-            // --- 序盤のWavePoolから抽選 ---
-            if (!TryAppendPool(stageData.EarlyWavePool, "序盤", random, waveSequence, out errorMessage))
-            {
-                waveSequence.Clear();
-                return false;
-            }
-
-            // --- 中盤のWavePoolから抽選 ---
-            if (!TryAppendPool(stageData.MiddleWavePool, "中盤", random, waveSequence, out errorMessage))
-            {
-                waveSequence.Clear();
-                return false;
-            }
-
-            // --- 終盤のWavePoolから抽選 ---
-            if (!TryAppendPool(stageData.LateWavePool, "終盤", random, waveSequence, out errorMessage))
-            {
-                waveSequence.Clear();
-                return false;
-            }
-
-            // --- Boss Waveは抽選せずに固定で追加 ---
+            // Boss Waveは抽選せずに固定で追加
             waveSequence.Add(stageData.BossWave);
 
             return true;
         }
+
+
+        /// <summary>
+        /// 指定されたWavePoolからWaveを抽選し、destinationリストに追加します。
+        /// </summary>
+        /// <param name="pool">Waveのプールデータ</param>
+        /// <param name="random">乱数生成器</param>
+        /// <param name="destination">追加先リスト</param>
+        private static void AppendPool(WavePoolData pool, Random random, List<WaveDataSO> destination)
+        {
+            if (pool == null || pool.SelectionCount <= 0)
+            {
+                return;
+            }
+
+            // 抽選作業用のListを作成
+            List<WeightedWaveEntry> workingCandidates = new();
+
+            foreach (WeightedWaveEntry entry in pool.Candidates)
+            {
+                if (entry != null && entry.IsSelectable)
+                {
+                    workingCandidates.Add(entry);
+                }
+            }
+
+            for (int i = 0; i < pool.SelectionCount; i++)
+            {
+                WeightedWaveEntry selectedEntry = SelectByWeight(workingCandidates, random);
+
+                if (selectedEntry == null)
+                {
+                    return; // 抽選に失敗した場合は終了
+                }
+
+                destination.Add(selectedEntry.WaveData);
+
+                if (!pool.AllowDuplicateSelection)
+                {
+                    WaveDataSO selectedWave = selectedEntry.WaveData;
+
+                    // 同じWaveDataSOが複数登録されていても、重複禁止の場合は候補リストから削除する
+                    workingCandidates.RemoveAll(entry => entry.WaveData == selectedWave);
+                }
+            }
+        }
+
 
 
         /// <summary>

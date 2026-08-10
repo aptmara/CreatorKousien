@@ -27,10 +27,16 @@ namespace Game.WaveSystem
     public class StageDataSO : ScriptableObject
     {
         /// <summary>
-        /// このゲームで1Stageに必要な合計Wave数
-        /// 序盤・中盤・終盤それぞれ、3Wave + Boss Wave = 10Waveの構成！
+        /// 新しく作ったStageに入る、合計Wave数の初期値
+        /// 序盤3 + 中盤3 + 終盤3 + Boss1 = 10Waveを標準構成とする
         /// </summary>
-        public const int RequiredWaveCount = 10;
+        public const int DefaultWaveCount = 10;
+
+
+        [SerializeField]
+        [Min(1)]
+        [Tooltip("このStageで生成するWaveの合計数。序盤+中盤+終盤+Bossの合計がこの数と一致している必要があります。")]
+        private int requiredWaveCount = DefaultWaveCount;
 
 
         [Header("--- 基本情報 ---")]
@@ -45,28 +51,28 @@ namespace Game.WaveSystem
         private string plannerMemo;
 
 
-        [Header("--- 序盤 Wave1～3 ---")]
+        [Header("--- 序盤 Wave ---")]
 
         [SerializeField]
         [Tooltip("Stage序盤で使用するWaveの抽選設定。基本的には3Waveを選択します。")]
         private WavePoolData earlyWavePool = new();
 
 
-        [Header("--- 中盤 Wave4～6 ---")]
+        [Header("--- 中盤 Wave ---")]
 
         [SerializeField]
         [Tooltip("Stage中盤で使用するWaveの抽選設定。基本的には3Waveを選択します。")]
         private WavePoolData middleWavePool = new();
 
 
-        [Header("--- 終盤 Wave7～9 ---")]
+        [Header("--- 終盤 Wave ---")]
 
         [SerializeField]
         [Tooltip("Stage終盤で使用するWaveの抽選設定。基本的には3Waveを選択します。")]
         private WavePoolData lateWavePool = new();
 
 
-        [Header("--- 最終 Wave10 ---")]
+        [Header("--- 最終 Wave(Boss) ---")]
 
         [SerializeField]
         [Tooltip("Stage最終Waveで使用するWaveの設定。抽選せず固定で使用します。")]
@@ -76,6 +82,7 @@ namespace Game.WaveSystem
         // 基本情報
         public string StageName => stageName;
         public string PlannerMemo => plannerMemo;
+        public int RequiredWaveCount => requiredWaveCount;
 
         // Wave抽選プール
         public WavePoolData EarlyWavePool => earlyWavePool;
@@ -104,7 +111,7 @@ namespace Game.WaveSystem
             RegularWaveCount + (bossWave != null ? 1 : 0);
 
         /// <summary>
-        /// 合計Wave数がゲーム仕様の10Waveになっているかを返す
+        /// 合計Wave数が, このStageで設定された数になっているかを返す
         /// </summary>
         public bool HasRequiredWaveCount =>
             TotalWaveCount == RequiredWaveCount;
