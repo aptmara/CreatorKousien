@@ -10,6 +10,7 @@
 // - 6/2 VFX再生処理の実装 - 浅野
 // - 7/4 コンボ倍率に応じてVFXのスケールを変化させる処理を追加 - 浅野
 // - 7/16 ヒットエフェクト複数種類配列化及びランダムプール駆動を実装 - Iwai
+// - 8/10 タイプごとのヒットエフェクトに対応 - 越智
 // ------------------------------------------------------------
 using System.Collections;
 using System.Collections.Generic;
@@ -57,7 +58,6 @@ namespace Game.Presentation.VFX
             // 事前にパターンを登録し、追加する
             if (_preregisteredPatterns != null)
             {
-                Debug.Log("事前にパターンを登録します");
                 foreach (var pattarn in _preregisteredPatterns)
                 {
                     RegisterPrefabs(pattarn);
@@ -138,7 +138,6 @@ namespace Game.Presentation.VFX
                 return;
             }
 
-            Debug.Log(id + "を登録します。");
 
             // 生成パターンを登録
             _prefabsDic[id] = collectibleHitVfxPattern.HitPattern;
@@ -174,7 +173,6 @@ namespace Game.Presentation.VFX
             }
             else
             {
-                Debug.Log("新たにエフェクトを生成します。");
                 int randomPrefabIndex = Random.Range(0, prefabs.Length);
                 targetVfx = CreateNewPoolInstance(randomPrefabIndex, prefabs, pool);
                 pool.Dequeue();
