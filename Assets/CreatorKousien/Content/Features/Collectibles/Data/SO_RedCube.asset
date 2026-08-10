@@ -13,9 +13,23 @@ MonoBehaviour:
   m_Name: SO_RedCube
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Collectibles.CollectibleData
   Id: 1
+  Type: 0
   ViewPrefab: {fileID: 1091366204326814389, guid: 664132476d3b16c4fa78b888e8cab3ce, type: 3}
   Weight: 1
   DamageAmount: 1
   Attribute: None
   Shape: Default
   CapacityCost: 1
+  SameItemCooldown: 0.25
+  HitPattern: {fileID: 11400000, guid: b72b5bc276a3e0c4fa71090d25832f4f, type: 2}
+  BarrierDamageAmount: 3
+  PoisonDuration: 5
+  PoisonMinDamage: 1
+  PoisonMaxDamage: 10
+  FreezeProbability: 5
+  FreezeDuration: 5
+  FreezeHitDurability: 20
+  FreezeBreakDamage: 30
+  LaserPrefab: {fileID: 0}
+  GummyPhysicsMaterial: {fileID: 0}
+  MaxBounceChainCount: 10

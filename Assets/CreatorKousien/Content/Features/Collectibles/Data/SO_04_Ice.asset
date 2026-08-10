@@ -21,6 +21,7 @@ MonoBehaviour:
   Shape: Default
   CapacityCost: 1
   SameItemCooldown: 0.25
+  HitPattern: {fileID: 11400000, guid: e618e64ab625259499d31480bf66c9c4, type: 2}
   BarrierDamageAmount: 3
   PoisonDuration: 5
   PoisonMinDamage: 1
