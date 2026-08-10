@@ -38,7 +38,7 @@ namespace Game.Core.Events
         public readonly float BodyDamage;
         public readonly Vector3 HitPosition;
         public readonly Transform EnemyTransform;
-
+        
         public readonly ScriptableObject ItemDataRaw;
 
         public EnemyHitBatchEvent(string enemyId, int hitCount, float bodyDamage, Vector3 pos, Transform enemyTransform, ScriptableObject itemDataRaw = null)
@@ -49,7 +49,7 @@ namespace Game.Core.Events
             HitPosition = pos;
             EnemyTransform = enemyTransform;
             ItemDataRaw = itemDataRaw;
-        }
+        }        
     }
 
     public readonly struct BarrierHitBatchEvent
