@@ -63,6 +63,9 @@ namespace Game.Data.Collectibles
         [Tooltip("このアイテム種別特有の連続ヒットクールダウン（グミ等は短く設定）")]
         public float SameItemCooldown = 0.25f;
 
+        [Header("VFX")]
+        public CollectibleHitVfxPattern HitPattern;
+
         [Header("--- とげ玉専用 ---")]
         public float BarrierDamageAmount = 3.0f;
 

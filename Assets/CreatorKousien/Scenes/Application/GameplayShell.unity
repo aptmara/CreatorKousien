@@ -520,15 +520,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.VFX.EnemyHitVfxPresenter
   _hitVfxOffset: {x: 0, y: 3, z: 0}
-  _hitVfxPrefabs:
-  - {fileID: 7450204837871267800, guid: 8023fa6d5fbc2424e8834726e079bec3, type: 3}
-  - {fileID: 2610124898922505302, guid: 66452da6f98c1d84da4beb81f1f02ead, type: 3}
   _poolSize: 20
   _effectIntervalPerEnemy: 0.08
   _lifeTime: 1
   _baseScale: 1
   _growthPerCombo: 0.14
   _maxScale: 4
+  _preregisteredPatterns:
+  - {fileID: 11400000, guid: b72b5bc276a3e0c4fa71090d25832f4f, type: 2}
+  - {fileID: 11400000, guid: bcb2aa4638daf7842814f948b0679a3c, type: 2}
+  - {fileID: 11400000, guid: e618e64ab625259499d31480bf66c9c4, type: 2}
+  - {fileID: 11400000, guid: 6d1b325930e3b214cb26f35db080c46e, type: 2}
+  - {fileID: 11400000, guid: 62de6e2eff36f634b82f218e52adf2c6, type: 2}
 --- !u!4 &806947046
 Transform:
   m_ObjectHideFlags: 0
