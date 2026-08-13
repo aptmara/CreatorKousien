@@ -1,10 +1,10 @@
 using System.Collections;
 using Game.Core.Management;
 using Game.Presentation.UI.Loading;
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -13,50 +13,97 @@ namespace Game.Presentation.UI.Pause
     [DisallowMultipleComponent]
     public sealed class PauseMenuController : MonoBehaviour
     {
-        private const int PauseCanvasSortingOrder = 31000;
+        private enum OptionTab
+        {
+            Audio,
+            View,
+            KeyConfig
+        }
+
         private const float DefaultFixedDeltaTime = 0.02f;
 
-        [SerializeField] private TMP_FontAsset _fontAsset;
         [SerializeField] private string _titleSceneName = "Title";
+
+        [Header("Input Assets")]
+        [SerializeField] private InputActionAsset _playerActions;
+        [SerializeField] private InputActionAsset _roguelikeActions;
 
         [Header("Input")]
         [SerializeField] private InputAction _pauseAction = new("Pause", InputActionType.Button, "<Gamepad>/start");
         [SerializeField] private InputAction _cancelAction = new("Cancel", InputActionType.Button, "<Gamepad>/buttonEast");
+        [SerializeField] private InputAction _submitAction = new("Submit", InputActionType.Button, "<Gamepad>/buttonSouth");
+        [SerializeField] private InputAction _previousTabAction = new("PreviousTab", InputActionType.Button, "<Gamepad>/leftShoulder");
+        [SerializeField] private InputAction _nextTabAction = new("NextTab", InputActionType.Button, "<Gamepad>/rightShoulder");
 
-        private readonly Color _buttonColor = new(0.36f, 0.36f, 0.36f, 1f);
-        private readonly Color _selectedButtonColor = new(0.58f, 0.58f, 0.58f, 1f);
+        [Header("View")]
+        [SerializeField] private GameObject _viewRoot;
+        [SerializeField] private GameObject _pausePanel;
+        [SerializeField] private GameObject _optionPanel;
+        [SerializeField] private GameObject[] _optionContentPanels = new GameObject[3];
+        [SerializeField] private Button[] _tabButtons = new Button[3];
+        [SerializeField] private Button _continueButton;
+        [SerializeField] private Button _optionButton;
+        [SerializeField] private Button _exitButton;
+        [SerializeField] private Button _backButton;
 
-        private GameObject _viewRoot;
-        private GameObject _pausePanel;
-        private GameObject _optionPanel;
-        private Button _continueButton;
-        private Button _optionButton;
-        private Button _exitButton;
-        private Button _backButton;
+        [Header("Setting Panels")]
+        [SerializeField] private PauseAudioSettingsPanel _audioPanel;
+        [SerializeField] private PauseViewSettingsPanel _viewPanel;
+        [SerializeField] private PauseKeyConfigPanel _keyConfigPanel;
+
         private PlayerInput _pausedPlayerInput;
+        private InputSystemUIInputModule _uiInputModule;
+        private InputAction _originalUiSubmitAction;
+        private InputAction _originalUiCancelAction;
+
         private bool _playerInputWasActive;
         private bool _inputReactivationPending;
         private bool _isPaused;
         private bool _isShowingOption;
         private bool _isLoadingTitle;
+        private bool _uiInputActionsReplaced;
+        private bool _originalUiSubmitWasEnabled;
+        private bool _originalUiCancelWasEnabled;
+        private OptionTab _currentOptionTab;
         private float _previousTimeScale;
         private float _previousFixedDeltaTime;
+        private CursorLockMode _previousCursorLockState;
+        private bool _previousCursorVisible;
+        private bool _cursorStateCaptured;
 
         private void Awake()
         {
-            CreateView();
+            EnsureDefaultBindings();
+            _audioPanel.Initialize();
+            _viewPanel.Initialize();
+            _keyConfigPanel.Initialize(_playerActions, _roguelikeActions, _pauseAction, _submitAction, _cancelAction);
+            ConfigureCallbacks();
+
+            _optionPanel.SetActive(false);
+            _keyConfigPanel.SetRebindOverlayVisible(false);
+            _viewRoot.SetActive(false);
         }
 
         private void OnEnable()
         {
             _pauseAction?.Enable();
             _cancelAction?.Enable();
+            _submitAction?.Enable();
+            _previousTabAction?.Enable();
+            _nextTabAction?.Enable();
         }
 
         private void OnDisable()
         {
+            _audioPanel.CancelEditing();
+            _keyConfigPanel.CancelRebind();
+            RestoreUiInputActions();
+
             _pauseAction?.Disable();
             _cancelAction?.Disable();
+            _submitAction?.Disable();
+            _previousTabAction?.Disable();
+            _nextTabAction?.Disable();
 
             if (_isPaused && !_isLoadingTitle)
             {
@@ -71,12 +118,27 @@ namespace Game.Presentation.UI.Pause
 
         private void OnDestroy()
         {
+            _audioPanel?.CancelEditing();
+            _keyConfigPanel?.CancelRebind();
+            RestoreUiInputActions();
+
             _pauseAction?.Dispose();
             _cancelAction?.Dispose();
+            _submitAction?.Dispose();
+            _previousTabAction?.Dispose();
+            _nextTabAction?.Dispose();
         }
 
         private void Update()
         {
+            _audioPanel.ApplyToNewSoundManager();
+            _keyConfigPanel.ApplyToNewPlayerInput();
+
+            if (_isPaused)
+            {
+                UnlockPauseCursor();
+            }
+
             if (_isLoadingTitle)
             {
                 return;
@@ -92,10 +154,60 @@ namespace Game.Presentation.UI.Pause
                 return;
             }
 
-            if (_isShowingOption && _cancelAction != null && _cancelAction.WasPressedThisFrame())
+            if (_keyConfigPanel.IsRebinding)
+            {
+                return;
+            }
+
+            bool submitPressed = _submitAction != null && _submitAction.WasPressedThisFrame();
+            bool cancelPressed = _cancelAction != null && _cancelAction.WasPressedThisFrame();
+            if (_audioPanel.IsEditing)
+            {
+                _audioPanel.HandleEditingInput(submitPressed, cancelPressed, GetUiMoveAction());
+                return;
+            }
+
+            if (submitPressed)
+            {
+                SubmitSelectedObject();
+            }
+
+            if (!_isShowingOption)
+            {
+                return;
+            }
+
+            if (_previousTabAction != null && _previousTabAction.WasPressedThisFrame())
+            {
+                SwitchOptionTab((int)_currentOptionTab - 1);
+            }
+            else if (_nextTabAction != null && _nextTabAction.WasPressedThisFrame())
+            {
+                SwitchOptionTab((int)_currentOptionTab + 1);
+            }
+
+            if (cancelPressed)
             {
                 ShowPauseMenu();
             }
+        }
+
+        private void ConfigureCallbacks()
+        {
+            _continueButton.onClick.AddListener(ContinueGame);
+            _optionButton.onClick.AddListener(ShowOption);
+            _exitButton.onClick.AddListener(ReturnToTitle);
+            _backButton.onClick.AddListener(ShowPauseMenu);
+
+            for (int i = 0; i < _tabButtons.Length; i++)
+            {
+                int tabIndex = i;
+                _tabButtons[i].onClick.AddListener(() => SwitchOptionTab(tabIndex));
+            }
+
+            _continueButton.navigation = CreateNavigation(_exitButton, _optionButton);
+            _optionButton.navigation = CreateNavigation(_continueButton, _exitButton);
+            _exitButton.navigation = CreateNavigation(_optionButton, _continueButton);
         }
 
         private static bool CanOpenPause()
@@ -114,17 +226,20 @@ namespace Game.Presentation.UI.Pause
 
         private void OpenPause()
         {
+            CaptureCursorState();
             _isPaused = true;
             _previousTimeScale = Time.timeScale;
             _previousFixedDeltaTime = Time.fixedDeltaTime;
 
-            _pausedPlayerInput = Object.FindFirstObjectByType<PlayerInput>();
+            _pausedPlayerInput = FindFirstObjectByType<PlayerInput>();
+            _keyConfigPanel.ApplyPlayerBindingsToRuntime(_pausedPlayerInput);
             _playerInputWasActive = _pausedPlayerInput != null && _pausedPlayerInput.inputIsActive;
             if (_playerInputWasActive)
             {
                 _pausedPlayerInput.DeactivateInput();
             }
 
+            ReplaceUiInputActions();
             Time.timeScale = 0f;
             _viewRoot.SetActive(true);
             ShowPauseMenu();
@@ -137,11 +252,15 @@ namespace Game.Presentation.UI.Pause
                 return;
             }
 
+            _audioPanel.CancelEditing();
+            _keyConfigPanel.CancelRebind();
+            RestoreUiInputActions();
             _isPaused = false;
             _viewRoot.SetActive(false);
             Time.timeScale = _previousTimeScale;
             Time.fixedDeltaTime = _previousFixedDeltaTime;
             ClearSelection();
+            RestoreCursorState();
 
             if (_playerInputWasActive && _pausedPlayerInput != null)
             {
@@ -160,7 +279,7 @@ namespace Game.Presentation.UI.Pause
             _isShowingOption = true;
             _pausePanel.SetActive(false);
             _optionPanel.SetActive(true);
-            SelectButton(_backButton);
+            SwitchOptionTab((int)_currentOptionTab);
         }
 
         public void ShowPauseMenu()
@@ -170,27 +289,26 @@ namespace Game.Presentation.UI.Pause
                 return;
             }
 
+            _audioPanel.CancelEditing();
+            _keyConfigPanel.CancelRebind();
             _isShowingOption = false;
             _optionPanel.SetActive(false);
             _pausePanel.SetActive(true);
-            SelectButton(_continueButton);
+            Select(_continueButton);
         }
 
         public void ReturnToTitle()
         {
-            if (!_isPaused || _isLoadingTitle)
+            if (_isPaused && !_isLoadingTitle)
             {
-                return;
+                StartCoroutine(ReturnToTitleRoutine());
             }
-
-            StartCoroutine(ReturnToTitleRoutine());
         }
 
         private IEnumerator ReactivatePlayerInputAfterSubmitReleased()
         {
             yield return null;
-
-            while (Gamepad.current != null && Gamepad.current.buttonSouth.isPressed)
+            while (_submitAction != null && _submitAction.IsPressed())
             {
                 yield return null;
             }
@@ -207,6 +325,9 @@ namespace Game.Presentation.UI.Pause
         {
             _isLoadingTitle = true;
             _inputReactivationPending = false;
+            _audioPanel.CancelEditing();
+            _keyConfigPanel.CancelRebind();
+            RestoreUiInputActions();
             ClearSelection();
 
             GameObject loadingObject = new("TitleLoadingView");
@@ -216,7 +337,6 @@ namespace Game.Presentation.UI.Pause
             _viewRoot.SetActive(false);
 
             yield return null;
-
             AsyncOperation operation = SceneManager.LoadSceneAsync(_titleSceneName, LoadSceneMode.Single);
             if (operation == null)
             {
@@ -225,6 +345,7 @@ namespace Game.Presentation.UI.Pause
                 Time.timeScale = 0f;
                 Time.fixedDeltaTime = _previousFixedDeltaTime;
                 _viewRoot.SetActive(true);
+                ReplaceUiInputActions();
                 ShowPauseMenu();
                 yield break;
             }
@@ -238,7 +359,6 @@ namespace Game.Presentation.UI.Pause
             Time.timeScale = 1f;
             Time.fixedDeltaTime = DefaultFixedDeltaTime;
             operation.allowSceneActivation = true;
-
             while (!operation.isDone)
             {
                 yield return null;
@@ -247,11 +367,15 @@ namespace Game.Presentation.UI.Pause
 
         private void RestoreInterruptedPause()
         {
+            _audioPanel.CancelEditing();
+            _keyConfigPanel.CancelRebind();
+            RestoreUiInputActions();
             _isPaused = false;
             Time.timeScale = _previousTimeScale;
             Time.fixedDeltaTime = _previousFixedDeltaTime;
             _viewRoot?.SetActive(false);
             ClearSelection();
+            RestoreCursorState();
 
             if (_playerInputWasActive && _pausedPlayerInput != null)
             {
@@ -261,76 +385,187 @@ namespace Game.Presentation.UI.Pause
             _inputReactivationPending = false;
         }
 
-        private void CreateView()
+        private void SwitchOptionTab(int index)
         {
-            GameObject canvasObject = new("PauseCanvas");
-            canvasObject.transform.SetParent(transform, false);
+            _audioPanel.CancelEditing();
+            int wrappedIndex = WrapIndex(index, _optionContentPanels.Length);
+            _currentOptionTab = (OptionTab)wrappedIndex;
 
-            Canvas canvas = canvasObject.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.overrideSorting = true;
-            canvas.sortingOrder = PauseCanvasSortingOrder;
+            for (int i = 0; i < _optionContentPanels.Length; i++)
+            {
+                bool active = i == wrappedIndex;
+                _optionContentPanels[i].SetActive(active);
+                _tabButtons[i].GetComponentInChildren<TMPro.TextMeshProUGUI>().color = active
+                    ? Color.white
+                    : new Color(0.62f, 0.62f, 0.62f, 1f);
+            }
 
-            CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
-            canvasObject.AddComponent<GraphicRaycaster>();
-
-            RectTransform viewRect = CreateRect("PauseView", canvasObject.transform);
-            Stretch(viewRect);
-            _viewRoot = viewRect.gameObject;
-
-            Image scrim = CreateImage("GrayOut", viewRect, new Color(0f, 0f, 0f, 0.62f));
-            Stretch(scrim.rectTransform);
-
-            _pausePanel = CreateFullScreenPanel("PauseMenu", viewRect);
-            _continueButton = CreateButton("ContinueButton", _pausePanel.transform, "つづける", new Vector2(0f, 190f), new Vector2(370f, 148f));
-            _optionButton = CreateButton("OptionButton", _pausePanel.transform, "オプション", Vector2.zero, new Vector2(370f, 148f));
-            _exitButton = CreateButton("ExitButton", _pausePanel.transform, "終わる", new Vector2(0f, -190f), new Vector2(370f, 148f));
-
-            _continueButton.onClick.AddListener(ContinueGame);
-            _optionButton.onClick.AddListener(ShowOption);
-            _exitButton.onClick.AddListener(ReturnToTitle);
-            ConfigurePauseNavigation();
-
-            _optionPanel = CreateFullScreenPanel("OptionMenu", viewRect);
-            CreateLabel(
-                "OptionHeader",
-                _optionPanel.transform,
-                "オプション",
-                new Vector2(0f, 1f),
-                new Vector2(0f, 1f),
-                new Vector2(32f, -20f),
-                new Vector2(370f, 146f),
-                58f);
-
-            _backButton = CreateButton(
-                "BackButton",
-                _optionPanel.transform,
-                "戻る",
-                new Vector2(32f, 20f),
-                new Vector2(196f, 149f),
-                new Vector2(0f, 0f),
-                new Vector2(0f, 0f),
-                52f);
-            _backButton.onClick.AddListener(ShowPauseMenu);
-            ConfigureBackNavigation();
-
-            _optionPanel.SetActive(false);
-            _viewRoot.SetActive(false);
+            ConfigureOptionNavigation();
+            Select(_tabButtons[wrappedIndex]);
         }
 
-        private void ConfigurePauseNavigation()
+        private void ConfigureOptionNavigation()
         {
-            _continueButton.navigation = CreateNavigation(_exitButton, _optionButton);
-            _optionButton.navigation = CreateNavigation(_continueButton, _exitButton);
-            _exitButton.navigation = CreateNavigation(_optionButton, _continueButton);
+            int activeIndex = (int)_currentOptionTab;
+            Selectable first = GetCurrentFirstSelectable();
+            Selectable last = GetCurrentLastSelectable();
+
+            for (int i = 0; i < _tabButtons.Length; i++)
+            {
+                _tabButtons[i].navigation = new Navigation
+                {
+                    mode = Navigation.Mode.Explicit,
+                    selectOnUp = _backButton,
+                    selectOnDown = i == activeIndex ? first : null,
+                    selectOnLeft = _tabButtons[WrapIndex(i - 1, _tabButtons.Length)],
+                    selectOnRight = _tabButtons[WrapIndex(i + 1, _tabButtons.Length)]
+                };
+            }
+
+            Selectable activeTab = _tabButtons[activeIndex];
+            switch (_currentOptionTab)
+            {
+                case OptionTab.Audio:
+                    _audioPanel.SetNavigationBoundaries(activeTab, _backButton);
+                    break;
+                case OptionTab.View:
+                    _viewPanel.SetNavigationBoundaries(activeTab, _backButton);
+                    break;
+                case OptionTab.KeyConfig:
+                    _keyConfigPanel.SetNavigationBoundaries(activeTab, _backButton);
+                    break;
+            }
+
+            _backButton.navigation = new Navigation
+            {
+                mode = Navigation.Mode.Explicit,
+                selectOnUp = last,
+                selectOnDown = activeTab
+            };
         }
 
-        private void ConfigureBackNavigation()
+        private Selectable GetCurrentFirstSelectable()
         {
-            _backButton.navigation = CreateNavigation(_backButton, _backButton);
+            return _currentOptionTab switch
+            {
+                OptionTab.Audio => _audioPanel.FirstSelectable,
+                OptionTab.View => _viewPanel.FirstSelectable,
+                OptionTab.KeyConfig => _keyConfigPanel.FirstSelectable,
+                _ => null
+            };
+        }
+
+        private Selectable GetCurrentLastSelectable()
+        {
+            return _currentOptionTab switch
+            {
+                OptionTab.Audio => _audioPanel.LastSelectable,
+                OptionTab.View => _viewPanel.LastSelectable,
+                OptionTab.KeyConfig => _keyConfigPanel.LastSelectable,
+                _ => null
+            };
+        }
+
+        private void ReplaceUiInputActions()
+        {
+            if (_uiInputActionsReplaced)
+            {
+                return;
+            }
+
+            _uiInputModule = FindFirstObjectByType<InputSystemUIInputModule>();
+            if (_uiInputModule == null)
+            {
+                return;
+            }
+
+            _originalUiSubmitAction = _uiInputModule.submit?.action;
+            _originalUiCancelAction = _uiInputModule.cancel?.action;
+            _originalUiSubmitWasEnabled = _originalUiSubmitAction != null && _originalUiSubmitAction.enabled;
+            _originalUiCancelWasEnabled = _originalUiCancelAction != null && _originalUiCancelAction.enabled;
+            _originalUiSubmitAction?.Disable();
+            _originalUiCancelAction?.Disable();
+            _uiInputActionsReplaced = true;
+        }
+
+        private void RestoreUiInputActions()
+        {
+            if (!_uiInputActionsReplaced)
+            {
+                return;
+            }
+
+            if (_originalUiSubmitWasEnabled)
+            {
+                _originalUiSubmitAction?.Enable();
+            }
+
+            if (_originalUiCancelWasEnabled)
+            {
+                _originalUiCancelAction?.Enable();
+            }
+
+            _uiInputActionsReplaced = false;
+            _originalUiSubmitAction = null;
+            _originalUiCancelAction = null;
+        }
+
+        private InputAction GetUiMoveAction()
+        {
+            return _uiInputModule != null ? _uiInputModule.move?.action : null;
+        }
+
+        private void CaptureCursorState()
+        {
+            _previousCursorLockState = Cursor.lockState;
+            _previousCursorVisible = Cursor.visible;
+            _cursorStateCaptured = true;
+            UnlockPauseCursor();
+        }
+
+        private static void UnlockPauseCursor()
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
+        private void RestoreCursorState()
+        {
+            if (!_cursorStateCaptured)
+            {
+                return;
+            }
+
+            _cursorStateCaptured = false;
+            Cursor.lockState = _previousCursorLockState;
+            Cursor.visible = _previousCursorVisible;
+        }
+
+        private void EnsureDefaultBindings()
+        {
+            EnsureDeviceBinding(_pauseAction, "<Keyboard>/escape");
+            EnsureDeviceBinding(_cancelAction, "<Keyboard>/escape");
+            EnsureDeviceBinding(_submitAction, "<Keyboard>/enter");
+        }
+
+        private static void EnsureDeviceBinding(InputAction action, string path)
+        {
+            if (action == null)
+            {
+                return;
+            }
+
+            int separator = path.IndexOf('>');
+            string devicePath = separator >= 0 ? path.Substring(0, separator + 1) : path;
+            for (int i = 0; i < action.bindings.Count; i++)
+            {
+                if (action.bindings[i].effectivePath.StartsWith(devicePath, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+            }
+
+            action.AddBinding(path);
         }
 
         private static Navigation CreateNavigation(Selectable up, Selectable down)
@@ -343,128 +578,36 @@ namespace Game.Presentation.UI.Pause
             };
         }
 
-        private Button CreateButton(
-            string name,
-            Transform parent,
-            string label,
-            Vector2 position,
-            Vector2 size,
-            Vector2? anchor = null,
-            Vector2? pivot = null,
-            float fontSize = 58f)
+        private static int WrapIndex(int index, int count)
         {
-            RectTransform rect = CreateRect(name, parent);
-            rect.anchorMin = rect.anchorMax = anchor ?? new Vector2(0.5f, 0.5f);
-            rect.pivot = pivot ?? new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = position;
-            rect.sizeDelta = size;
-
-            Image image = rect.gameObject.AddComponent<Image>();
-            image.color = Color.white;
-
-            Button button = rect.gameObject.AddComponent<Button>();
-            button.targetGraphic = image;
-            ColorBlock colors = button.colors;
-            colors.normalColor = _buttonColor;
-            colors.highlightedColor = _selectedButtonColor;
-            colors.selectedColor = _selectedButtonColor;
-            colors.pressedColor = new Color(0.72f, 0.72f, 0.72f, 1f);
-            colors.disabledColor = new Color(0.24f, 0.24f, 0.24f, 0.55f);
-            colors.colorMultiplier = 1f;
-            button.colors = colors;
-
-            CreateText("Text", rect, label, fontSize);
-            return button;
+            return count <= 0 ? 0 : (index % count + count) % count;
         }
 
-        private void CreateLabel(
-            string name,
-            Transform parent,
-            string label,
-            Vector2 anchor,
-            Vector2 pivot,
-            Vector2 position,
-            Vector2 size,
-            float fontSize)
+        private static void Select(Selectable selectable)
         {
-            RectTransform rect = CreateRect(name, parent);
-            rect.anchorMin = rect.anchorMax = anchor;
-            rect.pivot = pivot;
-            rect.anchoredPosition = position;
-            rect.sizeDelta = size;
-
-            Image image = rect.gameObject.AddComponent<Image>();
-            image.color = _buttonColor;
-            image.raycastTarget = false;
-            CreateText("Text", rect, label, fontSize);
-        }
-
-        private void CreateText(string name, RectTransform parent, string value, float fontSize)
-        {
-            RectTransform rect = CreateRect(name, parent);
-            Stretch(rect);
-
-            TextMeshProUGUI text = rect.gameObject.AddComponent<TextMeshProUGUI>();
-            if (_fontAsset != null)
-            {
-                text.font = _fontAsset;
-            }
-
-            text.text = value;
-            text.fontSize = fontSize;
-            text.color = Color.white;
-            text.alignment = TextAlignmentOptions.Center;
-            text.raycastTarget = false;
-        }
-
-        private static GameObject CreateFullScreenPanel(string name, Transform parent)
-        {
-            RectTransform rect = CreateRect(name, parent);
-            Stretch(rect);
-            return rect.gameObject;
-        }
-
-        private static RectTransform CreateRect(string name, Transform parent)
-        {
-            GameObject gameObject = new(name, typeof(RectTransform));
-            gameObject.layer = 5;
-            gameObject.transform.SetParent(parent, false);
-            return (RectTransform)gameObject.transform;
-        }
-
-        private static Image CreateImage(string name, Transform parent, Color color)
-        {
-            RectTransform rect = CreateRect(name, parent);
-            Image image = rect.gameObject.AddComponent<Image>();
-            image.color = color;
-            return image;
-        }
-
-        private static void Stretch(RectTransform rect)
-        {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-        }
-
-        private static void SelectButton(Button button)
-        {
-            if (EventSystem.current == null || button == null)
+            if (EventSystem.current == null || selectable == null)
             {
                 return;
             }
 
             EventSystem.current.SetSelectedGameObject(null);
-            EventSystem.current.SetSelectedGameObject(button.gameObject);
+            EventSystem.current.SetSelectedGameObject(selectable.gameObject);
         }
 
         private static void ClearSelection()
         {
-            if (EventSystem.current != null)
+            EventSystem.current?.SetSelectedGameObject(null);
+        }
+
+        private static void SubmitSelectedObject()
+        {
+            if (EventSystem.current == null || EventSystem.current.currentSelectedGameObject == null)
             {
-                EventSystem.current.SetSelectedGameObject(null);
+                return;
             }
+
+            BaseEventData eventData = new(EventSystem.current);
+            ExecuteEvents.Execute(EventSystem.current.currentSelectedGameObject, eventData, ExecuteEvents.submitHandler);
         }
     }
 }

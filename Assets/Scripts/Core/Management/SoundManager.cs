@@ -15,13 +15,15 @@ public class SoundManager : MonoBehaviour
 {
     public static SoundManager instance { get; set; }
 
-    AudioSource _audioSrc;
+    AudioSource _bgmAudioSource;
+    AudioSource _seAudioSource;
 
     [SerializeField]
     private SoundData _soundData;
-    private float _playVolume = 1.0f;
-    private float _erapsedTime;
-    [SerializeField] private float _duration = 1.0f;
+    private float _masterVolume = 1.0f;
+    private float _bgmVolume = 1.0f;
+    private float _seVolume = 1.0f;
+    private float _bgmVolumeMultiplier = 1.0f;
 
     [Header("==== 揺れのBPM対応 ====")]
     [SerializeField, Tooltip("BPMに合わせたい揺れるマテリアル")]
@@ -29,32 +31,53 @@ public class SoundManager : MonoBehaviour
     private SoundData.AudioData _currentBGM;
     private int _bpm = 100;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
     {
-        if(instance == null)
-            instance = this;
-        DontDestroyOnLoad(this);
-        _audioSrc = GetComponent<AudioSource>();
+        instance = null;
+    }
+
+    private void Awake()
+    {
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        instance = this;
+        _bgmAudioSource = GetComponent<AudioSource>();
+        _seAudioSource = gameObject.AddComponent<AudioSource>();
+        _seAudioSource.playOnAwake = false;
+        _seAudioSource.spatialBlend = 0.0f;
+        ApplyVolumes();
+        DontDestroyOnLoad(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this)
+        {
+            instance = null;
+        }
     }
 
 
     private void FixedUpdate()
     {
-        if(_erapsedTime < _duration)
+        if (_bgmAudioSource == null)
         {
-            _erapsedTime += Time.unscaledDeltaTime;
+            return;
         }
-        _playVolume = Mathf.Lerp(_audioSrc.volume, _playVolume, _erapsedTime / _duration);
 
         double beat = 1.0f;
-        if (!_audioSrc.isPlaying)
+        if (!_bgmAudioSource.isPlaying)
         {
             beat = Time.time * (float)_bpm / 60.0f;
         }
         else
         {
-            beat = _audioSrc.time * _currentBGM.bpm / 60.0f;
+            beat = _bgmAudioSource.time * _currentBGM.bpm / 60.0f;
         }
         Debug.Log(beat);
         foreach(var mat in _swayMaterial)
@@ -65,39 +88,94 @@ public class SoundManager : MonoBehaviour
 
     public void PlaySE(string name,float volume = 1.0f)
     {
+        if (_seAudioSource == null || _soundData == null)
+        {
+            return;
+        }
+
         var SEData = _soundData.SEDataList.Find(x => x.Name == name);
+        if (SEData.AudioClip == null)
+        {
+            return;
+        }
         
         Debug.Log("[SoundManager]PlaySE : " + name);
-        _audioSrc.PlayOneShot(SEData.AudioClip,volume);
+        _seAudioSource.PlayOneShot(SEData.AudioClip, volume);
     }
 
     public void PlayBGM(string name)
     {
-        if (_audioSrc == null) return;
+        if (_bgmAudioSource == null) return;
         var BGMData = _soundData.BGMDataList.Find(x => x.Name == name);
         
         var bgm = BGMData.AudioClip;
 
         _currentBGM = BGMData;
-        _audioSrc.clip = bgm;
-        _audioSrc.loop = true;
-        _audioSrc.Play();
+        _bgmAudioSource.clip = bgm;
+        _bgmAudioSource.loop = true;
+        _bgmAudioSource.Play();
         Debug.Log("[SoundManager]PlayBGM : " + name);
     }
 
     public void StopBGM()
     {
-        _audioSrc?.Stop();
+        _bgmAudioSource?.Stop();
     }
 
     public void PauseBGM()
     {
-        _audioSrc?.Pause();
+        _bgmAudioSource?.Pause();
     }
 
     public void SoundVolume(float volume)
     {
-        _audioSrc.volume = volume;
-        _erapsedTime = 0.0f;
+        _bgmVolumeMultiplier = Mathf.Clamp01(volume);
+        ApplyVolumes();
+    }
+
+    public void SetMasterVolume(float volume)
+    {
+        _masterVolume = Mathf.Clamp01(volume);
+        ApplyVolumes();
+    }
+
+    public void SetBGMVolume(float volume)
+    {
+        _bgmVolume = Mathf.Clamp01(volume);
+        ApplyVolumes();
+    }
+
+    public void SetSEVolume(float volume)
+    {
+        _seVolume = Mathf.Clamp01(volume);
+        ApplyVolumes();
+    }
+
+    public void ApplyVolumeSettings(float masterVolume, float bgmVolume, float seVolume)
+    {
+        _masterVolume = Mathf.Clamp01(masterVolume);
+        _bgmVolume = Mathf.Clamp01(bgmVolume);
+        _seVolume = Mathf.Clamp01(seVolume);
+        ApplyVolumes();
+    }
+
+    private void ApplyVolumes()
+    {
+        AudioListener.volume = _masterVolume;
+
+        if (_bgmAudioSource != null)
+        {
+            _bgmAudioSource.volume = _bgmVolume * _bgmVolumeMultiplier;
+        }
+
+        if (_seAudioSource != null)
+        {
+            _seAudioSource.volume = _seVolume;
+        }
+
+        if (AkUnitySoundEngine.IsInitialized())
+        {
+            AkUnitySoundEngine.SetOutputVolume(0, _masterVolume * _seVolume);
+        }
     }
 }
