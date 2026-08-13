@@ -12,11 +12,12 @@ namespace Game.Infrastructure.Loading
         private const float MinimumLoadingDuration = 3f;
 
         [SerializeField] private string _bootSceneName = "Boot";
+        private LoadingView _view;
 
-        private void Start()
+        private void Awake()
         {
-            LoadingView view = gameObject.AddComponent<LoadingView>();
-            view.Initialize();
+            _view = gameObject.AddComponent<LoadingView>();
+            _view.Initialize();
         }
 
         public void LoadBootScene(StageDataSO stageData)
@@ -27,8 +28,6 @@ namespace Game.Infrastructure.Loading
         IEnumerator Load(StageDataSO stageData)
         {
             Time.timeScale = 1f;
-
-            LoadingView view = gameObject.GetComponent<LoadingView>();
 
             float loadingStartedAt = Time.realtimeSinceStartup;
 
@@ -65,7 +64,7 @@ namespace Game.Infrastructure.Loading
                 yield return new WaitForSecondsRealtime(remainingDuration);
             }
 
-            yield return view.PlayGameStartRoutine();
+            yield return _view.PlayGameStartRoutine();
 
             boot.StartPreparedGame();
 
