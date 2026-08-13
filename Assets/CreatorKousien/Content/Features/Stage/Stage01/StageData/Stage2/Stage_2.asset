@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4d9e8f28dc60aba48847e6f259811f22, type: 3}
-  m_Name: Stage_1
+  m_Name: Stage_2
   m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.StageDataSO
   requiredWaveCount: 7
-  stageName: Stage_1
-  plannerMemo: "2026/08/01\u3000\u521D\u671F\u30B9\u30C6\u30FC\u30B8\u3068\u3044\u3046\u3053\u3068\u3082\u3042\u308A\u3001\u5927\u5E45\u306B\u4FEE\u6B63\u3057\u307E\u3057\u305F\u3002\n\u5168\u4F53\u7684\u306B\u7C21\u5358\u304B\u3064\u77ED\u3081\u306B\u4F5C\u308A\u76F4\u3057\u307E\u3057\u305F\u3002"
+  stageName: Stage_2
+  plannerMemo: "2026/08/13 - \u4EEE\u3067SO\u4F5C\u308A\u307E\u3057\u305F\uFF01Asano"
   earlyWavePool:
     selectionCount: 3
     allowDuplicateSelection: 0
@@ -46,6 +46,6 @@ MonoBehaviour:
       waveData: {fileID: 11400000, guid: c476aaacfdd56de4185d6fdfcd616183, type: 2}
       weight: 3
   bossWave: {fileID: 11400000, guid: 13bfd27def824fc468a8ad95ae4add70, type: 2}
-  stageSceneName: Stage
-  nextStage: {fileID: 11400000, guid: 1a984c9714a36e349b28f604f8e3daa0, type: 2}
+  stageSceneName: Stage_2
+  nextStage: {fileID: 0}
   clearHealRatio: 0.5

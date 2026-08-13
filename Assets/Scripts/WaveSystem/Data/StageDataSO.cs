@@ -9,6 +9,8 @@
 // - 序盤・中盤・終盤のWave抽選候補を管理します。
 // - 最終Waveは抽選せず、Boss Waveを固定で使用します。
 // - 実際に選択されたWave一覧など、実行中の状態は保持しません。
+//
+// - 次に移行するStageを保持するように修正 (8/13 - Asano)
 // ------------------------------------------------------------
 using UnityEngine;
 
@@ -79,6 +81,23 @@ namespace Game.WaveSystem
         private WaveDataSO bossWave;
 
 
+        [Header("--- Stage進行 ---")]
+
+        [SerializeField]
+        [Tooltip("このStageで読み込むSceneの名前。Build Profilesに登録されている必要があります。")]
+        private string stageSceneName = "Stage";
+
+        [SerializeField]
+        [Tooltip("このStageの次に進むStageSO。未設定の場合はゲームクリアになります。")]
+        private StageDataSO nextStage;
+
+
+        [SerializeField]
+        [Range(0f, 1f)]
+        [Tooltip("次のStageへ移行するときに、防衛ラインの最大HPの何割を回復するか。1で全回復しますお！")]
+        private float clearHealRatio = 0.5f;
+
+
         // 基本情報
         public string StageName => stageName;
         public string PlannerMemo => plannerMemo;
@@ -91,6 +110,17 @@ namespace Game.WaveSystem
 
         // 最終Wave
         public WaveDataSO BossWave => bossWave;
+
+        // Stage進行
+        public string StageSceneName => stageSceneName;
+        public StageDataSO NextStage => nextStage;
+        public float ClearHealRatio => clearHealRatio;
+
+        /// <summary>
+        /// 次のStageが設定されているかどうか
+        /// nextStage != thisで無限ループを防止！！
+        /// </summary>
+        public bool HasNextStage => nextStage != null && nextStage != this;
 
 
         /// <summary>
