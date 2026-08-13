@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SO_CollectibleTable
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Collectibles.CollectibleTable
   _baseItems:
-  - {fileID: 11400000, guid: efa7b9a6a24ab4c4bb0517fa1e83a3c6, type: 2}
+  - {fileID: 11400000, guid: 0bd912b3ef729924d81e248d6df2ca12, type: 2}
   _specialItems:
   - Data: {fileID: 11400000, guid: f4b5d9ed189e8f34892e8e133cc6ed09, type: 2}
     DropChancePercent: 3

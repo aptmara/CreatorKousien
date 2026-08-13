@@ -16,24 +16,8 @@ Shader "Custom/Collectible/SH_GummyObject"
     SubShader
     {
 
-        // Pass
-        // {
-        //     Tags
-        //     {
-
-        //         "Queue" = "Geometry"
-
-        //         "RenderPipeline" = "UniversalPipeline"
-
-        //     }
-
-        //     ZWrite On
-        //     ColorMask 0
-        // }
-
         Pass
         {
-            Blend SrcAlpha OneMinusSrcAlpha
 
             Tags
             {
@@ -43,11 +27,8 @@ Shader "Custom/Collectible/SH_GummyObject"
 
                 "RenderPipeline" = "UniversalPipeline"
 
-                // "LightMode" = "UniversalForward"
             }
 
-            ZWrite On
-            // ZTest LEqual
 
             HLSLPROGRAM
 

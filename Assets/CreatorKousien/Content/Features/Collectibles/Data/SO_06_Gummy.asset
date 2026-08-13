@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SO_06_Gummy
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Collectibles.CollectibleData
   Id: 6
-  Type: 5
+  Type: 0
   ViewPrefab: {fileID: 5658249862219205856, guid: e2d9fb27b70760f438e7ed9a6adfcf3b, type: 3}
   Weight: 1
   DamageAmount: 5
