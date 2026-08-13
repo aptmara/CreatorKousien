@@ -9,6 +9,8 @@
 // - StageEditorなどのステージSceneに1つだけ配置します。
 // - Waveの実行処理は行わず、Scene固有の設定だけを保持します。
 // - GameplayShell側の進行管理がこの設定を取得します。
+//
+// - Stage2対応 (8/13 - Asano)
 // ------------------------------------------------------------
 using System;
 using UnityEngine;
@@ -81,9 +83,18 @@ namespace Game.WaveSystem
         public void RegisterStageData(StageDataSO stageData)
         {
             if (isRegisteredStageData) return;
+
+            // nullを登録すると、Inspectorで設定した内容まで消えてしまう
+            if (stageData == null)
+            {
+                Debug.LogError("StageSceneContextにnullのStageDataSOを登録しようとしました。");
+                return;
+            }
+
             isRegisteredStageData = true;
-            Debug.Log("StageContextに" + stageData.name + "を登録しました。");
             this.stageData = stageData;
+
+            Debug.Log("StageContextに" + stageData.name + "を登録しました。");
         }
     }
 }

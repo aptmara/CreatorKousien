@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: afad848287d220844a1244f267789a9c, type: 3}
+  m_Name: Wave_Late_Test_C
+  m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.WaveDataSO
+  waveName: Wave_Late_Test_C
+  plannerMemo: 
+  startDelay: 1
+  completeDelay: 2
+  hpRate: 1
+  barrierRate: 1
+  maxAliveEnemies: 0
+  minDistanceFromOtherEnemies: 3
+  groups:
+  - groupName: Wave_Late_GoodEvening
+    plannerMemo: 
+    delayBeforeStart: 0
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 3
+      startDelay: 0
+      spawnInterval: 2
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 3
+      startDelay: 1
+      spawnInterval: 2
+  - groupName: Wave_Late_GoodEvening
+    plannerMemo: 
+    delayBeforeStart: 0
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 3
+      startDelay: 1
+      spawnInterval: 2
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 3
+      startDelay: 0
+      spawnInterval: 2
+  - groupName: Wave_Late_GoodEvening
+    plannerMemo: 
+    delayBeforeStart: 0
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 3
+      startDelay: 1
+      spawnInterval: 2
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 5
+      startDelay: 0
+      spawnInterval: 6
