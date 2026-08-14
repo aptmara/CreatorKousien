@@ -79,6 +79,10 @@ namespace Game.Core.Enemy
         [Tooltip("敵の上昇にかかる秒数")]
         public float RiseDuration = 30.0f;
 
+        [Header("横移動の速度")]
+        [Tooltip("敵の横移動一回の完了速度")]
+        public float LateralDuration = 30.0f;
+
         [Header("落下合計時間")]
         [Tooltip("敵の落下にかかる秒数")]
         public float DropDuration = 1.0f;
@@ -94,6 +98,10 @@ namespace Game.Core.Enemy
         [Header("上昇カーブ")]
         [Tooltip("敵の上昇カーブ")]
         public AnimationCurve RiseCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
+
+        [Header("横移動カーブ")]
+        [Tooltip("敵の横移動カーブ")]
+        public AnimationCurve LateralCurve = AnimationCurve.Linear(0.0f, 0.0f, 0.0f, 0.0f);
 
         [Header("落下カーブ")]
         [Tooltip("敵の落下カーブ")]
