@@ -24,6 +24,12 @@ namespace Game.Core.DefenceLine
         public float CurrentHP => _gaugeHP;
         public float MaxHP => _maxGaugeHP;
 
+        /// <summary>
+        /// 防衛ラインの残量の割合
+        /// Stage移行時に、次のStageへ残量を引き継ぐために使います
+        /// </summary>
+        public float HealthRatio => _maxGaugeHP > 0.0f ? _gaugeHP / _maxGaugeHP : 0.0f;
+
         private void Awake()
         {
             _baseMaxGaugeHP = Mathf.Max(0f, _gaugeHP);
@@ -76,6 +82,33 @@ namespace Game.Core.DefenceLine
             }
         }
 
+
+        /// <summary>
+        /// 前のStageから引き継いだ残量に、最大HPの一定割合を回復して適用する
+        /// Stage移行時に呼び出します！！
+        /// </summary>
+        /// <param name="previousRatio">前のStageをクリアした時点の残量割合</param>
+        /// <param name="healRatio">回復割合</param>
+        public void ApplyStageCarryOver(float previousRatio, float healRatio)
+        {
+            // 破壊状態のままだと、ダメージも回復を受け付けなくなってしまう
+            _isBroken = false;
+
+            // 引継ぎ分と回復分を、現在の最大HPを基準に計算する
+            float carriedHp = _maxGaugeHP * Mathf.Clamp01(previousRatio);
+            float healedHp = _maxGaugeHP * Mathf.Clamp01(healRatio);
+
+            _gaugeHP = Mathf.Clamp(carriedHp + healedHp, 0f, _maxGaugeHP);
+
+            PublishHealthChanged();
+
+            Debug.Log($"防衛ライン残りHPを引き継ぎました。残量割合: {previousRatio}, 回復割合: {healRatio}, 現在HP: {_gaugeHP}/{_maxGaugeHP}");
+        }
+
+
+        /// <summary>
+        /// 最大HPのアップグレードを適用する
+        /// </summary>
         private void ApplyMaxHpUpgrade()
         {
             float previousMaxHp = _maxGaugeHP;

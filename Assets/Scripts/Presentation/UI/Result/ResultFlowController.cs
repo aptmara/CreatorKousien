@@ -37,7 +37,7 @@ namespace Game.Presentation.UI.Result
                 GameResultSummary data = GameProgressionManager.Instance.ResultSummary;
 
                 // UIクラスに対して、表示情報の更新と演出切り替えを委譲
-                _uiController.SetupResultView(data, OnGameClearTitleButtonClicked, OnGameOverRetryButtonClicked);
+                _uiController.SetupResultView(data, OnGameClearTitleButtonClicked, OnGameOverRetryButtonClicked, OnNextStageButtonClicked);
             }
             else
             {
@@ -45,7 +45,8 @@ namespace Game.Presentation.UI.Result
                 _uiController.SetupResultView(
                     new GameResultSummary(true, 2, 30f),
                     OnGameClearTitleButtonClicked,
-                    OnGameOverRetryButtonClicked);
+                    OnGameOverRetryButtonClicked,
+                    OnNextStageButtonClicked);
             }
         }
 
@@ -74,6 +75,20 @@ namespace Game.Presentation.UI.Result
             Debug.Log("[Result] リトライ要求ぜよ");
 
             GameResetManager.TriggerFullReset();
+        }
+
+
+        private void OnNextStageButtonClicked()
+        {
+            if (GameProgressionManager.Instance == null)
+            {
+                Debug.LogError("[Result] GameProgressionManagerが見つかりません。次のステージへ進めません。");
+                return;
+            }
+
+            Debug.Log("[Result] 次のステージへ進むぜよ");
+
+            GameProgressionManager.Instance.RequestNextStage();
         }
     }
 }
