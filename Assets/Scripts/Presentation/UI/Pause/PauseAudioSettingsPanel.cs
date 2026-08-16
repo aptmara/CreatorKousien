@@ -179,9 +179,14 @@ namespace Game.Presentation.UI.Pause
 
         private void BeginEditing(AudioRow row)
         {
-            if (_editingRow != null)
+            if (_editingRow == row)
             {
                 return;
+            }
+
+            if (_editingRow != null)
+            {
+                CommitEditing();
             }
 
             _editingRow = row;

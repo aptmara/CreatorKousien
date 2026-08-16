@@ -67,6 +67,7 @@ namespace Game.Presentation.UI.Pause
         private bool _inputReactivationPending;
         private bool _isPaused;
         private bool _isShowingOption;
+        private bool _isShowingTitleOptions;
         private bool _isLoadingTitle;
         private bool _uiInputActionsReplaced;
         private bool _originalUiSubmitWasEnabled;
@@ -79,10 +80,12 @@ namespace Game.Presentation.UI.Pause
         private bool _cursorStateCaptured;
         private bool _resetNavigationSelectionInLateUpdate;
         private PauseInputMode _inputMode;
+        private Selectable _titleReturnSelection;
 
         private void Awake()
         {
             EnsureDefaultBindings();
+            DisableOptionScaling();
             _audioPanel.Initialize();
             _viewPanel.Initialize();
             _keyConfigPanel.Initialize(_playerActions, _roguelikeActions, _pauseAction, _submitAction, _cancelAction);
@@ -91,6 +94,15 @@ namespace Game.Presentation.UI.Pause
             _optionPanel.SetActive(false);
             _keyConfigPanel.SetRebindOverlayVisible(false);
             _viewRoot.SetActive(false);
+        }
+
+        private void DisableOptionScaling()
+        {
+            PauseSelectionOutline[] outlines = _optionPanel.GetComponentsInChildren<PauseSelectionOutline>(true);
+            for (int i = 0; i < outlines.Length; i++)
+            {
+                outlines[i].SetScalingEnabled(false);
+            }
         }
 
         private void OnEnable()
@@ -154,7 +166,7 @@ namespace Game.Presentation.UI.Pause
                 return;
             }
 
-            if (!_isPaused)
+            if (!_isPaused && !_isShowingTitleOptions)
             {
                 if (_pauseAction != null && _pauseAction.WasPressedThisFrame() && CanOpenPause())
                 {
@@ -200,7 +212,14 @@ namespace Game.Presentation.UI.Pause
 
             if (cancelPressed)
             {
-                ShowPauseMenu();
+                if (_isShowingTitleOptions)
+                {
+                    CloseTitleOptions();
+                }
+                else
+                {
+                    ShowPauseMenu();
+                }
             }
         }
 
@@ -212,7 +231,10 @@ namespace Game.Presentation.UI.Pause
             }
 
             _resetNavigationSelectionInLateUpdate = false;
-            if (_isPaused && !_isLoadingTitle && !_keyConfigPanel.IsRebinding && !_audioPanel.IsEditing)
+            if ((_isPaused || _isShowingTitleOptions) &&
+                !_isLoadingTitle &&
+                !_keyConfigPanel.IsRebinding &&
+                !_audioPanel.IsEditing)
             {
                 Select(GetInputModeInitialSelectable());
             }
@@ -312,6 +334,12 @@ namespace Game.Presentation.UI.Pause
 
         public void ShowPauseMenu()
         {
+            if (_isShowingTitleOptions)
+            {
+                CloseTitleOptions();
+                return;
+            }
+
             if (!_isPaused || _isLoadingTitle)
             {
                 return;
@@ -323,6 +351,45 @@ namespace Game.Presentation.UI.Pause
             _optionPanel.SetActive(false);
             _pausePanel.SetActive(true);
             Select(_continueButton);
+        }
+
+        public void OpenTitleOptions(Selectable returnSelection)
+        {
+            if (_isPaused || _isShowingTitleOptions || _isLoadingTitle)
+            {
+                return;
+            }
+
+            _titleReturnSelection = returnSelection;
+            _isShowingTitleOptions = true;
+            _isShowingOption = true;
+            ReplaceUiInputActions();
+            ResetInputMode();
+            _pausePanel.SetActive(false);
+            _optionPanel.SetActive(true);
+            _viewRoot.SetActive(true);
+            SwitchOptionTab((int)_currentOptionTab);
+        }
+
+        private void CloseTitleOptions()
+        {
+            if (!_isShowingTitleOptions)
+            {
+                return;
+            }
+
+            _audioPanel.CancelEditing();
+            _keyConfigPanel.CancelRebind();
+            RestoreUiInputActions();
+            _isShowingTitleOptions = false;
+            _isShowingOption = false;
+            _optionPanel.SetActive(false);
+            _pausePanel.SetActive(true);
+            _viewRoot.SetActive(false);
+            ClearSelection();
+            ResetInputMode();
+            Select(_titleReturnSelection);
+            _titleReturnSelection = null;
         }
 
         public void ReturnToTitle()
@@ -378,6 +445,7 @@ namespace Game.Presentation.UI.Pause
                 yield break;
             }
 
+            SoundManager.instance?.StopBGM();
             operation.allowSceneActivation = false;
             while (operation.progress < 0.9f)
             {

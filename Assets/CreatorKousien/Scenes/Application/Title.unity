@@ -574,7 +574,20 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 284582630}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1944164921}
+        m_TargetAssemblyTypeName: Game.Presentation.UI.Title.TitleMenuController,
+          Assembly-CSharp
+        m_MethodName: OnClickOption
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument:
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &104024446
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6317,6 +6330,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Title.TitleMenuController
   _startButton: {fileID: 1090685987}
+  _optionButton: {fileID: 104024445}
+  _optionMenuPrefab: {fileID: 11400000, guid: c1051e5110af4d7382f52bcc44272fc9, type: 3}
   _selectSceneName: StageSelect
 --- !u!1 &1955411516
 GameObject:

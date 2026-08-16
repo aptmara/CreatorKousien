@@ -1,0 +1,3 @@
+Event	ID	Name			Wwise Object Path	Notes
+	277560843	Play_SE_PumpkinShot			\Default Work Unit\Play_SE_PumpkinShot	
+

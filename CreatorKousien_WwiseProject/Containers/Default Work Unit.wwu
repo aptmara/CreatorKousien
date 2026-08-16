@@ -26,7 +26,7 @@
 						<Reference Name="OutputBus"><ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/></Reference>
 					</ReferenceList>
 					<ChildrenList><AudioFileSource Name="BarrierBreak_01" ID="{BA8296EA-8B9F-4486-98D1-7C220A70F279}">
-						<Language>SFX</Language><AudioFile>BarrierBreak_01.mp3</AudioFile><MediaIDList><MediaID ID="2146053747"/></MediaIDList>
+						<Language>SFX</Language><AudioFile>BarrierBreak_01.wav</AudioFile><MediaIDList><MediaID ID="2146053747"/></MediaIDList>
 					</AudioFileSource></ChildrenList>
 					<ActiveSourceList><ActiveSource Name="BarrierBreak_01" ID="{BA8296EA-8B9F-4486-98D1-7C220A70F279}" Platform="Linked"/></ActiveSourceList>
 				</Sound>
@@ -36,7 +36,7 @@
 						<Reference Name="OutputBus"><ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/></Reference>
 					</ReferenceList>
 					<ChildrenList><AudioFileSource Name="BarrierBreak_02" ID="{F42CF4A2-E883-487B-9E49-7CD03F329786}">
-						<Language>SFX</Language><AudioFile>BarrierBreak_02.mp3</AudioFile><MediaIDList><MediaID ID="667532000"/></MediaIDList>
+						<Language>SFX</Language><AudioFile>BarrierBreak_02.wav</AudioFile><MediaIDList><MediaID ID="667532000"/></MediaIDList>
 					</AudioFileSource></ChildrenList>
 					<ActiveSourceList><ActiveSource Name="BarrierBreak_02" ID="{F42CF4A2-E883-487B-9E49-7CD03F329786}" Platform="Linked"/></ActiveSourceList>
 				</Sound>
@@ -56,7 +56,7 @@
 						<Reference Name="OutputBus"><ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/></Reference>
 					</ReferenceList>
 					<ChildrenList><AudioFileSource Name="PumpkinShot" ID="{425A76F2-A391-4444-9EB9-85082FD2C6DF}">
-						<Language>SFX</Language><AudioFile>PumpkinShot.mp3</AudioFile><MediaIDList><MediaID ID="550476767"/></MediaIDList>
+						<Language>SFX</Language><AudioFile>PumpkinShot.wav</AudioFile><MediaIDList><MediaID ID="550476767"/></MediaIDList>
 					</AudioFileSource></ChildrenList>
 					<ActiveSourceList><ActiveSource Name="PumpkinShot" ID="{425A76F2-A391-4444-9EB9-85082FD2C6DF}" Platform="Linked"/></ActiveSourceList>
 				</Sound>
@@ -66,7 +66,7 @@
 						<Reference Name="OutputBus"><ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/></Reference>
 					</ReferenceList>
 					<ChildrenList><AudioFileSource Name="PumpkinShot_Big" ID="{71C86E52-E411-48E5-97C3-33999D6B4694}">
-						<Language>SFX</Language><AudioFile>PumpkinShot_Big.mp3</AudioFile><MediaIDList><MediaID ID="1091367061"/></MediaIDList>
+						<Language>SFX</Language><AudioFile>PumpkinShot_Big.wav</AudioFile><MediaIDList><MediaID ID="1091367061"/></MediaIDList>
 					</AudioFileSource></ChildrenList>
 					<ActiveSourceList><ActiveSource Name="PumpkinShot_Big" ID="{71C86E52-E411-48E5-97C3-33999D6B4694}" Platform="Linked"/></ActiveSourceList>
 				</Sound>

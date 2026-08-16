@@ -21,6 +21,7 @@ namespace Game.Presentation.UI.Pause
         [SerializeField] private Material _imageOutlineMaterial;
 
         private Graphic[] _visualGraphics;
+        private Color[] _visualBaseColors;
         private Selectable _selectable;
         private Material _runtimeImageOutlineMaterial;
         private Material _originalGraphicMaterial;
@@ -31,6 +32,7 @@ namespace Game.Presentation.UI.Pause
         private bool _pointerInside;
         private bool _highlighted;
         private bool _initialized;
+        private bool _scalingEnabled = true;
 
         protected override void OnEnable()
         {
@@ -110,6 +112,16 @@ namespace Game.Presentation.UI.Pause
 
             _navigationHighlighted = highlighted;
             RefreshHighlightedState();
+        }
+
+        internal void SetScalingEnabled(bool enabled)
+        {
+            _scalingEnabled = enabled;
+            if (_initialized && _animationTarget != null)
+            {
+                _animationTarget.localScale = _baseScale;
+                ApplyVisualState();
+            }
         }
 
         private void RefreshHighlightedState()
@@ -196,6 +208,12 @@ namespace Game.Presentation.UI.Pause
 
             InitializeImageOutlineMaterial();
             _visualGraphics = _visualRoot.GetComponentsInChildren<Graphic>(true);
+            _visualBaseColors = new Color[_visualGraphics.Length];
+            for (int i = 0; i < _visualGraphics.Length; i++)
+            {
+                _visualBaseColors[i] = _visualGraphics[i].canvasRenderer.GetColor();
+            }
+
             _baseScale = _animationTarget.localScale;
             _initialized = true;
         }
@@ -207,18 +225,26 @@ namespace Game.Presentation.UI.Pause
                 return;
             }
 
-            float scale;
+            float scale = 1f;
             Color tint;
             if (_highlighted)
             {
-                float maximumScale = Mathf.Max(_selectedMinScale, _selectedMaxScale);
-                float curve = (Mathf.Sin(Time.unscaledTime * _animationSpeed) + 1f) * 0.5f;
-                scale = Mathf.Lerp(_selectedMinScale, maximumScale, curve);
+                if (_scalingEnabled)
+                {
+                    float maximumScale = Mathf.Max(_selectedMinScale, _selectedMaxScale);
+                    float curve = (Mathf.Sin(Time.unscaledTime * _animationSpeed) + 1f) * 0.5f;
+                    scale = Mathf.Lerp(_selectedMinScale, maximumScale, curve);
+                }
+
                 tint = Color.white;
             }
             else
             {
-                scale = _unselectedScale;
+                if (_scalingEnabled)
+                {
+                    scale = _unselectedScale;
+                }
+
                 tint = _unselectedTint;
             }
 
@@ -228,14 +254,19 @@ namespace Game.Presentation.UI.Pause
 
         private void ApplyTint(Color tint)
         {
-            if (_visualGraphics == null)
+            if (_visualGraphics == null || _visualBaseColors == null)
             {
                 return;
             }
 
             for (int i = 0; i < _visualGraphics.Length; i++)
             {
-                _visualGraphics[i].canvasRenderer.SetColor(tint);
+                Color baseColor = _visualBaseColors[i];
+                _visualGraphics[i].canvasRenderer.SetColor(new Color(
+                    baseColor.r * tint.r,
+                    baseColor.g * tint.g,
+                    baseColor.b * tint.b,
+                    baseColor.a * tint.a));
             }
         }
 
