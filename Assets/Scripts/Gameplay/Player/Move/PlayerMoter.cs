@@ -302,6 +302,20 @@ namespace Game.Gameplay.Player
         }
 
 
+        /// <summary>
+        /// プレイヤーの物理演算の凍結を解除する関数
+        /// </summary>
+        public void UnfreezePhysics()
+        {
+            if (_rigidbody == null)
+            {
+                return;
+            }
+            _rigidbody.isKinematic = false;
+            _rigidbody.linearVelocity = Vector3.zero;
+            _rigidbody.angularVelocity = Vector3.zero;
+        }
+
 
         /// <summary>
         /// プレイヤーの移動を停止する関数

@@ -6,6 +6,7 @@
 // Created	: 2026-05-06
 // Updated	: 2026-06-02 (固定カメラ・Ortho / Persp動的切り替え対応)
 // Updated  : 2026-07-07 (ショップ演出用の一時無効化フラグを拡張)
+// Updated  : 2026-08-16 (次のStageへ進む際に、カメラの位置を即座に更新する処理を追加)
 //
 // Notes	:
 // - 5/6: ベース作成
@@ -50,6 +51,11 @@ namespace Game.Gameplay.Cameras
 
         [Tooltip("追従対象(プレイヤーのRootなど)")]
         [SerializeField] private Transform _targetTransform;
+
+        // 最後に適用した固定カメラ設定
+        private StaticCameraConfig _lastStaticConfig;
+        private ProjectionMode _lastProjectionMode;
+
 
         [Header("X座標固定設定")]
         [Tooltip("カメラが固定されるX座標（左右に動かさないため）")]
@@ -182,7 +188,7 @@ namespace Game.Gameplay.Cameras
 
                 // ターゲットとの距離に応じてカメラを引き、両方を画角に入れる
                 float distance = Vector3.Distance(playerPos, enemyPos);
-                
+
                 // 距離に基づいた高さのオフセット計算（簡易版: 距離の半分 + 基本オフセット）
                 float heightOffset = Mathf.Max(_collectOffset.y, distance * 0.8f);
                 float zOffset = Mathf.Min(_collectOffset.z, -distance * 0.5f);
@@ -228,6 +234,10 @@ namespace Game.Gameplay.Cameras
                 return;
             }
 
+            // Stage移行後に同じ画角へ戻せるよう、適用した設定を覚えておく
+            _lastStaticConfig = config;
+            _lastProjectionMode = mode;
+
             if (_targetCamera == null) _targetCamera = Camera.main;
             if (_targetCamera == null) return;
 
@@ -255,6 +265,20 @@ namespace Game.Gameplay.Cameras
             // 4. PostProcessingwをOnにする
             UniversalAdditionalCameraData UniCameraData = _targetCamera.GetUniversalAdditionalCameraData();
             UniCameraData.renderPostProcessing = true;
+        }
+
+
+        /// <summary>
+        /// 最後に適用した固定カメラ設定を復元する
+        /// </summary>
+        public void RestoreStaticCamera()
+        {
+            if (_lastStaticConfig == null)
+            {
+                return;
+            }
+
+            SetupStaticCamera(_lastStaticConfig, _lastProjectionMode);
         }
 
 

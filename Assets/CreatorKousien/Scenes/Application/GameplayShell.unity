@@ -1058,6 +1058,50 @@ MonoBehaviour:
   _flashCanvasGroup: {fileID: 1760067148}
   _playerFaceController: {fileID: 0}
   _clearStartFaceName: ClearStart
+--- !u!1 &1922201347
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1922201348}
+  - component: {fileID: 1922201349}
+  m_Layer: 0
+  m_Name: StageTransitionController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1922201348
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1922201347}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 732.0821, y: 273.8944, z: 1099.8132}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1922201349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1922201347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2290fb5adee83347b8216086474247f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Infrastructure.Bootstrap.StageTransitionController
 --- !u!1 &2030498475
 GameObject:
   m_ObjectHideFlags: 0
@@ -1136,3 +1180,4 @@ SceneRoots:
   - {fileID: 806947046}
   - {fileID: 572247458}
   - {fileID: 320376344}
+  - {fileID: 1922201348}

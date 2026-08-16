@@ -67,6 +67,16 @@ namespace Game.Gameplay.Stage
         }
 
         /// <summary>
+        /// フィールドのコンテキストを未設定状態に戻すメソッド
+        /// Stage移行でStageシーンをアンロードする直前に呼び出します。
+        /// </summary>
+        public static void Invalidate()
+        {
+            IsReady = false;
+        }
+
+
+        /// <summary>
         /// フィールドのコンテキストをリセットするメソッド
         /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -78,5 +88,4 @@ namespace Game.Gameplay.Stage
             Center = Vector3.zero;
         }
     }
-
 }

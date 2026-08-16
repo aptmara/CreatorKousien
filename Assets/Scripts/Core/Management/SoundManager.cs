@@ -1,8 +1,8 @@
 /**
  * サウンドをまとめつつ、再生を行うクラス
- * 
+ *
  * サウンドの登録をSOにて行い、登録したリストから再生を行う
- * 
+ *
  * テラダ
  */
 
@@ -79,7 +79,7 @@ public class SoundManager : MonoBehaviour
         {
             beat = _bgmAudioSource.time * _currentBGM.bpm / 60.0f;
         }
-        Debug.Log(beat);
+        // Debug.Log(beat);
         foreach(var mat in _swayMaterial)
         {
             mat.SetFloat("_Beat", (float)beat);
@@ -98,7 +98,7 @@ public class SoundManager : MonoBehaviour
         {
             return;
         }
-        
+
         Debug.Log("[SoundManager]PlaySE : " + name);
         _seAudioSource.PlayOneShot(SEData.AudioClip, volume);
     }
@@ -107,7 +107,7 @@ public class SoundManager : MonoBehaviour
     {
         if (_bgmAudioSource == null) return;
         var BGMData = _soundData.BGMDataList.Find(x => x.Name == name);
-        
+
         var bgm = BGMData.AudioClip;
 
         _currentBGM = BGMData;

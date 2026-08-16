@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Game.Presentation.UI.Loading;
 
 namespace Game.Presentation.UI.Loading
 {
@@ -113,6 +114,47 @@ namespace Game.Presentation.UI.Loading
             _gameStartGroup.transform.localPosition = exitStartPosition;
             _gameStartGroup.transform.localScale = Vector3.one;
         }
+
+
+        /// <summary>
+        /// ローディング表示の表示・非表示を即座に切り替える処理
+        /// 8/15 - Stage2で使えるようにするために追加 Asano
+        /// </summary>
+        /// <param name="visible"></param>
+        public void SetLoadingVisible(bool visible)
+        {
+            _animateLoading = visible;
+
+            if (_loadingGroup != null)
+            {
+                _loadingGroup.alpha = visible ? 1f : 0f;
+            }
+
+            if (_loadingCamera != null)
+            {
+                _loadingCamera.enabled = visible;
+            }
+        }
+
+
+        /// <summary>
+        /// 黒フェードを挟んでローディング画面を表示します
+        /// </summary>
+        /// <param name="fadeDuration">フェードにかける時間(秒)</param>
+        /// <returns></returns>
+        public IEnumerator PlayEnterRoutine(float fadeDuration = 0.35f)
+        {
+            // ゲーム画面の上を黒で覆う
+            SetLoadingVisible(false);
+
+            _blackOverlay.color = new Color(0.035f, 0.01f, 0.06f, 0f);
+            yield return FadeImageRoutine(_blackOverlay, 0f, 1f, fadeDuration);
+
+            // 黒の裏でローディング画面を差し替えてから黒を明ける
+            SetLoadingVisible(true);
+            yield return FadeImageRoutine(_blackOverlay, 1f, 0f, fadeDuration);
+        }
+
 
         private IEnumerator StopLogoRoutine(float duration)
         {

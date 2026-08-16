@@ -178,6 +178,25 @@ namespace Game.Gameplay.Player
 
 
         /// <summary>
+        /// プレイヤーの物理演算の凍結を解除する関数
+        /// </summary>
+        public void UnfreezePhysics()
+        {
+            _motor.UnfreezePhysics();
+            _canMove = true;
+        }
+
+
+        /// <summary>
+        ///  クリア演出で変更したアタッチメントの状態を、通常のプレイ状態へ戻す関数
+        /// </summary>
+        public void RestoreAttachmentFromClear()
+        {
+            _attachmentController?.RestoreFromClear();
+        }
+
+
+        /// <summary>
         /// カーソルのロック状態を設定する関数
         /// </summary>
         /// <param name="enable"></param>
