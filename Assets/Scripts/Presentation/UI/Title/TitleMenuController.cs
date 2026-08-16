@@ -6,6 +6,7 @@
 // Created      : 2026-07-03
 // ================================================================================
 
+using Game.Presentation.UI.Pause;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -21,6 +22,12 @@ namespace Game.Presentation.UI.Title
         // テラダ
         [Header("====== 初期選択ボタン ======")]
         [SerializeField] private Button _startButton;
+        [SerializeField] private Button _optionButton;
+
+        [Header("====== オプション ======")]
+        [SerializeField] private PauseMenuController _optionMenuPrefab;
+
+        private PauseMenuController _optionMenuInstance;
 
         [Header("--- 遷移先のシーン ---")]
         [SerializeField] private string _selectSceneName = "StageSelect";
@@ -50,11 +57,21 @@ namespace Game.Presentation.UI.Title
         }
 
         /// <summary>
-        /// Optionボタンが押されたときに呼び出す（将来用）
+        /// Optionボタンが押されたときに呼び出す
         /// </summary>
         public void OnClickOption()
         {
-            Debug.Log("Option が押されたぜよ（だが未実装）");
+            if (_optionMenuPrefab == null)
+            {
+                return;
+            }
+
+            if (_optionMenuInstance == null)
+            {
+                _optionMenuInstance = Instantiate(_optionMenuPrefab);
+            }
+
+            _optionMenuInstance.OpenTitleOptions(_optionButton);
         }
 
         /// <summary>

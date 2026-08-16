@@ -67,11 +67,6 @@ namespace Game.Core.DefenceLine
         [SerializeField, Min(0.0f)] private float _collisionDisableDelay = 0.9f;
 
         [Header("破壊SE")]
-        [SerializeField] private AudioSource _audioSource;
-        [SerializeField] private AudioClip _breakPrimaryClip;
-        [SerializeField] private AudioClip _breakTailClip;
-        [SerializeField, Range(0.0f, 1.0f)] private float _breakPrimaryVolume = 1.0f;
-        [SerializeField, Range(0.0f, 1.0f)] private float _breakTailVolume = 0.8f;
         [SerializeField, Min(0.0f)] private float _breakTailDelay = 0.11f;
 
         private readonly List<Fragment> _fragments = new List<Fragment>();
@@ -491,17 +486,6 @@ namespace Game.Core.DefenceLine
             SoundManager.instance?.StopBGM();
             SoundManager.instance?.PlaySE("Barrier_01");
             StartCoroutine(PlayTailAudio());
-            if (_audioSource == null) return;
-
-            if (_breakPrimaryClip != null)
-            {
-                //_audioSource.PlayOneShot(_breakPrimaryClip, _breakPrimaryVolume);
-            }
-
-            if (_breakTailClip != null)
-            {
-                StartCoroutine(PlayTailAudio());
-            }
         }
 
         private IEnumerator PlayTailAudio()
@@ -511,10 +495,6 @@ namespace Game.Core.DefenceLine
                 yield return new WaitForSeconds(_breakTailDelay);
             }
             SoundManager.instance?.PlaySE("Barrier_02");
-            if (_audioSource != null && _breakTailClip != null)
-            {
-                //_audioSource.PlayOneShot(_breakTailClip, _breakTailVolume);
-            }
         }
 
         private void DisableFragmentCollisions()
