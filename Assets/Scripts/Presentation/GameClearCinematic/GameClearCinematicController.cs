@@ -3,7 +3,8 @@
 // Summary	: ゲームクリア時のシネマティックを制御するクラス
 //
 // Author	: [浅野 勇生]
-// Created	: 2026-07-09
+// Created    : 2026-07-09
+// Update	d    : 2026-08-16 クリア時にエフェクトを追加するために、プレイヤーのアニメーションをクリア状態に設定する処理を追加 - 浅野
 //
 // Notes	:
 // - 基盤制作
@@ -56,7 +57,18 @@ namespace Game.Presentation.GameClearCinematic
         [Header("クリア時の表情")]
         [SerializeField] private string _clearStartFaceName = "ClearStart";      ///< クリア開始時の表情名
 
+        [Header("クリア時のエフェクト")]
+        [Tooltip("エフェクトのプレハブ")]
+        [SerializeField] private GameObject _clearFaceVfxPrefab;
 
+        [Tooltip("エフェクトを出す位置。未設定ならプレイヤーの位置に出す")]
+        [SerializeField] private Transform _clearFaceVfxPoint;
+
+        [Tooltip("どや顔になってからエフェクトを出すまでの待ち時間")]
+        [SerializeField] private float _clearFaceVfxDelay = 0.15f;
+
+        [Tooltip("エフェクトを片づけるまでの待ち時間")]
+        [SerializeField] private float _clearFaceVfxLifetime = 0.5f;
 
         private float _noiseSeed;                                                ///< ノイズシード値
 
@@ -184,11 +196,53 @@ namespace Game.Presentation.GameClearCinematic
             _playerAnimationController?.PlayClear();
             _playerController?.PlayPreparedClearAttachmentAnimation();
 
+            // クリア時の表情エフェクトを再生する
+            StartCoroutine(PlayClearFaceVfxRoutine());
+
             yield return StartCoroutine(WaitKeepingPlayerFacingCamera(_settings.AfterClearAnimationDelay, cameraTransform));
 
             SetFlashAlpha(0f);
         }
 
+
+
+        private IEnumerator PlayClearFaceVfxRoutine()
+        {
+            if (_clearFaceVfxPrefab == null)
+            {
+                yield break;
+            }
+
+            // 表情が切り替わってから少し溜めてからエフェクトを出す
+            if (_clearFaceVfxDelay > 0f)
+            {
+                yield return new WaitForSecondsRealtime(_clearFaceVfxDelay);
+            }
+
+            Transform spawnPoint = _clearFaceVfxPoint != null ? _clearFaceVfxPoint : _playerTransform;
+
+            if (spawnPoint == null)
+            {
+                Debug.LogWarning("[GameClearCinematic] エフェクトの出す位置が未設定で、プレイヤーのTransformも取得できません。エフェクトを再生できません。");
+                yield break;
+            }
+
+            // プレイヤーの子にしてエフェクトを生成する
+            GameObject vfxInstance = Instantiate(_clearFaceVfxPrefab, spawnPoint.position, spawnPoint.rotation, spawnPoint);
+
+            if (_clearFaceVfxLifetime <= 0f)
+            {
+                yield break;
+            }
+
+            // スロー演出中でも同じ秒数で片付くよう、実時間で待つ
+            yield return new WaitForSecondsRealtime(_clearFaceVfxLifetime);
+
+            if (vfxInstance != null)
+            {
+                Destroy(vfxInstance);
+            }
+        }
 
 
         // 内部処理

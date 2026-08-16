@@ -39,6 +39,12 @@ namespace Game.Core.Management
         [SerializeField] private string _roguelikeSceneName = "Roguelike";
         [SerializeField] private string _resultSceneName = "Result";
 
+
+        [Header("--- Stage移行 ---")]
+        [Tooltip("Stage移行時にローディング画面を最低限見せる時間(秒)")]
+        [SerializeField] private float _minimumStageLoadingDuration = 3f;
+
+
         [Header("--- Waveシステム ---")]
         [SerializeField] private WaveRunner _waveRunner;
 
@@ -582,6 +588,9 @@ namespace Game.Core.Management
             // 暗転してローディング画面へ切り替える
             yield return loadingView.PlayEnterRoutine();
 
+            // ローディング画面を最低限表示するために開始時間控えておく
+            float loadingStartedAt = Time.realtimeSinceStartup;
+
 
             // ----- ローディング画面の裏で行う処理 -----
 
@@ -639,7 +648,16 @@ namespace Game.Core.Management
             SoundManager.instance?.PlayBGM("InGame");
             SoundManager.instance?.SoundVolume(1.0f);
 
+            // シーンの入れ替えが早く終わっても、ローディング画面を一定時間は見せる
+            float remainingDuration = _minimumStageLoadingDuration - (Time.realtimeSinceStartup - loadingStartedAt);
+            if (remainingDuration > 0f)
+            {
+                yield return new WaitForSecondsRealtime(remainingDuration);
+            }
+
             // 「START！」が出ている間は時間を止める
+            Time.timeScale = 0f;
+
             yield return loadingView.PlayGameStartRoutine();
 
             Destroy(loadingHost);
