@@ -70,6 +70,7 @@ namespace Game.Presentation.GameClearCinematic
         [Tooltip("エフェクトを片づけるまでの待ち時間")]
         [SerializeField] private float _clearFaceVfxLifetime = 0.5f;
 
+
         private float _noiseSeed;                                                ///< ノイズシード値
 
         private Transform _lastHitEnemyTransform;                               ///< 最後にヒットした敵（＝トドメを刺した敵）のTransform

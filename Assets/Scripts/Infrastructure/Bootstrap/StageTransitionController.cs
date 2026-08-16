@@ -218,7 +218,7 @@ namespace Game.Infrastructure.Bootstrap
                 return;
             }
 
-            player.transform.SetPositionAndRotation(spawner.SpawnPoint.position, spawner.SpawnPoint.rotation);
+            controller?.WarpTo(spawner.SpawnPoint.position, spawner.SpawnPoint.eulerAngles.y);
         }
 
 

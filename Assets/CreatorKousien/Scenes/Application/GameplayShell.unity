@@ -470,6 +470,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Management.GameProgressionManager
   _roguelikeSceneName: Roguelike
   _resultSceneName: Result
+  _minimumStageLoadingDuration: 3
   _waveRunner: {fileID: 737055405}
   _enemySpawner: {fileID: 0}
   _cameraRigController: {fileID: 1756462886}
@@ -1058,6 +1059,10 @@ MonoBehaviour:
   _flashCanvasGroup: {fileID: 1760067148}
   _playerFaceController: {fileID: 0}
   _clearStartFaceName: ClearStart
+  _clearFaceVfxPrefab: {fileID: 7868286986029818768, guid: c452dbbc49147c149a5376e6960febe3, type: 3}
+  _clearFaceVfxPoint: {fileID: 0}
+  _clearFaceVfxDelay: 2.3
+  _clearFaceVfxLifetime: 1
 --- !u!1 &1922201347
 GameObject:
   m_ObjectHideFlags: 0

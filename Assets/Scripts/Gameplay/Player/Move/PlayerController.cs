@@ -188,6 +188,17 @@ namespace Game.Gameplay.Player
 
 
         /// <summary>
+        /// 指定した位置へワープさせ、向きをフィールドの傾きに合わせ直す関数
+        /// </summary>
+        /// <param name="position">移動先のワールド座標</param>
+        /// <param name="yaw">フィールド基準の向き(度)</param>
+        public void WarpTo(Vector3 position, float yaw)
+        {
+            _motor.WarpTo(position, yaw);
+        }
+
+
+        /// <summary>
         ///  クリア演出で変更したアタッチメントの状態を、通常のプレイ状態へ戻す関数
         /// </summary>
         public void RestoreAttachmentFromClear()

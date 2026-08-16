@@ -335,5 +335,36 @@ namespace Game.Gameplay.Player
             _rigidbody.linearVelocity = up * alongUp;
             _rigidbody.angularVelocity = Vector3.zero;
         }
+
+
+        /// <summary>
+        /// 指定した位置へワープさせ、向きをフィールドの傾きに合わせ直す関数
+        /// </summary>
+        /// <param name="position">移動先のワールド座標</param>
+        /// <param name="yaw">フィール度基準の向き</param>
+        public void WarpTo(Vector3 position, float yaw)
+        {
+            if (_rigidbody == null)
+            {
+                return;
+            }
+
+            _targetYaw = yaw;
+
+            // Startと同じ計算で、フィールドの傾きに沿った向きを作る
+            Vector3 up = Up;
+
+            Vector3 planeForward = Vector3.ProjectOnPlane(Vector3.forward, up).normalized;
+            Vector3 faceDir = Quaternion.AngleAxis(_targetYaw, up) * planeForward;
+            Quaternion rot = Quaternion.LookRotation(faceDir, up);
+
+            // 補間が尾を引かないよう、RigidbodyとTransformの両方を合わせる
+            transform.SetPositionAndRotation(position, rot);
+            _rigidbody.position = position;
+            _rigidbody.rotation = rot;
+
+            _rigidbody.linearVelocity = Vector3.zero;
+            _rigidbody.angularVelocity = Vector3.zero;
+        }
     }
 }
