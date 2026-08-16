@@ -14,7 +14,7 @@ public class SoundData : ScriptableObject
     [Serializable]
     public struct AudioData
     {
-        public AudioClip AudioClip;
+        public AK.Wwise.Event WwiseEvent;
         public string Name;
         public int bpm;
     }

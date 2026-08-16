@@ -13,22 +13,40 @@ MonoBehaviour:
   m_Name: SO_SoundData
   m_EditorClassIdentifier: Assembly-CSharp::SoundData
   SEDataList:
-  - AudioClip: {fileID: 8300000, guid: 2e82fad0c1f84684d8638a16126d447d, type: 3}
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: dacebc5834100ee4aafe063e7a6b38e0, type: 2}
     Name: Barrier_01
     bpm: 0
-  - AudioClip: {fileID: 8300000, guid: cf29fe9369c74b9479679b3dd60c39fd, type: 3}
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 8ad5081449660cc43bb320d78d754f9e, type: 2}
     Name: Barrier_02
     bpm: 0
-  - AudioClip: {fileID: 8300000, guid: d486ae6690f2e67499f80769c9820ca7, type: 3}
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 9122aa3275f122b478f8514055fe4ffa, type: 2}
     Name: CollectableHit
     bpm: 0
-  - AudioClip: {fileID: 8300000, guid: c014529fecd86ec46b1650f4b44fdc67, type: 3}
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 156357bf101cd144f9834deb14b53255, type: 2}
     Name: PumpkinShot
     bpm: 0
-  - AudioClip: {fileID: 8300000, guid: a632356e2e4c3264ba925b78d3f0830f, type: 3}
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 771ba1dbf77064947a5cdbef06df0a2c, type: 2}
     Name: PumpkinShot_Big
     bpm: 0
   BGMDataList:
-  - AudioClip: {fileID: 8300000, guid: 84b5d2a1020afd046a2475d7450af8a4, type: 3}
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 744984095d2cd814984e5d80b5d443e5, type: 2}
     Name: InGame
     bpm: 50

@@ -1,19 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<WwiseDocument Type="WorkUnit" ID="{46773E5F-6A4A-47C0-8477-09A1BC8161C7}" SchemaVersion="133">
+<WwiseDocument Type="WorkUnit" ID="{46773E5F-6A4A-47D9-A9BF-A6184AA8E48A}" SchemaVersion="133">
 	<Events>
-		<WorkUnit Name="Default Work Unit" ID="{46773E5F-6A4A-47C0-8477-09A1BC8161C7}" PersistMode="Standalone">
+		<WorkUnit Name="Default Work Unit" ID="{46773E5F-6A4A-47D9-A9BF-A6184AA8E48A}" PersistMode="Standalone">
 			<ChildrenList>
-				<Event Name="Play_CollectableHit" ID="{E6CB4FD2-2BD8-471D-B534-FF0CA102C6E2}">
-					<ChildrenList>
-						<Action Name="" ID="{41C89107-73D2-4DFC-A7D0-62A445171801}" ShortID="512471423">
-							<ReferenceList>
-								<Reference Name="Target">
-									<ObjectRef Name="CollectableDrop" ID="{25EF4029-4600-4AF2-B0B6-3634F6B788C0}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/>
-								</Reference>
-							</ReferenceList>
-						</Action>
-					</ChildrenList>
-				</Event>
+				<Event Name="Play_BGM_InGame" ID="{094E88C6-84AD-46B4-97CB-4C7D7F936C64}"><ChildrenList>
+					<Action Name="" ID="{9A4FEDD7-D63F-4725-9A85-1DAD04A28165}" ShortID="120501186"><ReferenceList><Reference Name="Target"><ObjectRef Name="InGameBGM" ID="{0BBCDED4-1AFB-46CD-ADBB-F25CD0FF7A46}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/></Reference></ReferenceList></Action>
+				</ChildrenList></Event>
+				<Event Name="Play_SE_Barrier_01" ID="{9BFC02AC-3A40-4C0F-A376-8AB626BE1707}"><ChildrenList>
+					<Action Name="" ID="{558B03BE-3B1D-4259-A50B-3C1DC4471CC9}" ShortID="547986421"><ReferenceList><Reference Name="Target"><ObjectRef Name="BarrierBreak_01" ID="{B015347F-E2E1-4E8D-B353-229A5DCD081F}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/></Reference></ReferenceList></Action>
+				</ChildrenList></Event>
+				<Event Name="Play_SE_Barrier_02" ID="{B8815FD4-2F34-44BE-B948-70F74289D96C}"><ChildrenList>
+					<Action Name="" ID="{D97C1D49-8077-449E-9BBF-0457E21306D2}" ShortID="269517936"><ReferenceList><Reference Name="Target"><ObjectRef Name="BarrierBreak_02" ID="{2B815F0A-76D2-4526-9129-EFD23BB43E6E}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/></Reference></ReferenceList></Action>
+				</ChildrenList></Event>
+				<Event Name="Play_SE_CollectableHit" ID="{E6CB4FD2-2BD8-471D-B534-FF0CA102C6E2}"><ChildrenList>
+					<Action Name="" ID="{41C89107-73D2-4DFC-A7D0-62A445171801}" ShortID="512471423"><ReferenceList><Reference Name="Target"><ObjectRef Name="CollectableDrop" ID="{25EF4029-4600-4AF2-B0B6-3634F6B788C0}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/></Reference></ReferenceList></Action>
+				</ChildrenList></Event>
+				<Event Name="Play_SE_PumpkinShot" ID="{A62B077C-6508-48BF-A76F-A14B56ECAC94}"><ChildrenList>
+					<Action Name="" ID="{69B1B685-6105-4AA3-8423-6B5AA415FC8B}" ShortID="179624157"><ReferenceList><Reference Name="Target"><ObjectRef Name="PumpkinShot" ID="{DAD32B05-91B2-4943-B3E1-ACD357C13902}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/></Reference></ReferenceList></Action>
+				</ChildrenList></Event>
+				<Event Name="Play_SE_PumpkinShot_Big" ID="{B411605A-3580-43AB-991F-302B08BAF49E}"><ChildrenList>
+					<Action Name="" ID="{3ED4E681-A240-4DB4-B95A-2EAC1A618D6E}" ShortID="401797556"><ReferenceList><Reference Name="Target"><ObjectRef Name="PumpkinShot_Big" ID="{3799CCE7-3452-4FBB-AD6E-F113705B7FC6}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/></Reference></ReferenceList></Action>
+				</ChildrenList></Event>
 			</ChildrenList>
 		</WorkUnit>
 	</Events>

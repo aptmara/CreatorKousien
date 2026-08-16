@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "1815017959",
+    "Type": "Event",
+    "GUID": "{B8815FD4-2F34-44BE-B948-70F74289D96C}",
+    "Language": "SFX",
+    "Hash": "{2894F123-9A70-3461-4F59-A9CF7BD7D782}",
+    "ObjectPath": "Play_SE_Barrier_02",
+    "ShortName": "Play_SE_Barrier_02",
+    "Path": "Event/Play_SE_Barrier_02.bnk",
+    "Media": [
+     {
+      "Id": "667532000",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "BarrierBreak_02.wav",
+      "Path": "Media/667532000.wem",
+      "CachePath": "25/{252ACBA0-4E56-485D-838E-A24D388C0CB1}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "1815017959",
+      "Name": "Play_SE_Barrier_02",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Barrier_02",
+      "GUID": "{B8815FD4-2F34-44BE-B948-70F74289D96C}",
+      "DurationType": "OneShot",
+      "DurationMin": "1.515102",
+      "DurationMax": "1.515102",
+      "MediaRefs": [
+       {
+        "Id": "667532000"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{D7376EF6-C932-8C32-D31B-A13FB266A7E7}"
+ }
+}
