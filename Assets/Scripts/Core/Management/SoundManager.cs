@@ -8,22 +8,25 @@
 
 using UnityEngine;
 using System.Collections.Generic;
-using Unity.Collections;
-using Unity.VisualScripting;
 
+[RequireComponent(typeof(AkGameObj))]
 public class SoundManager : MonoBehaviour
 {
     public static SoundManager instance { get; set; }
 
-    AudioSource _bgmAudioSource;
-    AudioSource _seAudioSource;
-
     [SerializeField]
     private SoundData _soundData;
+    [SerializeField]
+    private AK.Wwise.RTPC _masterVolumeRtpc;
+    [SerializeField]
+    private AK.Wwise.RTPC _bgmVolumeRtpc;
+    [SerializeField]
+    private AK.Wwise.RTPC _seVolumeRtpc;
     private float _masterVolume = 1.0f;
     private float _bgmVolume = 1.0f;
     private float _seVolume = 1.0f;
     private float _bgmVolumeMultiplier = 1.0f;
+    private uint _currentBgmPlayingId = AkUnitySoundEngine.AK_INVALID_PLAYING_ID;
 
     [Header("==== 揺れのBPM対応 ====")]
     [SerializeField, Tooltip("BPMに合わせたい揺れるマテリアル")]
@@ -46,16 +49,17 @@ public class SoundManager : MonoBehaviour
         }
 
         instance = this;
-        _bgmAudioSource = GetComponent<AudioSource>();
-        _seAudioSource = gameObject.AddComponent<AudioSource>();
-        _seAudioSource.playOnAwake = false;
-        _seAudioSource.spatialBlend = 0.0f;
+        AkUnitySoundEngineInitialization.Instance.initializationDelegate += ApplyVolumes;
+        AkUnitySoundEngineInitialization.Instance.reInitializationDelegate += ApplyVolumes;
         ApplyVolumes();
         DontDestroyOnLoad(gameObject);
     }
 
     private void OnDestroy()
     {
+        AkUnitySoundEngineInitialization.Instance.initializationDelegate -= ApplyVolumes;
+        AkUnitySoundEngineInitialization.Instance.reInitializationDelegate -= ApplyVolumes;
+
         if (instance == this)
         {
             instance = null;
@@ -65,19 +69,18 @@ public class SoundManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (_bgmAudioSource == null)
-        {
-            return;
-        }
-
         double beat = 1.0f;
-        if (!_bgmAudioSource.isPlaying)
+        if (_currentBgmPlayingId == AkUnitySoundEngine.AK_INVALID_PLAYING_ID ||
+            AkUnitySoundEngine.GetSourcePlayPosition(
+                _currentBgmPlayingId,
+                out int positionMilliseconds,
+                true) != AKRESULT.AK_Success)
         {
             beat = Time.time * (float)_bpm / 60.0f;
         }
         else
         {
-            beat = _bgmAudioSource.time * _currentBGM.bpm / 60.0f;
+            beat = positionMilliseconds * 0.001 * _currentBGM.bpm / 60.0f;
         }
         Debug.Log(beat);
         foreach(var mat in _swayMaterial)
@@ -86,45 +89,59 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    public void PlaySE(string name,float volume = 1.0f)
+    public void PlaySE(string name)
     {
-        if (_seAudioSource == null || _soundData == null)
+        if (_soundData == null)
         {
             return;
         }
 
         var SEData = _soundData.SEDataList.Find(x => x.Name == name);
-        if (SEData.AudioClip == null)
+        if (SEData.WwiseEvent == null || !SEData.WwiseEvent.IsValid())
         {
             return;
         }
         
         Debug.Log("[SoundManager]PlaySE : " + name);
-        _seAudioSource.PlayOneShot(SEData.AudioClip, volume);
+        SEData.WwiseEvent.Post(gameObject);
     }
 
     public void PlayBGM(string name)
     {
-        if (_bgmAudioSource == null) return;
-        var BGMData = _soundData.BGMDataList.Find(x => x.Name == name);
-        
-        var bgm = BGMData.AudioClip;
+        if (_soundData == null) return;
 
+        var BGMData = _soundData.BGMDataList.Find(x => x.Name == name);
+        if (BGMData.WwiseEvent == null || !BGMData.WwiseEvent.IsValid()) return;
+
+        StopBGM();
         _currentBGM = BGMData;
-        _bgmAudioSource.clip = bgm;
-        _bgmAudioSource.loop = true;
-        _bgmAudioSource.Play();
+        _currentBgmPlayingId = BGMData.WwiseEvent.Post(gameObject);
         Debug.Log("[SoundManager]PlayBGM : " + name);
     }
 
     public void StopBGM()
     {
-        _bgmAudioSource?.Stop();
+        if (_currentBgmPlayingId == AkUnitySoundEngine.AK_INVALID_PLAYING_ID)
+        {
+            return;
+        }
+
+        AkUnitySoundEngine.ExecuteActionOnPlayingID(
+            AkActionOnEventType.AkActionOnEventType_Stop,
+            _currentBgmPlayingId);
+        _currentBgmPlayingId = AkUnitySoundEngine.AK_INVALID_PLAYING_ID;
     }
 
     public void PauseBGM()
     {
-        _bgmAudioSource?.Pause();
+        if (_currentBgmPlayingId == AkUnitySoundEngine.AK_INVALID_PLAYING_ID)
+        {
+            return;
+        }
+
+        AkUnitySoundEngine.ExecuteActionOnPlayingID(
+            AkActionOnEventType.AkActionOnEventType_Pause,
+            _currentBgmPlayingId);
     }
 
     public void SoundVolume(float volume)
@@ -161,21 +178,13 @@ public class SoundManager : MonoBehaviour
 
     private void ApplyVolumes()
     {
-        AudioListener.volume = _masterVolume;
-
-        if (_bgmAudioSource != null)
+        if (!AkUnitySoundEngine.IsInitialized())
         {
-            _bgmAudioSource.volume = _bgmVolume * _bgmVolumeMultiplier;
+            return;
         }
 
-        if (_seAudioSource != null)
-        {
-            _seAudioSource.volume = _seVolume;
-        }
-
-        if (AkUnitySoundEngine.IsInitialized())
-        {
-            AkUnitySoundEngine.SetOutputVolume(0, _masterVolume * _seVolume);
-        }
+        _masterVolumeRtpc?.SetGlobalValue(_masterVolume * 100.0f);
+        _bgmVolumeRtpc?.SetGlobalValue(_bgmVolume * _bgmVolumeMultiplier * 100.0f);
+        _seVolumeRtpc?.SetGlobalValue(_seVolume * 100.0f);
     }
 }

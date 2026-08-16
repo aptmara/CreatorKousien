@@ -4,8 +4,27 @@
 		<WorkUnit Name="Default Work Unit" ID="{802BB985-D786-4CF0-BC05-4064AFAB2D22}" PersistMode="Standalone">
 			<ChildrenList>
 				<GameParameter Name="HitStreak" ID="{F1A2F44D-09DE-4FF8-8ED8-D69005BABD0A}">
+					<PropertyList><Property Name="InitialValue" Type="Real64" Value="0"/></PropertyList>
+				</GameParameter>
+				<GameParameter Name="MasterVolume" ID="{890FE489-A1A8-42DE-BFF0-284A5C5F154B}">
 					<PropertyList>
-						<Property Name="InitialValue" Type="Real64" Value="0"/>
+						<Property Name="InitialValue" Type="Real64" Value="100"/>
+						<Property Name="Max" Type="Real64" Value="100"/>
+						<Property Name="Min" Type="Real64" Value="0"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="BGMVolume" ID="{0E0DE2BA-04D5-47F4-89BF-7E088457DF98}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="100"/>
+						<Property Name="Max" Type="Real64" Value="100"/>
+						<Property Name="Min" Type="Real64" Value="0"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="SEVolume" ID="{552E1063-8E9B-4950-8309-1A77B8A3B3B3}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="100"/>
+						<Property Name="Max" Type="Real64" Value="100"/>
+						<Property Name="Min" Type="Real64" Value="0"/>
 					</PropertyList>
 				</GameParameter>
 			</ChildrenList>

@@ -266,7 +266,6 @@ namespace Game.Presentation.UI.Pause
             float master = _masterMuted ? 0f : _masterVolume;
             float bgm = _bgmMuted ? 0f : _bgmVolume;
             float se = _seMuted ? 0f : _seVolume;
-            AudioListener.volume = master;
 
             if (SoundManager.instance != null)
             {

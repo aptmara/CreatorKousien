@@ -3,27 +3,72 @@
 	<Containers>
 		<WorkUnit Name="Default Work Unit" ID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}" PersistMode="Standalone">
 			<ChildrenList>
-				<Sound Name="CollectableDrop" ID="{25EF4029-4600-4AF2-B0B6-3634F6B788C0}" ShortID="434356072">
+				<Sound Name="InGameBGM" ID="{0BBCDED4-1AFB-46CD-ADBB-F25CD0FF7A46}" ShortID="342736410">
+					<PropertyList>
+						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+						<Property Name="IsStreamingEnabled" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
-						<Reference Name="Conversion">
-							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
-						</Reference>
-						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
-						</Reference>
+						<Reference Name="Conversion"><ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/></Reference>
+						<Reference Name="OutputBus"><ObjectRef Name="BGM" ID="{4390F16A-EB12-4B05-8F2E-BEC2707C0C64}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/></Reference>
 					</ReferenceList>
 					<ChildrenList>
-						<AudioFileSource Name="CollectableDrop" ID="{93E05756-CF7C-4E60-9110-900E0F35A165}">
-							<Language>SFX</Language>
-							<AudioFile>CollectableDrop.wav</AudioFile>
-							<MediaIDList>
-								<MediaID ID="340697464"/>
-							</MediaIDList>
+						<AudioFileSource Name="InGameBGM" ID="{B78F0955-8B97-41FF-A3BA-06170CDDEF04}">
+							<Language>SFX</Language><AudioFile>InGameBGM.wav</AudioFile>
+							<MediaIDList><MediaID ID="179590931"/></MediaIDList>
 						</AudioFileSource>
 					</ChildrenList>
-					<ActiveSourceList>
-						<ActiveSource Name="CollectableDrop" ID="{93E05756-CF7C-4E60-9110-900E0F35A165}" Platform="Linked"/>
-					</ActiveSourceList>
+					<ActiveSourceList><ActiveSource Name="InGameBGM" ID="{B78F0955-8B97-41FF-A3BA-06170CDDEF04}" Platform="Linked"/></ActiveSourceList>
+				</Sound>
+				<Sound Name="BarrierBreak_01" ID="{B015347F-E2E1-4E8D-B353-229A5DCD081F}" ShortID="717039629">
+					<ReferenceList>
+						<Reference Name="Conversion"><ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/></Reference>
+						<Reference Name="OutputBus"><ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/></Reference>
+					</ReferenceList>
+					<ChildrenList><AudioFileSource Name="BarrierBreak_01" ID="{BA8296EA-8B9F-4486-98D1-7C220A70F279}">
+						<Language>SFX</Language><AudioFile>BarrierBreak_01.mp3</AudioFile><MediaIDList><MediaID ID="2146053747"/></MediaIDList>
+					</AudioFileSource></ChildrenList>
+					<ActiveSourceList><ActiveSource Name="BarrierBreak_01" ID="{BA8296EA-8B9F-4486-98D1-7C220A70F279}" Platform="Linked"/></ActiveSourceList>
+				</Sound>
+				<Sound Name="BarrierBreak_02" ID="{2B815F0A-76D2-4526-9129-EFD23BB43E6E}" ShortID="562379696">
+					<ReferenceList>
+						<Reference Name="Conversion"><ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/></Reference>
+						<Reference Name="OutputBus"><ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/></Reference>
+					</ReferenceList>
+					<ChildrenList><AudioFileSource Name="BarrierBreak_02" ID="{F42CF4A2-E883-487B-9E49-7CD03F329786}">
+						<Language>SFX</Language><AudioFile>BarrierBreak_02.mp3</AudioFile><MediaIDList><MediaID ID="667532000"/></MediaIDList>
+					</AudioFileSource></ChildrenList>
+					<ActiveSourceList><ActiveSource Name="BarrierBreak_02" ID="{F42CF4A2-E883-487B-9E49-7CD03F329786}" Platform="Linked"/></ActiveSourceList>
+				</Sound>
+				<Sound Name="CollectableDrop" ID="{25EF4029-4600-4AF2-B0B6-3634F6B788C0}" ShortID="434356072">
+					<ReferenceList>
+						<Reference Name="Conversion"><ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/></Reference>
+						<Reference Name="OutputBus"><ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/></Reference>
+					</ReferenceList>
+					<ChildrenList><AudioFileSource Name="CollectableDrop" ID="{93E05756-CF7C-4E60-9110-900E0F35A165}">
+						<Language>SFX</Language><AudioFile>CollectableDrop.wav</AudioFile><MediaIDList><MediaID ID="340697464"/></MediaIDList>
+					</AudioFileSource></ChildrenList>
+					<ActiveSourceList><ActiveSource Name="CollectableDrop" ID="{93E05756-CF7C-4E60-9110-900E0F35A165}" Platform="Linked"/></ActiveSourceList>
+				</Sound>
+				<Sound Name="PumpkinShot" ID="{DAD32B05-91B2-4943-B3E1-ACD357C13902}" ShortID="516210593">
+					<ReferenceList>
+						<Reference Name="Conversion"><ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/></Reference>
+						<Reference Name="OutputBus"><ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/></Reference>
+					</ReferenceList>
+					<ChildrenList><AudioFileSource Name="PumpkinShot" ID="{425A76F2-A391-4444-9EB9-85082FD2C6DF}">
+						<Language>SFX</Language><AudioFile>PumpkinShot.mp3</AudioFile><MediaIDList><MediaID ID="550476767"/></MediaIDList>
+					</AudioFileSource></ChildrenList>
+					<ActiveSourceList><ActiveSource Name="PumpkinShot" ID="{425A76F2-A391-4444-9EB9-85082FD2C6DF}" Platform="Linked"/></ActiveSourceList>
+				</Sound>
+				<Sound Name="PumpkinShot_Big" ID="{3799CCE7-3452-4FBB-AD6E-F113705B7FC6}" ShortID="747346296">
+					<ReferenceList>
+						<Reference Name="Conversion"><ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/></Reference>
+						<Reference Name="OutputBus"><ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/></Reference>
+					</ReferenceList>
+					<ChildrenList><AudioFileSource Name="PumpkinShot_Big" ID="{71C86E52-E411-48E5-97C3-33999D6B4694}">
+						<Language>SFX</Language><AudioFile>PumpkinShot_Big.mp3</AudioFile><MediaIDList><MediaID ID="1091367061"/></MediaIDList>
+					</AudioFileSource></ChildrenList>
+					<ActiveSourceList><ActiveSource Name="PumpkinShot_Big" ID="{71C86E52-E411-48E5-97C3-33999D6B4694}" Platform="Linked"/></ActiveSourceList>
 				</Sound>
 			</ChildrenList>
 		</WorkUnit>
