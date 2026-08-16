@@ -74,6 +74,7 @@ namespace Game.Presentation.UI.Pause
                 row.Slider.SetValueWithoutNotify(GetChannelVolume(row.Channel));
                 row.Slider.interactable = false;
                 row.SelectButton.transition = Selectable.Transition.None;
+                row.SelectionOutline.SetVisualTargets((RectTransform)row.Slider.transform, row.Slider.transform);
                 row.SelectionOutline.SetHighlighted(false);
 
                 AudioRow capturedRow = row;

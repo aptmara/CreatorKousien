@@ -4,6 +4,7 @@ using Game.Presentation.UI.Loading;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -18,6 +19,12 @@ namespace Game.Presentation.UI.Pause
             Audio,
             View,
             KeyConfig
+        }
+
+        private enum PauseInputMode
+        {
+            Navigation,
+            Mouse
         }
 
         private const float DefaultFixedDeltaTime = 0.02f;
@@ -70,6 +77,8 @@ namespace Game.Presentation.UI.Pause
         private CursorLockMode _previousCursorLockState;
         private bool _previousCursorVisible;
         private bool _cursorStateCaptured;
+        private bool _resetNavigationSelectionInLateUpdate;
+        private PauseInputMode _inputMode;
 
         private void Awake()
         {
@@ -98,6 +107,7 @@ namespace Game.Presentation.UI.Pause
             _audioPanel.CancelEditing();
             _keyConfigPanel.CancelRebind();
             RestoreUiInputActions();
+            ResetInputMode();
 
             _pauseAction?.Disable();
             _cancelAction?.Disable();
@@ -154,6 +164,8 @@ namespace Game.Presentation.UI.Pause
                 return;
             }
 
+            UpdateInputMode();
+
             if (_keyConfigPanel.IsRebinding)
             {
                 return;
@@ -189,6 +201,20 @@ namespace Game.Presentation.UI.Pause
             if (cancelPressed)
             {
                 ShowPauseMenu();
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (!_resetNavigationSelectionInLateUpdate)
+            {
+                return;
+            }
+
+            _resetNavigationSelectionInLateUpdate = false;
+            if (_isPaused && !_isLoadingTitle && !_keyConfigPanel.IsRebinding && !_audioPanel.IsEditing)
+            {
+                Select(GetInputModeInitialSelectable());
             }
         }
 
@@ -240,6 +266,7 @@ namespace Game.Presentation.UI.Pause
             }
 
             ReplaceUiInputActions();
+            ResetInputMode();
             Time.timeScale = 0f;
             _viewRoot.SetActive(true);
             ShowPauseMenu();
@@ -260,6 +287,7 @@ namespace Game.Presentation.UI.Pause
             Time.timeScale = _previousTimeScale;
             Time.fixedDeltaTime = _previousFixedDeltaTime;
             ClearSelection();
+            ResetInputMode();
             RestoreCursorState();
 
             if (_playerInputWasActive && _pausedPlayerInput != null)
@@ -375,6 +403,7 @@ namespace Game.Presentation.UI.Pause
             Time.fixedDeltaTime = _previousFixedDeltaTime;
             _viewRoot?.SetActive(false);
             ClearSelection();
+            ResetInputMode();
             RestoreCursorState();
 
             if (_playerInputWasActive && _pausedPlayerInput != null)
@@ -395,9 +424,6 @@ namespace Game.Presentation.UI.Pause
             {
                 bool active = i == wrappedIndex;
                 _optionContentPanels[i].SetActive(active);
-                _tabButtons[i].GetComponentInChildren<TMPro.TextMeshProUGUI>().color = active
-                    ? Color.white
-                    : new Color(0.62f, 0.62f, 0.62f, 1f);
             }
 
             ConfigureOptionNavigation();
@@ -513,6 +539,98 @@ namespace Game.Presentation.UI.Pause
         private InputAction GetUiMoveAction()
         {
             return _uiInputModule != null ? _uiInputModule.move?.action : null;
+        }
+
+        private void UpdateInputMode()
+        {
+            if (_keyConfigPanel.IsRebinding || _audioPanel.IsEditing)
+            {
+                return;
+            }
+
+            bool mouseMoved = Mouse.current != null && Mouse.current.delta.ReadValue().sqrMagnitude > 0f;
+            bool navigationOperated = WasNavigationDeviceOperated();
+
+            if (navigationOperated)
+            {
+                SetInputMode(PauseInputMode.Navigation);
+            }
+            else if (mouseMoved)
+            {
+                SetInputMode(PauseInputMode.Mouse);
+            }
+        }
+
+        private bool WasNavigationDeviceOperated()
+        {
+            InputAction moveAction = GetUiMoveAction();
+            if ((moveAction != null && moveAction.WasPerformedThisFrame()) ||
+                (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame))
+            {
+                return true;
+            }
+
+            Gamepad gamepad = Gamepad.current;
+            if (gamepad == null)
+            {
+                return false;
+            }
+
+            if (gamepad.leftStick.ReadValue().sqrMagnitude > 0.25f ||
+                gamepad.rightStick.ReadValue().sqrMagnitude > 0.25f)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < gamepad.allControls.Count; i++)
+            {
+                if (gamepad.allControls[i] is ButtonControl button && button.wasPressedThisFrame)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void SetInputMode(PauseInputMode inputMode)
+        {
+            if (_inputMode == inputMode)
+            {
+                return;
+            }
+
+            _inputMode = inputMode;
+            bool mouseMode = inputMode == PauseInputMode.Mouse;
+            PauseSelectionOutline.SetPointerMode(mouseMode);
+
+            if (mouseMode)
+            {
+                _resetNavigationSelectionInLateUpdate = false;
+                ClearSelection();
+                return;
+            }
+
+            Select(GetInputModeInitialSelectable());
+            _resetNavigationSelectionInLateUpdate = true;
+        }
+
+        private void ResetInputMode()
+        {
+            _inputMode = PauseInputMode.Navigation;
+            _resetNavigationSelectionInLateUpdate = false;
+            PauseSelectionOutline.SetPointerMode(false);
+        }
+
+        private Selectable GetInputModeInitialSelectable()
+        {
+            if (!_isShowingOption)
+            {
+                return _continueButton;
+            }
+
+            int tabIndex = Mathf.Clamp((int)_currentOptionTab, 0, _tabButtons.Length - 1);
+            return _tabButtons.Length > 0 ? _tabButtons[tabIndex] : _backButton;
         }
 
         private void CaptureCursorState()
