@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Sprites;
 using UnityEngine.UI;
 
 namespace Game.Presentation.UI.Pause
@@ -23,8 +24,12 @@ namespace Game.Presentation.UI.Pause
         private Graphic[] _visualGraphics;
         private Color[] _visualBaseColors;
         private Selectable _selectable;
+        private Image _sourceImage;
+        private Image _outlineImage;
+        private RectTransform _outlineRectTransform;
+        private Canvas _canvas;
         private Material _runtimeImageOutlineMaterial;
-        private Material _originalGraphicMaterial;
+        private readonly Vector3[] _worldCorners = new Vector3[4];
         private Vector3 _baseScale;
         private Color _lastOutlineColor;
         private float _lastOutlineSize;
@@ -68,9 +73,19 @@ namespace Game.Presentation.UI.Pause
             base.OnDestroy();
         }
 
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+            _outlineSize = Mathf.Max(0f, _outlineSize);
+            UpdateImageOutlineMaterial();
+            graphic?.SetVerticesDirty();
+            graphic?.SetMaterialDirty();
+        }
+
         private void Update()
         {
             InitializeVisuals();
+            SyncImageOutlineGraphic();
             RefreshHighlightedState();
             ApplyVisualState();
             RefreshOutlineIfNeeded();
@@ -160,7 +175,7 @@ namespace Game.Presentation.UI.Pause
 
         public override void ModifyMesh(VertexHelper vertexHelper)
         {
-            if (_imageOutlineMaterial != null || !IsActive() || !_highlighted || graphic == null)
+            if (_outlineImage != null || !IsActive() || !_highlighted || graphic == null)
             {
                 return;
             }
@@ -290,19 +305,97 @@ namespace Game.Presentation.UI.Pause
 
         private void InitializeImageOutlineMaterial()
         {
-            if (_imageOutlineMaterial == null || graphic == null || _runtimeImageOutlineMaterial != null)
+            if (_imageOutlineMaterial == null || graphic is not Image sourceImage || _runtimeImageOutlineMaterial != null)
             {
                 return;
             }
 
-            _originalGraphicMaterial = graphic.material;
+            _sourceImage = sourceImage;
+            _canvas = sourceImage.canvas;
             _runtimeImageOutlineMaterial = new Material(_imageOutlineMaterial)
             {
                 name = $"{_imageOutlineMaterial.name} ({name})",
                 hideFlags = HideFlags.HideAndDontSave
             };
-            graphic.material = _runtimeImageOutlineMaterial;
+
+            GameObject outlineObject = new("SelectionOutline", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            outlineObject.layer = gameObject.layer;
+            outlineObject.transform.SetParent(transform, false);
+            outlineObject.transform.SetAsFirstSibling();
+
+            _outlineRectTransform = (RectTransform)outlineObject.transform;
+            _outlineRectTransform.anchorMin = Vector2.zero;
+            _outlineRectTransform.anchorMax = Vector2.one;
+            _outlineRectTransform.pivot = sourceImage.rectTransform.pivot;
+            _outlineRectTransform.localScale = Vector3.one;
+
+            _outlineImage = outlineObject.GetComponent<Image>();
+            _outlineImage.raycastTarget = false;
+            _outlineImage.maskable = sourceImage.maskable;
+            _outlineImage.useSpriteMesh = false;
+            _outlineImage.color = Color.white;
+            _outlineImage.material = _runtimeImageOutlineMaterial;
+            SyncImageOutlineGraphic();
             UpdateImageOutlineMaterial();
+        }
+
+        private void SyncImageOutlineGraphic()
+        {
+            if (_sourceImage == null || _outlineImage == null || _outlineRectTransform == null)
+            {
+                return;
+            }
+
+            Sprite sprite = _sourceImage.overrideSprite;
+            _outlineImage.enabled = _sourceImage.enabled && sprite != null;
+            if (sprite == null)
+            {
+                return;
+            }
+
+            if (_outlineImage.sprite != sprite)
+            {
+                _outlineImage.sprite = sprite;
+            }
+
+            _outlineImage.type = Image.Type.Simple;
+            _outlineImage.preserveAspect = false;
+
+            Vector2 padding = CalculateLocalOutlinePadding();
+            _outlineRectTransform.offsetMin = new Vector2(-padding.x, -padding.y);
+            _outlineRectTransform.offsetMax = new Vector2(padding.x, padding.y);
+
+            Rect sourceRect = _sourceImage.rectTransform.rect;
+            Vector4 spriteUV = DataUtility.GetOuterUV(sprite);
+            _runtimeImageOutlineMaterial.SetVector("_SpriteUVRect", spriteUV);
+            _runtimeImageOutlineMaterial.SetVector("_OriginalSize", new Vector4(sourceRect.width, sourceRect.height, 0f, 0f));
+            _runtimeImageOutlineMaterial.SetVector("_OutlinePadding", new Vector4(padding.x, padding.y, 0f, 0f));
+        }
+
+        private Vector2 CalculateLocalOutlinePadding()
+        {
+            float screenPadding = Mathf.Max(0f, _outlineSize) + 1f;
+            RectTransform sourceRectTransform = _sourceImage.rectTransform;
+            Rect sourceRect = sourceRectTransform.rect;
+            sourceRectTransform.GetWorldCorners(_worldCorners);
+
+            Camera canvasCamera = _canvas != null && _canvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? _canvas.worldCamera
+                : null;
+            Vector2 bottomLeft = RectTransformUtility.WorldToScreenPoint(canvasCamera, _worldCorners[0]);
+            Vector2 topLeft = RectTransformUtility.WorldToScreenPoint(canvasCamera, _worldCorners[1]);
+            Vector2 bottomRight = RectTransformUtility.WorldToScreenPoint(canvasCamera, _worldCorners[3]);
+
+            float pixelsPerLocalX = sourceRect.width > 0f
+                ? Vector2.Distance(bottomLeft, bottomRight) / sourceRect.width
+                : 1f;
+            float pixelsPerLocalY = sourceRect.height > 0f
+                ? Vector2.Distance(bottomLeft, topLeft) / sourceRect.height
+                : 1f;
+
+            return new Vector2(
+                screenPadding / Mathf.Max(pixelsPerLocalX, 0.0001f),
+                screenPadding / Mathf.Max(pixelsPerLocalY, 0.0001f));
         }
 
         private void UpdateImageOutlineMaterial()
@@ -315,6 +408,8 @@ namespace Game.Presentation.UI.Pause
             _runtimeImageOutlineMaterial.SetColor("_OutlineColor", _outlineColor);
             _runtimeImageOutlineMaterial.SetFloat("_OutlineSize", Mathf.Max(0f, _outlineSize));
             _runtimeImageOutlineMaterial.SetFloat("_OutlineEnabled", _highlighted ? 1f : 0f);
+            SyncImageOutlineGraphic();
+            _outlineImage?.SetMaterialDirty();
         }
 
         private void ReleaseImageOutlineMaterial()
@@ -324,9 +419,9 @@ namespace Game.Presentation.UI.Pause
                 return;
             }
 
-            if (graphic != null && graphic.material == _runtimeImageOutlineMaterial)
+            if (_outlineImage != null)
             {
-                graphic.material = _originalGraphicMaterial;
+                _outlineImage.material = null;
             }
 
             if (Application.isPlaying)
@@ -339,6 +434,22 @@ namespace Game.Presentation.UI.Pause
             }
 
             _runtimeImageOutlineMaterial = null;
+
+            if (_outlineImage != null)
+            {
+                if (Application.isPlaying)
+                {
+                    Destroy(_outlineImage.gameObject);
+                }
+                else
+                {
+                    DestroyImmediate(_outlineImage.gameObject);
+                }
+            }
+
+            _outlineImage = null;
+            _outlineRectTransform = null;
+            _sourceImage = null;
         }
 
         private static void AddQuad(VertexHelper vertexHelper, Vector2 min, Vector2 max, Color color)

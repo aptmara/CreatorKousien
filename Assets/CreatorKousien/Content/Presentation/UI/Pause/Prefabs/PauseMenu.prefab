@@ -294,6 +294,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &160939240378280504
 GameObject:
   m_ObjectHideFlags: 0
@@ -437,6 +438,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &177248023893571288
 GameObject:
   m_ObjectHideFlags: 0
@@ -580,6 +582,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &284794341766146670
 GameObject:
   m_ObjectHideFlags: 0
@@ -723,6 +726,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &328153372755632634
 GameObject:
   m_ObjectHideFlags: 0
@@ -866,6 +870,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &395266399814408073
 GameObject:
   m_ObjectHideFlags: 0
@@ -1146,6 +1151,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &450756878804456726
 GameObject:
   m_ObjectHideFlags: 0
@@ -1425,6 +1431,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &498094871186117397
 GameObject:
   m_ObjectHideFlags: 0
@@ -1992,6 +1999,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &879965735705960231
 GameObject:
   m_ObjectHideFlags: 0
@@ -2285,6 +2293,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &961540268598570605
 GameObject:
   m_ObjectHideFlags: 0
@@ -3400,6 +3409,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &1900478536298179376
 GameObject:
   m_ObjectHideFlags: 0
@@ -3818,6 +3828,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &1959583423971978268
 GameObject:
   m_ObjectHideFlags: 0
@@ -3961,6 +3972,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &1964047199780792672
 GameObject:
   m_ObjectHideFlags: 0
@@ -4379,6 +4391,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &2037094302882792576
 GameObject:
   m_ObjectHideFlags: 0
@@ -4489,7 +4502,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 7}
   m_SizeDelta: {x: -50, y: -8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5277649651047700296
@@ -4810,6 +4823,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &2292970296981896752
 GameObject:
   m_ObjectHideFlags: 0
@@ -5321,7 +5335,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: 0.5, y: 2.4}
   m_SizeDelta: {x: -49, y: -8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5369177977812402948
@@ -6602,7 +6616,7 @@ RectTransform:
   m_GameObject: {fileID: 3572420630460547704}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.49016, y: 1.49016, z: 1.49016}
+  m_LocalScale: {x: 1.1921281, y: 1.1921281, z: 1.1921281}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8212174340071120019}
@@ -6641,7 +6655,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: fdb55cb8f05895c4aac10eca0a8107ff, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 68595a24313bc5447b8c279521567113, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -6710,9 +6724,9 @@ MonoBehaviour:
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
   _outlineSize: 4
   _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
-  _unselectedScale: 0.8
-  _selectedMinScale: 1
-  _selectedMaxScale: 1.2
+  _unselectedScale: 1
+  _selectedMinScale: 1.2
+  _selectedMaxScale: 1.4
   _animationSpeed: 4
   _animationTarget: {fileID: 4499138225183068781}
   _visualRoot: {fileID: 4499138225183068781}
@@ -7134,6 +7148,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &3808863774911890497
 GameObject:
   m_ObjectHideFlags: 0
@@ -7375,7 +7390,7 @@ RectTransform:
   m_GameObject: {fileID: 4024908662843768582}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.49016, y: 1.49016, z: 1.49016}
+  m_LocalScale: {x: 1.1921281, y: 1.1921281, z: 1.1921281}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4099238084622355500}
@@ -7414,7 +7429,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: fdb55cb8f05895c4aac10eca0a8107ff, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 68595a24313bc5447b8c279521567113, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -7483,9 +7498,9 @@ MonoBehaviour:
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
   _outlineSize: 4
   _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
-  _unselectedScale: 0.8
-  _selectedMinScale: 1
-  _selectedMaxScale: 1.2
+  _unselectedScale: 1
+  _selectedMinScale: 1.2
+  _selectedMaxScale: 1.4
   _animationSpeed: 0
   _animationTarget: {fileID: 7799218085855556777}
   _visualRoot: {fileID: 7799218085855556777}
@@ -7524,7 +7539,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 9.3}
   m_SizeDelta: {x: -50, y: -8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6473624934281203445
@@ -7982,6 +7997,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &4394834453617238132
 GameObject:
   m_ObjectHideFlags: 0
@@ -8262,6 +8278,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &4453100819736821768
 GameObject:
   m_ObjectHideFlags: 0
@@ -9287,6 +9304,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &5436674471134602273
 GameObject:
   m_ObjectHideFlags: 0
@@ -9430,6 +9448,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &5469062153297688090
 GameObject:
   m_ObjectHideFlags: 0
@@ -9648,6 +9667,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &5660493447077255535
 GameObject:
   m_ObjectHideFlags: 0
@@ -10076,6 +10096,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &6136695958258518501
 GameObject:
   m_ObjectHideFlags: 0
@@ -10666,6 +10687,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &6512677799056789218
 GameObject:
   m_ObjectHideFlags: 0
@@ -10847,6 +10869,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &6574316214871778316
 GameObject:
   m_ObjectHideFlags: 0
@@ -10989,6 +11012,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &6590937414139718683
 GameObject:
   m_ObjectHideFlags: 0
@@ -11054,7 +11078,7 @@ RectTransform:
   m_GameObject: {fileID: 6638330484228386288}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.49016, y: 1.49016, z: 1.49016}
+  m_LocalScale: {x: 1.1921281, y: 1.1921281, z: 1.1921281}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3219910053042428415}
@@ -11093,7 +11117,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: fdb55cb8f05895c4aac10eca0a8107ff, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 68595a24313bc5447b8c279521567113, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -11162,9 +11186,9 @@ MonoBehaviour:
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
   _outlineSize: 4
   _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
-  _unselectedScale: 0.8
-  _selectedMinScale: 1
-  _selectedMaxScale: 1.2
+  _unselectedScale: 1
+  _selectedMinScale: 1.2
+  _selectedMaxScale: 1.4
   _animationSpeed: 4
   _animationTarget: {fileID: 126237241023283751}
   _visualRoot: {fileID: 126237241023283751}
@@ -11697,6 +11721,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &6924153682268794930
 GameObject:
   m_ObjectHideFlags: 0
@@ -12342,6 +12367,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &7203679194017493850
 GameObject:
   m_ObjectHideFlags: 0
@@ -12955,6 +12981,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &7894348443098800570
 GameObject:
   m_ObjectHideFlags: 0
@@ -13098,6 +13125,7 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
 --- !u!1 &7901293234951336885
 GameObject:
   m_ObjectHideFlags: 0
@@ -14441,3 +14469,4 @@ MonoBehaviour:
   _animationSpeed: 4
   _animationTarget: {fileID: 0}
   _visualRoot: {fileID: 0}
+  _imageOutlineMaterial: {fileID: 0}
