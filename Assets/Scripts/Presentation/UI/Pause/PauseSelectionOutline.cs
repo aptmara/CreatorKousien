@@ -38,6 +38,10 @@ namespace Game.Presentation.UI.Pause
         private bool _highlighted;
         private bool _initialized;
         private bool _scalingEnabled = true;
+        private bool _useInstancePointerMode;
+        private bool _instancePointerMode;
+        private bool _followExternalScaleWhileNotInteractable;
+        private bool _wasInteractable = true;
 
         protected override void OnEnable()
         {
@@ -94,6 +98,49 @@ namespace Game.Presentation.UI.Pause
         public static void SetPointerMode(bool pointerMode)
         {
             _pointerMode = pointerMode;
+        }
+
+        public void Configure(
+            Color outlineColor,
+            float outlineSize,
+            Color unselectedTint,
+            float unselectedScale,
+            float selectedMinScale,
+            float selectedMaxScale,
+            float animationSpeed,
+            Material imageOutlineMaterial,
+            bool followExternalScaleWhileNotInteractable)
+        {
+            if (_initialized && _animationTarget != null)
+            {
+                _animationTarget.localScale = _baseScale;
+                ApplyTint(Color.white);
+            }
+
+            ReleaseImageOutlineMaterial();
+            _outlineColor = outlineColor;
+            _outlineSize = Mathf.Max(0f, outlineSize);
+            _unselectedTint = unselectedTint;
+            _unselectedScale = Mathf.Max(0f, unselectedScale);
+            _selectedMinScale = Mathf.Max(0f, selectedMinScale);
+            _selectedMaxScale = Mathf.Max(0f, selectedMaxScale);
+            _animationSpeed = Mathf.Max(0f, animationSpeed);
+            _imageOutlineMaterial = imageOutlineMaterial;
+            _followExternalScaleWhileNotInteractable = followExternalScaleWhileNotInteractable;
+            _useInstancePointerMode = true;
+            _initialized = false;
+            InitializeVisuals();
+            ApplyVisualState();
+            CacheOutlineSettings();
+            UpdateImageOutlineMaterial();
+            graphic?.SetVerticesDirty();
+        }
+
+        public void SetInstancePointerMode(bool pointerMode)
+        {
+            _useInstancePointerMode = true;
+            _instancePointerMode = pointerMode;
+            RefreshHighlightedState();
         }
 
         public void OnSelect(BaseEventData eventData)
@@ -155,7 +202,8 @@ namespace Game.Presentation.UI.Pause
 
         private bool ShouldHighlight()
         {
-            return _pointerMode ? _pointerInside : _navigationHighlighted;
+            bool pointerMode = _useInstancePointerMode ? _instancePointerMode : _pointerMode;
+            return pointerMode ? _pointerInside : _navigationHighlighted;
         }
 
         public void SetVisualTargets(RectTransform animationTarget, Transform visualRoot)
@@ -219,6 +267,7 @@ namespace Game.Presentation.UI.Pause
             if (_selectable != null)
             {
                 _selectable.transition = Selectable.Transition.None;
+                _wasInteractable = _selectable.interactable;
             }
 
             InitializeImageOutlineMaterial();
@@ -238,6 +287,23 @@ namespace Game.Presentation.UI.Pause
             if (!_initialized)
             {
                 return;
+            }
+
+            if (_followExternalScaleWhileNotInteractable && _selectable != null)
+            {
+                if (!_selectable.interactable)
+                {
+                    _baseScale = _animationTarget.localScale;
+                    _wasInteractable = false;
+                    ApplyTint(Color.white);
+                    return;
+                }
+
+                if (!_wasInteractable)
+                {
+                    _baseScale = _animationTarget.localScale;
+                    _wasInteractable = true;
+                }
             }
 
             float scale = 1f;
@@ -305,7 +371,18 @@ namespace Game.Presentation.UI.Pause
 
         private void InitializeImageOutlineMaterial()
         {
-            if (_imageOutlineMaterial == null || graphic is not Image sourceImage || _runtimeImageOutlineMaterial != null)
+            if (_imageOutlineMaterial == null || _runtimeImageOutlineMaterial != null)
+            {
+                return;
+            }
+
+            Image sourceImage = _selectable != null ? _selectable.targetGraphic as Image : null;
+            if (sourceImage == null)
+            {
+                sourceImage = graphic as Image;
+            }
+
+            if (sourceImage == null)
             {
                 return;
             }
@@ -319,8 +396,9 @@ namespace Game.Presentation.UI.Pause
             };
 
             GameObject outlineObject = new("SelectionOutline", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            outlineObject.hideFlags = HideFlags.HideAndDontSave;
             outlineObject.layer = gameObject.layer;
-            outlineObject.transform.SetParent(transform, false);
+            outlineObject.transform.SetParent(sourceImage.transform, false);
             outlineObject.transform.SetAsFirstSibling();
 
             _outlineRectTransform = (RectTransform)outlineObject.transform;

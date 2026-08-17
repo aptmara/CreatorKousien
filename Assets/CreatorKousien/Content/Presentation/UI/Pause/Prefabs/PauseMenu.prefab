@@ -6722,10 +6722,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  _outlineSize: 4
+  _outlineSize: 12
   _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
   _unselectedScale: 1
-  _selectedMinScale: 1.2
+  _selectedMinScale: 1
   _selectedMaxScale: 1.4
   _animationSpeed: 4
   _animationTarget: {fileID: 4499138225183068781}
@@ -7496,12 +7496,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  _outlineSize: 4
+  _outlineSize: 12
   _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
   _unselectedScale: 1
-  _selectedMinScale: 1.2
+  _selectedMinScale: 1
   _selectedMaxScale: 1.4
-  _animationSpeed: 0
+  _animationSpeed: 4
   _animationTarget: {fileID: 7799218085855556777}
   _visualRoot: {fileID: 7799218085855556777}
   _imageOutlineMaterial: {fileID: 2100000, guid: 8b449c5fadba4283b8d3c7cd647db92a, type: 2}
@@ -11184,10 +11184,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  _outlineSize: 4
+  _outlineSize: 12
   _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
   _unselectedScale: 1
-  _selectedMinScale: 1.2
+  _selectedMinScale: 1
   _selectedMaxScale: 1.4
   _animationSpeed: 4
   _animationTarget: {fileID: 126237241023283751}

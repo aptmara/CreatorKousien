@@ -1346,6 +1346,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1443861037}
   - component: {fileID: 1443861036}
+  - component: {fileID: 1443861038}
   m_Layer: 0
   m_Name: SelectController
   m_TagString: Untagged
@@ -1369,6 +1370,33 @@ MonoBehaviour:
   _loadingSceneName: Loading
   _backButton: {fileID: 0}
   _stageButton: {fileID: 0}
+--- !u!114 &1443861038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1443861035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b82f16cc2b14e58af79359fa7e9fb62, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Common.MenuSelectionFeedbackController
+  _initialSelection: {fileID: 621927837}
+  _selectables:
+  - {fileID: 621927837}
+  - {fileID: 26571403}
+  - {fileID: 849415158}
+  _selectOnEnable: 1
+  _initializeOnFirstSelection: 0
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _imageOutlineMaterial: {fileID: 2100000, guid: 8b449c5fadba4283b8d3c7cd647db92a, type: 2}
+  _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
 --- !u!4 &1443861037
 Transform:
   m_ObjectHideFlags: 0

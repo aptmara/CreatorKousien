@@ -7,6 +7,7 @@
 // ================================================================================
 
 using Game.Presentation.UI.Pause;
+using Game.Presentation.UI.Common;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -28,15 +29,43 @@ namespace Game.Presentation.UI.Title
         [SerializeField] private PauseMenuController _optionMenuPrefab;
 
         private PauseMenuController _optionMenuInstance;
+        private MenuSelectionFeedbackController _selectionFeedback;
+        private TitleSignboardAnimator _signboardAnimator;
 
         [Header("--- 遷移先のシーン ---")]
         [SerializeField] private string _selectSceneName = "StageSelect";
+
+        private void Awake()
+        {
+            _selectionFeedback = GetComponent<MenuSelectionFeedbackController>();
+            _signboardAnimator = GetComponent<TitleSignboardAnimator>();
+        }
 
         public void OnEnable()
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             EventSystem.current.SetSelectedGameObject(_startButton.gameObject);
+        }
+
+        private void Update()
+        {
+            if (_selectionFeedback != null)
+            {
+                if (!_selectionFeedback.enabled)
+                {
+                    bool signboardAnimationPlaying = _signboardAnimator != null && _signboardAnimator.IsPlaying;
+                    if (signboardAnimationPlaying)
+                    {
+                        return;
+                    }
+
+                    _selectionFeedback.enabled = true;
+                }
+
+                bool optionMenuOpen = _optionMenuInstance != null && _optionMenuInstance.IsShowingTitleOptions;
+                _selectionFeedback.SetInputEnabled(!optionMenuOpen);
+            }
         }
 
         /// <summary>
@@ -72,6 +101,7 @@ namespace Game.Presentation.UI.Title
             }
 
             _optionMenuInstance.OpenTitleOptions(_optionButton);
+            _selectionFeedback?.SetInputEnabled(false);
         }
 
         /// <summary>
