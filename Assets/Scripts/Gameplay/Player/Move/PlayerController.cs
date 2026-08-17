@@ -178,6 +178,36 @@ namespace Game.Gameplay.Player
 
 
         /// <summary>
+        /// プレイヤーの物理演算の凍結を解除する関数
+        /// </summary>
+        public void UnfreezePhysics()
+        {
+            _motor.UnfreezePhysics();
+            _canMove = true;
+        }
+
+
+        /// <summary>
+        /// 指定した位置へワープさせ、向きをフィールドの傾きに合わせ直す関数
+        /// </summary>
+        /// <param name="position">移動先のワールド座標</param>
+        /// <param name="yaw">フィールド基準の向き(度)</param>
+        public void WarpTo(Vector3 position, float yaw)
+        {
+            _motor.WarpTo(position, yaw);
+        }
+
+
+        /// <summary>
+        ///  クリア演出で変更したアタッチメントの状態を、通常のプレイ状態へ戻す関数
+        /// </summary>
+        public void RestoreAttachmentFromClear()
+        {
+            _attachmentController?.RestoreFromClear();
+        }
+
+
+        /// <summary>
         /// カーソルのロック状態を設定する関数
         /// </summary>
         /// <param name="enable"></param>

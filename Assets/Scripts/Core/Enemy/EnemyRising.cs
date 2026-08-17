@@ -10,6 +10,7 @@ using System.Collections;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Xml.Serialization;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Game.Core.Enemy
@@ -47,6 +48,9 @@ namespace Game.Core.Enemy
 
         // 上昇にかかる時間
         private float _riseDuration = 1.5f;
+        // 一回の横移動カーブ完了にかかる時間
+        private float _lateralDuration = 1.5f;
+
         // 落下にかかる時間
         private float _dropDuration = 5.0f;
         // ずり落ちにかかる時間(調整中)
@@ -56,6 +60,8 @@ namespace Game.Core.Enemy
 
         // 上昇の際の動き
         private AnimationCurve _riseCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        // 横移動の動き
+        private AnimationCurve _lateralCurve = AnimationCurve.Linear(0,0,0,0);
         // 落下の際の動き
         private AnimationCurve _dropCurve = AnimationCurve.Linear(0, 0, 1, 1);
         // ずり落ちの際の動き
@@ -74,6 +80,8 @@ namespace Game.Core.Enemy
 
         // 進行時間
         float _elapsedTime = 0.0f;
+        // 横移動独自の時間
+        float _lateralTime = 0.0f;
         // 落下進行時間
         float _dropElapsedTime = 0.0f;
         // バリア破壊ずり落ち時間
@@ -92,8 +100,8 @@ namespace Game.Core.Enemy
         /// 初期化。インスタンス生成後に必ず呼ぶ。
         /// </summary>
         /// <param name="riseDuration">敵が上るのにかかる秒数</param>
-        public void Initialize(float riseDuration, float dropDuration, float breakDuration, float damageDuration,
-                               AnimationCurve riseCurve, AnimationCurve dropCurve, AnimationCurve breakCurve, AnimationCurve damageCurve,
+        public void Initialize(float riseDuration,float lateralDuration, float dropDuration, float breakDuration, float damageDuration,
+                               AnimationCurve riseCurve, AnimationCurve lateralCurve,AnimationCurve dropCurve, AnimationCurve breakCurve, AnimationCurve damageCurve,
                                float breakDropDistance, float damageDropDistance)
         {
             if (_riseCoroutine != null) StopCoroutine(_riseCoroutine);
@@ -104,11 +112,13 @@ namespace Game.Core.Enemy
             _breakDropCoroutine = null;
             // 値の設定
             _riseDuration = riseDuration;
+            _lateralDuration = lateralDuration;
             _dropDuration = dropDuration;
             _breakDropDuration = breakDuration;
             _damageDropDuration = damageDuration;
 
             _riseCurve = riseCurve;
+            _lateralCurve = lateralCurve;
             _dropCurve = dropCurve;
             _breakDropCurve = breakCurve;
             _damageDropCurve = damageCurve;
@@ -154,11 +164,24 @@ namespace Game.Core.Enemy
                 float curveT = _riseCurve.Evaluate(t);
                 curveT = Mathf.Clamp(curveT, 0.0f, 1.0f);
                 //-イージングにより位置の更新
-                enemyTransform.position = Vector3.Lerp(_startPosition, _targetPosition, curveT);
+                Vector3 newPosition = Vector3.Lerp(_startPosition, _targetPosition, curveT);
+                // 横移動の反映
+                if(_lateralCurve.length > 0)
+                {
+                    _lateralTime += Time.deltaTime / _lateralDuration;
+                    float lT = Mathf.Repeat(_lateralTime, 1.0f);
+                    float curveL = _lateralCurve.Evaluate(lT);
+                    newPosition.x += curveL;
+                }
+
+                enemyTransform.position = newPosition;
                 yield return null;
             }
             //-イージング処理完了後目標地点に位置を補正
-            enemyTransform.position = _targetPosition;
+            Vector3 newtargetPos = _targetPosition;
+            float targetOffset = _lateralCurve.Evaluate(Mathf.Repeat(_lateralTime, 1.0f));
+            newtargetPos.x += targetOffset;
+            enemyTransform.position = newtargetPos;
             // コールバックを発行
             OnEnemyReachedGoal?.Invoke();
         }
@@ -268,7 +291,11 @@ namespace Game.Core.Enemy
                 float curveT = _dropCurve.Evaluate(_dropElapsedTime);
                 curveT = Mathf.Clamp(curveT, 0.0f, 1.0f);
                 // 値が1から0に落ちるカーブを使用するため、ターゲットからスタートに向けてLeapする
-                enemyTransform.position = Vector3.Lerp(_startPosition, _targetPosition, curveT);
+                Vector3 newPos = Vector3.Lerp(_startPosition, _targetPosition, curveT);
+                float lT = Mathf.Repeat(_lateralTime, 1.0f);
+                float curveL = _lateralCurve.Evaluate(lT);
+                newPos.x += curveL;
+                enemyTransform.position = newPos;
                 yield return null;
             }
 
@@ -295,7 +322,11 @@ namespace Game.Core.Enemy
                 // 値が1から0に落ちるカーブを使用するため、ターゲットからスタートに向けてLeapする
                 curveT = Mathf.Lerp(_damageDropTarget, _damageDropStart, curveT);
                 //-イージングにより位置の更新
-                enemyTransform.position = Vector3.Lerp(_startPosition, _targetPosition, curveT);
+                Vector3 newPos = Vector3.Lerp(_startPosition, _targetPosition, curveT);
+                float lT = Mathf.Repeat(_lateralTime, 1.0f);
+                float curveL = _lateralCurve.Evaluate(lT);
+                newPos.x += curveL;
+                enemyTransform.position = newPos;
                 yield return null;
             }
 
@@ -328,7 +359,11 @@ namespace Game.Core.Enemy
                 // 値が1から0に落ちるカーブを使用するため、ターゲットからスタートに向けてLeapする
                 curveT = Mathf.Lerp(_breakDropTarget, _breakDropStart, curveT);
                 //-イージングにより位置の更新
-                enemyTransform.position = Vector3.Lerp(_startPosition, _targetPosition, curveT);
+                Vector3 newPos = Vector3.Lerp(_startPosition, _targetPosition, curveT);
+                float lT = Mathf.Repeat(_lateralTime, 1.0f);
+                float curveL = _lateralCurve.Evaluate(lT);
+                newPos.x += curveL;
+                enemyTransform.position = newPos;
                 yield return null;
             }
 

@@ -38,6 +38,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/CreatorKousien/Scenes/Application/StageSelect.unity
     guid: 4114721a140742d42ad4265878ac8b20
+  - enabled: 1
+    path: Assets/CreatorKousien/Scenes/Gameplay/Stage_2.unity
+    guid: b4b45d93b5a34be4088fa428b8fd39b1
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: c80c27e0757b4d648aeff4d7ad7dcd0a, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

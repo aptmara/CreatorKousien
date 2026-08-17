@@ -462,5 +462,39 @@ namespace Game.Gameplay.Player
             animator.Play("Clear", 0, 0f);
             animator.Update(0f);
         }
+
+
+        public void RestoreFromClear()
+        {
+            // 再生途中のクリア演出コルーチンを止める
+            if (_clearRoutine != null)
+            {
+                StopCoroutine(_clearRoutine);
+                _clearRoutine = null;
+            }
+
+            // クリア演出中フラグを下ろす
+            if (_clearAttachmentInstance != null)
+            {
+                Destroy(_clearAttachmentInstance);
+                _clearAttachmentInstance = null;
+            }
+
+            // 通常の腕は状態が崩れているので、作り直す
+            if (_currentAttachment != null)
+            {
+                Destroy(_currentAttachment.gameObject);
+                _currentAttachment = null;
+            }
+
+            _isClearPlaying = false;
+            _isShrunkInternal = false;
+            _forceLargeByPunch = false;
+            _forceLargeUntil = 0f;
+            _nextToggleTime = 0f;
+            _expandStartTime = 0f;
+
+            SpawnAttachment();
+        }
     }
 }

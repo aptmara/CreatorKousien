@@ -8,6 +8,7 @@
 //
 // Notes    :
 // - 5/6: Bootから設計通りのAdditiveシーンを読み込む統合用Bootstrapを追加
+// - 8/14: Stage2対応 - 浅野
 // ------------------------------------------------------------
 using System.Collections;
 using Game.Core.Management;
@@ -30,7 +31,7 @@ namespace Game.Infrastructure.Bootstrap
         [Tooltip("統合の器になるGameplayShellシーン名")]
         [SerializeField] private string _gameplayShellScene = "GameplayShell";
 
-        [Tooltip("統合ステージシーン名")]
+        [Tooltip("StageDataSOからScene名を取得できなかったときに読み込むStageシーン名(フォールバック)")]
         [SerializeField] private string _stageScene = "Stage_Prototype_01";
 
         [Tooltip("HUDシーン名")]
@@ -55,6 +56,7 @@ namespace Game.Infrastructure.Bootstrap
 
         private bool _isBootstrapped;
         private PlayerFacade _preparedPlayer;
+        private string _resolvedStageScene;         // 実際に読み込んだStageシーンの名前
 
         public bool IsPrepared { get; private set; }
         public bool PreparationFailed { get; private set; }
@@ -70,8 +72,19 @@ namespace Game.Infrastructure.Bootstrap
 
         /// <summary>
         /// シーン読み込み、参照接続、初期スポーンを順番に実行する。
+        /// StageDataSOが渡されない場合は、StageSceneContextの設定をそのまま使う。
         /// </summary>
         public IEnumerator PrepareGameRoutine()
+        {
+            yield return PrepareGameRoutine(null);
+        }
+
+
+        /// <summary>
+        /// シーン読み込み、参照接続、初期スポーンを順番に実行する。
+        /// </summary>
+        /// <param name="stageData">StageDataSOの参照。nullの場合はStageSceneContextの設定をそのまま使う。</param>
+        public IEnumerator PrepareGameRoutine(StageDataSO stageData)
         {
             if (_isBootstrapped)
             {
@@ -81,13 +94,32 @@ namespace Game.Infrastructure.Bootstrap
             _isBootstrapped = true;
             RoguelikeUpgradeRuntime.Reset();
 
+            // StageSceneCotextからStageシーンを取得
+            StageSceneContext stageContext = Object.FindFirstObjectByType<StageSceneContext>();
+
+            if (stageContext == null)
+            {
+                Debug.LogError("[PrototypeSceneFlowController] StageSceneContextが見つかりません。");
+                PreparationFailed = true;
+                yield break;
+            }
+
+            // StageSelectから渡されたStageDataSOがあれば、そちらを優先する
+            if (stageData != null)
+            {
+                stageContext.RegisterStageData(stageData);
+            }
+
+            // どのStageを読み込むかStageDataSOから決める
+            _resolvedStageScene = ResolveStageSceneName(stageContext.StageData);
+
             yield return LoadSceneIfNeeded(_gameplayShellScene);
-            yield return LoadSceneIfNeeded(_stageScene);
+            yield return LoadSceneIfNeeded(_resolvedStageScene);
             yield return LoadSceneIfNeeded(_uiScene);
             yield return LoadSceneIfNeeded(_debugScene);
 
             if (!IsSceneLoaded(_gameplayShellScene) ||
-                !IsSceneLoaded(_stageScene) ||
+                !IsSceneLoaded(_resolvedStageScene) ||
                 !IsSceneLoaded(_uiScene) ||
                 !IsSceneLoaded(_debugScene))
             {
@@ -117,15 +149,6 @@ namespace Game.Infrastructure.Bootstrap
 
             yield return WaitForRuntimeInitialization();
 
-            StageSceneContext stageContext = Object.FindFirstObjectByType<StageSceneContext>();
-            if (stageContext == null)
-            {
-                Debug.LogError("[PrototypeSceneFlowController] StageSceneContextが見つかりません。");
-                PreparationFailed = true;
-                yield break;
-            }
-            stageContext.RegisterStageData(stageContext.StageData);
-
             GameProgressionManager progression = Object.FindFirstObjectByType<GameProgressionManager>();
             if (progression == null)
             {
@@ -143,6 +166,24 @@ namespace Game.Infrastructure.Bootstrap
 
             IsPrepared = true;
         }
+
+
+        /// <summary>
+        /// StageDataSOからStageSceneNameを取得する。nullや空文字の場合はフォールバックのStageシーン名を返す。
+        /// </summary>
+        /// <param name="stageData"></param>
+        /// <returns>StageSceneの名前</returns>
+        private string ResolveStageSceneName(StageDataSO stageData)
+        {
+            if (stageData != null && !string.IsNullOrWhiteSpace(stageData.StageSceneName))
+            {
+                return stageData.StageSceneName;
+            }
+
+            Debug.LogWarning("[PrototypeSceneFlowController] StageDataSOからStageSceneNameを取得できませんでした。フォールバックのStageシーンを使用します。");
+            return _stageScene;
+        }
+
 
         /// <summary>
         /// 未ロードのシーンだけAdditiveロードする。

@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d9e8f28dc60aba48847e6f259811f22, type: 3}
+  m_Name: Stage_2
+  m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.StageDataSO
+  requiredWaveCount: 7
+  stageName: Stage_2
+  plannerMemo: "2026/08/13 - \u4EEE\u3067SO\u4F5C\u308A\u307E\u3057\u305F\uFF01Asano"
+  earlyWavePool:
+    selectionCount: 3
+    allowDuplicateSelection: 0
+    candidates:
+    - isEnabled: 1
+      waveData: {fileID: 11400000, guid: 148348ed5000b0841882e2517af60d5a, type: 2}
+      weight: 3
+    - isEnabled: 1
+      waveData: {fileID: 11400000, guid: 8e3a295bf6045e84b89b36d5913dff2d, type: 2}
+      weight: 2
+    - isEnabled: 1
+      waveData: {fileID: 11400000, guid: dc9cab9867d86df43a28fc0981843fb7, type: 2}
+      weight: 1
+  middleWavePool:
+    selectionCount: 2
+    allowDuplicateSelection: 0
+    candidates:
+    - isEnabled: 1
+      waveData: {fileID: 11400000, guid: 4ff6717b57df9fd4ca01931405487085, type: 2}
+      weight: 3
+    - isEnabled: 1
+      waveData: {fileID: 11400000, guid: ca4c88f0d9adc6242b67e281585adbd8, type: 2}
+      weight: 2
+  lateWavePool:
+    selectionCount: 1
+    allowDuplicateSelection: 0
+    candidates:
+    - isEnabled: 1
+      waveData: {fileID: 11400000, guid: c476aaacfdd56de4185d6fdfcd616183, type: 2}
+      weight: 3
+  bossWave: {fileID: 11400000, guid: 13bfd27def824fc468a8ad95ae4add70, type: 2}
+  stageSceneName: Stage_2
+  nextStage: {fileID: 0}
+  clearHealRatio: 0.5

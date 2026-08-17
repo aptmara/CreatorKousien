@@ -16,13 +16,19 @@ namespace Game.Core.Management
         public bool IsGameClear { get; }
         public int LastClearedWaveIndex { get; }
         public float RemainingDefenseLineHp { get; }
-        // 将来的に ScoreManager とか作った時にここに Score, Kills を足す
 
-        public GameResultSummary(bool isGameClear, int lastClearedWaveIndex, float remainingDefenseLineHp)
+        /// <summary>
+        /// 次のStageが存在するかどうか
+        /// リザルト画面の「つぎへ」ボタンの表示切替に使用する
+        /// </summary>
+        public bool HasNextStage { get; }
+
+        public GameResultSummary(bool isGameClear, int lastClearedWaveIndex, float remainingDefenseLineHp, bool hasNextStage = false)
         {
             IsGameClear = isGameClear;
             LastClearedWaveIndex = lastClearedWaveIndex;
             RemainingDefenseLineHp = remainingDefenseLineHp;
+            HasNextStage = hasNextStage;
         }
     }
 }

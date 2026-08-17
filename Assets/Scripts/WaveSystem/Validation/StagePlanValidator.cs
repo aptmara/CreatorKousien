@@ -11,6 +11,7 @@
 // - Errorが0件であれば、Stageの全Waveが最後まで実行できます！
 // ------------------------------------------------------------
 using System.Collections.Generic;
+using UnityEngine.Rendering;
 
 namespace Game.WaveSystem
 {
@@ -28,6 +29,11 @@ namespace Game.WaveSystem
         /// 同じWaveを何度も報告しないための記録
         /// </summary>
         private static readonly HashSet<WaveDataSO> checkedWaves = new();
+
+        /// <summary>
+        /// Next Stageの循環を調べるときに使う記録
+        /// </summary>
+        private static readonly HashSet<StageDataSO> visitedStages = new();
 
         /// <summary>
         /// StageDataSOを検証し、結果をresultsに追加する
@@ -53,6 +59,7 @@ namespace Game.WaveSystem
 
             ValidateBossWave(stageData, results);
             ValidateWaveCount(stageData, results);
+            ValidateProgression(stageData, results);
 
             ValidatePool(stageData.EarlyWavePool, "序盤WavePool", "earlyWavePool", results);
             ValidatePool(stageData.MiddleWavePool, "中盤WavePool", "middleWavePool", results);
@@ -95,6 +102,50 @@ namespace Game.WaveSystem
             string diffText = diff > 0 ? $"多すぎます(+{diff})" : $"少なすぎます({diff})";
 
             results.Add(ValidationIssue.Error($"合計Wave数が設定値と一致していません({diffText})。序盤: {early} + 中盤: {middle} + 終盤: {late} + Boss: {boss} = 合計: {total} / 設定値: {required}。各PoolのSelection Countを調整するか、Required Wave Countを変更してください。", "requiredWaveCount", stageData));
+        }
+
+
+        /// <summary>
+        /// Stage進行の設定を検討する
+        /// </summary>
+        /// <param name="stageData">検証するStageDataSO</param>
+        /// <param name="results">検証結果の格納先</param>
+        private static void ValidateProgression(StageDataSO stageData, List<ValidationIssue> results)
+        {
+            // Sceneの名前が空だと、このStageを読み込まない
+            if (string.IsNullOrWhiteSpace(stageData.StageSceneName))
+            {
+                results.Add(ValidationIssue.Error("StageSceneNameが空です。Stageを読み込めません。", "stageSceneName", stageData));
+            }
+
+            // 自分自身を指していると、同じStageを無限に繰り返してしまう
+            if (stageData.NextStage == stageData)
+            {
+                results.Add(ValidationIssue.Error("NextStageが自分自身を指しています。無限ループします。", "nextStage", stageData));
+                return;
+            }
+
+            if (stageData.NextStage == null)
+            {
+                results.Add(ValidationIssue.Warning("NextStageが設定されていません。Stageをクリアしても次のStageに進めません。", "nextStage", stageData));
+                return;
+            }
+
+            // NextStageを辿っていき、一度通ったStageに戻ってこないか調べる
+            visitedStages.Clear();
+            visitedStages.Add(stageData);
+
+            StageDataSO current = stageData.NextStage;
+
+            while (current != null)
+            {
+                if (!visitedStages.Add(current))
+                {
+                    results.Add(ValidationIssue.Error($"NextStageの設定が循環しています。Stage '{current.StageName}' に戻っててるぞ！。これガチ無限。", "nextStage", stageData));
+                    return;
+                }
+                current = current.NextStage;
+            }
         }
 
 
