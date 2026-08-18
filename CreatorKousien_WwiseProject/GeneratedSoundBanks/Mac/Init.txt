@@ -1,4 +1,11 @@
+Game Parameter	ID	Name			Wwise Object Path	Notes
+	2918011349	MasterVolume			\Default Work Unit\MasterVolume	
+	3043206523	BGMVolume			\Default Work Unit\BGMVolume	
+	3362400191	SEVolume			\Default Work Unit\SEVolume	
+
 Audio Bus	ID	Name			Wwise Object Path	Notes
+	412724365	BGM			\Default Work Unit\Main Audio Bus\BGM	
+	1584861537	SE			\Default Work Unit\Main Audio Bus\SE	
 	2246998526	Main Audio Bus			\Default Work Unit\Main Audio Bus	
 
 Audio Devices	ID	Name	Type				Notes

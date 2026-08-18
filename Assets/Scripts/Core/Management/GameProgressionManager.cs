@@ -7,6 +7,7 @@
 //
 // Notes        : クリア演出追加しました! - Asano 2026-07-09
 //              : WaveSystemの実装を追加しました! - Asano 2026-07-15
+//              : Stage2移行のために移行メソッドを追加しました! - Asano 2026-08-16
 // ================================================================================
 
 using Game.Core.Enemy;
@@ -17,11 +18,13 @@ using Game.Gameplay.Shop;
 using Game.Gameplay.Stage;
 using Game.Presentation.GameClearCinematic;
 using Game.WaveSystem;
+using Game.Infrastructure.Bootstrap;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using Game.Presentation.UI.Loading;
 
 namespace Game.Core.Management
 {
@@ -36,11 +39,18 @@ namespace Game.Core.Management
         [SerializeField] private string _roguelikeSceneName = "Roguelike";
         [SerializeField] private string _resultSceneName = "Result";
 
+
+        [Header("--- Stage移行 ---")]
+        [Tooltip("Stage移行時にローディング画面を最低限見せる時間(秒)")]
+        [SerializeField] private float _minimumStageLoadingDuration = 3f;
+
+
         [Header("--- Waveシステム ---")]
         [SerializeField] private WaveRunner _waveRunner;
 
         [Header("--- 参照 ---")]
         [SerializeField] private EnemySpawner _enemySpawner;
+        [SerializeField] private GameUIController _gameUIController;
 
         [Header("--- ショップ演出関連の参照 ---")]
         [SerializeField] private CameraRigController _cameraRigController;
@@ -67,6 +77,17 @@ namespace Game.Core.Management
         private bool _preparationFailed;
         private bool _isPreparingFirstWave;
 
+        /// <summary>
+        /// Stageごとに違うWave順になるように、SeedへStage番号をかけて足す値
+        /// </summary>
+        private const int StageSeedStride = 7919;
+
+        // --- Stage進行 ---
+        private StageDataSO _currentStageData;          // 現在プレイ中のStage
+        private int _baseSeed;                          // 現在のStageで使用する乱数シード
+        private int _stageIndex;                        // 現在のStage番号
+        private bool _isAdvancingStage;                 // Stage移行中かどうかのフラグ
+
 
         // カメラの固定画角を保持しておく変数
         private Vector3 _savedBattleCameraPosition;
@@ -75,6 +96,13 @@ namespace Game.Core.Management
         public GameResultSummary ResultSummary { get; private set; }
         public GameProgressionState CurrentState => _currentState;
         public int CurrentWaveIndex => _currentWaveIndex + 1;
+
+        /// <summary>
+        /// 現在プレイ中のStageDataSO
+        /// </summary>
+        public StageDataSO CurrentStageData => _currentStageData;
+
+        public bool HasNextStage => _currentStageData != null && _currentStageData.HasNextStage;
 
         private void Awake()
         {
@@ -90,6 +118,11 @@ namespace Game.Core.Management
             if (_enemySpawner == null)
             {
                 _enemySpawner = Object.FindFirstObjectByType<EnemySpawner>();
+            }
+
+            if (_gameUIController == null)
+            {
+                _gameUIController = Object.FindFirstObjectByType<GameUIController>();
             }
 
             // Camera Rig Controller
@@ -212,10 +245,18 @@ namespace Game.Core.Management
                 yield break;
             }
 
+            if (_gameUIController == null)
+            {
+                Debug.LogError("[Progression] GameUIConterollerが見つかりません。");
+                yield break;
+            }
             _currentState = GameProgressionState.Battle;
 
             Time.timeScale = 1f;
             Time.fixedDeltaTime = 0.02f;
+
+            _gameUIController.UIVisible(0.5f);
+            _gameUIController.SetWave((waveIndex + 1).ToString() + " / " + _waveSequence.Count);
 
             WaveDataSO waveData = _waveSequence[waveIndex];
 
@@ -231,11 +272,11 @@ namespace Game.Core.Management
             }
 
             bool isFinalWave = waveIndex + 1 >= _waveSequence.Count;
-
             if (!isFinalWave)
             {
                 
             }
+
 
             yield return StartCoroutine(AnimateWaveClearRoutine(isFinalWave, waveData.CompleteDelay));
         }
@@ -290,10 +331,10 @@ namespace Game.Core.Management
 
             // --- 通常のウェーブクリア時の処理 ---
 
-            // 1. 画面を一瞬スローモーション
+            // 1. 画面を一瞬スローモーション、同時にUIを透明化
             Time.timeScale = _slowMotionTimeScale;
             Time.fixedDeltaTime = 0.02f * Time.timeScale;
-
+            _gameUIController.UIInvisible(0.5f);
             // 2. コンボが切れるまでの時間を実時間で待機
             yield return new WaitForSecondsRealtime(validCompleteDelay);
 
@@ -496,9 +537,258 @@ namespace Game.Core.Management
             float currentHp = gauge != null ? gauge.CurrentHP : 0f;
 
             // リザルト画面に渡す全データをパッキング
-            ResultSummary = new GameResultSummary(isClear, _currentWaveIndex, currentHp);
+            // リザルト画面に渡す全データをパッキング
+            // クリアかつ次のStageがあるときだけ「つぎへ」ボタンを出せるようにする
+            ResultSummary = new GameResultSummary(isClear, _currentWaveIndex, currentHp, isClear && HasNextStage);
             StartCoroutine(LoadSceneAdditiveRoutine(_resultSceneName));
         }
+
+
+        /// <summary>
+        /// リザルト画面の「つぎへ」ボタンが押された時に呼ばれるメソッド
+        /// 8/16 Asano: Stage2移行のために新規追加
+        /// </summary>
+        public void RequestNextStage()
+        {
+            if (_isAdvancingStage)
+            {
+                return;
+            }
+
+            if (!HasNextStage)
+            {
+                Debug.LogWarning("[Progression] 次のStageが存在しないため、Stage移行をスキップします。");
+                return;
+            }
+
+            if (_currentState != GameProgressionState.Result)
+            {
+                Debug.LogWarning("[Progression] 現在の状態がResultではないため、Stage移行をスキップします。");
+                return;
+            }
+
+            _isAdvancingStage = true;
+
+            StartCoroutine(AdvanceToNextStageRoutine());
+        }
+
+
+        /// <summary>
+        /// リザルトを閉じてStageシーンを入れ換え、次のStageの1Wave目を開始するコルーチン
+        /// 8/16 Asano: Stage2移行のために新規追加
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerator AdvanceToNextStageRoutine()
+        {
+            StageDataSO currentStage = _currentStageData;
+            StageDataSO nextStage = currentStage.NextStage;
+
+            _currentState = GameProgressionState.Setup;
+
+            // リザルト表示でポーズしているので、時間を戻す
+            Time.timeScale = 1f;
+            Time.fixedDeltaTime = 0.02f;
+
+            // Stage1の起動時と同じローディング画面を、その場に作る
+            GameObject loadingHost = new GameObject("StageTransitionLoading");
+            loadingHost.transform.SetParent(transform, false);
+
+            LoadingView loadingView = loadingHost.AddComponent<LoadingView>();
+            loadingView.Initialize();
+
+            // Initialize直後は表示状態なので、1フレームも出さないよう即座に隠す
+            loadingView.SetLoadingVisible(false);
+
+            // 暗転してローディング画面へ切り替える
+            yield return loadingView.PlayEnterRoutine();
+
+            // ローディング画面を最低限表示するために開始時間控えておく
+            float loadingStartedAt = Time.realtimeSinceStartup;
+
+
+            // ----- ローディング画面の裏で行う処理 -----
+
+            // リザルトシーンを閉じる
+            Scene resultScene = SceneManager.GetSceneByName(_resultSceneName);
+            if (resultScene.IsValid() && resultScene.isLoaded)
+            {
+                AsyncOperation unloadResult = SceneManager.UnloadSceneAsync(resultScene);
+                while (unloadResult != null && !unloadResult.isDone)
+                {
+                    yield return null;
+                }
+            }
+
+            // Stageシーンを入れ替える
+            StageTransitionController transition = Object.FindFirstObjectByType<StageTransitionController>();
+
+            if (transition == null)
+            {
+                Debug.LogError("[Progression] StageTransitionControllerが見つかりません。Stage移行を中止します。");
+                Destroy(loadingHost);
+                _isAdvancingStage = false;
+                yield break;
+            }
+
+            yield return transition.TransitionRoutine(currentStage, nextStage);
+
+            // 新しいStageシーン側にある参照を取り直す
+            RefreshStageSceneReferences();
+
+            // 次のStage用にWave順を作り直す
+            _stageIndex++;
+            int seed = CreateStageSeed(_stageIndex);
+
+            if (!StageWaveSequenceBuilder.TryBuild(nextStage, seed, out List<WaveDataSO> waveSequence, out string errorMessage))
+            {
+                Debug.LogError($"[Progression] 次のStageのWave順の生成に失敗しました。\n{errorMessage}", nextStage);
+                Destroy(loadingHost);
+                _isAdvancingStage = false;
+                yield break;
+            }
+
+            _waveSequence = waveSequence;
+            _currentWaveIndex = 0;
+            _currentStageData = nextStage;
+            ResultSummary = null;
+
+            string nextStageName = HasNextStage ? _currentStageData.NextStage.StageName : "なし";
+            Debug.Log($"[Progression] Stage移行完了: {_currentStageData.StageName} / Seed : {seed} / Wave数 : {_waveSequence.Count} / 次のStage：{nextStageName}");
+
+            // 戦闘へ戻すのでカーソルをロック
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+
+            SoundManager.instance?.PlayBGM("InGame");
+            SoundManager.instance?.SoundVolume(1.0f);
+
+            // シーンの入れ替えが早く終わっても、ローディング画面を一定時間は見せる
+            float remainingDuration = _minimumStageLoadingDuration - (Time.realtimeSinceStartup - loadingStartedAt);
+            if (remainingDuration > 0f)
+            {
+                yield return new WaitForSecondsRealtime(remainingDuration);
+            }
+
+            // 「START！」が出ている間は時間を止める
+            Time.timeScale = 0f;
+
+            yield return loadingView.PlayGameStartRoutine();
+
+            Destroy(loadingHost);
+
+            _isAdvancingStage = false;
+
+            // StartBattleWaveRoutineの中で timeScale が 1 に戻る
+            StartBattleWave(_currentWaveIndex);
+        }
+
+
+        private void RefreshStageSceneReferences()
+        {
+            // 古い演出カメラの購読を解除しておく
+            if (_shopCinematicCameraController != null)
+            {
+                _shopCinematicCameraController.OnCompleteCameraWork -= HandleCameraWorkComplete;
+            }
+
+            _enemySpawner = Object.FindFirstObjectByType<EnemySpawner>();
+
+            var vehicles = Object.FindObjectsByType<ShopVehicleController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            _shopVehicleController = vehicles.Length > 0 ? vehicles[0] : null;
+
+            var cams = Object.FindObjectsByType<ShopCinematicCameraController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            _shopCinematicCameraController = cams.Length > 0 ? cams[0] : null;
+
+            // 新しい演出カメラうを購読する
+            if (_shopCinematicCameraController != null)
+            {
+                _shopCinematicCameraController.OnCompleteCameraWork += HandleCameraWorkComplete;
+            }
+
+            if (_enemySpawner == null)
+            {
+                Debug.LogError("[Progression] 新しいStageシーンにEnemySpawnerが見つかりません。");
+            }
+        }
+
+        private void RefreshUISceneReferences()
+        {
+            _gameUIController = Object.FindFirstObjectByType<GameUIController>();
+            if (_gameUIController == null)
+            {
+                Debug.LogError("[Progression] 新しいUIシーンにGameUIControllerが見つかりません。");
+            }
+        }
+
+
+#if UNITY_EDITOR
+        /// <summary>
+        /// デバッグ用。実行中のWaveを中断して、指定したWaveを演出なしで開始しまっす！
+        /// </summary>
+        /// <param name="waveIndex">開始したいWaveの番号(0始まり)</param>
+        public void DebugStartWaveAt(int waveIndex)
+        {
+            if (_waveSequence == null || _waveSequence.Count == 0)
+            {
+                Debug.LogWarning("[Progression] Wave列がまだ作られていないため、Waveを切り替えられません。");
+                return;
+            }
+
+            if (_currentState != GameProgressionState.Battle)
+            {
+                Debug.LogWarning($"[Progression] バトル中ではないため、Waveの切り替えを無視しました。(現在の状態: {_currentState})");
+                return;
+            }
+
+            if (waveIndex < 0 || waveIndex >= _waveSequence.Count)
+            {
+                Debug.LogWarning($"[Progression] Wave {waveIndex + 1} は存在しません。(全{_waveSequence.Count}Wave)");
+                return;
+            }
+
+            // 実行中のWaveと、その完了待ちコルーチンを止める
+            StopAllCoroutines();
+            _waveRunner?.AbortAndReset();
+
+            // 生き残っている敵を片付ける
+            EnemyController[] enemies = Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None);
+            foreach (EnemyController enemy in enemies)
+            {
+                if (enemy != null)
+                {
+                    Destroy(enemy.gameObject);
+                }
+            }
+
+            Time.timeScale = 1f;
+            Time.fixedDeltaTime = 0.02f;
+
+            _currentWaveIndex = waveIndex;
+
+            Debug.Log($"[Progression] [DEBUG] 敵{enemies.Length}体を片付けて、Wave {_currentWaveIndex + 1}/{_waveSequence.Count} を開始します。");
+
+            StartBattleWave(_currentWaveIndex);
+        }
+
+
+        /// <summary>
+        /// デバッグ用。演出を飛ばして次のWaveへ進みます
+        /// </summary>
+        public void DebugSkipToNextWave()
+        {
+            DebugStartWaveAt(_currentWaveIndex + 1);
+        }
+
+
+        /// <summary>
+        /// デバッグ用。演出を飛ばして最終Wave(Boss)へ飛びます
+        /// </summary>
+        public void DebugJumpToFinalWave()
+        {
+            DebugStartWaveAt(_waveSequence.Count - 1);
+        }
+#endif
+
 
         /// <summary>
         /// 加算ロード完了後、StageDataSOからWave順を生成して開始します。
@@ -527,11 +817,13 @@ namespace Game.Core.Management
             PlayerFacade player = null;
 
             // 参照が揃うまで待機
-            while (_enemySpawner == null || stageContext == null || player == null)
+            while (_enemySpawner == null || stageContext == null || player == null || _gameUIController == null)
             {
                 if (_enemySpawner == null) _enemySpawner = Object.FindFirstObjectByType<EnemySpawner>();
                 if (stageContext == null) stageContext = Object.FindFirstObjectByType<StageSceneContext>();
                 if (player == null) player = Object.FindFirstObjectByType<PlayerFacade>();
+                if (_gameUIController == null) _gameUIController = Object.FindFirstObjectByType<GameUIController>();
+                
 
                 yield return null;
             }
@@ -556,9 +848,13 @@ namespace Game.Core.Management
                 yield break;
             }
 
+            // Bootシーンはこの後アンロードされるので、Stage進行に必要な情報を控えておく
+            _currentStageData = stageContext.StageData;
+            _baseSeed = stageContext.CreateSeed();
+            _stageIndex = 0;
 
             // StageDataSOからWave順を生成
-            int seed = stageContext.CreateSeed();
+            int seed = CreateStageSeed(_stageIndex);
 
             // Wave順の生成に失敗した場合はエラーをログに出して終了
             if (!StageWaveSequenceBuilder.TryBuild(stageContext.StageData, seed, out List<WaveDataSO> waveSequence, out string errorMessage))
@@ -572,11 +868,24 @@ namespace Game.Core.Management
             // Wave順の生成に成功した場合は、生成されたWave順を保持
             _waveSequence = waveSequence;
 
-            Debug.Log($"[Progression] Stage開始：{stageContext.StageData.StageName} / Seed：{seed} / Wave数：{_waveSequence.Count}");
+            string nextStageName = HasNextStage ? _currentStageData.NextStage.StageName : "なし";
+            Debug.Log($"[Progression] Stage開始：{_currentStageData.StageName} / Seed：{seed} / Wave数：{_waveSequence.Count} / 次のStage：{nextStageName}");
 
             _isFirstWavePrepared = true;
             _isPreparingFirstWave = false;
         }
+
+
+        /// <summary>
+        /// 指定した番号のStage用のSeedを生成します
+        /// </summary>
+        /// <param name="stageIndex">何番目のStageか</param>
+        /// <returns>Wave抽選に使うSeed</returns>
+        private int CreateStageSeed(int stageIndex)
+        {
+            return unchecked(_baseSeed + (stageIndex * StageSeedStride));
+        }
+
 
         public bool IsFirstWavePrepared => _isFirstWavePrepared;
         public bool PreparationFailed => _preparationFailed;

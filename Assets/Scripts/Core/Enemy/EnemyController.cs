@@ -170,8 +170,8 @@ namespace Game.Core.Enemy
                 gameObject.AddComponent<EnemyRising>();
             }
 
-            _rising.Initialize(definition.RiseDuration, definition.DropDuration, definition.BarrierBreakDuration, definition.DamageDropDuration,
-                               definition.RiseCurve, definition.DropCurve, definition.BarrierBreakCurve, definition.DamageDropCurve,
+            _rising.Initialize(definition.RiseDuration,definition.LateralDuration, definition.DropDuration, definition.BarrierBreakDuration, definition.DamageDropDuration,
+                               definition.RiseCurve, definition.LateralCurve, definition.DropCurve, definition.BarrierBreakCurve, definition.DamageDropCurve,
                                definition.BreakDropDistance, definition.DamageDropDistance);
             _rising.OnEnemyReachedGoal = HandleRose;
             _rising.OnLeftReachedGoal = HandleRoseLeft;

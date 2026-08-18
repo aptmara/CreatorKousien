@@ -1,0 +1,3 @@
+Event	ID	Name			Wwise Object Path	Notes
+	1815017959	Play_SE_Barrier_02			\Default Work Unit\Play_SE_Barrier_02	
+

@@ -1,0 +1,6 @@
+Event	ID	Name			Wwise Object Path	Notes
+	2167428848	Play_BGM_InGame			\Default Work Unit\Play_BGM_InGame	
+
+Streamed Audio	ID	Name	Audio source file	Generated audio file	Wwise Object Path	Notes
+	179590931	InGameBGM	.cache\A9\{A91EDE61-B71B-E9F9-293B-803AB868C6E6}.wem	179590931.wem	\Containers\Default Work Unit\InGameBGM	
+

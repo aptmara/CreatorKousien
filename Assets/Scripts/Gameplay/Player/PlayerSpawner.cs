@@ -27,6 +27,7 @@ namespace Game.Gameplay.Player
         [Tooltip("プレイヤーの初期位置")]
         [SerializeField] private Transform _spawnPoint;
 
+        public Transform SpawnPoint => _spawnPoint;
 
 
         // 関数処理
