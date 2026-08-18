@@ -50,6 +50,7 @@ namespace Game.Core.Management
 
         [Header("--- 参照 ---")]
         [SerializeField] private EnemySpawner _enemySpawner;
+        [SerializeField] private GameUIController _gameUIController;
 
         [Header("--- ショップ演出関連の参照 ---")]
         [SerializeField] private CameraRigController _cameraRigController;
@@ -117,6 +118,11 @@ namespace Game.Core.Management
             if (_enemySpawner == null)
             {
                 _enemySpawner = Object.FindFirstObjectByType<EnemySpawner>();
+            }
+
+            if (_gameUIController == null)
+            {
+                _gameUIController = Object.FindFirstObjectByType<GameUIController>();
             }
 
             // Camera Rig Controller
@@ -239,10 +245,18 @@ namespace Game.Core.Management
                 yield break;
             }
 
+            if (_gameUIController == null)
+            {
+                Debug.LogError("[Progression] GameUIConterollerが見つかりません。");
+                yield break;
+            }
             _currentState = GameProgressionState.Battle;
 
             Time.timeScale = 1f;
             Time.fixedDeltaTime = 0.02f;
+
+            _gameUIController.UIVisible(0.5f);
+            _gameUIController.SetWave((waveIndex + 1).ToString() + " / " + _waveSequence.Count);
 
             WaveDataSO waveData = _waveSequence[waveIndex];
 
@@ -258,11 +272,11 @@ namespace Game.Core.Management
             }
 
             bool isFinalWave = waveIndex + 1 >= _waveSequence.Count;
-
             if (!isFinalWave)
             {
-
+                
             }
+
 
             yield return StartCoroutine(AnimateWaveClearRoutine(isFinalWave, waveData.CompleteDelay));
         }
@@ -317,10 +331,10 @@ namespace Game.Core.Management
 
             // --- 通常のウェーブクリア時の処理 ---
 
-            // 1. 画面を一瞬スローモーション
+            // 1. 画面を一瞬スローモーション、同時にUIを透明化
             Time.timeScale = _slowMotionTimeScale;
             Time.fixedDeltaTime = 0.02f * Time.timeScale;
-
+            _gameUIController.UIInvisible(0.5f);
             // 2. コンボが切れるまでの時間を実時間で待機
             yield return new WaitForSecondsRealtime(validCompleteDelay);
 
@@ -697,6 +711,15 @@ namespace Game.Core.Management
             }
         }
 
+        private void RefreshUISceneReferences()
+        {
+            _gameUIController = Object.FindFirstObjectByType<GameUIController>();
+            if (_gameUIController == null)
+            {
+                Debug.LogError("[Progression] 新しいUIシーンにGameUIControllerが見つかりません。");
+            }
+        }
+
 
 #if UNITY_EDITOR
         /// <summary>
@@ -794,11 +817,13 @@ namespace Game.Core.Management
             PlayerFacade player = null;
 
             // 参照が揃うまで待機
-            while (_enemySpawner == null || stageContext == null || player == null)
+            while (_enemySpawner == null || stageContext == null || player == null || _gameUIController == null)
             {
                 if (_enemySpawner == null) _enemySpawner = Object.FindFirstObjectByType<EnemySpawner>();
                 if (stageContext == null) stageContext = Object.FindFirstObjectByType<StageSceneContext>();
                 if (player == null) player = Object.FindFirstObjectByType<PlayerFacade>();
+                if (_gameUIController == null) _gameUIController = Object.FindFirstObjectByType<GameUIController>();
+                
 
                 yield return null;
             }
