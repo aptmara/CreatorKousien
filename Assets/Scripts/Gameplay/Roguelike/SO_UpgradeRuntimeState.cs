@@ -8,6 +8,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Game.Data.Player;
+using Game.Gameplay.Roguelike.Effects;
 
 [CreateAssetMenu(fileName = "SO_UpgradeRuntimeState", menuName = "Scriptable Objects/SO_UpgradeRuntimeState")]
 public class SO_UpgradeRuntimeState : ScriptableObject
@@ -25,16 +26,23 @@ public class SO_UpgradeRuntimeState : ScriptableObject
     /// </summary>
     /// <param name="card"></param>
     public void AddOrLevelUp(UpgradeData card)
+        => AddLevels(card, 1);
+
+    public int AddLevels(UpgradeData card, int amount)
     {
-        if (card == null) return;
+        if (card == null || amount <= 0) return 0;
 
         UpgradeRuntimeEntry entry = _entries.Find(x => x.CardData == card);
         if(entry == null)
         {
-            _entries.Add(new UpgradeRuntimeEntry(card, 1));
-            return;
+            int added = Mathf.Min(amount, card.MaxLevel);
+            _entries.Add(new UpgradeRuntimeEntry(card, added));
+            return added;
         }
-        entry.Level = Mathf.Min(entry.Level + 1, card.MaxLevel);
+
+        int previousLevel = entry.Level;
+        entry.Level = Mathf.Min(entry.Level + amount, card.MaxLevel);
+        return entry.Level - previousLevel;
     }
 
     public int GetLevel(UpgradeData card)
@@ -46,5 +54,9 @@ public class SO_UpgradeRuntimeState : ScriptableObject
     public bool IsAcquired(UpgradeData card)
         => GetLevel(card) > 0;
 
-    public void Clear() => _entries.Clear();
+    public void Clear()
+    {
+        _entries.Clear();
+        RoguelikeEffectRuntime.Reset();
+    }
 }

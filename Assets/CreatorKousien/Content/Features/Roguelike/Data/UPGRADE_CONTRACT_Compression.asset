@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 730422566b7cc734ea8529d8457fd466, type: 3}
+  m_Name: UPGRADE_CONTRACT_Compression
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
+  Id: contract_compression
+  DisplayName: "\u5727\u7E2E\u306E\u5951\u7D04"
+  Description: "\u81EA\u52D5\u751F\u62106\u500B\u3092\u3001\u7D042.6\u500D\u30B5\u30A4\u30BA\u306E\u5DE8\u5927\u306A1\u500B\u3078\u5727\u7E2E\u3057\u3066\u9AD8\u3044\u4F4D\u7F6E\u304B\u3089\u843D\u3068\u3059\u3002\u7AEF\u6570\u306F\u901A\u5E38\u30B5\u30A4\u30BA\u3067\u964D\u308B\u3002"
+  LevelDescriptions:
+  - "\u81EA\u52D5\u751F\u62106\u500B\u3092\u3001\u7D042.6\u500D\u30B5\u30A4\u30BA\u306E\u5DE8\u5927\u306A1\u500B\u3078\u5727\u7E2E\u3057\u3066\u9AD8\u3044\u4F4D\u7F6E\u304B\u3089\u843D\u3068\u3059\u3002\u7AEF\u6570\u306F\u901A\u5E38\u30B5\u30A4\u30BA\u3067\u964D\u308B\u3002"
+  LevelCardDescriptions:
+  - "\u81EA\u52D5\u751F\u62106\u500B\u3092\n\u5DE8\u5927\u306A1\u500B\u3078\u5727\u7E2E"
+  Modifiers: []
+  GameplayValue: 0
+  OfferType: 3
+  CombatPressureRuleId: 
+  CombatPressureOutputType: 0
+  RequiresCollectibleFocus: 0
+  SynergyTags: 160
+  SuppressedTags: 256
+  DraftWeight: 1
+  Effects:
+  - rid: 1738816479575933256
+  MaxLevel: 1
+  Icon: {fileID: 21300000, guid: b74088a1be8f3544fb7d9776f3950a17, type: 3}
+  Category: 3
+  Cost: 0
+  CostMagni: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: 1738816479575933256
+      type: {class: CompressionEffect, ns: Game.Gameplay.Roguelike.Effects, asm: Assembly-CSharp}
+      data:
+        _enabled: 1
+        _itemsPerGiant: 6
+        _giantScale: 2.6
+        _spawnHeight: 13
