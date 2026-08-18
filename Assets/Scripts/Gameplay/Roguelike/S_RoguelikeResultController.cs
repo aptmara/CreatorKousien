@@ -11,6 +11,8 @@ using UnityEngine;
 using Game.Gameplay.Player;
 using Game.Data.Player;
 using Game.Core.Roguelike;
+using Game.Gameplay.Roguelike.Effects;
+using Game.Data.Collectibles;
 
 
 public class S_RoguelikeResultController : MonoBehaviour
@@ -60,7 +62,10 @@ public class S_RoguelikeResultController : MonoBehaviour
     /// 選択された強化を取得済みリストに反映する関数
     /// </summary>
     /// <param name="selectedCard">選択された強化データ</param>
-    public bool SelectUpgrade(UpgradeData selectedCard)
+    public bool SelectUpgrade(
+        UpgradeData selectedCard,
+        CollectibleData focusedCollectible = null,
+        int levelGain = 1)
     {
         if(selectedCard == null)
         {
@@ -68,17 +73,36 @@ public class S_RoguelikeResultController : MonoBehaviour
             return false;
         }
 
-        if(_playerFacade == null)
+        bool hasPlayerModifiers = selectedCard.Modifiers != null && selectedCard.Modifiers.Length > 0;
+        if(hasPlayerModifiers && _playerFacade == null)
         {
             Debug.LogError("[S_RoguelikeResultController] PlayerFacadeが未設定です。");
             return false;
         }
 
-        _upgradeRuntimeState.AddOrLevelUp(selectedCard);
+        int appliedLevels = _upgradeRuntimeState.AddLevels(selectedCard, Mathf.Max(1, levelGain));
+        if (appliedLevels <= 0)
+            return false;
+
         int level = _upgradeRuntimeState.GetLevel(selectedCard);
 
-        _playerFacade.ApplyUpgrade(selectedCard);
+        if (hasPlayerModifiers)
+        {
+            for (int index = 0; index < appliedLevels; index++)
+                _playerFacade.ApplyUpgrade(selectedCard);
+        }
         RoguelikeUpgradeRuntime.Apply(selectedCard.Id, level, selectedCard.GameplayValue);
+        RoguelikeEffectRuntime.Register(selectedCard, level);
+
+        if (selectedCard.OfferType == UpgradeOfferType.CombatPressureRule)
+        {
+            int outputType = (int)selectedCard.CombatPressureOutputType;
+            RoguelikeBuildRuntime.SetCombatRule(
+                selectedCard.CombatPressureRuleId,
+                level,
+                outputType);
+            RoguelikeUpgradeRuntime.UnlockCollectible(outputType);
+        }
         return true;
     }
 

@@ -14,6 +14,7 @@
 // - 7/11 プレイヤーがクリア時に勝手に移動するバグ修正 - 浅野
 // ------------------------------------------------------------
 using UnityEngine;
+using Game.Gameplay.Roguelike.CombatPressure;
 using Game.Gameplay.Player.Progression;
 using Game.Gameplay.Stage;
 using UnityEngine.UI;
@@ -84,7 +85,8 @@ namespace Game.Gameplay.Player
         /// <summary>
         /// 現在の移動速度倍率(null の場合は1.0)
         /// </summary>
-        private float MoveSpeedMultiplier => _runtimeData != null ? _runtimeData.MoveSpeedMultiplier : 1f;
+        private float MoveSpeedMultiplier => (_runtimeData != null ? _runtimeData.MoveSpeedMultiplier : 1f)
+            * CombatPressurePlayerModifiers.MoveSpeedMultiplier;
 
         private float _targetYaw;
 
