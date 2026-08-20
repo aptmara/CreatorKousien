@@ -51,6 +51,10 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     private bool _isReturning = false;
     private bool _isMovementSuspended = false;
 
+    [Header("初期移動状態")]
+    [Tooltip("初期移動中だけtrueになります。実行状態の確認用です。")]
+    [SerializeField] private bool _isInitialTraversing;
+
     private int segmentCount = 32;
 
     [Header("スタート位置(秒)")]
@@ -124,6 +128,13 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
 
     public void Break(Vector3 hitPoint, Vector3 hitDirection) => Emits(hitPoint);
 
+    public bool IsInitialTraversing => _isInitialTraversing;
+
+    public void SetInitialTraversing(bool isInitialTraversing)
+    {
+        _isInitialTraversing = isInitialTraversing;
+    }
+
     /// <summary>
     /// クリスタル本体の移動だけを一時停止または再開します。
     /// Break や Emits、初期化、イベント購読は停止しません。
@@ -132,6 +143,42 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     public void SetMovementSuspended(bool isSuspended)
     {
         _isMovementSuspended = isSuspended;
+    }
+
+    /// <summary>
+    /// 通常移動が最初のフレームで使用するワールド座標を取得します。
+    /// </summary>
+    public bool TryGetNormalMovementStartPosition(out Vector3 worldPosition)
+    {
+        worldPosition = transform.position;
+        if (startPosition == null || pathSegments == null || pathSegments.Count == 0
+            || maxCount <= 0f || float.IsNaN(maxCount) || float.IsInfinity(maxCount))
+        {
+            return false;
+        }
+
+        for (int index = 0; index < pathSegments.Count; index++)
+        {
+            if (pathSegments[index] == null || pathSegments[index].targetPosition == null)
+            {
+                return false;
+            }
+        }
+
+        float totalT = Mathf.Clamp01(startCount / maxCount);
+        if (_autoReverseLoop)
+        {
+            totalT *= 2f;
+            if (totalT > 1f)
+            {
+                totalT = 2f - totalT;
+            }
+        }
+
+        worldPosition = FieldRotation * EvaluatePath(totalT);
+        return !(float.IsNaN(worldPosition.x) || float.IsInfinity(worldPosition.x)
+            || float.IsNaN(worldPosition.y) || float.IsInfinity(worldPosition.y)
+            || float.IsNaN(worldPosition.z) || float.IsInfinity(worldPosition.z));
     }
 
     private Quaternion FieldRotation
@@ -617,6 +664,11 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
 
     public void Emits(Vector3 hitPoint)
     {
+        if (_isInitialTraversing)
+        {
+            return;
+        }
+
         int hitDropCount = curShardCount + RoguelikeUpgradeRuntime.AdditionalPumpkinDropCount;
         EmitHitStyleCollectibles(hitPoint, hitDropCount, 0f);
         _currentHitStop = _hitStop;
