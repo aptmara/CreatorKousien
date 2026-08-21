@@ -14,7 +14,33 @@ namespace Game.Core.Events
             Capacity = capacity;
         }
     }
-    
+
+    public readonly struct GameChangeEvent
+    {
+        public readonly int MaxEnemy;
+        public readonly int SpawnedEnemy;
+
+        public GameChangeEvent(int spawnedEnemy, int maxEnemy)
+        {
+            MaxEnemy = maxEnemy;
+            SpawnedEnemy = spawnedEnemy;
+        }
+    }
+
+    public readonly struct GroupChangeEvent
+    {
+        public readonly int CurrentCount;
+        public readonly int MaxCount;
+
+        public GroupChangeEvent(int currentCount, int maxCount)
+        {
+            CurrentCount = currentCount;
+            MaxCount = maxCount;
+        }
+
+
+    }
+
     public readonly struct PayloadReleasedEvent
     {
         public readonly int PayloadCount;
