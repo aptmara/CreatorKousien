@@ -49,9 +49,22 @@ namespace Game.Gameplay.Enemy.Baku
                 if (enemy.IsBoss) continue;
                 if (enemy.CurrentState == EnemyState.Defeated) continue;
                 if (enemy.CurrentState == EnemyState.Drop) continue;
-                if ((enemy.transform.position - center).sqrMagnitude > squaredRadius) continue;
+
+                // 敵は地下から上昇してくるためYがバラつくので、高さ差は無視して水平距離で判定する
+                Vector3 offset = enemy.transform.position - center;
+                offset.y = 0f;
+                if (offset.sqrMagnitude > squaredRadius) continue;
 
                 enemy.OnBodyHit(damage);
+
+                // OnBodyHitを直接呼ぶだけではEnemyHitReceiverを通らず、ヒットアニメ・スカッシュ演出が一切鳴らないので手動で発光させる
+                EnemyHitReceiver receiver = enemy.GetComponentInChildren<EnemyHitReceiver>(true);
+
+                if (receiver != null)
+                {
+                    receiver.OnHitAction?.Invoke();
+                }
+
                 hitCount++;
             }
 

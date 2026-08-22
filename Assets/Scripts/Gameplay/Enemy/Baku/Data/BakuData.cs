@@ -85,6 +85,9 @@ namespace Game.Gameplay.Enemy.Baku
         [Tooltip("食べ過ぎてから実際に破裂するまでの予兆時間[秒]")]
         [Min(0f)] public float BurstDelay = 0.4f;
 
+        [Tooltip("予兆中に出すVFXのPrefab")]
+        public GameObject BurstWarningVfxPrefab;
+
         [Tooltip("破裂時に周囲の敵へ与えるダメージ")]
         [Min(0f)] public float BurstDamage = 80f;
 
@@ -93,6 +96,9 @@ namespace Game.Gameplay.Enemy.Baku
 
         [Tooltip("破裂時に生成するVFXのPrefab")]
         public GameObject BurstVfxPrefab;
+
+        [Tooltip("破裂VFXの位置")]
+        public Vector3 BurstVfxOffset = new Vector3(0f, 0.5f, 0f);
 
         [Tooltip("破裂VFXの寿命[秒] 0なら自動破棄しない")]
         [Min(0f)] public float BurstVfxLifetime = 3f;

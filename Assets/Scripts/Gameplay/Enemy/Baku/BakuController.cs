@@ -32,6 +32,15 @@ namespace Game.Gameplay.Enemy.Baku
         [Tooltip("捕食・破裂モーション用のAnimator。未設定なら自動取得。")]
         [SerializeField] private Animator _animator;
 
+        [Tooltip("破裂時のメッシュ分割。未設定なら自動取得")]
+        [SerializeField] private BakuBurstShatter _shatter;
+
+        [Tooltip("破裂エフェクトの位置基準にするRenderer")]
+        [SerializeField] private Renderer _bodyRenderer;
+
+        [Tooltip("頭上のHPバーを表示しない")]
+        [SerializeField] private bool _hideStatusUI = true;
+
         [Header("Animatorパラメータ名")]
         [SerializeField] private string _eatTriggerName = "Eat";
         [SerializeField] private string _burstTriggerName = "Burst";
@@ -50,6 +59,7 @@ namespace Game.Gameplay.Enemy.Baku
 
         private int _eatTriggerHash;
         private int _burstTriggerHash;
+        private GameObject _chargeVfx;
 
 
         // ライフサイクル
@@ -68,6 +78,18 @@ namespace Game.Gameplay.Enemy.Baku
             if (_animator == null)
             {
                 _animator = GetComponentInChildren<Animator>(true);
+            }
+            if (_shatter == null)
+            {
+                _shatter = GetComponent<BakuBurstShatter>();
+            }
+            if (_bodyRenderer == null)
+            {
+                _bodyRenderer = GetComponentInChildren<SkinnedMeshRenderer>(true);
+                if (_bodyRenderer == null)
+                {
+                    _bodyRenderer = GetComponentInChildren<MeshRenderer>(true);
+                }
             }
 
             _eatTriggerHash = Animator.StringToHash(_eatTriggerName);
@@ -90,6 +112,7 @@ namespace Game.Gameplay.Enemy.Baku
         private void OnDestroy()
         {
             if (_mouth != null) _mouth.CollectibleEntered -= HandleCollectibleEntered;
+            if (_chargeVfx != null) Destroy(_chargeVfx);
         }
 
         private void OnDisable()
@@ -121,6 +144,12 @@ namespace Game.Gameplay.Enemy.Baku
             }
 
             _stomach.Initialize(_data.MaxEatCount, HandleFillChanged, HandleOverfed);
+
+            // バクはHPバーを表示しない！
+            if (_hideStatusUI)
+            {
+                HideStatusUI();
+            }
 
             if (_belly != null)
             {
@@ -260,38 +289,104 @@ namespace Game.Gameplay.Enemy.Baku
         }
 
 
-
+        /// <summary>
+        /// 破裂処理のコルーチン
+        /// </summary>
+        /// <returns></returns>
         private IEnumerator BurstRoutine()
         {
+            // --- 予兆フェーズ ---
+            if (_data.BurstWarningVfxPrefab != null)
+            {
+                // バクに追従させたいので子として生成する
+                _chargeVfx = Instantiate(_data.BurstWarningVfxPrefab, transform.position, Quaternion.identity, transform);
+            }
+
             if (_data.BurstDelay > 0f)
             {
                 yield return new WaitForSeconds(_data.BurstDelay);
             }
 
+            // 予兆VFXは破裂の瞬間に必ず止める
+            if (_chargeVfx != null)
+            {
+                Destroy(_chargeVfx);
+                _chargeVfx = null;
+            }
+
+            // --- 破裂フェーズ（すべて同一フレームなので見た目の順序は変わらない） ---
             Vector3 burstPosition = transform.position;
 
             // 1. 周囲の敵へ範囲ダメージ
             int hitCount = BakuBurstResolver.ApplyBurst(_enemyController, burstPosition, _data.BurstRadius, _data.BurstDamage);
 
-            // 2. VFX
+            Debug.Log($"[BakuController] 破裂。巻き込んだ敵={hitCount}体, damage={_data.BurstDamage}, radius={_data.BurstRadius}");
+
+            // 2. 破裂VFX。バクは消えるので親を持たせない
             if (_data.BurstVfxPrefab != null)
             {
-                GameObject vfx = Instantiate(_data.BurstVfxPrefab, burstPosition, Quaternion.identity);
+                GameObject vfx = Instantiate(_data.BurstVfxPrefab, GetBurstVfxPosition(), Quaternion.identity);
                 if (_data.BurstVfxLifetime > 0f)
                 {
                     Destroy(vfx, _data.BurstVfxLifetime);
                 }
             }
 
-            Debug.Log($"[BakuController] 破裂。巻き込んだ敵={hitCount}体, damage={_data.BurstDamage}, radius={_data.BurstRadius}");
+            // 3. 頭上のHPバーを消す
+            HideStatusUI();
 
-            // 3. 自身を破壊
+            // 4. 自身を撃破扱いにする
             CancelMovePause();
 
             if (_enemyController != null)
             {
                 _enemyController.OnBodyHit(float.MaxValue); // 体力を0にする
             }
+
+            // 5. 本体を破片へ差し替える（演出なので最後。ここで転んでも進行は止まらない）
+            if (_shatter != null)
+            {
+                _shatter.Shatter(burstPosition);
+            }
+        }
+
+
+        /// <summary>
+        /// 頭上のワールドUIを即座に消す
+        /// </summary>
+        private void HideStatusUI()
+        {
+            if (_enemyController == null)
+                return;
+
+            Transform root = _enemyController.transform;
+            for (int i = root.childCount - 1; i >= 0; i--)
+            {
+                Transform child = root.GetChild(i);
+                if (child.name.StartsWith("EnemyWorldStatusCanvas"))
+                {
+                    child.gameObject.SetActive(false);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// 破裂VFXの生成位置を取得する
+        /// </summary>
+        /// <returns>生成位置</returns>
+        private Vector3 GetBurstVfxPosition()
+        {
+            if (_bodyRenderer == null)
+            {
+                return transform.position + _data.BurstVfxOffset;
+            }
+
+            // Renderer.boundsはワールド空間のAABB
+            Bounds bounds = _bodyRenderer.bounds;
+            Vector3 top = new Vector3(bounds.center.x, bounds.max.y, bounds.center.z);
+
+            return top + _data.BurstVfxOffset;
         }
 
 
