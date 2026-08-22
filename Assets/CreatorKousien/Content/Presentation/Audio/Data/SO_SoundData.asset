@@ -15,38 +15,38 @@ MonoBehaviour:
   SEDataList:
   - WwiseEvent:
       idInternal: 0
-      valueGuidInternal:
+      valueGuidInternal: 
       WwiseObjectReference: {fileID: 11400000, guid: dacebc5834100ee4aafe063e7a6b38e0, type: 2}
     Name: Barrier_01
     bpm: 0
   - WwiseEvent:
       idInternal: 0
-      valueGuidInternal:
+      valueGuidInternal: 
       WwiseObjectReference: {fileID: 11400000, guid: 8ad5081449660cc43bb320d78d754f9e, type: 2}
     Name: Barrier_02
     bpm: 0
   - WwiseEvent:
       idInternal: 0
-      valueGuidInternal:
+      valueGuidInternal: 
       WwiseObjectReference: {fileID: 11400000, guid: 9122aa3275f122b478f8514055fe4ffa, type: 2}
     Name: CollectableHit
     bpm: 0
   - WwiseEvent:
       idInternal: 0
-      valueGuidInternal:
+      valueGuidInternal: 
       WwiseObjectReference: {fileID: 11400000, guid: 156357bf101cd144f9834deb14b53255, type: 2}
     Name: PumpkinShot
     bpm: 0
   - WwiseEvent:
       idInternal: 0
-      valueGuidInternal:
+      valueGuidInternal: 
       WwiseObjectReference: {fileID: 11400000, guid: 771ba1dbf77064947a5cdbef06df0a2c, type: 2}
     Name: PumpkinShot_Big
     bpm: 0
   BGMDataList:
   - WwiseEvent:
       idInternal: 0
-      valueGuidInternal:
+      valueGuidInternal: 
       WwiseObjectReference: {fileID: 11400000, guid: 744984095d2cd814984e5d80b5d443e5, type: 2}
     Name: InGame
     bpm: 50

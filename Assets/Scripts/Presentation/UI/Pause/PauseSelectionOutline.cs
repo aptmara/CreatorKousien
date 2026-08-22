@@ -43,6 +43,8 @@ namespace Game.Presentation.UI.Pause
         private bool _followExternalScaleWhileNotInteractable;
         private bool _wasInteractable = true;
 
+        public bool IsHighlighted => _highlighted;
+
         protected override void OnEnable()
         {
             base.OnEnable();
