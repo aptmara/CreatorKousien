@@ -52,6 +52,11 @@ namespace Game.Core.Enemy
         public bool IsBoss => _definition != null && _definition.IsBoss;
 
         /// <summary>
+        /// 現在の状態
+        /// </summary>
+        public EnemyState CurrentState => _stateManager != null ? _stateManager.CurrentState : EnemyState.Normal;
+
+        /// <summary>
         /// 実行時に割り当てられる一意の敵ID。複数敵がいる場合のイベントのルーティングに使用する。
         /// </summary>
         public string InstanceEnemyId { get; private set; }
