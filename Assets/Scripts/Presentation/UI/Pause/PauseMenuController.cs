@@ -82,6 +82,8 @@ namespace Game.Presentation.UI.Pause
         private PauseInputMode _inputMode;
         private Selectable _titleReturnSelection;
 
+        public bool IsShowingTitleOptions => _isShowingTitleOptions;
+
         private void Awake()
         {
             EnsureDefaultBindings();
@@ -234,7 +236,8 @@ namespace Game.Presentation.UI.Pause
             if ((_isPaused || _isShowingTitleOptions) &&
                 !_isLoadingTitle &&
                 !_keyConfigPanel.IsRebinding &&
-                !_audioPanel.IsEditing)
+                !_audioPanel.IsEditing &&
+                (EventSystem.current == null || EventSystem.current.currentSelectedGameObject == null))
             {
                 Select(GetInputModeInitialSelectable());
             }
@@ -665,6 +668,13 @@ namespace Game.Presentation.UI.Pause
         {
             if (_inputMode == inputMode)
             {
+                if (inputMode == PauseInputMode.Navigation &&
+                    (EventSystem.current == null || EventSystem.current.currentSelectedGameObject == null))
+                {
+                    Select(GetInputModeInitialSelectable());
+                    _resetNavigationSelectionInLateUpdate = true;
+                }
+
                 return;
             }
 
