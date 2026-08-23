@@ -1061,7 +1061,7 @@ Rigidbody:
   m_GameObject: {fileID: 2011230268243013166}
   serializedVersion: 5
   m_Mass: 10
-  m_LinearDamping: 0
+  m_LinearDamping: 2
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
@@ -1102,7 +1102,7 @@ ConfigurableJoint:
   m_AngularZMotion: 2
   m_LinearLimitSpring:
     spring: 0
-    damper: 0
+    damper: 10
   m_LinearLimit:
     limit: 0
     bounciness: 0
@@ -1276,7 +1276,7 @@ Rigidbody:
   m_GameObject: {fileID: 6141066345515295120}
   serializedVersion: 5
   m_Mass: 10
-  m_LinearDamping: 0
+  m_LinearDamping: 2
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
@@ -1317,7 +1317,7 @@ ConfigurableJoint:
   m_AngularZMotion: 2
   m_LinearLimitSpring:
     spring: 0
-    damper: 0
+    damper: 10
   m_LinearLimit:
     limit: 0
     bounciness: 0
@@ -1442,7 +1442,7 @@ HingeJoint:
   m_Axis: {x: 0, y: 0, z: 1}
   m_AutoConfigureConnectedAnchor: 1
   m_ConnectedAnchor: {x: 0, y: 0, z: 0}
-  m_UseSpring: 0
+  m_UseSpring: 1
   m_Spring:
     spring: 0
     damper: 0

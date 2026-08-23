@@ -9,7 +9,7 @@ public class Balance_BringMonster : MonoBehaviour
     
     private bool _isSpawned = false;
     public bool IsSpawned => _isSpawned;
-    private float _speed = 1.5f;
+    private float _speed = 3.0f;
 
     [SerializeField] private Animator _animator;
 
@@ -22,8 +22,7 @@ public class Balance_BringMonster : MonoBehaviour
         
         _onArrived = onArrived;
 
-        _animator = GetComponent<Animator>();
-        _animator.SetTrigger("Climb");
+        //_animator.Play("Climb");
     }
 
 
