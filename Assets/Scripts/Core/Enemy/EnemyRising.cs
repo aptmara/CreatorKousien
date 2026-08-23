@@ -1,9 +1,11 @@
 /**
  * 作成：寺田晴
- * 
+ *
  * 内容：敵がフィールドまで上昇する処理
- * 
+ *
  * 追加実装 : 落下、ずり落ちを追加
+ *
+ * Updated : 2026/08/22 新規Enemy[バク]実装の変更 - Asano
  */
 using System;
 using System.Collections;
@@ -30,6 +32,12 @@ namespace Game.Core.Enemy
 
         EnemyMoveState _enemyMoveState = EnemyMoveState.Stop;
         bool _isStopping = false;
+
+        // ギミックによる一時停止
+        bool _isPausing = false;
+
+        // どちらか一方でも立っていれば移動を再開しない
+        bool IsMoveSuspended => _isPausing || _isStopping;
 
         //　敵の目標地点
         private Vector3 _targetPosition;
@@ -458,7 +466,7 @@ namespace Game.Core.Enemy
                 {
                     Debug.Log("Value = " + value + "MaxValue = " + maxValue);
                 }
-                
+
             }
             // 探索中見つからなかった場合失敗を返す
             outMinPoint = findMinPoint;
@@ -468,7 +476,43 @@ namespace Game.Core.Enemy
             return false;
         }
 
+
+        /// <summary>
+        /// 敵の移動を停止する
+        /// </summary>
         public void StopMove()
+        {
+            StopAllMoveCoroutines();
+            _isStopping = true;
+        }
+
+
+        /// <summary>
+        /// ギミックによる一時停止を開始する
+        /// </summary>
+        public void PauseMove()
+        {
+            if (_isPausing) return;
+            _isPausing = true;
+            StopAllMoveCoroutines();
+        }
+
+
+        /// <summary>
+        /// ギミックによる一時停止を開始する
+        /// </summary>
+        public void UnpauseMove()
+        {
+            if (!_isPausing) return;
+            _isPausing = false;
+            RestartCoroutine();
+        }
+
+
+        /// <summary>
+        /// 移動系コルーチンをまとめて停止する
+        /// </summary>
+        private void StopAllMoveCoroutines()
         {
             if (_riseCoroutine != null) StopCoroutine(_riseCoroutine);
             if (_dropCoroutine != null) StopCoroutine(_dropCoroutine);
@@ -478,12 +522,13 @@ namespace Game.Core.Enemy
                 StopCoroutine(_damageDropCoroutine);
                 _damageDropCoroutine = null;
             }
-            _isStopping = true;
         }
+
 
         private void RestartCoroutine()
         {
-            if (_isStopping) return;
+            if (IsMoveSuspended) return;
+
             switch(_enemyMoveState)
             {
                 case EnemyMoveState.Rise:

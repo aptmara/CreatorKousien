@@ -205,7 +205,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd3245b837c9d2b4eaa940b7349a1d27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.WaveTester
-  testWave: {fileID: 11400000, guid: ca4c88f0d9adc6242b67e281585adbd8, type: 2}
+  testWave: {fileID: 11400000, guid: 5f58d2a1ebac6044c8f5a503ecb823f9, type: 2}
   waveRunner: {fileID: 0}
   enemySpawner: {fileID: 0}
   _playResultFlowOnClear: 0

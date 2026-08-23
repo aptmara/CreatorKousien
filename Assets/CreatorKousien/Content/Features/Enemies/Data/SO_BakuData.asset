@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c43347b7f155014787c574697325523, type: 3}
+  m_Name: SO_BakuData
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Baku.BakuData
+  MaxEatCount: 5
+  EatableType: -1
+  EatPauseDuration: 0.6
+  EatCooldown: 0.1
+  MaxBellyScale: {x: 1.4, y: 1.4, z: 1.4}
+  BellyScaleCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  BellyScaleLerpTime: 0.25
+  BurstDelay: 0.4
+  BurstWarningVfxPrefab: {fileID: 2610124898922505302, guid: 66452da6f98c1d84da4beb81f1f02ead, type: 3}
+  BurstDamage: 80
+  BurstRadius: 10
+  BurstVfxPrefab: {fileID: 6653435561416492153, guid: 9f18587fa562008438a6a36774d910ca, type: 3}
+  BurstVfxOffset: {x: 0, y: 0.5, z: 0}
+  BurstVfxLifetime: 3
