@@ -1098,7 +1098,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -1810, y: 59}
+  m_AnchoredPosition: {x: -1699, y: 59}
   m_SizeDelta: {x: 60, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &849415158
@@ -1244,7 +1244,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -61, y: 60}
+  m_AnchoredPosition: {x: -96, y: 60}
   m_SizeDelta: {x: 85, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &894667591
@@ -1804,33 +1804,6 @@ MonoBehaviour:
     m_Flags: 0
   maxKeyWaitTime: 0.2
   defaultSelectCount: 1
---- !u!114 &1443861038
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1443861035}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1b82f16cc2b14e58af79359fa7e9fb62, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Common.MenuSelectionFeedbackController
-  _initialSelection: {fileID: 621927837}
-  _selectables:
-  - {fileID: 621927837}
-  - {fileID: 26571403}
-  - {fileID: 849415158}
-  _selectOnEnable: 1
-  _initializeOnFirstSelection: 0
-  _unselectedScale: 0.9
-  _selectedMinScale: 1
-  _selectedMaxScale: 1.06
-  _animationSpeed: 4
-  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
-  _imageOutlineMaterial: {fileID: 2100000, guid: 8b449c5fadba4283b8d3c7cd647db92a, type: 2}
-  _outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  _outlineSize: 4
 --- !u!4 &1443861037
 Transform:
   m_ObjectHideFlags: 0
@@ -1846,6 +1819,34 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1443861038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1443861035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b82f16cc2b14e58af79359fa7e9fb62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Common.MenuSelectionFeedbackController
+  _initialSelection: {fileID: 621927837}
+  _selectables:
+  - {fileID: 621927837}
+  - {fileID: 2088433470}
+  - {fileID: 894667591}
+  - {fileID: 849415158}
+  _selectOnEnable: 1
+  _initializeOnFirstSelection: 0
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _imageOutlineMaterial: {fileID: 2100000, guid: 8b449c5fadba4283b8d3c7cd647db92a, type: 2}
+  _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
 --- !u!1 &1482799012
 GameObject:
   m_ObjectHideFlags: 0
@@ -1905,8 +1906,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: StageName
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: c9ecfcc1218e802419fa2413548fc04a, type: 2}
+  m_sharedMaterial: {fileID: -4556340863640074316, guid: c9ecfcc1218e802419fa2413548fc04a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2554,8 +2555,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: StageInfo
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: c9ecfcc1218e802419fa2413548fc04a, type: 2}
+  m_sharedMaterial: {fileID: -4556340863640074316, guid: c9ecfcc1218e802419fa2413548fc04a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
