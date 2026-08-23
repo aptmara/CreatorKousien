@@ -33,6 +33,34 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         public float waitTime = 0.0f;
     }
 
+    private sealed class PendingHitStyleEmission
+    {
+        public readonly Vector3 SpawnPosition;
+        public readonly Vector3 Direction;
+        public readonly float SpreadAngle;
+        public readonly float Power;
+        public readonly int TotalCount;
+        public readonly float Duration;
+        public int EmittedCount;
+        public float ElapsedTime;
+
+        public PendingHitStyleEmission(
+            Vector3 spawnPosition,
+            Vector3 direction,
+            float spreadAngle,
+            float power,
+            int count,
+            float duration)
+        {
+            SpawnPosition = spawnPosition;
+            Direction = direction;
+            SpreadAngle = spreadAngle;
+            Power = power;
+            TotalCount = count;
+            Duration = duration;
+        }
+    }
+
     [Header("移動経路の設定")]
     [Tooltip("スタート地点の座標")]
     public Transform startPosition;
@@ -82,6 +110,10 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     [SerializeField] private Vector3 _scale;
     [SerializeField] private SceneEventChannel _channel;
 
+    [Header("Shard分割生成")]
+    [Tooltip("殴打・敵撃破・コンボによる1回分のShardを、何秒かけて生成するか指定します。")]
+    [SerializeField, Min(0.01f)] private float _hitStyleEmissionDurationSeconds = 1f;
+
     [Header("フィールドの傾き")]
     [SerializeField] private FieldData _fieldData;
 
@@ -110,6 +142,7 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     private float _movementCollectibleEmissionAccumulator;
     private Transform _playerEmissionTarget;
     private Transform _fieldWallRoot;
+    private readonly Queue<PendingHitStyleEmission> _pendingHitStyleEmissions = new();
 
     private Vector3 CollectibleEmissionTargetPosition => _collectibleEmissionTarget != null
         ? _collectibleEmissionTarget.position
@@ -221,6 +254,21 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
 
     void Update()
     {
+        bool isHitStyleEmissionActive = _emitter != null
+            && _pendingHitStyleEmissions.Count > 0;
+        ProcessPendingHitStyleEmissions();
+
+        if (isHitStyleEmissionActive)
+        {
+            if (_currentHitStop > 0.0f)
+            {
+                _currentHitStop = Mathf.Max(0.0f, _currentHitStop - Time.deltaTime);
+            }
+
+            UpdateModelShake();
+            return;
+        }
+
         if (_isMovementSuspended) return;
         if (pathSegments == null || pathSegments.Count == 0) return;
 
@@ -656,9 +704,59 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         spawnPosition = MoveSpawnPositionTowardPlayer(spawnPosition, inwardOffset);
         Vector3 direction = CreatePlayerLaunchDirection(spawnPosition);
 
-        for (int index = 0; index < count; index++)
+        _pendingHitStyleEmissions.Enqueue(new PendingHitStyleEmission(
+            spawnPosition,
+            direction,
+            _spreadAngle,
+            power,
+            count,
+            Mathf.Max(0.01f, _hitStyleEmissionDurationSeconds)));
+    }
+
+    private void ProcessPendingHitStyleEmissions()
+    {
+        if (_emitter == null || _pendingHitStyleEmissions.Count == 0)
         {
-            _emitter.EmitFromHit(spawnPosition, direction, _spreadAngle, power, null);
+            return;
+        }
+
+        float remainingDeltaTime = Time.deltaTime;
+
+        while (remainingDeltaTime > 0f && _pendingHitStyleEmissions.Count > 0)
+        {
+            PendingHitStyleEmission pendingEmission = _pendingHitStyleEmissions.Peek();
+            float remainingDuration = pendingEmission.Duration - pendingEmission.ElapsedTime;
+            float consumedTime = Mathf.Min(remainingDeltaTime, remainingDuration);
+            pendingEmission.ElapsedTime += consumedTime;
+            remainingDeltaTime -= consumedTime;
+
+            float progress = Mathf.Clamp01(
+                pendingEmission.ElapsedTime / pendingEmission.Duration);
+            int targetEmissionCount = progress >= 1f
+                ? pendingEmission.TotalCount
+                : Mathf.FloorToInt(pendingEmission.TotalCount * progress);
+            int currentEmissionCount = targetEmissionCount - pendingEmission.EmittedCount;
+
+            for (int index = 0; index < currentEmissionCount; index++)
+            {
+                _emitter.EmitFromHit(
+                    pendingEmission.SpawnPosition,
+                    pendingEmission.Direction,
+                    pendingEmission.SpreadAngle,
+                    pendingEmission.Power,
+                    null);
+            }
+
+            pendingEmission.EmittedCount = targetEmissionCount;
+
+            if (pendingEmission.ElapsedTime >= pendingEmission.Duration)
+            {
+                _pendingHitStyleEmissions.Dequeue();
+            }
+            else
+            {
+                break;
+            }
         }
     }
 
