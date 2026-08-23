@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6703024c9523df5409fd194bd2108fd9, type: 3}
+  m_Name: Enemies_SO_BalanceGimmick_Bring
+  m_EditorClassIdentifier: Assembly-CSharp::BalanceGimmick_BringWeight
+  _weaknessPrefabs:
+  - {fileID: 62624467482769536, guid: 72013cb1df2e4c8408b3c69fd8628c2a, type: 3}
+  _spawnCollectibleList:
+  - {fileID: 11400000, guid: efa7b9a6a24ab4c4bb0517fa1e83a3c6, type: 2}
+  - {fileID: 11400000, guid: f4b5d9ed189e8f34892e8e133cc6ed09, type: 2}
+  - {fileID: 11400000, guid: fbb2cc8966f32664a8448550983be955, type: 2}
+  - {fileID: 11400000, guid: 9998b8dbc0c5ce04e9654396168d57bf, type: 2}
+  - {fileID: 11400000, guid: 0bd912b3ef729924d81e248d6df2ca12, type: 2}
+  _weaknessObjectChance: 0.3
+  _SummonMonster: {fileID: 6342730725154082049, guid: b69e6f96a0b7df14ea6d1426833735b0, type: 3}

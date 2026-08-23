@@ -133,7 +133,10 @@ namespace Game.Core.Enemy
 
             if (definition.IsBoss)
             {
-                if (!body.TryGetComponent(out BossBattleController bossBattleController))
+
+                bool hasBossFlow = body.TryGetComponent(out BossBattleFlowController bossBattleFlowController);
+                bool hasBossController = body.TryGetComponent(out BossBattleController bossBattleController);
+                if (!hasBossController && !hasBossFlow)
                 {
                     Debug.LogError($"[EnemySpawner] ボス「{definition.EnemyId}」のEnemyBodyにBossBattleControllerが設定されていません。", body);
 
@@ -152,9 +155,26 @@ namespace Game.Core.Enemy
                 }
 
                 // 最終フェーズ終了後
-                bossBattleController.BattleCompleted += _ => Destroy(enemyObject);
+                if(!hasBossFlow && bossBattleController != null)
+                {
+                    bossBattleController.BattleCompleted += _ => Destroy(enemyObject);
+                }
+                if(bossBattleFlowController != null)
+                {
+                    bossBattleFlowController.OnBossBattleCompleted += _ => Destroy(enemyObject,5.0f);
+                }
 
-                if (!bossBattleController.StartBattle(bossInstanceId))
+                bool startSuccess = false;
+                if (!hasBossFlow && bossBattleController != null)
+                {
+                    startSuccess = bossBattleController.StartBattle(bossInstanceId);
+                }
+                if (bossBattleFlowController != null)
+                {
+                    startSuccess = bossBattleFlowController.StartBattle(bossInstanceId);
+                }
+
+                if (!startSuccess)
                 {
                     Debug.LogError($"[EnemySpawner] ボス「{definition.EnemyId}」の戦闘開始に失敗しました。", enemyObject);
                     Destroy(enemyObject);

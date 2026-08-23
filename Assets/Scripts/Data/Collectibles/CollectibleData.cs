@@ -22,6 +22,7 @@ namespace Game.Data.Collectibles
         Ice,    // 氷
         Cross,  // 十字架
         Gummy,  // グミ
+        BossWeak,
     }
 
     /// <summary>
@@ -88,5 +89,9 @@ namespace Game.Data.Collectibles
         [Tooltip("グミ用の物理材質")]
         public PhysicsMaterial GummyPhysicsMaterial;
         public int MaxBounceChainCount = 10;
+
+        [Header("=== 天秤弱点専用 ===")]
+        [Tooltip("天秤弱点用の効果時間")]
+        public float WeakenDuration = 3.0f;
     }
 }
