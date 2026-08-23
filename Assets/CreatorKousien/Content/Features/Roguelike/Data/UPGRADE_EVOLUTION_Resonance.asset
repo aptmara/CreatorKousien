@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 730422566b7cc734ea8529d8457fd466, type: 3}
+  m_Name: UPGRADE_EVOLUTION_Resonance
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
+  Id: evolution_resonance
+  DisplayName: "\u81E8\u754C\u5171\u632F"
+  Description: "Combat Pressure\u767A\u52D5\u6642\u3001\u53D6\u5F97\u6E08\u307F\u306E\u5225\u72B6\u614B\u7570\u5E38\u30D3\u30EB\u30C9\u306E\u7D2F\u8A08\u30922\u9032\u3081\u308B\u3002\u76F8\u4E92\u81E8\u754C\u3092\u6301\u3064\u5834\u5408\u30822\u3078\u5F37\u5316\u3055\u308C\u308B\u3002"
+  LevelDescriptions:
+  - "Combat Pressure\u767A\u52D5\u6642\u3001\u53D6\u5F97\u6E08\u307F\u306E\u5225\u72B6\u614B\u7570\u5E38\u30D3\u30EB\u30C9\u306E\u7D2F\u8A08\u30922\u9032\u3081\u308B\u3002\u76F8\u4E92\u81E8\u754C\u3092\u6301\u3064\u5834\u5408\u30822\u3078\u5F37\u5316\u3055\u308C\u308B\u3002"
+  LevelCardDescriptions:
+  - "\u5225\u30D3\u30EB\u30C9\u306E\u7D2F\u8A08 +2\n\u767A\u52D5\u540C\u58EB\u3092\u5F37\u304F\u63A5\u7D9A"
+  Modifiers: []
+  GameplayValue: 0
+  OfferType: 4
+  CombatPressureRuleId: 
+  CombatPressureOutputType: 0
+  RequiresCollectibleFocus: 0
+  SynergyTags: 60
+  SuppressedTags: 0
+  DraftWeight: 1
+  Effects:
+  - rid: 1738816479575933248
+  MaxLevel: 1
+  Icon: {fileID: 21300000, guid: e99c6213aa393d24c92be25281166c93, type: 3}
+  Category: 3
+  Cost: 0
+  CostMagni: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: 1738816479575933248
+      type: {class: CrossFeedEffect, ns: Game.Gameplay.Roguelike.Effects, asm: Assembly-CSharp}
+      data:
+        _enabled: 1
+        _progressAmount: 2
+        _poisonRuleId: poison-field
+        _poisonStatusType: Poison
+        _iceRuleId: ice-stack
+        _iceStatusType: Ice

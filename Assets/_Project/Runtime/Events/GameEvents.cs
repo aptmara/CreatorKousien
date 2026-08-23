@@ -1,4 +1,5 @@
 // 制作者: 山内陽
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.Core.Events
@@ -14,7 +15,48 @@ namespace Game.Core.Events
             Capacity = capacity;
         }
     }
-    
+
+    public readonly struct GameChangeEvent
+    {
+        public readonly int MaxEnemy;
+        public readonly int SpawnedEnemy;
+
+        public GameChangeEvent(int spawnedEnemy, int maxEnemy)
+        {
+            MaxEnemy = maxEnemy;
+            SpawnedEnemy = spawnedEnemy;
+        }
+    }
+
+    public readonly struct GroupChangeEvent
+    {
+        public readonly int CurrentCount;
+        public readonly int MaxCount;
+
+        public GroupChangeEvent(int currentCount, int maxCount)
+        {
+            CurrentCount = currentCount;
+            MaxCount = maxCount;
+        }
+
+
+    }
+
+
+    public readonly struct StageCursorSelectEvent
+    {
+        public readonly string StageName;
+        public readonly string StageInfo;
+        public readonly Sprite StageIcon;
+
+        public StageCursorSelectEvent(string stageName, string stageInfo, Sprite stageIcon)
+        {
+            StageName = stageName;
+            StageInfo = stageInfo;
+            StageIcon = stageIcon;
+        }
+    }
+
     public readonly struct PayloadReleasedEvent
     {
         public readonly int PayloadCount;
@@ -70,6 +112,75 @@ namespace Game.Core.Events
             HitPosition = pos;
             BarrierTransform = barrierTransform;
             ItemDataRaw = itemDataRaw;
+        }
+    }
+
+    /// <summary>
+    /// 敵の状態異常が変化した通知。ラン中の状態異常ビルドが敵全探索をせず集計するために使用する。
+    /// </summary>
+    public readonly struct EnemyStatusChangedEvent
+    {
+        public readonly string EnemyId;
+        public readonly string StatusType;
+        public readonly int StackCount;
+        public readonly bool IsActive;
+
+        public EnemyStatusChangedEvent(string enemyId, string statusType, int stackCount, bool isActive)
+        {
+            EnemyId = enemyId;
+            StatusType = statusType;
+            StackCount = stackCount;
+            IsActive = isActive;
+        }
+    }
+
+    /// <summary>
+    /// HP0到達時、状態異常が解除される直前のスナップショット。
+    /// 状態異常撃破を条件にするラン中ビルドが参照する。
+    /// </summary>
+    public readonly struct EnemyDefeatStatusSnapshotEvent
+    {
+        public readonly string EnemyId;
+        public readonly Vector3 Position;
+        public readonly IReadOnlyList<string> ActiveStatusTypes;
+
+        public EnemyDefeatStatusSnapshotEvent(
+            string enemyId,
+            Vector3 position,
+            IReadOnlyList<string> activeStatusTypes)
+        {
+            EnemyId = enemyId;
+            Position = position;
+            ActiveStatusTypes = activeStatusTypes;
+        }
+    }
+
+    /// <summary>
+    /// 凍結が耐久ヒット数によって破壊された通知。
+    /// 時間切れによる解除とは区別する。
+    /// </summary>
+    public readonly struct EnemyFreezeBrokenEvent
+    {
+        public readonly string EnemyId;
+        public readonly Vector3 Position;
+
+        public EnemyFreezeBrokenEvent(string enemyId, Vector3 position)
+        {
+            EnemyId = enemyId;
+            Position = position;
+        }
+    }
+
+    /// <summary>
+    /// コンボ数を増やさず、現在のコンボ猶予だけを回復する要求。
+    /// </summary>
+    public readonly struct ComboDurationRecoveryRequestedEvent
+    {
+        public readonly float Seconds;
+
+        public ComboDurationRecoveryRequestedEvent(float seconds)
+        {
+            Seconds = seconds;
         }
     }
 

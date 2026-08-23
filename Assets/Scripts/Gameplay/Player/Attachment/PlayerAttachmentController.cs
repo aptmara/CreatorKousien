@@ -13,6 +13,7 @@
 // - 7/16: ゲームオーバー演出用のForceDestroyAttachment()を追加 - Iwai
 // ------------------------------------------------------------
 using UnityEngine;
+using Game.Gameplay.Roguelike.CombatPressure;
 using Game.Gameplay.Player.Progression;
 using System.Collections;
 using Game.Core.Events;
@@ -140,7 +141,8 @@ namespace Game.Gameplay.Player
             }
 
             // 強化によるサイズ倍率
-            float upgradeScale = _runtimeData != null ? _runtimeData.AttachmentScaleMultiplier : 1f;
+            float upgradeScale = (_runtimeData != null ? _runtimeData.AttachmentScaleMultiplier : 1f)
+                * CombatPressurePlayerModifiers.AttachmentScaleMultiplier;
 
             bool forceLarge = _forceLargeByPunch || Time.time < _forceLargeUntil;
             bool expandReady = Time.time >= _expandStartTime;

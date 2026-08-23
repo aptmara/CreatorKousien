@@ -87,12 +87,14 @@ namespace Game.Presentation.UI.Combo
             // 既存の敵ヒットイベントを購読
             EventBus.Subscribe<EnemyHitBatchEvent>(OnEnemyHit);
             EventBus.Subscribe<BarrierHitBatchEvent>(OnBarrierHit);
+            EventBus.Subscribe<ComboDurationRecoveryRequestedEvent>(OnComboDurationRecoveryRequested);
         }
 
         private void OnDisable()
         {
             EventBus.Unsubscribe<EnemyHitBatchEvent>(OnEnemyHit);
             EventBus.Unsubscribe<BarrierHitBatchEvent>(OnBarrierHit);
+            EventBus.Unsubscribe<ComboDurationRecoveryRequestedEvent>(OnComboDurationRecoveryRequested);
         }
 
         private void Update()
@@ -121,6 +123,11 @@ namespace Game.Presentation.UI.Combo
             int hits = ev.HitCount;
             _comboManager.AddCombo(hits);
             _comboGaugeUI?.GaugeUpdate(hits);
+        }
+
+        private void OnComboDurationRecoveryRequested(ComboDurationRecoveryRequestedEvent ev)
+        {
+            _comboManager.RecoverDuration(ev.Seconds);
         }
 
         private void HandleComboUpdated(int currentCombo, float durationRatio)

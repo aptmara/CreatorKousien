@@ -88,6 +88,22 @@ namespace Game.Gameplay.Combo
         }
 
         /// <summary>
+        /// コンボ数は増やさず、現在の猶予時間だけを回復する。
+        /// </summary>
+        public void RecoverDuration(float seconds)
+        {
+            if (_currentCombo <= 0 || seconds <= 0f)
+                return;
+
+            if (_limitMode == DurationLimitMode.ClampToMax)
+                _remainingDuration = Mathf.Min(_maxDuration, _remainingDuration + seconds);
+            else
+                _remainingDuration += seconds;
+
+            OnComboUpdated?.Invoke(_currentCombo, DurationRatio);
+        }
+
+        /// <summary>
         /// 時間経過による減算処理
         /// </summary>
         public void Tick(float deltaTime)

@@ -52,6 +52,11 @@ namespace Game.Core.Enemy
         public bool IsBoss => _definition != null && _definition.IsBoss;
 
         /// <summary>
+        /// 現在の状態
+        /// </summary>
+        public EnemyState CurrentState => _stateManager != null ? _stateManager.CurrentState : EnemyState.Normal;
+
+        /// <summary>
         /// 実行時に割り当てられる一意の敵ID。複数敵がいる場合のイベントのルーティングに使用する。
         /// </summary>
         public string InstanceEnemyId { get; private set; }
@@ -180,7 +185,14 @@ namespace Game.Core.Enemy
             // 上昇開始
             _rising.StartRise(spawnSummary.TargetPos, spawnSummary.UndergroundOffset, transform);
 
-            _debuffManager = new EnemyDebuffManager(HandleDamageOverTime, HandleFreeze, HandleFreezeEnd);
+            _debuffManager = new EnemyDebuffManager(
+                HandleDamageOverTime,
+                HandleFreeze,
+                HandleFreezeEnd,
+                (statusType, stackCount, isActive) =>
+                    EventBus.Publish(new EnemyStatusChangedEvent(InstanceEnemyId, statusType, stackCount, isActive)),
+                statusType => EventBus.Publish(
+                    new EnemyFreezeBrokenEvent(InstanceEnemyId, transform.position)));
 
             // VFX コンポーネントはオプション（不要な敵はコンポーネントを外す）
             var statusVFX = GetComponent<EnemyStatusAilmentVFX>();
@@ -361,6 +373,10 @@ namespace Game.Core.Enemy
                 _downTimerCoroutine = null;
             }
 
+            EventBus.Publish(new EnemyDefeatStatusSnapshotEvent(
+                InstanceEnemyId,
+                transform.position,
+                _debuffManager.GetActiveDebuffTypes()));
             _debuffManager.RemoveAllDebuffs();
             _barrierGauge.SetActive(false);
             _rising.StopMove();
@@ -692,17 +708,26 @@ namespace Game.Core.Enemy
         private Action<float> _damageRequest;
         private Action<float> _freezeRequest;
         private Action _freezeEndRequest;
+        private readonly Action<string, int, bool> _statusChanged;
+        private readonly Action<string> _freezeBroken;
 
         /// <summary>デバフが新規付与されたときに発火する（debuffType）。</summary>
         public event Action<string> OnDebuffAdded;
         /// <summary>デバフが解除されたときに発火する（debuffType）。</summary>
         public event Action<string> OnDebuffRemoved;
 
-        public EnemyDebuffManager(Action<float> damageRequest, Action<float> freezeRequest, Action freezeEndRequest)
+        public EnemyDebuffManager(
+            Action<float> damageRequest,
+            Action<float> freezeRequest,
+            Action freezeEndRequest,
+            Action<string, int, bool> statusChanged = null,
+            Action<string> freezeBroken = null)
         {
             _damageRequest = damageRequest;
             _freezeRequest = freezeRequest;
             _freezeEndRequest = freezeEndRequest;
+            _statusChanged = statusChanged;
+            _freezeBroken = freezeBroken;
         }
 
         public void AddHit()
@@ -715,17 +740,12 @@ namespace Game.Core.Enemy
 
         public void AddDebuff(EnemyDebuffConfig debuffConfig)
         {
-            // すでに別の状態異常がかかっている場合は、もとのものを維持して新しい状態異常を無視する
-            if (_activeDebuffs.Count > 0 && !_activeDebuffs.ContainsKey(debuffConfig.DebuffType))
-            {
-                return;
-            }
-
             EnemyDebuffRuntime currentActivDebuff;
             if (_activeDebuffs.TryGetValue(debuffConfig.DebuffType, out currentActivDebuff))
             {
                 // 状態異常効果時間をリセットする
                 currentActivDebuff.MergeDebuffEffect(debuffConfig);
+                _statusChanged?.Invoke(debuffConfig.DebuffType, currentActivDebuff.StackCount, true);
 
                 // 追加された状態異常に応じて効果リクエストを送信
                 if (debuffConfig.UseFreeze)
@@ -742,6 +762,7 @@ namespace Game.Core.Enemy
                 Debug.Log(debuffConfig.DebuffType.ToString() + "を追加！");
 
                 OnDebuffAdded?.Invoke(debuffConfig.DebuffType);
+                _statusChanged?.Invoke(debuffConfig.DebuffType, data.StackCount, true);
 
                 // 追加された状態異常に応じて効果リクエストを送信
                 if(data.IsFreezeActive)
@@ -757,6 +778,7 @@ namespace Game.Core.Enemy
             _activeDebuffs.Remove(debuffKey);
 
             OnDebuffRemoved?.Invoke(debuffKey);
+            _statusChanged?.Invoke(debuffKey, 0, false);
 
             // 解除後の状況に応じてコールバックを返す
             if (!IsFreeze())
@@ -776,12 +798,18 @@ namespace Game.Core.Enemy
             foreach (var key in _activeDebuffs.Keys.ToList())
             {
                 OnDebuffRemoved?.Invoke(key);
+                _statusChanged?.Invoke(key, 0, false);
             }
             _activeDebuffs.Clear();
         }
         public bool HasDebuff(string debuffType)
         {
             return _activeDebuffs.ContainsKey(debuffType);
+        }
+
+        public IReadOnlyList<string> GetActiveDebuffTypes()
+        {
+            return _activeDebuffs.Keys.ToArray();
         }
 
         public void UpdateDebuff()
@@ -831,6 +859,7 @@ namespace Game.Core.Enemy
             // ダメージ要求を送る
             float breakDamage = data.FreezeBreakDamage;
             _damageRequest?.Invoke(breakDamage);
+            _freezeBroken?.Invoke(debuffType);
 
             // 他に行動制限系の処理があるか確認
             if (IsFreeze()) return;
@@ -852,6 +881,7 @@ namespace Game.Core.Enemy
             // 値を削除
             _activeDebuffs.Remove(debuffType);
             OnDebuffRemoved?.Invoke(debuffType);
+            _statusChanged?.Invoke(debuffType, 0, false);
             // 凍結解除
             if (debuff.UseFreeze)
             {
@@ -879,6 +909,7 @@ namespace Game.Core.Enemy
             // 共通デバフ項目
             public string DebuffType { get; private set; }
             public float Duration { get; private set; }
+            public int StackCount { get; private set; }
 
             Action<string> OnDamageOverTime;
             Action<string> OnFreezeEnd;
@@ -925,6 +956,7 @@ namespace Game.Core.Enemy
             {
                 DebuffType = config.DebuffType;
                 Duration = config.Duration;
+                StackCount = 1;
 
                 // 継続ダメージの初期化
                 UseDamageOverTime = config.UseDamageOverTime;
@@ -959,6 +991,7 @@ namespace Game.Core.Enemy
 
                 // 全体の効果時間をリセット
                 Duration = debuff.Duration;
+                StackCount++;
 
                 // 継続ダメージの効果をリセットする
                 if (debuff.UseDamageOverTime)

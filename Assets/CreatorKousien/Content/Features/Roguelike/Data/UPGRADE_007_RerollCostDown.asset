@@ -15,12 +15,23 @@ MonoBehaviour:
   Id: 7
   DisplayName: "\u30EA\u30ED\u30FC\u30EB\u5024\u4E0B\u3052"
   Description: "\u5F37\u5316\u30A2\u30A4\u30C6\u30E0\u306E\u518D\u62BD\u9078\u306E\u30B3\u30B9\u30C8\u304C\u6E1B\u5C11\uFF01"
-  Modifiers:
-  - TargetStat: 0
-    Operation: 0
-    Value: -50
-  MaxLevel: 3
+  LevelDescriptions: []
+  LevelCardDescriptions: []
+  Modifiers: []
+  GameplayValue: 0.2
+  OfferType: 0
+  CombatPressureRuleId:
+  CombatPressureOutputType: 0
+  RequiresCollectibleFocus: 0
+  SynergyTags: 0
+  SuppressedTags: 0
+  DraftWeight: 1
+  Effects: []
+  MaxLevel: 5
   Icon: {fileID: 21300000, guid: 69f4b055ac6002a428d312ab3ba44fbf, type: 3}
   Category: 0
   Cost: 200
   CostMagni: 1.2
+  references:
+    version: 2
+    RefIds: []

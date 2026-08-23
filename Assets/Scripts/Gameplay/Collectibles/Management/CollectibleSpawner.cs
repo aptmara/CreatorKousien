@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Data.Collectibles;
 using Game.Core.Roguelike;
+using Game.Gameplay.Roguelike.CombatPressure;
 
 namespace Game.Gameplay.Collectibles
 {
@@ -133,6 +134,63 @@ namespace Game.Gameplay.Collectibles
             }
         }
 
+        /// <summary>
+        /// 指定したモデルだけを位置指定で生成する。ビルド由来の生成では通常抽選を経由しない。
+        /// </summary>
+        public void SpawnCollectiblesAt(Vector3 position, int count, CollectibleData data)
+        {
+            if (count <= 0 || data == null || !RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)data.Type))
+            {
+                return;
+            }
+
+            if (!CanSpawnAtPosition())
+            {
+                return;
+            }
+
+            position = GetHeightAdjustedPosition(position);
+            for (int i = 0; i < count; i++)
+            {
+                SpawnOne(position, data);
+            }
+        }
+
+        /// <summary>
+        /// 指定位置の上空から、指定したモデルだけを降下させる。
+        /// </summary>
+        public void SpawnCollectiblesFromAboveAt(
+            Vector3 position,
+            int count,
+            CollectibleData data,
+            float dropHeight = 10f,
+            float horizontalSpread = 3f,
+            float scaleMultiplier = 1f)
+        {
+            if (count <= 0 || data == null || !RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)data.Type))
+            {
+                return;
+            }
+
+            if (!CanSpawnAtPosition())
+            {
+                return;
+            }
+
+            Vector3 groundPosition = GetHeightAdjustedPosition(position);
+            for (int i = 0; i < count; i++)
+            {
+                Vector2 offset = Random.insideUnitCircle * horizontalSpread;
+                Vector2 drift = Random.insideUnitCircle;
+                Vector3 spawnPosition = groundPosition + new Vector3(
+                    offset.x,
+                    Mathf.Max(1f, dropHeight) + Random.Range(0f, 2f),
+                    offset.y);
+                Vector3 initialVelocity = new Vector3(drift.x * 0.5f, -1f, drift.y * 0.5f);
+                SpawnOne(spawnPosition, data, initialVelocity, scaleMultiplier);
+            }
+        }
+
         private Vector3 GetHeightAdjustedPosition(Vector3 position)
         {
             Vector3 origin = position + Vector3.up * 50f;
@@ -187,12 +245,26 @@ namespace Game.Gameplay.Collectibles
         {
             CollectibleData data = GetRandomUnlockedData();
             if (data == null) return;
+            SpawnOne(position, data);
+        }
+
+        private void SpawnOne(Vector3 position, CollectibleData data)
+        {
+            SpawnOne(position, data, CreateInitialVelocity());
+        }
+
+        private void SpawnOne(Vector3 position, CollectibleData data, Vector3 initialVelocity)
+            => SpawnOne(position, data, initialVelocity, 1f);
+
+        private void SpawnOne(Vector3 position, CollectibleData data, Vector3 initialVelocity, float scaleMultiplier)
+        {
             CollectibleObject obj = _pool.Get();
 
             obj.transform.position = position;
             obj.transform.rotation = Random.rotation;
             obj.Initialize(data, ReturnToPool, _canBeCollectedByPlayer);
-            obj.SetInitialMotion(CreateInitialVelocity(), Random.insideUnitSphere * Random.Range(2f, 8f));
+            obj.transform.localScale *= Mathf.Max(0.1f, scaleMultiplier);
+            obj.SetInitialMotion(initialVelocity, Random.insideUnitSphere * Random.Range(2f, 8f));
 
             _registry.Register(obj);
         }
@@ -230,11 +302,21 @@ namespace Game.Gameplay.Collectibles
                 return null;
             }
 
-            int selectedIndex = Random.Range(0, unlockedCount);
+            float totalWeight = 0f;
+            foreach (CollectibleData data in _spawnableData)
+            {
+                if (data != null && RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)data.Type))
+                {
+                    totalWeight += CombatPressureSpawnWeights.GetWeight(data.Type);
+                }
+            }
+
+            float selectedWeight = Random.value * totalWeight;
             foreach (CollectibleData data in _spawnableData)
             {
                 if (data == null || !RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)data.Type)) continue;
-                if (selectedIndex-- == 0) return data;
+                selectedWeight -= CombatPressureSpawnWeights.GetWeight(data.Type);
+                if (selectedWeight <= 0f) return data;
             }
 
             return null;
