@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Data.Collectibles;
 using Game.Core.Roguelike;
+using UnityEngine.Polybrush;
 
 namespace Game.Gameplay.Collectibles
 {
@@ -193,6 +194,28 @@ namespace Game.Gameplay.Collectibles
             obj.transform.rotation = Random.rotation;
             obj.Initialize(data, ReturnToPool, _canBeCollectedByPlayer);
             obj.SetInitialMotion(CreateInitialVelocity(), Random.insideUnitSphere * Random.Range(2f, 8f));
+
+            _registry.Register(obj);
+        }
+
+        /// <summary>
+        /// 指定したCollectibleDataを指定位置にランダムな選択なしで生成する。
+        /// ボスギミック等種類を確定させたいケースで使用する
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="position"></param>
+        public void SpawnSpecificAt(CollectibleData data, Vector3 position)
+        {
+            if(data == null) return;
+            if (!CanSpawnAtPosition()) return;
+
+            position = GetHeightAdjustedPosition(position);
+            CollectibleObject obj = _pool.Get();
+
+            obj.transform.position = position;
+            obj.transform.rotation = Quaternion.identity;
+            obj.Initialize(data, ReturnToPool, _canBeCollectedByPlayer);
+            obj.SetInitialMotion(CreateInitialVelocity(), Random.insideUnitSphere * Random.Range(2.0f, 8.0f));
 
             _registry.Register(obj);
         }

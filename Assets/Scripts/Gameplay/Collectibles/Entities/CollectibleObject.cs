@@ -12,6 +12,7 @@ using Game.Core.Events;
 using System;
 using System.Collections.Generic;
 using Game.Core.Roguelike;
+using Game.Gameplay.Enemy.Boss;
 
 namespace Game.Gameplay.Collectibles
 {
@@ -79,6 +80,7 @@ namespace Game.Gameplay.Collectibles
         public string Id => _data != null ? _data.Id : string.Empty;
         public float DamageAmount => _data != null ? _data.DamageAmount : 0f;
 
+        public CollectibleType Type => _data != null ? _data.Type : default;
         public float SameItemCooldown => _data != null ? _data.SameItemCooldown : 0.25f;
 
         public bool CanBeCollectedByPlayer { get; private set; } = true;
@@ -493,6 +495,12 @@ namespace Game.Gameplay.Collectibles
             if (_data.Type == CollectibleType.Cross)
             {
                 SpawnCrossLaser(hitPosition);
+            }
+
+            // 4. 天秤弱点専用ロジック
+            if(_data.Type == CollectibleType.BossWeak)
+            {
+                var weaker = enemyTransform != null ? enemyTransform.GetComponentInParent<IBossHittable>() : null;
             }
 
             return true;

@@ -1,12 +1,10 @@
+#if UNITY_EDITOR
 using Game.Gameplay.Enemy.Boss;
 using System.IO;
-using Unity.Jobs;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 
 using EnemyData = Game.Core.Enemy.EnemyDefinition;
@@ -36,7 +34,7 @@ public class UniversalSOToolWindow : EditorWindow
     private Editor _prefabEditor;
 
     //===== BossGimmickTimeline =====
-    private BossBattleController targetController;
+    private BossBattleFlowController targetController;
     private float zoom = 20.0f;
     private Vector2 scrollPos;
 
@@ -435,16 +433,104 @@ public class UniversalSOToolWindow : EditorWindow
     //=========== BossTimeLine ===============
     private void SetupBossTimeline(VisualElement tab)
     {
-        EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-        zoom = EditorGUILayout.Slider("Zoom", zoom, 5.0f, 50.0f, GUILayout.Width(200));
+        tab.style.paddingTop = 10;
+        tab.style.flexGrow = 1;
 
-        if (GUILayout.Button("As Gimmick Slot", EditorStyles.toolbarButton, GUILayout.Width(120)))
+        var controllerField = new ObjectField("対象ボスコントローラー")
         {
-            //targetController
-        }
+            objectType = typeof(BossBattleFlowController),
+            allowSceneObjects = true,
+            value = targetController,
+        };
 
+        controllerField.RegisterValueChangedCallback(evt =>
+        {
+            targetController = evt.newValue as BossBattleFlowController;
+        });
+        tab.Add(controllerField);
+
+        var timelineContainer = new IMGUIContainer(() =>
+        {
+            if (targetController == null)
+            {
+                EditorGUILayout.HelpBox("シーン上のBossGimmickController（またはController）をセットしてください", MessageType.Info);
+                return;
+            }
+
+            DrawToolbar();
+            DrawTimeline();
+        });
+
+        timelineContainer.style.flexGrow = 1;
+        timelineContainer.style.marginTop = 10;
+        tab.Add(timelineContainer);
     }
 
+    private void DrawToolbar()
+    {
+        EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+        zoom = EditorGUILayout.Slider("Zoom Scale", zoom, 5.0f, 50.0f, GUILayout.Width(250));
+
+        if(GUILayout.Button("+ Gimmick Slot 追加",EditorStyles.toolbarButton,GUILayout.Width(130)))
+        {
+            Undo.RecordObject(targetController, "Add Gimmick Slot");
+            targetController.GimmickSlots.Add(new GimmickSlot());
+        }
+        EditorGUILayout.EndHorizontal();
+    }
+
+    private void DrawTimeline()
+    {
+        if (targetController == null || targetController.GimmickSlots == null) return;
+
+        scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+        Rect trackRect = GUILayoutUtility.GetRect(2000,targetController.GimmickSlots.Count * 45 + 30);
+
+        Handles.color = new Color(1.0f,1.0f,1.0f,0.15f);
+        for (int i = 0; i < 200; i+=5)
+        {
+            float x = i + zoom;
+            Handles.DrawLine(new Vector3(x, trackRect.y), new Vector3(x, trackRect.y));
+            GUI.Label(new Rect(x + 2, trackRect.y, 40, 20), $"{i}s", EditorStyles.miniLabel);
+        }
+        /*
+        for (int i = 0; i < targetController.GimmickSlots.Count; ++i)
+        {
+            var slot = targetController.GimmickSlots[i];
+            if (slot.data == null) return;
+
+            float y = trackRect.y + 25 + (i * 40);
+
+            if (slot.data.ExecutionType == GimmickExecutionType.Timeline)
+            {
+                float x = slot.data.triggerTime * zoom;
+                float width = slot.data.waitForCompletion ? 120.0f : 80.0f;
+                Rect blockRect = new Rect(x, y, width, 32);
+
+                GUI.backgroundColor = slot.data.editColor;
+                string label = $"{slot.data.BossGimmickName}\n{(slot.data.waitForCompletion ? "[Wait]" : "[Parallel]")}";
+                GUI.Box(blockRect, label,EditorStyles.miniButton);
+                GUI.backgroundColor = Color.white;
+
+                Event e = Event.current;
+                if(e.type == EventType.MouseDrag && blockRect.Contains(e.mousePosition - e.delta))
+                {
+                    Undo.RecordObject(slot.data, "Move Keyframe Time");
+                    slot.data.triggerTime = Mathf.Max(0, e.mousePosition.x / zoom);
+                    Repaint();
+                }
+            }
+            else
+            {
+                Rect blockRect = new Rect(10, y, 170, 32);
+                GUI.backgroundColor = Color.gray;
+                GUI.Box(blockRect, $"{slot.data.BossGimmickName}\n[Interval: {slot.data.minInterval}s]", EditorStyles.miniButton);
+                GUI.backgroundColor = Color.white;
+            }
+        }*/
+
+        EditorGUILayout.EndScrollView();
+    }
 
     private MonoScript FindMonoScriptOf<T>() where T : ScriptableObject
     {
@@ -472,3 +558,4 @@ public class UniversalSOToolWindow : EditorWindow
         }
     }
 }
+#endif
