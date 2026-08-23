@@ -10,4 +10,6 @@ public enum UpgradeCategory
 {
     Player,     // プレイヤー強化 - 移動速度
     Drop,       // ドロップ強化 - 出現数
+    Engine,     // コンボ・状態異常を起点にするビルドエンジン
+    Relic,      // 生成や抽選のルール変更
 }

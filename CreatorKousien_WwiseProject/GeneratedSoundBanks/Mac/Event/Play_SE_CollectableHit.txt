@@ -1,0 +1,3 @@
+Event	ID	Name			Wwise Object Path	Notes
+	3880553476	Play_SE_CollectableHit			\Default Work Unit\Play_SE_CollectableHit	
+

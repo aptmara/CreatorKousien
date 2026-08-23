@@ -7,6 +7,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.InputSystem;
+using System.Collections.Generic;
+using System.Xml.Serialization;
+using System.Linq;
 
 
 public class StageSelectController : MonoBehaviour
@@ -14,21 +18,70 @@ public class StageSelectController : MonoBehaviour
     [SerializeField] private string _titleSceneName = "Title";
     [SerializeField] private string _loadingSceneName = "Loading";
 
-    [SerializeField] private Button _backButton;
 
-    [SerializeField] private Button _stageButton;
+
+    [SerializeField] private SelectSceneButtonBase[] _stageButtons;
+    [SerializeField] private InputAction _cursorInput;
+    [SerializeField] private InputAction _clickInput;
+
+    [SerializeField] private float maxKeyWaitTime;
+
+    [SerializeField] private int defaultSelectCount;
+
+    private int select;
+
+    private float keyWaitTime = 0;
 
     private bool isSelectedStage = false;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+
+    private void OnEnable()
     {
-        
+        _cursorInput.Enable();
+        _clickInput.Enable();
     }
 
-    // Update is called once per frame
+    private void OnDisable()
+    {
+        _cursorInput.Disable();
+        _clickInput.Disable();
+    }
+
+    private void Start()
+    {
+        select = defaultSelectCount;
+        if (_stageButtons.Length > select) _stageButtons[select].OnSelectCursor();
+        else _stageButtons[0].OnSelectCursor();
+            keyWaitTime = 0;
+    }
+
     void Update()
     {
-        
+        if (_stageButtons.Length == 0) return;
+
+        Vector2 axis = _cursorInput.ReadValue<Vector2>();
+
+        if (keyWaitTime > 0)
+        {
+            keyWaitTime -= Time.deltaTime;
+            keyWaitTime = Mathf.Clamp(keyWaitTime, 0, maxKeyWaitTime);
+        }
+        if (axis.x != 0.0f && keyWaitTime <= 0.0f)
+        {
+            keyWaitTime = maxKeyWaitTime;
+
+            Debug.Log(axis.x);
+            float sign = Mathf.Sign(axis.x);
+            select += (int)(1.0f * sign);
+            select = Math.Clamp(select, 0, _stageButtons.Length - 1);
+
+            _stageButtons[select].OnSelectCursor();
+        }
+
+        if(_clickInput.triggered)
+        {
+            _stageButtons[select].OnClick();
+        }
+
     }
 
 

@@ -6,12 +6,11 @@ namespace Game.Presentation.Audio
     [DisallowMultipleComponent]
     public sealed class EnemyHitAudioPresenter : MonoBehaviour
     {
-        private const string HitEventName = "Play_CollectableHit";
-        private const string HitStreakRtpcName = "HitStreak";
-
         [Header("連続ヒット")]
         [SerializeField, Min(0f)] private float _streakWindowSeconds = 0.6f;
         [SerializeField, Min(1)] private int _maxStreak = 8;
+        [SerializeField] private AK.Wwise.Event _hitEvent;
+        [SerializeField] private AK.Wwise.RTPC _hitStreakRtpc;
 
         private int _currentStreak;
         private float _lastHitTime = float.NegativeInfinity;
@@ -48,8 +47,8 @@ namespace Game.Presentation.Audio
             _currentStreak = Mathf.Clamp(_currentStreak, 1, _maxStreak);
             _lastHitTime = currentTime;
 
-            AkUnitySoundEngine.SetRTPCValue(HitStreakRtpcName, _currentStreak, gameObject);
-            AkUnitySoundEngine.PostEvent(HitEventName, gameObject);
+            _hitStreakRtpc?.SetValue(gameObject, _currentStreak);
+            _hitEvent?.Post(gameObject);
         }
     }
 }

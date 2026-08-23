@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "1815017956",
+    "Type": "Event",
+    "GUID": "{9BFC02AC-3A40-4C0F-A376-8AB626BE1707}",
+    "Language": "SFX",
+    "Hash": "{0D775E22-5F47-2454-BCA0-312FF284CCC6}",
+    "ObjectPath": "Play_SE_Barrier_01",
+    "ShortName": "Play_SE_Barrier_01",
+    "Path": "Event/Play_SE_Barrier_01.bnk",
+    "Media": [
+     {
+      "Id": "2146053747",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "BarrierBreak_01.wav",
+      "Path": "Media/2146053747.wem",
+      "CachePath": "01/{01409767-2C82-22DB-A211-005D78E4E0CA}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "1815017956",
+      "Name": "Play_SE_Barrier_01",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Barrier_01",
+      "GUID": "{9BFC02AC-3A40-4C0F-A376-8AB626BE1707}",
+      "DurationType": "OneShot",
+      "DurationMin": "1.515102",
+      "DurationMax": "1.515102",
+      "MediaRefs": [
+       {
+        "Id": "2146053747"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{0AC3040C-B878-6618-3A67-D1DB3C21E0C7}"
+ }
+}

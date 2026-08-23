@@ -14,6 +14,7 @@
 // - 7/11 プレイヤーがクリア時に勝手に移動するバグ修正 - 浅野
 // ------------------------------------------------------------
 using UnityEngine;
+using Game.Gameplay.Roguelike.CombatPressure;
 using Game.Gameplay.Player.Progression;
 using Game.Gameplay.Stage;
 using UnityEngine.UI;
@@ -84,7 +85,8 @@ namespace Game.Gameplay.Player
         /// <summary>
         /// 現在の移動速度倍率(null の場合は1.0)
         /// </summary>
-        private float MoveSpeedMultiplier => _runtimeData != null ? _runtimeData.MoveSpeedMultiplier : 1f;
+        private float MoveSpeedMultiplier => (_runtimeData != null ? _runtimeData.MoveSpeedMultiplier : 1f)
+            * CombatPressurePlayerModifiers.MoveSpeedMultiplier;
 
         private float _targetYaw;
 
@@ -302,6 +304,20 @@ namespace Game.Gameplay.Player
         }
 
 
+        /// <summary>
+        /// プレイヤーの物理演算の凍結を解除する関数
+        /// </summary>
+        public void UnfreezePhysics()
+        {
+            if (_rigidbody == null)
+            {
+                return;
+            }
+            _rigidbody.isKinematic = false;
+            _rigidbody.linearVelocity = Vector3.zero;
+            _rigidbody.angularVelocity = Vector3.zero;
+        }
+
 
         /// <summary>
         /// プレイヤーの移動を停止する関数
@@ -319,6 +335,37 @@ namespace Game.Gameplay.Player
             float alongUp = Vector3.Dot(velocity, up);
 
             _rigidbody.linearVelocity = up * alongUp;
+            _rigidbody.angularVelocity = Vector3.zero;
+        }
+
+
+        /// <summary>
+        /// 指定した位置へワープさせ、向きをフィールドの傾きに合わせ直す関数
+        /// </summary>
+        /// <param name="position">移動先のワールド座標</param>
+        /// <param name="yaw">フィール度基準の向き</param>
+        public void WarpTo(Vector3 position, float yaw)
+        {
+            if (_rigidbody == null)
+            {
+                return;
+            }
+
+            _targetYaw = yaw;
+
+            // Startと同じ計算で、フィールドの傾きに沿った向きを作る
+            Vector3 up = Up;
+
+            Vector3 planeForward = Vector3.ProjectOnPlane(Vector3.forward, up).normalized;
+            Vector3 faceDir = Quaternion.AngleAxis(_targetYaw, up) * planeForward;
+            Quaternion rot = Quaternion.LookRotation(faceDir, up);
+
+            // 補間が尾を引かないよう、RigidbodyとTransformの両方を合わせる
+            transform.SetPositionAndRotation(position, rot);
+            _rigidbody.position = position;
+            _rigidbody.rotation = rot;
+
+            _rigidbody.linearVelocity = Vector3.zero;
             _rigidbody.angularVelocity = Vector3.zero;
         }
     }

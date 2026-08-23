@@ -283,9 +283,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &160939240378280504
 GameObject:
   m_ObjectHideFlags: 0
@@ -418,9 +426,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &177248023893571288
 GameObject:
   m_ObjectHideFlags: 0
@@ -553,9 +569,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &284794341766146670
 GameObject:
   m_ObjectHideFlags: 0
@@ -688,9 +712,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &328153372755632634
 GameObject:
   m_ObjectHideFlags: 0
@@ -823,9 +855,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &395266399814408073
 GameObject:
   m_ObjectHideFlags: 0
@@ -975,6 +1015,7 @@ GameObject:
   - component: {fileID: 1269412832872466715}
   - component: {fileID: 6438909173142731814}
   - component: {fileID: 5273269800326780318}
+  - component: {fileID: 8000000000000000001}
   m_Layer: 5
   m_Name: KeyConfigTab
   m_TagString: Untagged
@@ -1084,6 +1125,27 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8000000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 416934607279293442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
+  _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &450756878804456726
 GameObject:
   m_ObjectHideFlags: 0
@@ -1352,9 +1414,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &498094871186117397
 GameObject:
   m_ObjectHideFlags: 0
@@ -1911,9 +1981,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &879965735705960231
 GameObject:
   m_ObjectHideFlags: 0
@@ -2196,9 +2274,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &961540268598570605
 GameObject:
   m_ObjectHideFlags: 0
@@ -3303,9 +3389,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &1900478536298179376
 GameObject:
   m_ObjectHideFlags: 0
@@ -3713,9 +3807,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &1959583423971978268
 GameObject:
   m_ObjectHideFlags: 0
@@ -3848,9 +3950,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &1964047199780792672
 GameObject:
   m_ObjectHideFlags: 0
@@ -4258,9 +4368,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &2037094302882792576
 GameObject:
   m_ObjectHideFlags: 0
@@ -4681,9 +4799,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &2292970296981896752
 GameObject:
   m_ObjectHideFlags: 0
@@ -6459,6 +6585,7 @@ GameObject:
   - component: {fileID: 8402043977207243154}
   - component: {fileID: 529599291919044924}
   - component: {fileID: 2373166197304849131}
+  - component: {fileID: 8000000000000000002}
   m_Layer: 5
   m_Name: ContinueButton
   m_TagString: Untagged
@@ -6475,7 +6602,7 @@ RectTransform:
   m_GameObject: {fileID: 3572420630460547704}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.8627, y: 1.8627, z: 1.8627}
+  m_LocalScale: {x: 1.49016, y: 1.49016, z: 1.49016}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8212174340071120019}
@@ -6543,7 +6670,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.58, g: 0.58, b: 0.58, a: 1}
@@ -6568,6 +6695,28 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8000000000000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3572420630460547704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
+  _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.8
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.2
+  _animationSpeed: 4
+  _animationTarget: {fileID: 4499138225183068781}
+  _visualRoot: {fileID: 4499138225183068781}
+  _imageOutlineMaterial: {fileID: 2100000, guid: 8b449c5fadba4283b8d3c7cd647db92a, type: 2}
 --- !u!1 &3573218135171888976
 GameObject:
   m_ObjectHideFlags: 0
@@ -6974,9 +7123,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &3808863774911890497
 GameObject:
   m_ObjectHideFlags: 0
@@ -7201,6 +7358,7 @@ GameObject:
   - component: {fileID: 55859163822978380}
   - component: {fileID: 2175525292788295273}
   - component: {fileID: 571924166886375515}
+  - component: {fileID: 8000000000000000003}
   m_Layer: 5
   m_Name: ExitButton
   m_TagString: Untagged
@@ -7217,7 +7375,7 @@ RectTransform:
   m_GameObject: {fileID: 4024908662843768582}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.8627, y: 1.8627, z: 1.8627}
+  m_LocalScale: {x: 1.49016, y: 1.49016, z: 1.49016}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4099238084622355500}
@@ -7285,7 +7443,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.58, g: 0.58, b: 0.58, a: 1}
@@ -7310,6 +7468,28 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8000000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4024908662843768582}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
+  _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.8
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.2
+  _animationSpeed: 0
+  _animationTarget: {fileID: 7799218085855556777}
+  _visualRoot: {fileID: 7799218085855556777}
+  _imageOutlineMaterial: {fileID: 2100000, guid: 8b449c5fadba4283b8d3c7cd647db92a, type: 2}
 --- !u!1 &4026607186005672999
 GameObject:
   m_ObjectHideFlags: 0
@@ -7671,6 +7851,7 @@ GameObject:
   - component: {fileID: 2168426520011100058}
   - component: {fileID: 2568676568043945707}
   - component: {fileID: 969438979994164534}
+  - component: {fileID: 8000000000000000004}
   m_Layer: 5
   m_Name: ViewTab
   m_TagString: Untagged
@@ -7780,6 +7961,27 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8000000000000000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4362356268959425469}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
+  _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &4394834453617238132
 GameObject:
   m_ObjectHideFlags: 0
@@ -8049,9 +8251,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &4453100819736821768
 GameObject:
   m_ObjectHideFlags: 0
@@ -9066,9 +9276,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &5436674471134602273
 GameObject:
   m_ObjectHideFlags: 0
@@ -9201,9 +9419,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &5469062153297688090
 GameObject:
   m_ObjectHideFlags: 0
@@ -9411,9 +9637,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &5660493447077255535
 GameObject:
   m_ObjectHideFlags: 0
@@ -9831,9 +10065,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &6136695958258518501
 GameObject:
   m_ObjectHideFlags: 0
@@ -10293,6 +10535,7 @@ GameObject:
   - component: {fileID: 7752808482092390863}
   - component: {fileID: 194564376966108795}
   - component: {fileID: 5247671909220065272}
+  - component: {fileID: 8000000000000000005}
   m_Layer: 5
   m_Name: AudioTab
   m_TagString: Untagged
@@ -10402,6 +10645,27 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8000000000000000005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6476928171508725816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
+  _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &6512677799056789218
 GameObject:
   m_ObjectHideFlags: 0
@@ -10572,9 +10836,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &6574316214871778316
 GameObject:
   m_ObjectHideFlags: 0
@@ -10706,9 +10978,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &6590937414139718683
 GameObject:
   m_ObjectHideFlags: 0
@@ -10757,6 +11037,7 @@ GameObject:
   - component: {fileID: 5247254304022557434}
   - component: {fileID: 560133968342293317}
   - component: {fileID: 2798209367417776666}
+  - component: {fileID: 8000000000000000006}
   m_Layer: 5
   m_Name: OptionButton
   m_TagString: Untagged
@@ -10773,7 +11054,7 @@ RectTransform:
   m_GameObject: {fileID: 6638330484228386288}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.8627, y: 1.8627, z: 1.8627}
+  m_LocalScale: {x: 1.49016, y: 1.49016, z: 1.49016}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3219910053042428415}
@@ -10841,7 +11122,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.58, g: 0.58, b: 0.58, a: 1}
@@ -10866,6 +11147,28 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8000000000000000006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6638330484228386288}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
+  _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.8
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.2
+  _animationSpeed: 4
+  _animationTarget: {fileID: 126237241023283751}
+  _visualRoot: {fileID: 126237241023283751}
+  _imageOutlineMaterial: {fileID: 2100000, guid: 8b449c5fadba4283b8d3c7cd647db92a, type: 2}
 --- !u!1 &6643097076937063980
 GameObject:
   m_ObjectHideFlags: 0
@@ -11263,6 +11566,7 @@ GameObject:
   - component: {fileID: 20801550232189555}
   - component: {fileID: 2755292253259817015}
   - component: {fileID: 603008437796453856}
+  - component: {fileID: 8000000000000000007}
   m_Layer: 5
   m_Name: BackButton
   m_TagString: Untagged
@@ -11372,6 +11676,27 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8000000000000000007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6848659432245709904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
+  _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &6924153682268794930
 GameObject:
   m_ObjectHideFlags: 0
@@ -12006,9 +12331,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &7203679194017493850
 GameObject:
   m_ObjectHideFlags: 0
@@ -12611,9 +12944,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &7894348443098800570
 GameObject:
   m_ObjectHideFlags: 0
@@ -12746,9 +13087,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}
 --- !u!1 &7901293234951336885
 GameObject:
   m_ObjectHideFlags: 0
@@ -14081,6 +14430,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bb70518249c4386a88b7a3465ddca36, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseSelectionOutline
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _animationTarget: {fileID: 0}
+  _visualRoot: {fileID: 0}

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.Core.Roguelike
@@ -12,6 +13,7 @@ namespace Game.Core.Roguelike
         private const string DamageUpId = "4";
         private const string ItemSpawnUpId = "5";
         private const string GetCoinUpId = "6";
+        private const string RerollCostDownId = "7";
         private const string ShopCostDownId = "8";
         private const string NormalEnemyDamageUpId = "10";
         private const string BarrierHardUpId = "12";
@@ -20,6 +22,7 @@ namespace Game.Core.Roguelike
         private const string BarrierLifeUpId = "15";
 
         private static bool _runtimeStateNeedsClear = true;
+        private static readonly HashSet<int> ExplicitlyUnlockedCollectibles = new HashSet<int>();
 
         public static event Action Changed;
 
@@ -28,6 +31,7 @@ namespace Game.Core.Roguelike
         public static float CollectibleDamageMultiplier { get; private set; } = 1f;
         public static float CollectibleScaleMultiplier { get; private set; } = 1f;
         public static float CoinGainMultiplier { get; private set; } = 1f;
+        public static float RerollDiscountRate { get; private set; }
         public static float ShopDiscountRate { get; private set; }
         public static float NormalEnemyDamageMultiplier { get; private set; } = 1f;
         public static float BarrierDefenseMultiplier { get; private set; } = 1f;
@@ -49,12 +53,17 @@ namespace Game.Core.Roguelike
             CollectibleDamageMultiplier = 1f;
             CollectibleScaleMultiplier = 1f;
             CoinGainMultiplier = 1f;
+            RerollDiscountRate = 0f;
             ShopDiscountRate = 0f;
             NormalEnemyDamageMultiplier = 1f;
             BarrierDefenseMultiplier = 1f;
             PinchAttachmentMultiplier = 1f;
             BarrierRepairRatePerSecond = 0f;
             BarrierMaxHpMultiplier = 1f;
+            ExplicitlyUnlockedCollectibles.Clear();
+            RoguelikeBuildRuntime.Reset();
+            RoguelikeRunRuleRuntime.Reset();
+            CombatPressureProgression.ResetDefaults();
             _runtimeStateNeedsClear = true;
             Changed?.Invoke();
         }
@@ -89,6 +98,9 @@ namespace Game.Core.Roguelike
                 case GetCoinUpId:
                     CoinGainMultiplier = PowMultiplier(value, validLevel);
                     break;
+                case RerollCostDownId:
+                    RerollDiscountRate = Mathf.Clamp01(Mathf.Abs(value) * validLevel);
+                    break;
                 case ShopCostDownId:
                     ShopDiscountRate = Mathf.Clamp01(Mathf.Abs(value) * validLevel);
                     break;
@@ -121,9 +133,22 @@ namespace Game.Core.Roguelike
             return Mathf.Max(0, Mathf.CeilToInt(Mathf.Max(0, originalCost) * multiplier));
         }
 
+        public static int GetRerollCost(int originalCost)
+        {
+            float multiplier = 1f - Mathf.Clamp01(RerollDiscountRate);
+            return Mathf.Max(0, Mathf.CeilToInt(Mathf.Max(0, originalCost) * multiplier));
+        }
+
+        public static void UnlockCollectible(int collectibleTypeValue)
+        {
+            if (collectibleTypeValue >= 0)
+                ExplicitlyUnlockedCollectibles.Add(collectibleTypeValue);
+        }
+
         public static bool IsCollectibleUnlocked(int collectibleTypeValue)
         {
-            return collectibleTypeValue <= CollectibleUnlockLevel;
+            return collectibleTypeValue <= CollectibleUnlockLevel ||
+                   ExplicitlyUnlockedCollectibles.Contains(collectibleTypeValue);
         }
 
         private static float PowMultiplier(float value, int level)

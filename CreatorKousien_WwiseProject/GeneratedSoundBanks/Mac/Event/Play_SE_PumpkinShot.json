@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "277560843",
+    "Type": "Event",
+    "GUID": "{A62B077C-6508-48BF-A76F-A14B56ECAC94}",
+    "Language": "SFX",
+    "Hash": "{B4E8AC8D-8981-D948-FD36-121648D08644}",
+    "ObjectPath": "Play_SE_PumpkinShot",
+    "ShortName": "Play_SE_PumpkinShot",
+    "Path": "Event/Play_SE_PumpkinShot.bnk",
+    "Media": [
+     {
+      "Id": "550476767",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "PumpkinShot.wav",
+      "Path": "Media/550476767.wem",
+      "CachePath": "AF/{AF948CD8-F2C6-235C-AD13-99793C76E2D8}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "277560843",
+      "Name": "Play_SE_PumpkinShot",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_PumpkinShot",
+      "GUID": "{A62B077C-6508-48BF-A76F-A14B56ECAC94}",
+      "DurationType": "OneShot",
+      "DurationMin": "0.57469386",
+      "DurationMax": "0.57469386",
+      "MediaRefs": [
+       {
+        "Id": "550476767"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{93D3A9BF-B52A-345E-89C5-36E86870A2A7}"
+ }
+}

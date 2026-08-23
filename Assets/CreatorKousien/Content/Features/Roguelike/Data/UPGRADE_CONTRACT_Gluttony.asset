@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 730422566b7cc734ea8529d8457fd466, type: 3}
+  m_Name: UPGRADE_CONTRACT_Gluttony
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
+  Id: contract_gluttony
+  DisplayName: "\u66B4\u98DF\u306E\u5951\u7D04"
+  Description: "\u6700\u5F8C\u306B\u6575\u3078\u5F53\u3066\u305F\u7A2E\u985E\u306E\u901A\u5E38\u62BD\u9078\u30A6\u30A7\u30A4\u30C8\u304C3.5\u500D\u3001\u305D\u308C\u4EE5\u5916\u306F0.45\u500D\u306B\u306A\u308B\u3002\u5B9F\u969B\u306E\u547D\u4E2D\u3067\u7279\u5316\u5148\u304C\u5207\u308A\u66FF\u308F\u308B\u3002"
+  LevelDescriptions:
+  - "\u6700\u5F8C\u306B\u6575\u3078\u5F53\u3066\u305F\u7A2E\u985E\u306E\u901A\u5E38\u62BD\u9078\u30A6\u30A7\u30A4\u30C8\u304C3.5\u500D\u3001\u305D\u308C\u4EE5\u5916\u306F0.45\u500D\u306B\u306A\u308B\u3002\u5B9F\u969B\u306E\u547D\u4E2D\u3067\u7279\u5316\u5148\u304C\u5207\u308A\u66FF\u308F\u308B\u3002"
+  LevelCardDescriptions:
+  - "\u6700\u5F8C\u306B\u5F53\u3066\u305F\u7A2E\u985E\u3078\u53CE\u675F\n3.5\u500D
+    / \u305D\u306E\u4ED60.45\u500D"
+  Modifiers: []
+  GameplayValue: 0
+  OfferType: 3
+  CombatPressureRuleId: 
+  CombatPressureOutputType: 0
+  RequiresCollectibleFocus: 0
+  SynergyTags: 66
+  SuppressedTags: 1537
+  DraftWeight: 1
+  Effects:
+  - rid: 1738816479575933252
+  MaxLevel: 1
+  Icon: {fileID: 21300000, guid: 69f4b055ac6002a428d312ab3ba44fbf, type: 3}
+  Category: 3
+  Cost: 0
+  CostMagni: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: 1738816479575933252
+      type: {class: LastHitFocusWeightEffect, ns: Game.Gameplay.Roguelike.Effects, asm: Assembly-CSharp}
+      data:
+        _enabled: 1
+        _focusedMultiplier: 3.5
+        _otherMultiplier: 0.45

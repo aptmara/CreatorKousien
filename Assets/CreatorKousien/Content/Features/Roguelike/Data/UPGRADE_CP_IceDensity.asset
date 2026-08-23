@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 730422566b7cc734ea8529d8457fd466, type: 3}
+  m_Name: UPGRADE_CP_IceDensity
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
+  Id: cp_ice
+  DisplayName: "\u6C37\u7D50\u306E\u5BC6\u5EA6"
+  Description: "\u6575\u3078\u51CD\u7D50\u3092\u4ED8\u4E0E\u3057\u305F\u7D2F\u8A08\u5C64\u3092\u8CAF\u3081\u3001\u95BE\u5024\u3054\u3068\u306B\u6C37\u306E\u96E8\u3092\u8D77\u3053\u3059\u3002\u767A\u52D5\u306E\u305F\u3073\u306B\u79FB\u52D5\u901F\u5EA6\u3068\u8155\u30B5\u30A4\u30BA\u304C\u4E0A\u304C\u308B\u3002"
+  LevelDescriptions:
+  - "\u51CD\u7D50\u4ED8\u4E0E\u306E\u7D2F\u8A0810\u5C64\u3054\u3068\u306B\u6C372\u500B\u304C\u4E0A\u7A7A\u304B\u3089\u964D\u4E0B\u30024\u79D2\u9593\u3001\u79FB\u52D5\u901F\u5EA6\u3068\u8155\u30B5\u30A4\u30BA\u3092\u5F37\u5316\u3002"
+  - "\u767A\u52D5\u6761\u4EF6\u304C\u7D2F\u8A089\u5C64\u306B\u306A\u308A\u6C37\u96E8\u304C3\u500B\u3078\u5897\u52A0\u3002\u51CD\u7D50\u7834\u58CA\u3067\u3082\u6C373\u500B\u304C\u964D\u4E0B\u3002"
+  - "\u767A\u52D5\u6761\u4EF6\u304C\u7D2F\u8A087\u5C64\u306B\u306A\u308A\u6C37\u96E8\u304C4\u500B\u3078\u5897\u52A0\u3002\u51CD\u7D50\u7834\u58CA\u306F\u6C376\u500B\u306EMAX
+    BURST\u306B\u306A\u308B\u3002"
+  LevelCardDescriptions:
+  - "\u51CD\u7D50\u4ED8\u4E0E \u7D2F\u8A0810\u5C64\n\u6C37\xD72\u304C\u4E0A\u7A7A\u304B\u3089\u964D\u4E0B"
+  - "\u7D2F\u8A089\u5C64\u30FB\u6C37\u96E8\xD73\n\u51CD\u7D50\u7834\u58CA\u3067\u3082\xD73"
+  - "\u7D2F\u8A087\u5C64\u30FB\u6C37\u96E8\xD74\n\u51CD\u7D50\u7834\u58CA\u3067\xD76"
+  Modifiers: []
+  GameplayValue: 0
+  OfferType: 1
+  CombatPressureRuleId: ice-stack
+  CombatPressureOutputType: 3
+  RequiresCollectibleFocus: 0
+  SynergyTags: 0
+  SuppressedTags: 0
+  DraftWeight: 1
+  Effects: []
+  MaxLevel: 10
+  Icon: {fileID: 21300000, guid: 0be07945db0294947ad6b35654748b75, type: 3}
+  Category: 2
+  Cost: 0
+  CostMagni: 1
+  references:
+    version: 2
+    RefIds: []

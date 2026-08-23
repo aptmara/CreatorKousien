@@ -44,7 +44,7 @@ namespace Game.Presentation.UI.Result
         /// <summary>
         /// 進行管理から渡されたデータに基づいて画面表示を確定させる
         /// </summary>
-        public void SetupResultView(GameResultSummary summary, Action onGameClearTitleCallback, Action onGameOverRetryCallback)
+        public void SetupResultView(GameResultSummary summary, Action onGameClearTitleCallback, Action onGameOverRetryCallback, Action onNextStageCallback)
         {
             // とりあえず演出が決まり切っていないから、文字とActiveの切り替えでベース構築するよん(TODO)
             // クリア時の演出作ります！！ - Asano
@@ -59,7 +59,7 @@ namespace Game.Presentation.UI.Result
                 if (_gameOverVisualParent != null) _gameOverVisualParent.SetActive(false);
 
                 // クリア演出の再生
-                _clearAnimator?.Play(onGameClearTitleCallback);
+                _clearAnimator?.Play(onGameClearTitleCallback, onNextStageCallback, summary.HasNextStage);
             }
             else
             {

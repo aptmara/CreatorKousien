@@ -47,7 +47,8 @@ namespace Game.Infrastructure.Loading
                 yield break;
             }
 
-            yield return boot.PrepareGameRoutine();
+            // StageSelectで選ばれたStageDataSOを渡して、対応するStageシーンを読み込ませる
+            yield return boot.PrepareGameRoutine(stageData);
             if (boot.PreparationFailed || !boot.IsPrepared)
             {
                 Debug.LogError("[LoadingFlowController] ゲームの初期化に失敗しました。");

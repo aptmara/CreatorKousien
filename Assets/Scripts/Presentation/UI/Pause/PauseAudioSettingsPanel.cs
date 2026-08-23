@@ -74,6 +74,7 @@ namespace Game.Presentation.UI.Pause
                 row.Slider.SetValueWithoutNotify(GetChannelVolume(row.Channel));
                 row.Slider.interactable = false;
                 row.SelectButton.transition = Selectable.Transition.None;
+                row.SelectionOutline.SetVisualTargets((RectTransform)row.Slider.transform, row.Slider.transform);
                 row.SelectionOutline.SetHighlighted(false);
 
                 AudioRow capturedRow = row;
@@ -178,9 +179,14 @@ namespace Game.Presentation.UI.Pause
 
         private void BeginEditing(AudioRow row)
         {
-            if (_editingRow != null)
+            if (_editingRow == row)
             {
                 return;
+            }
+
+            if (_editingRow != null)
+            {
+                CommitEditing();
             }
 
             _editingRow = row;
@@ -265,7 +271,6 @@ namespace Game.Presentation.UI.Pause
             float master = _masterMuted ? 0f : _masterVolume;
             float bgm = _bgmMuted ? 0f : _bgmVolume;
             float se = _seMuted ? 0f : _seVolume;
-            AudioListener.volume = master;
 
             if (SoundManager.instance != null)
             {

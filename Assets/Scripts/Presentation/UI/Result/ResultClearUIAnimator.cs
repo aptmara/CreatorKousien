@@ -5,7 +5,8 @@
 // Author	: [浅野 勇生]
 // Created	: 2026-07-09
 // Updated	: 2026-07-14 (コントローラー対応) Iwai
-// Updated  : 2026-07-16 (ゲームクリア文字のポップアップ演出を実装) Iwai
+// Updated    : 2026-07-16 (ゲームクリア文字のポップアップ演出を実装) Iwai
+// Updated    : 2026-08-16 (ゲームクリア演出に次のStageを追加) Asano
 //
 // Notes	:
 // - ベースのUIアニメーションを再生する
@@ -45,6 +46,9 @@ namespace Game.Presentation.UI.Result
 
         [Tooltip("タイトルボタン")]
         [SerializeField] private Button _titleButton;
+
+        [Tooltip("次のStageへ進むボタン。最終Stageでは非表示になる")]
+        [SerializeField] private Button _nextStageButton;
 
 
         [Header("--- [GAME CLEAR] 1文字ずつ演出設定 ---")]
@@ -156,24 +160,40 @@ namespace Game.Presentation.UI.Result
         private bool _floatSouls;
         private bool _isWaveActive;
         private float _waveTimer;
+        private bool _hasNextStage;                 ///< 次のStageが存在するかどうかのフラグ
+        private Vector2 _nextStageButtonPos;        ///< 次へボタンの最終位置
 
 
 
         /// <summary>
-        /// タイトルに戻るボタンがクリックされたときの処理を設定して、UIアニメーションを再生する
+        /// ボタンがクリックされたときの処理を設定して、UIアニメーションを再生する
         /// </summary>
         /// <param name="onTitleClicked">タイトルに戻るボタンをクリックしたときの処理</param>
-        public void Play(Action onTitleClicked)
+        /// <param name="onNextStageClicked">次のStageへ進むボタンをクリックしたときの処理</param>
+        /// <param name="hasNextStage">次のStageが存在するかどうか。falseなら「つぎへ」ボタンを出さない</param>
+        public void Play(Action onTitleClicked, Action onNextStageClicked, bool hasNextStage)
         {
             StopAllCoroutines();
             CaptureFinalPositions();
             ResetView();
+
+            _hasNextStage = hasNextStage;
 
             if (_titleButton != null)
             {
                 _titleButton.interactable = false;
                 _titleButton.onClick.RemoveAllListeners();
                 _titleButton.onClick.AddListener(() => onTitleClicked?.Invoke());
+            }
+
+            if (_nextStageButton != null)
+            {
+                // 最終Stageでは「次のStageへ進む」ボタンを非表示にする
+                _nextStageButton.gameObject.SetActive(false);
+
+                _nextStageButton.interactable = false;
+                _nextStageButton.onClick.RemoveAllListeners();
+                _nextStageButton.onClick.AddListener(() => onNextStageClicked?.Invoke());
             }
 
             StartCoroutine(PlayRoutine());
@@ -218,6 +238,10 @@ namespace Game.Presentation.UI.Result
                 _waveTimer = 0f;
             }
 
+
+            // --- 次のStageへ進むボタンを表示するアニメーション ---
+            yield return PlayNextStageButtonAppearRoutine();
+
             // --- 小さいボードと猫を順番に表示するアニメーション ---
             StartCoroutine(PlayCatAppearRoutine());
             yield return PlaySmallBoardAppearRoutine();
@@ -227,13 +251,20 @@ namespace Game.Presentation.UI.Result
             if (_titleButton != null)
             {
                 _titleButton.interactable = true;
+            }
 
-                // アニメーションが完全に終わったらボタンを選択状態にする
-                if (EventSystem.current != null)
-                {
-                    EventSystem.current.SetSelectedGameObject(null);
-                    EventSystem.current.SetSelectedGameObject(_titleButton.gameObject);
-                }
+            if (_nextStageButton != null && _hasNextStage)
+            {
+                _nextStageButton.interactable = true;
+            }
+
+            // アニメーションが完全に終わったらボタンを選択状態にする
+            Button focusButton = (_hasNextStage && _nextStageButton != null) ? _nextStageButton : _titleButton;
+
+            if (EventSystem.current != null && focusButton != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);                        // 一度選択を解除してから設定することで、UIの選択状態をリセット
+                EventSystem.current.SetSelectedGameObject(focusButton.gameObject);
             }
         }
 
@@ -340,6 +371,11 @@ namespace Game.Presentation.UI.Result
             _mainBoardPos = _mainBoard.anchoredPosition;
             _smallBoardPos = _smallBoard.anchoredPosition;
 
+            if (_nextStageButton != null)
+            {
+                _nextStageButtonPos = ((RectTransform)_nextStageButton.transform).anchoredPosition;
+            }
+
             _catsPos = new Vector2[_cats.Length];
             for (int i = 0; i < _cats.Length; i++)
             {
@@ -383,12 +419,24 @@ namespace Game.Presentation.UI.Result
                 _backgroundBlur.gameObject.SetActive(false);
             }
 
+            _smallBoard.gameObject.SetActive(false);
+
+            if (_nextStageButton != null)
+            {
+                _nextStageButton.gameObject.SetActive(_hasNextStage);
+            }
+
             _isWaveActive = false;
             _floatSouls = false;
             _treeL.gameObject.SetActive(true);
             _treeR.gameObject.SetActive(true);
             _mainBoard.gameObject.SetActive(false);
             _smallBoard.gameObject.SetActive(false);
+
+            if (_nextStageButton != null)
+            {
+                _nextStageButton.gameObject.SetActive(false);
+            }
 
             foreach (var cat in _cats)
             {
@@ -606,16 +654,39 @@ namespace Game.Presentation.UI.Result
         /// <returns></returns>
         private IEnumerator PlaySmallBoardAppearRoutine()
         {
-            Vector2 start = _smallBoardPos + _smallBoardStartOffset;
+            yield return PlayBoardAppearRoutine(_smallBoard, _smallBoardPos);
+        }
+
+
+        private IEnumerator PlayNextStageButtonAppearRoutine()
+        {
+            if (!_hasNextStage || _nextStageButton == null)
+            {
+                yield break;
+            }
+
+            yield return PlayBoardAppearRoutine((RectTransform)_nextStageButton.transform, _nextStageButtonPos);
+        }
+
+
+        /// <summary>
+        /// 指定したUIを、上から回り込みながら定位置へ落とすアニメーションのコルーチン
+        /// </summary>
+        /// <param name="target">動かす対象</param>
+        /// <param name="finalPosition">最終的なアンカー位置</param>
+        /// <returns></returns>
+        private IEnumerator PlayBoardAppearRoutine(RectTransform target, Vector2 finalPosition)
+        {
+            Vector2 start = finalPosition + _smallBoardStartOffset;
             float overshootRotation = -Mathf.Sign(_smallBoardStartRotation) * 12f;
 
-            // 小さいボードを表示して初期位置、スケール、回転を設定
-            _smallBoard.gameObject.SetActive(true);
-            _smallBoard.anchoredPosition = start;
-            _smallBoard.localScale = Vector3.one;
-            _smallBoard.localRotation = Quaternion.Euler(_smallBoardStartRotation, 0f, 0f);
+            // 表示して初期位置、スケール、回転を設定
+            target.gameObject.SetActive(true);
+            target.anchoredPosition = start;
+            target.localScale = Vector3.one;
+            target.localRotation = Quaternion.Euler(_smallBoardStartRotation, 0f, 0f);
 
-            // 小さいボードのアニメーションを再生
+            // 落下アニメーションを再生
             float duration = Mathf.Max(0.01f, _smallBoardDuration);
             float time = 0f;
 
@@ -626,13 +697,13 @@ namespace Game.Presentation.UI.Result
                 float rawT = Mathf.Clamp01(time / duration);
 
                 float moveT = EaseOutBack(rawT);
-                _smallBoard.anchoredPosition = Vector2.LerpUnclamped(start, _smallBoardPos, moveT);
+                target.anchoredPosition = Vector2.LerpUnclamped(start, finalPosition, moveT);
 
                 float rotateT = Mathf.Clamp01((rawT - 0.35f) / 0.65f);
                 rotateT = EaseOutBack(rotateT);
 
                 float rotationX = Mathf.LerpUnclamped(_smallBoardStartRotation, overshootRotation, rotateT);
-                _smallBoard.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
+                target.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
 
                 yield return null;
             }
@@ -640,22 +711,22 @@ namespace Game.Presentation.UI.Result
             time = 0f;
             float settleDuration = 0.12f;
 
-            // 小さいボードの回転を元に戻すアニメーションを再生
+            // 回転をもとに戻すアニメーションを再生
             while (time < settleDuration)
             {
                 time += Time.unscaledDeltaTime;
-                float t = EaseInOut(Mathf.Clamp01(time / settleDuration));
+                float t = EaseOutBack(Mathf.Clamp01(time / settleDuration));
 
                 float rotationX = Mathf.LerpUnclamped(overshootRotation, 0f, t);
-                _smallBoard.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
+                target.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
 
                 yield return null;
             }
 
             // 最終的な位置、スケール、回転を設定
-            _smallBoard.anchoredPosition = _smallBoardPos;
-            _smallBoard.localScale = Vector3.one;
-            _smallBoard.localRotation = Quaternion.identity;
+            target.anchoredPosition = finalPosition;
+            target.localScale = Vector3.one;
+            target.localRotation = Quaternion.identity;
         }
 
 
