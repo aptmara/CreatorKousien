@@ -16,7 +16,7 @@ MonoBehaviour:
   EatableType: -1
   EatPauseDuration: 0.6
   EatCooldown: 0.1
-  MaxBellyScale: {x: 1.6, y: 1.6, z: 1.6}
+  MaxBellyScale: {x: 1.4, y: 1.4, z: 1.4}
   BellyScaleCurve:
     serializedVersion: 2
     m_Curve:

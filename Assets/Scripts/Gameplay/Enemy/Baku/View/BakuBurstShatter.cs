@@ -573,6 +573,11 @@ namespace Game.Gameplay.Enemy.Baku
         private Vector3 _baseScale = Vector3.one;
         private float _elapsed;
 
+        private Rigidbody _body;
+        private float _gravityDelay;
+        private bool _gravityRestored = true;
+
+
 
         /// <summary>
         /// 破片の寿命と縮小時間を初期化する
@@ -590,11 +595,33 @@ namespace Game.Gameplay.Enemy.Baku
 
 
         /// <summary>
+        /// 指定秒数だけ重力を切る。放射状に広がりきってから落下させるため
+        /// </summary>
+        public void SetGravityDelay(Rigidbody body, float delay)
+        {
+            if (body == null || delay <= 0f) return;
+
+            _body = body;
+            _gravityDelay = delay;
+            _gravityRestored = false;
+
+            _body.useGravity = false;
+        }
+
+
+        /// <summary>
         /// 破片の寿命をカウントし、寿命が尽きたらDestroyする
         /// </summary>
         private void Update()
         {
             _elapsed += Time.deltaTime;
+
+            if (!_gravityRestored && _elapsed >= _gravityDelay)
+            {
+                _gravityRestored = true;
+                if (_body != null) _body.useGravity = true;
+            }
+
             if (_elapsed < _lifetime) return;
 
             float t = (_elapsed - _lifetime) / _shrinkDuration;

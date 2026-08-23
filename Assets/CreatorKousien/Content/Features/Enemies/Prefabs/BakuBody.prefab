@@ -244,15 +244,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: dd4f36690ac7f5d47b2d8d6e6d8abc99, type: 3}
       propertyPath: m_LocalScale.x
-      value: 12
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dd4f36690ac7f5d47b2d8d6e6d8abc99, type: 3}
       propertyPath: m_LocalScale.y
-      value: 12
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dd4f36690ac7f5d47b2d8d6e6d8abc99, type: 3}
       propertyPath: m_LocalScale.z
-      value: 12
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: dd4f36690ac7f5d47b2d8d6e6d8abc99, type: 3}
       propertyPath: m_LocalPosition.x
@@ -322,6 +322,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: dd4f36690ac7f5d47b2d8d6e6d8abc99, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2280261560088798995}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: dd4f36690ac7f5d47b2d8d6e6d8abc99, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -6713557817392294199}
   m_SourcePrefab: {fileID: 100100000, guid: dd4f36690ac7f5d47b2d8d6e6d8abc99, type: 3}
 --- !u!4 &2551708304395784120 stripped
 Transform:
@@ -404,7 +407,7 @@ MonoBehaviour:
   _mouth: {fileID: 0}
   _belly: {fileID: 0}
   _animator: {fileID: 0}
-  _shatter: {fileID: 0}
+  _slicer: {fileID: 0}
   _bodyRenderer: {fileID: 0}
   _hideStatusUI: 1
   _eatTriggerName: Eat
@@ -425,12 +428,39 @@ MonoBehaviour:
   _pieceCount: 51
   _subdivisions: 2
   _randomSeed: 4815
-  _explosionForce: 4
-  _upwardBias: 1.5
-  _forceVariation: 0.117
+  _explosionForce: 1
+  _upwardBias: 5
+  _forceVariation: 0.1
   _torque: 6.75
   _pieceMass: 0.4
   _usePieceCollision: 1
   _lifetime: 2.5
   _shrinkDuration: 0.6
   _capDepth: 1
+--- !u!114 &-6713557817392294199
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2892064686585189634}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 720e6bbd7e421d04fb8c1500e5ba4bc2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Baku.BakuBurstSlicer
+  _sourceRenderer: {fileID: 0}
+  _crossSectionMaterial: {fileID: 2100000, guid: 0116bb8c38820384e81f2d0a0114819d, type: 2}
+  _sliceDepth: 5
+  _sliceOffset: 0.35
+  _explosionForce: 1
+  _upwardBias: 4
+  _forceVariation: 0.25
+  _torque: 8
+  _pieceMass: 0.4
+  _gravityDelay: 0.35
+  _linearDamping: 0.2
+  _angularDamping: 0.05
+  _usePieceCollision: 1
+  _lifetime: 3.5
+  _shrinkDuration: 0.6

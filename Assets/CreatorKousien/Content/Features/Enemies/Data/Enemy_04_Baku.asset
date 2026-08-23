@@ -23,9 +23,9 @@ MonoBehaviour:
   BarrierBody: {fileID: 0}
   barrierBreakMaxLossRate: 0.7
   AttackPower: 5
-  Attackinterval: 5
-  AttackMotionTime: 3
-  AttackStartUpTime: 1.5
+  Attackinterval: 1
+  AttackMotionTime: 1.5
+  AttackStartUpTime: 0.7
   HealRegenWaitTime: 7
   HealPower: 30
   RiseDuration: 30

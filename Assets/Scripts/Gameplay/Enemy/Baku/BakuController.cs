@@ -33,7 +33,7 @@ namespace Game.Gameplay.Enemy.Baku
         [SerializeField] private Animator _animator;
 
         [Tooltip("破裂時のメッシュ分割。未設定なら自動取得")]
-        [SerializeField] private BakuBurstShatter _shatter;
+        [SerializeField] private BakuBurstSlicer _slicer;
 
         [Tooltip("破裂エフェクトの位置基準にするRenderer")]
         [SerializeField] private Renderer _bodyRenderer;
@@ -79,9 +79,9 @@ namespace Game.Gameplay.Enemy.Baku
             {
                 _animator = GetComponentInChildren<Animator>(true);
             }
-            if (_shatter == null)
+            if (_slicer == null)
             {
-                _shatter = GetComponent<BakuBurstShatter>();
+                _slicer = GetComponent<BakuBurstSlicer>();
             }
             if (_bodyRenderer == null)
             {
@@ -344,9 +344,9 @@ namespace Game.Gameplay.Enemy.Baku
             }
 
             // 5. 本体を破片へ差し替える（演出なので最後。ここで転んでも進行は止まらない）
-            if (_shatter != null)
+            if (_slicer != null)
             {
-                _shatter.Shatter(burstPosition);
+                _slicer.Shatter();
             }
         }
 
