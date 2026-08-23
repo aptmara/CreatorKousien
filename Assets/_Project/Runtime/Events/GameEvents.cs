@@ -42,6 +42,21 @@ namespace Game.Core.Events
 
     }
 
+
+    public readonly struct StageCursorSelectEvent
+    {
+        public readonly string StageName;
+        public readonly string StageInfo;
+        public readonly Sprite StageIcon;
+
+        public StageCursorSelectEvent(string stageName, string stageInfo, Sprite stageIcon)
+        {
+            StageName = stageName;
+            StageInfo = stageInfo;
+            StageIcon = stageIcon;
+        }
+    }
+
     public readonly struct PayloadReleasedEvent
     {
         public readonly int PayloadCount;
