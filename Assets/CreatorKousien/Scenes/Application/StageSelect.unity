@@ -1735,6 +1735,46 @@ MonoBehaviour:
       m_Groups: 
       m_Action: Cursor Input
       m_Flags: 8
+    - m_Name: 2D Vector
+      m_Id: 651e4a3d-d770-4733-93b6-0137569fb91b
+      m_Path: 2DVector
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Cursor Input
+      m_Flags: 4
+    - m_Name: up
+      m_Id: 4adabad5-44b6-4a84-9af0-5e9abc56ae14
+      m_Path: <Gamepad>/leftStick/up
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Cursor Input
+      m_Flags: 8
+    - m_Name: down
+      m_Id: 7b970b6d-95f7-4a98-8908-310d162861b8
+      m_Path: <Gamepad>/leftStick/down
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Cursor Input
+      m_Flags: 8
+    - m_Name: left
+      m_Id: b63e0877-92df-40bf-89fe-5fd14aa16028
+      m_Path: <Gamepad>/leftStick/left
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Cursor Input
+      m_Flags: 8
+    - m_Name: right
+      m_Id: 038b5cf4-1875-431e-a15e-52c3dca3d761
+      m_Path: <Gamepad>/leftStick/right
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Cursor Input
+      m_Flags: 8
     m_Flags: 0
   _clickInput:
     m_Name: Click Input
@@ -1747,6 +1787,14 @@ MonoBehaviour:
     - m_Name: 
       m_Id: 62764c39-9f14-4a1f-a760-dfa6b2c5984d
       m_Path: <Keyboard>/enter
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Click Input
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 79af1254-5eb9-44f7-940e-a778bded7fce
+      m_Path: <NimbusGamepadHid>/buttonSouth
       m_Interactions: 
       m_Processors: 
       m_Groups: 
