@@ -13,17 +13,17 @@ MonoBehaviour:
   m_Name: Enemies_SO_BalanceBoss_CameraConfig
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Cameras.StaticCameraConfig
   _orthoSettings:
-    Position: {x: 0, y: 23, z: -40}
-    Rotation: {x: 45, y: 0, z: 0}
-    FieldOfView: 45
-    OrthographicSize: 5
+    Position: {x: -2.5, y: 8, z: -10}
+    Rotation: {x: 30, y: 8, z: 0}
+    FieldOfView: 1
+    OrthographicSize: 11
   _perspSettings:
-    Position: {x: 0, y: 23, z: -40}
-    Rotation: {x: 45, y: 0, z: 0}
+    Position: {x: 0, y: 23, z: -33}
+    Rotation: {x: 38, y: 0, z: 0}
     FieldOfView: 45
     OrthographicSize: 1
   _tiltFloorPers:
-    Position: {x: 0, y: 14.5, z: -23}
+    Position: {x: 0, y: 14.5, z: -30}
     Rotation: {x: 30, y: 0, z: 0}
     FieldOfView: 60
     OrthographicSize: 0

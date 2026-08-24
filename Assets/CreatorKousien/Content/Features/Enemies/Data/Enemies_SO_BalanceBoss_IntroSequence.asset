@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BossIntroSequenceData
   _playFromLeft: 1
   _leftStartLocalPosition: {x: 0, y: -20, z: -20}
-  _leftStartEulerAngles: {x: 0, y: 180, z: 0}
+  _leftStartEulerAngles: {x: 0, y: 0, z: 0}
   _rightStartLocalPosition: {x: 0, y: 0, z: 0}
   _rightStartEulerAngles: {x: 0, y: 0, z: 0}
   _battleLocalPosition: {x: 0, y: -8, z: -7}
-  _battleEulerAngles: {x: 0, y: 0, z: 0}
+  _battleEulerAngles: {x: 0, y: 180, z: 0}
   _moveDuration: 1.2
   _moveCurve:
     serializedVersion: 2
@@ -33,8 +33,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.3096831
-      value: 0.8664638
+      time: 0.82139707
+      value: 0.23790067
       inSlope: 8.359756
       outSlope: 8.359756
       tangentMode: 0
@@ -54,7 +54,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   _animatorTriggerName: 
-  _battleCameraConfig: {fileID: 11400000, guid: aa330ccda141b004cb12309afff5dbbb, type: 2}
+  _battleCameraConfig: {fileID: 11400000, guid: 1c476a725e63dab4ba0182d0cc3e495e, type: 2}
   _battleCameraProjectionMode: 1
   _cameraMoveDuration: 1
   _cameraBlendCurve:
