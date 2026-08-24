@@ -6,12 +6,15 @@
 // Created      : 2026-07-03
 // ================================================================================
 
-using Game.Presentation.UI.Pause;
+using Game.Infrastructure.Loading;
 using Game.Presentation.UI.Common;
+using Game.Presentation.UI.Pause;
+using Game.WaveSystem;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections;
 
 namespace Game.Presentation.UI.Title
 {
@@ -35,6 +38,7 @@ namespace Game.Presentation.UI.Title
         [Header("--- 遷移先のシーン ---")]
         [SerializeField] private string _selectSceneName = "StageSelect";
 
+        [SerializeField] private StageDataSO _stageDataSO;
         private void Awake()
         {
             _selectionFeedback = GetComponent<MenuSelectionFeedbackController>();
@@ -74,7 +78,10 @@ namespace Game.Presentation.UI.Title
         public void OnClickNewGame()
         {
             Debug.Log("New Game が押されたぜよ。シーン遷移: " + _selectSceneName);
-            SceneManager.LoadScene(_selectSceneName);
+            // SceneManager.LoadScene(_selectSceneName);
+
+            // Beta版での一時的な実装
+            StartCoroutine(StageLoad(_stageDataSO));
         }
 
         /// <summary>
@@ -118,6 +125,20 @@ namespace Game.Presentation.UI.Title
             // ビルドした実際のゲームではアプリを終了する
             Application.Quit();
 #endif
+        }
+
+        private IEnumerator StageLoad(StageDataSO stage)
+        {
+            // Scemeをロードする
+            AsyncOperation bootLoad = SceneManager.LoadSceneAsync(_selectSceneName, LoadSceneMode.Additive);
+            yield return bootLoad;
+
+            // 生成が完了次第、ステージデータを渡してロードを起動
+            LoadingFlowController loadingFlowController = UnityEngine.Object.FindFirstObjectByType<LoadingFlowController>();
+            loadingFlowController.LoadBootScene(stage);
+            // 現シーンを削除する
+            Scene currentSceneName = gameObject.scene;
+            SceneManager.UnloadSceneAsync(currentSceneName);
         }
     }
 }
