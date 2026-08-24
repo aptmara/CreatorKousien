@@ -453798,6 +453798,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Collectibles.ItemFallDampingZone
   _horizontalDeceleration: 3
   _maxHorizontalSpeed: 3
+  _centerStopRadius: 2
   _extraDownwardAcceleration: 5
 --- !u!65 &1746816590
 BoxCollider:
@@ -456839,6 +456840,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Collectibles.ItemFallDampingZone
   _horizontalDeceleration: 3
   _maxHorizontalSpeed: 3
+  _centerStopRadius: 2
   _extraDownwardAcceleration: 5
 --- !u!65 &1962328833
 BoxCollider:
@@ -458844,7 +458846,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Collectibles.CollectiblePool
   _prefab: {fileID: 6387654242037428932, guid: 96309158fa10ba348b3457ac6e263bd1, type: 3}
-  _initialPoolSize: 160
+  _initialPoolSize: 500
 --- !u!4 &2109572807
 Transform:
   m_ObjectHideFlags: 0

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c43347b7f155014787c574697325523, type: 3}
   m_Name: SO_BakuData
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Baku.BakuData
-  MaxEatCount: 5
+  MaxEatCount: 15
   EatableType: -1
   EatPauseDuration: 0.6
   EatCooldown: 0.1
@@ -44,7 +44,7 @@ MonoBehaviour:
   BellyScaleLerpTime: 0.25
   BurstDelay: 0.4
   BurstWarningVfxPrefab: {fileID: 2610124898922505302, guid: 66452da6f98c1d84da4beb81f1f02ead, type: 3}
-  BurstDamage: 80
+  BurstDamage: 150
   BurstRadius: 10
   BurstVfxPrefab: {fileID: 6653435561416492153, guid: 9f18587fa562008438a6a36774d910ca, type: 3}
   BurstVfxOffset: {x: 0, y: 0.5, z: 0}

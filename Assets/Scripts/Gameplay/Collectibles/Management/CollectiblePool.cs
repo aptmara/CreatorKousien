@@ -83,15 +83,12 @@ namespace Game.Gameplay.Collectibles
             CollectibleObject obj = _pool.Dequeue();
             obj.gameObject.SetActive(true);
 
-            if (!_activeCollectiblesContains(obj))
-            {
-                _uiActiveItems.Add(obj);
-            }
+            _uiActiveItems.Add(obj);
             return obj;
         }
 
         // 管理用
-        private List<CollectibleObject> _uiActiveItems = new List<CollectibleObject>();
+        private HashSet<CollectibleObject> _uiActiveItems = new HashSet<CollectibleObject>();
 
         /// <summary>
         /// オブジェクトをPoolへ返却します。
@@ -99,19 +96,11 @@ namespace Game.Gameplay.Collectibles
         public void Return(CollectibleObject obj)
         {
             if (obj == null) return;
+            if (!_uiActiveItems.Remove(obj)) return;
 
             obj.ResetState();
-            _uiControllerRemove(obj);
-
-            if (!_pool.Contains(obj))
-            {
-                _pool.Enqueue(obj);
-            }
+            _pool.Enqueue(obj);
         }
-
-        private void _uiActiveItemsAdd(CollectibleObject obj) => _uiActiveItems.Add(obj);
-        private void _uiControllerRemove(CollectibleObject obj) => _uiActiveItems.Remove(obj);
-        private bool _activeCollectiblesContains(CollectibleObject obj) => _uiActiveItems.Contains(obj);
 
         /// <summary>
         /// 現在フィールド上に散らばっている全てのアイテムを強制回収する
@@ -120,7 +109,8 @@ namespace Game.Gameplay.Collectibles
         {
             Debug.Log($"[CollectiblePool] フィールド上の自由移動アイテムを一括クリーンアップします。対象数: {_uiActiveItems.Count}");
 
-            CollectibleObject[] targets = _uiActiveItems.ToArray();
+            CollectibleObject[] targets = new CollectibleObject[_uiActiveItems.Count];
+            _uiActiveItems.CopyTo(targets);
             for (int i = targets.Length - 1; i >= 0; i--)
             {
                 if (targets[i] != null && targets[i].gameObject.activeInHierarchy)
