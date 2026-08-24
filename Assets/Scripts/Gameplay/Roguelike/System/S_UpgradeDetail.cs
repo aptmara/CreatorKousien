@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Game.Core.Roguelike;
 using Game.Data.Collectibles;
 
@@ -47,6 +48,7 @@ public class S_UpgradeDetail : MonoBehaviour
     private TextMeshProUGUI _nameText;
     private TextMeshProUGUI _costText;
     private GameObject _spawnedInstance;
+    private readonly Image[] _nameUnderlines = new Image[2];
 
 
     private int _soldOutTxtOutputCount;
@@ -151,6 +153,7 @@ public class S_UpgradeDetail : MonoBehaviour
 
 
         _nameText.text = FormatDisplayName(upgrade.DisplayName);
+        RefreshNameUnderlines();
 
         int level = _upgradeRuntimeState.GetLevel(upgrade);
         int nextLevel = Mathf.Clamp(level + Mathf.Max(1, levelGain), 1, upgrade.MaxLevel);
@@ -189,7 +192,7 @@ public class S_UpgradeDetail : MonoBehaviour
             new Vector2(0f, 98f),
             new Vector2(372f, 76f),
             40f,
-            FontStyles.Bold | FontStyles.Underline);
+            FontStyles.Bold);
         ConfigureAutoSize(_nameText, 26f, 40f);
         ConfigureText(_descriptionText, new Vector2(0f, 0f), new Vector2(378f, 116f), 38f, FontStyles.Bold);
         ConfigureAutoSize(_descriptionText, 22f, 38f);
@@ -206,23 +209,89 @@ public class S_UpgradeDetail : MonoBehaviour
 
     private static string FormatDisplayName(string displayName)
     {
-        if (string.IsNullOrEmpty(displayName) || displayName.Length <= 7)
+        if (string.IsNullOrEmpty(displayName))
             return displayName;
 
-        int center = displayName.Length / 2;
+        string formattedName = displayName.Trim();
+        if (formattedName.Length >= 2 &&
+            formattedName[0] == '【' &&
+            formattedName[formattedName.Length - 1] == '】')
+        {
+            formattedName = formattedName.Substring(1, formattedName.Length - 2).Trim();
+        }
+
+        if (formattedName.Length <= 7)
+            return formattedName;
+
+        int center = formattedName.Length / 2;
         int breakIndex = -1;
         int nearestDistance = int.MaxValue;
 
-        TryUseBreakAfter(displayName, "ごと", center, ref breakIndex, ref nearestDistance);
-        TryUseBreakAfter(displayName, "種類", center, ref breakIndex, ref nearestDistance);
-        TryUseBreakAfter(displayName, "時", center, ref breakIndex, ref nearestDistance);
-        TryUseBreakAfter(displayName, "分", center, ref breakIndex, ref nearestDistance);
-        TryUseBreakBefore(displayName, "生成", center, ref breakIndex, ref nearestDistance);
+        TryUseBreakAfter(formattedName, "ごと", center, ref breakIndex, ref nearestDistance);
+        TryUseBreakAfter(formattedName, "種類", center, ref breakIndex, ref nearestDistance);
+        TryUseBreakAfter(formattedName, "時", center, ref breakIndex, ref nearestDistance);
+        TryUseBreakAfter(formattedName, "分", center, ref breakIndex, ref nearestDistance);
+        TryUseBreakBefore(formattedName, "生成", center, ref breakIndex, ref nearestDistance);
 
-        if (breakIndex < 2 || breakIndex > displayName.Length - 2)
+        if (breakIndex < 2 || breakIndex > formattedName.Length - 2)
             breakIndex = center;
 
-        return displayName.Insert(breakIndex, "\n");
+        return formattedName.Insert(breakIndex, "\n");
+    }
+
+    private void RefreshNameUnderlines()
+    {
+        const float thickness = 4f;
+        const float horizontalPadding = 8f;
+
+        EnsureNameUnderlines();
+        _nameText.ForceMeshUpdate();
+
+        int visibleLineCount = string.IsNullOrEmpty(_nameText.text)
+            ? 0
+            : Mathf.Min(_nameText.textInfo.lineCount, _nameUnderlines.Length);
+
+        for (int index = 0; index < _nameUnderlines.Length; index++)
+        {
+            Image underline = _nameUnderlines[index];
+            bool isVisible = index < visibleLineCount;
+            underline.gameObject.SetActive(isVisible);
+            if (!isVisible)
+                continue;
+
+            TMP_LineInfo line = _nameText.textInfo.lineInfo[index];
+            float lineWidth = line.lineExtents.max.x - line.lineExtents.min.x;
+            float centerX = (line.lineExtents.min.x + line.lineExtents.max.x) * 0.5f;
+            RectTransform rect = underline.rectTransform;
+            rect.anchoredPosition = new Vector2(centerX, line.descender - thickness);
+            rect.sizeDelta = new Vector2(lineWidth + horizontalPadding, thickness);
+            underline.color = _nameText.color;
+        }
+    }
+
+    private void EnsureNameUnderlines()
+    {
+        for (int index = 0; index < _nameUnderlines.Length; index++)
+        {
+            if (_nameUnderlines[index] != null)
+                continue;
+
+            var lineObject = new GameObject(
+                $"NameUnderline_{index + 1}",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image));
+            lineObject.layer = _nameText.gameObject.layer;
+            lineObject.transform.SetParent(_nameText.rectTransform, false);
+
+            Image underline = lineObject.GetComponent<Image>();
+            underline.raycastTarget = false;
+            RectTransform rect = underline.rectTransform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            _nameUnderlines[index] = underline;
+        }
     }
 
     private static void TryUseBreakAfter(
@@ -371,6 +440,7 @@ public class S_UpgradeDetail : MonoBehaviour
         SpawnDetail(upgrade);
         string targetName = CollectibleTable.GetDisplayName(target.Type);
         _nameText.text = targetName + "特化";
+        RefreshNameUnderlines();
         _descriptionText.text =
             $"{upgrade.DisplayName}で発生する連鎖・爆発生成を、{targetName}へ集中する。\n取得直後に生成して効果をプレビュー。";
         _levelText.text = "このラン中の生成先";
@@ -384,6 +454,7 @@ public class S_UpgradeDetail : MonoBehaviour
         _descriptionText.text = str;
 
         _nameText.text = "";
+        RefreshNameUnderlines();
         _levelText.text = "";
         _costText.text = "";
     }
@@ -402,6 +473,7 @@ public class S_UpgradeDetail : MonoBehaviour
         _descriptionText.text = str;
 
         _nameText.text = "";
+        RefreshNameUnderlines();
         _levelText.text = "";
         _costText.text = "";
 
