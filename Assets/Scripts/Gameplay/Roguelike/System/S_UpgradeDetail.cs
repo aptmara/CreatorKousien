@@ -7,6 +7,7 @@
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using Game.Data.Player;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using Game.Core.Roguelike;
@@ -149,11 +150,11 @@ public class S_UpgradeDetail : MonoBehaviour
         }
 
 
-        _nameText.text = upgrade.DisplayName;
+        _nameText.text = FormatDisplayName(upgrade.DisplayName);
 
         int level = _upgradeRuntimeState.GetLevel(upgrade);
         int nextLevel = Mathf.Clamp(level + Mathf.Max(1, levelGain), 1, upgrade.MaxLevel);
-        _descriptionText.text = upgrade.GetTransitionText(level, levelGain);
+        _descriptionText.text = FormatDescription(upgrade.GetTransitionText(level, levelGain));
     
 
         if (level >= upgrade.MaxLevel)
@@ -183,10 +184,145 @@ public class S_UpgradeDetail : MonoBehaviour
 
     private void ConfigureTextLayout()
     {
-        ConfigureText(_nameText, new Vector2(0f, 106f), new Vector2(372f, 60f), 50f, FontStyles.Bold);
-        ConfigureText(_descriptionText, new Vector2(0f, 14f), new Vector2(378f, 126f), 38f, FontStyles.Bold);
+        ConfigureText(_nameText, new Vector2(0f, 98f), new Vector2(372f, 76f), 40f, FontStyles.Bold);
+        ConfigureAutoSize(_nameText, 26f, 40f);
+        ConfigureText(_descriptionText, new Vector2(0f, 0f), new Vector2(378f, 116f), 38f, FontStyles.Bold);
+        ConfigureAutoSize(_descriptionText, 22f, 38f);
         ConfigureText(_levelText, new Vector2(0f, -78f), new Vector2(372f, 42f), 34f, FontStyles.Bold);
         ConfigureText(_costText, new Vector2(0f, -122f), new Vector2(378f, 40f), 29f, FontStyles.Bold);
+    }
+
+    private static void ConfigureAutoSize(TextMeshProUGUI text, float minimumSize, float maximumSize)
+    {
+        text.enableAutoSizing = true;
+        text.fontSizeMin = minimumSize;
+        text.fontSizeMax = maximumSize;
+    }
+
+    private static string FormatDisplayName(string displayName)
+    {
+        if (string.IsNullOrEmpty(displayName) || displayName.Length <= 7)
+            return displayName;
+
+        int center = displayName.Length / 2;
+        int breakIndex = -1;
+        int nearestDistance = int.MaxValue;
+
+        TryUseBreakAfter(displayName, "ごと", center, ref breakIndex, ref nearestDistance);
+        TryUseBreakAfter(displayName, "種類", center, ref breakIndex, ref nearestDistance);
+        TryUseBreakAfter(displayName, "時", center, ref breakIndex, ref nearestDistance);
+        TryUseBreakAfter(displayName, "分", center, ref breakIndex, ref nearestDistance);
+        TryUseBreakBefore(displayName, "生成", center, ref breakIndex, ref nearestDistance);
+
+        if (breakIndex < 2 || breakIndex > displayName.Length - 2)
+            breakIndex = center;
+
+        return displayName.Insert(breakIndex, "\n");
+    }
+
+    private static void TryUseBreakAfter(
+        string text,
+        string separator,
+        int center,
+        ref int breakIndex,
+        ref int nearestDistance)
+    {
+        int separatorIndex = text.IndexOf(separator, System.StringComparison.Ordinal);
+        if (separatorIndex < 0)
+            return;
+
+        TryUseBreak(separatorIndex + separator.Length, text.Length, center, ref breakIndex, ref nearestDistance);
+    }
+
+    private static void TryUseBreakBefore(
+        string text,
+        string separator,
+        int center,
+        ref int breakIndex,
+        ref int nearestDistance)
+    {
+        int separatorIndex = text.IndexOf(separator, System.StringComparison.Ordinal);
+        if (separatorIndex < 0)
+            return;
+
+        TryUseBreak(separatorIndex, text.Length, center, ref breakIndex, ref nearestDistance);
+    }
+
+    private static void TryUseBreak(
+        int candidate,
+        int textLength,
+        int center,
+        ref int breakIndex,
+        ref int nearestDistance)
+    {
+        if (candidate < 2 || candidate > textLength - 2)
+            return;
+
+        int distance = Mathf.Abs(candidate - center);
+        if (distance >= nearestDistance)
+            return;
+
+        breakIndex = candidate;
+        nearestDistance = distance;
+    }
+
+    private static string FormatDescription(string description)
+    {
+        if (string.IsNullOrEmpty(description))
+            return description;
+
+        string[] sourceLines = description
+            .Replace("\r\n", "\n")
+            .Replace('\r', '\n')
+            .Replace("。", "。\n")
+            .Replace("！", "！\n")
+            .Replace("？", "？\n")
+            .Split('\n');
+        var formattedLines = new List<string>();
+
+        foreach (string sourceLine in sourceLines)
+        {
+            string line = sourceLine.Trim();
+            if (line.Length == 0)
+                continue;
+
+            int breakIndex = FindDescriptionBreak(line);
+            if (breakIndex < 0)
+            {
+                formattedLines.Add(line);
+                continue;
+            }
+
+            formattedLines.Add(line.Substring(0, breakIndex + 1).TrimEnd());
+            formattedLines.Add(line.Substring(breakIndex + 1).TrimStart());
+        }
+
+        return string.Join("\n", formattedLines);
+    }
+
+    private static int FindDescriptionBreak(string line)
+    {
+        const int minimumLengthToBreak = 16;
+        if (line.Length < minimumLengthToBreak)
+            return -1;
+
+        int center = line.Length / 2;
+        int nearestIndex = -1;
+        int nearestDistance = int.MaxValue;
+        for (int index = 0; index < line.Length; index++)
+        {
+            if (line[index] != '、' || index < 4 || index > line.Length - 5)
+                continue;
+
+            int distance = Mathf.Abs(index - center);
+            if (distance >= nearestDistance)
+                continue;
+
+            nearestIndex = index;
+            nearestDistance = distance;
+        }
+
+        return nearestIndex;
     }
 
     private static void ConfigureText(
