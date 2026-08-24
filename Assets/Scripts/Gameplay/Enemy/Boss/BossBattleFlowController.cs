@@ -69,10 +69,8 @@ namespace Game.Gameplay.Enemy.Boss
         [SerializeField] private List<SocketBinding> _socketBindings;
 
         [Header("==== 演出 =====")]
-        [SerializeField] private BossIntroPresentationController _introPresentationController;
-        [SerializeField] private BossAnimationController _animationController;
-        [SerializeField] private BossThornAttackStepData _introStepData;
-        [SerializeField] private BossIntroPresentationData _introPresentationData;
+        [SerializeField] private BossIntroSequenceController _introSequenceController;
+        [SerializeField] private BossIntroSequenceData _introSequenceData;
 
         [Header("==== ギミック登録リスト ====")]
         [SerializeField] private List<GimmickSlot> _gimmickSlots = new List<GimmickSlot>();
@@ -163,11 +161,7 @@ namespace Game.Gameplay.Enemy.Boss
         public bool StartBattle(string bossInstanceId)
         {
             if(!Initialize(bossInstanceId)) return false;
-            if (_animationController == null) return false;
-            if (!_animationController.PrepareSpawnHiddenPose())
-            {
-                Debug.LogError($"[{nameof(BossBattleController)}] ボスの退避姿勢を設定できません。");
-            }
+            
             return BeginBattle();
         }
 
@@ -198,9 +192,9 @@ namespace Game.Gameplay.Enemy.Boss
 
         private IEnumerator PlayIntroSequence()
         {
-            if (_introPresentationController != null && _introPresentationData != null)
+            if (_introSequenceController != null && _introSequenceData != null)
             {
-                yield return StartCoroutine(_introPresentationController.PlayPresentation(_introStepData,_introPresentationData));
+                yield return StartCoroutine(_introSequenceController.PlayPresentation(_introSequenceData,_bossAnimator));
             }
             else if(_bossAnimator != null)
             {
@@ -477,11 +471,6 @@ namespace Game.Gameplay.Enemy.Boss
             {
                 StopCoroutine(_stateRoutine);
                 _stateRoutine = null;
-            }
-
-            if (_introPresentationController != null && _introPresentationController.IsPlaying)
-            {
-                _introPresentationController.CancelPresentationAndRestoreCamera();
             }
 
             _isBattleActive = false;

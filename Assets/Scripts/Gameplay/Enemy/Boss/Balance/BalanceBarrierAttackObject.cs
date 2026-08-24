@@ -10,8 +10,18 @@ public class BalanceBarrierAttackObject : MonoBehaviour, IBossTrayItem
     private bool _isActive;
     private float _timer;
 
-    public void OnTrayRaised() => _isActive = true;
-    public void OnTrayLowered() { _isActive = false; _timer = 0f; }
+    public event System.Action<bool> OnActiveChanged;
+
+    public void OnTrayRaised()
+    {
+        _isActive = true;
+        OnActiveChanged?.Invoke(true);
+    }
+    public void OnTrayLowered()
+    {
+        _isActive = false; _timer = 0f;
+        OnActiveChanged?.Invoke(false);
+    }
 
     private void Update()
     {
