@@ -22,8 +22,8 @@ namespace Game.Gameplay.Enemy.Baku
     public class BakuBurstSlicer : MonoBehaviour
     {
         [Header("参照")]
-        [Tooltip("切る対象。未設定なら子のMeshRendererを自動取得")]
-        [SerializeField] private MeshRenderer _sourceRenderer;
+        [Tooltip("切る対象。SkinnedMeshRenderer / MeshRenderer どちらでもOK。未設定なら子から自動取得")]
+        [SerializeField] private Renderer _sourceRenderer;
         [Tooltip("断面に貼るマテリアル。未設定なら本体と同じものを使う")]
         [SerializeField] private Material _crossSectionMaterial;
 
@@ -63,6 +63,10 @@ namespace Game.Gameplay.Enemy.Baku
 
         private void Awake()
         {
+            if (_sourceRenderer != null) return;
+
+            // アニメ付きモデルはSkinnedMeshRendererなのでそちらを優先して探す
+            _sourceRenderer = GetComponentInChildren<SkinnedMeshRenderer>(true);
             if (_sourceRenderer == null)
             {
                 _sourceRenderer = GetComponentInChildren<MeshRenderer>(true);
@@ -75,28 +79,45 @@ namespace Game.Gameplay.Enemy.Baku
         /// </summary>
         public void Shatter()
         {
-            if (_sourceRenderer == null)
+            if (_sourceRenderer == null) return;
+
+            Mesh source;
+            Vector3 pieceScale;
+            bool isSnapshot = false;
+
+            if (_sourceRenderer is SkinnedMeshRenderer skinned)
             {
-                Debug.LogWarning("BakuBurstSlicer: SourceRenderer is not assigned.");
-                return;
+                if (skinned.sharedMesh == null) return;
+
+                // EzySliceはSkinnedMeshを直接切れないから、
+                // 破裂した瞬間のポーズを静的メッシュへ焼いてから切る
+                source = new Mesh { name = "BakuBakedSnapshot" };
+
+                // スケール無しで焼いて、localScaleで拡大縮小する
+                skinned.BakeMesh(source, true);
+                pieceScale = skinned.transform.lossyScale;
+
+                isSnapshot = true;
+            }
+            else
+            {
+                MeshFilter filter = _sourceRenderer.GetComponent<MeshFilter>();
+                if (filter == null || filter.sharedMesh == null) return;
+
+                source = filter.sharedMesh;
+                pieceScale = _sourceRenderer.transform.lossyScale;
             }
 
-            // 本体のMeshを取得
-            MeshFilter filter = _sourceRenderer.GetComponent<MeshFilter>();
-            if (filter == null || filter.sharedMesh == null)
-            {
-                Debug.LogWarning("BakuBurstSlicer: SourceRenderer does not have a valid MeshFilter.");
-                return;
-            }
+            // 焼いたメッシュは使い捨てなので保護しない
+            _sourceMesh = isSnapshot ? null : source;
 
-            _sourceMesh = filter.sharedMesh;
+            Material crossSection = _crossSectionMaterial != null
+                ? _crossSectionMaterial
+                : _sourceRenderer.sharedMaterial;
 
-            Material crossSection = _crossSectionMaterial != null ? _crossSectionMaterial : _sourceRenderer.sharedMaterial;
-
-            // 爆心は見た目の中心
             Vector3 origin = _sourceRenderer.bounds.center;
 
-            GameObject work = CloneForSlicing(filter, _sourceRenderer);
+            GameObject work = CloneForSlicing(source, _sourceRenderer.transform, _sourceRenderer.sharedMaterials, pieceScale);
             _sourceRenderer.enabled = false;
 
             List<GameObject> current = new List<GameObject> { work };
@@ -126,19 +147,17 @@ namespace Game.Gameplay.Enemy.Baku
         /// <summary>
         /// スライス用の複製を作る
         /// </summary>
-        /// <param name="filter">対象のMeshFilter</param>
-        /// <param name="renderer">対象のMeshRenderer</param>
         /// <returns>複製されたGameObject</returns>
-        private static GameObject CloneForSlicing(MeshFilter filter, MeshRenderer renderer)
+        private static GameObject CloneForSlicing(Mesh mesh, Transform reference, Material[] materials, Vector3 scale)
         {
             GameObject clone = new GameObject("BakuSliceRoot");
 
             // 親なしなので localPosition == ワールド座標になる
-            clone.transform.SetPositionAndRotation(filter.transform.position, filter.transform.rotation);
-            clone.transform.localScale = filter.transform.lossyScale;
+            clone.transform.SetPositionAndRotation(reference.position, reference.rotation);
+            clone.transform.localScale = scale;
 
-            clone.AddComponent<MeshFilter>().sharedMesh = filter.sharedMesh;
-            clone.AddComponent<MeshRenderer>().sharedMaterials = renderer.sharedMaterials;
+            clone.AddComponent<MeshFilter>().sharedMesh = mesh;
+            clone.AddComponent<MeshRenderer>().sharedMaterials = materials;
 
             return clone;
         }

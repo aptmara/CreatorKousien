@@ -97,8 +97,17 @@ namespace Game.Gameplay.Collectibles
         {
             UpdateGummyBounce();
 
+            if (_rigidbody != null && _rigidbody.IsSleeping())
+            {
+                return;
+            }
+
+            Vector3 position = _rigidbody != null
+                ? _rigidbody.position
+                : transform.position;
+
             // アイテムがステージ外へ落下した場合は自動クリーンアップ
-            if (transform.position.y < _fallDeadLineY)
+            if (position.y < _fallDeadLineY)
             {
                 Despawn();
                 return;
@@ -107,7 +116,7 @@ namespace Game.Gameplay.Collectibles
             ResolveFieldWallBoundsIfNeeded();
             if (_fieldWallRoot != null && _hasFieldWallBounds)
             {
-                Vector3 localPosition = _fieldWallRoot.InverseTransformPoint(transform.position);
+                Vector3 localPosition = _fieldWallRoot.InverseTransformPoint(position);
                 if (IsOutsideFieldBounds(localPosition))
                 {
                     MoveInsideField();
@@ -162,6 +171,7 @@ namespace Game.Gameplay.Collectibles
 
             UpdateVisual();
             ApplySpecialPhysics();
+            BeginSpawnPassThrough();
         }
 
         private void ResolveFieldWallBoundsIfNeeded()
@@ -742,8 +752,6 @@ namespace Game.Gameplay.Collectibles
 
             _rigidbody.linearVelocity = velocity;
             _rigidbody.angularVelocity = angularVelocity;
-
-            BeginSpawnPassThrough();
         }
 
         private void UpdateVisual()

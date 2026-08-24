@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+
+    environment {
+        UNITY_PATH = 'C:\\Program Files\\Unity\\Hub\\Editor\\6000.3.7f1\\Editor\\Unity.exe'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Unity Build') {
+            steps {
+                bat '''
+                "%UNITY_PATH%" ^
+                -batchmode ^
+                -quit ^
+                -projectPath "%WORKSPACE%" ^
+                -buildTarget StandaloneWindows64 ^
+                -executeMethod JenkinsBuild.BuildWindows ^
+                -logFile "%WORKSPACE%\\unity-build.log"
+                '''
+            }
+        }
+
+        stage('Archive') {
+            steps {
+                archiveArtifacts artifacts: 'Build/Windows/**/*',
+                                 fingerprint: true
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'unity-build.log',
+                             allowEmptyArchive: true
+        }
+    }
+}

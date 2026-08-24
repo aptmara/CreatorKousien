@@ -31,7 +31,7 @@ Material:
     m_Floats:
     - _ColorMask: 15
     - _OutlineEnabled: 0
-    - _OutlineSize: 4
+    - _OutlineSize: 12
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0
@@ -40,6 +40,9 @@ Material:
     - _UseUIAlphaClip: 0
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _OriginalSize: {r: 1, g: 1, b: 0, a: 0}
     - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
+    - _OutlinePadding: {r: 0, g: 0, b: 0, a: 0}
+    - _SpriteUVRect: {r: 0, g: 0, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

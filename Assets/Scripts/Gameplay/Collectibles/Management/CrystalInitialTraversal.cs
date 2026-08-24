@@ -106,6 +106,7 @@ public sealed class CrystalInitialTraversal : MonoBehaviour
         _hasCompleted = false;
         _hasLoggedInvalidCurveValue = false;
         _emittedCollectibleCount = 0;
+        _crystalWalk.SetInitialTraversing(false);
         _crystalWalk.SetMovementSuspended(true);
     }
 
@@ -122,12 +123,14 @@ public sealed class CrystalInitialTraversal : MonoBehaviour
         if (!TryValidateTraversal())
         {
             _hasCompleted = true;
+            _crystalWalk.SetInitialTraversing(false);
             _crystalWalk.SetMovementSuspended(false);
             return;
         }
 
         _elapsedTime = 0f;
         _isInitialTraversing = true;
+        _crystalWalk.SetInitialTraversing(true);
         _hasCompleted = false;
         _hasLoggedInvalidCurveValue = false;
         _emittedCollectibleCount = 0;
@@ -229,6 +232,12 @@ public sealed class CrystalInitialTraversal : MonoBehaviour
         _segmentControlPositions = new Vector3[segmentCount];
         _segmentTargetPositions = new Vector3[segmentCount];
 
+        if (!_crystalWalk.TryGetNormalMovementStartPosition(out Vector3 normalMovementStartPosition))
+        {
+            Debug.LogError("[CrystalInitialTraversal] 通常移動の開始位置を取得できません。移動停止を解除して通常移動へフォールバックします。", this);
+            return false;
+        }
+
         Vector3 startPosition = _originPosition;
         for (int index = 0; index < segmentCount; index++)
         {
@@ -240,7 +249,9 @@ public sealed class CrystalInitialTraversal : MonoBehaviour
             }
 
             Vector3 controlPosition = segment.ControlPosition.position;
-            Vector3 targetPosition = segment.TargetPosition.position;
+            Vector3 targetPosition = index == segmentCount - 1
+                ? normalMovementStartPosition
+                : segment.TargetPosition.position;
             if (!IsFinite(controlPosition) || !IsFinite(targetPosition))
             {
                 Debug.LogError($"[CrystalInitialTraversal] 初期移動の区間 {index} に NaN または Infinity を含む座標があります。移動停止を解除して通常移動へフォールバックします。", this);
@@ -372,6 +383,7 @@ public sealed class CrystalInitialTraversal : MonoBehaviour
         transform.position = _segmentTargetPositions[_segmentTargetPositions.Length - 1];
         EmitCollectiblesForProgress(1f);
         _isInitialTraversing = false;
+        _crystalWalk.SetInitialTraversing(false);
         _hasCompleted = true;
         ReleaseMovementSuspension();
     }
@@ -390,11 +402,23 @@ public sealed class CrystalInitialTraversal : MonoBehaviour
         Gizmos.color = Color.yellow;
         Vector3 startPosition = _origin.position;
 
-        foreach (PathSegment segment in _pathSegments)
+        for (int index = 0; index < _pathSegments.Count; index++)
         {
+            PathSegment segment = _pathSegments[index];
             if (segment == null || segment.ControlPosition == null || segment.TargetPosition == null)
             {
                 continue;
+            }
+
+            Vector3 targetPosition = segment.TargetPosition.position;
+            if (index == _pathSegments.Count - 1)
+            {
+                CrystalWalk crystalWalk = _crystalWalk != null ? _crystalWalk : GetComponent<CrystalWalk>();
+                if (crystalWalk != null
+                    && crystalWalk.TryGetNormalMovementStartPosition(out Vector3 normalMovementStartPosition))
+                {
+                    targetPosition = normalMovementStartPosition;
+                }
             }
 
             Vector3 previousPosition = startPosition;
@@ -405,12 +429,12 @@ public sealed class CrystalInitialTraversal : MonoBehaviour
                     time,
                     startPosition,
                     segment.ControlPosition.position,
-                    segment.TargetPosition.position);
+                    targetPosition);
                 Gizmos.DrawLine(previousPosition, currentPosition);
                 previousPosition = currentPosition;
             }
 
-            startPosition = segment.TargetPosition.position;
+            startPosition = targetPosition;
         }
     }
 
@@ -420,6 +444,10 @@ public sealed class CrystalInitialTraversal : MonoBehaviour
     private void CancelTraversal()
     {
         _isInitialTraversing = false;
+        if (_crystalWalk != null)
+        {
+            _crystalWalk.SetInitialTraversing(false);
+        }
         _hasCompleted = true;
         ReleaseMovementSuspension();
     }

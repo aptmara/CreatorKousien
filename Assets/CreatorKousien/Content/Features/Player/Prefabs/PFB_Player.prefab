@@ -84,6 +84,7 @@ GameObject:
   - component: {fileID: 704689617528994596}
   - component: {fileID: 5479731356637537643}
   - component: {fileID: 4379990280986034882}
+  - component: {fileID: 7348329347112341842}
   m_Layer: 7
   m_Name: PFB_Player
   m_TagString: Player
@@ -91,6 +92,19 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &7348329347112341842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5658249862219205856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43accc03808d44c8a335c084f7644bee, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.VFX.PlayerOcclusionHighlightTarget
+  _visualRoot: {fileID: 1408811923830692677}
 --- !u!4 &2670995304890142112
 Transform:
   m_ObjectHideFlags: 0

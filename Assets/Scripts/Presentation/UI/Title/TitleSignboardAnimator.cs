@@ -64,6 +64,8 @@ namespace Game.Presentation.UI.Title
         private bool _hasRefreshedFinalStateOnEnable;
         private bool _hasWarnedOptionalReferences;
 
+        public bool IsPlaying => _playCoroutine != null;
+
         /// <summary>
         /// 看板アニメーションの種類。
         /// </summary>
