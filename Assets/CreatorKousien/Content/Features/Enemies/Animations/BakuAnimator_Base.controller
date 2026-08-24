@@ -22,7 +22,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 1827226128182048838, guid: 7fe0d3f5b2f13654984c6d67e4257d09, type: 3}
+  m_Motion: {fileID: 1827226128182048838, guid: a7887190105a1944da306ac4335ed1e4, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -317,7 +317,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: EnemyAnimator
+  m_Name: BakuAnimator_Base
   serializedVersion: 5
   m_AnimatorParameters:
   - m_Name: HitTime
@@ -384,7 +384,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 0}
+  m_Motion: {fileID: 1827226128182048838, guid: 98c77b3a9376d82458d012e104015328, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -413,7 +413,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 1827226128182048838, guid: bc82b5c27bc02c74888996e356b5eabd, type: 3}
+  m_Motion: {fileID: 1827226128182048838, guid: 98c77b3a9376d82458d012e104015328, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
