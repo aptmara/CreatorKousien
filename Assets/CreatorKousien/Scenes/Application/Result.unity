@@ -146,14 +146,14 @@ RectTransform:
   m_GameObject: {fileID: 20892049}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.8761171, y: 0.8761171, z: 0.8761171}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1024540720}
+  m_Father: {fileID: 1861103647}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 715, y: -280}
+  m_AnchoredPosition: {x: 626.4237, y: -188.36514}
   m_SizeDelta: {x: 600, y: 600}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &20892051
@@ -1343,6 +1343,7 @@ RectTransform:
   - {fileID: 1920194083}
   - {fileID: 638957317}
   - {fileID: 426847922}
+  - {fileID: 1861103647}
   m_Father: {fileID: 1024540720}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -2281,33 +2282,6 @@ MonoBehaviour:
   _clearAnimator: {fileID: 560694237}
   _gameOverAnimator: {fileID: 1999552346}
   _gameOverTitleButton: {fileID: 1933738351}
---- !u!114 &1024540721
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1024540714}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1b82f16cc2b14e58af79359fa7e9fb62, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Common.MenuSelectionFeedbackController
-  _initialSelection: {fileID: 574260865}
-  _selectables:
-  - {fileID: 574260865}
-  - {fileID: 1678748051}
-  - {fileID: 1933738351}
-  _selectOnEnable: 0
-  _initializeOnFirstSelection: 1
-  _unselectedScale: 0.9
-  _selectedMinScale: 1
-  _selectedMaxScale: 1.06
-  _animationSpeed: 4
-  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
-  _imageOutlineMaterial: {fileID: 2100000, guid: 8b449c5fadba4283b8d3c7cd647db92a, type: 2}
-  _outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  _outlineSize: 4
 --- !u!114 &1024540716
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2403,8 +2377,6 @@ RectTransform:
   - {fileID: 158993977}
   - {fileID: 1054673370}
   - {fileID: 560694236}
-  - {fileID: 1861103647}
-  - {fileID: 20892050}
   - {fileID: 1999552345}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2413,6 +2385,33 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1024540721
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1024540714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b82f16cc2b14e58af79359fa7e9fb62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Common.MenuSelectionFeedbackController
+  _initialSelection: {fileID: 574260865}
+  _selectables:
+  - {fileID: 574260865}
+  - {fileID: 1678748051}
+  - {fileID: 1933738351}
+  _selectOnEnable: 0
+  _initializeOnFirstSelection: 1
+  _unselectedScale: 0.9
+  _selectedMinScale: 1
+  _selectedMaxScale: 1.06
+  _animationSpeed: 4
+  _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  _imageOutlineMaterial: {fileID: 2100000, guid: 8b449c5fadba4283b8d3c7cd647db92a, type: 2}
+  _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 4
 --- !u!1 &1054673367
 GameObject:
   m_ObjectHideFlags: 0
@@ -3507,12 +3506,13 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 44435168}
-  m_Father: {fileID: 1024540720}
+  - {fileID: 20892050}
+  m_Father: {fileID: 560694236}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: -65}
-  m_SizeDelta: {x: -1820, y: -980}
+  m_SizeDelta: {x: 0.00012207031, y: 0.7302246}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1861582782
 GameObject:
