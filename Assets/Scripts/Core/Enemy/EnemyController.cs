@@ -238,10 +238,11 @@ namespace Game.Core.Enemy
 
         public bool BarrierInitialize(EnemyDefinition definition, SpawnSummary spawnSummary, GameObject barrierObject)
         {
+            EnemyBarrierReceiver barrierReceiver = barrierObject.GetComponentInChildren<EnemyBarrierReceiver>(true);
 
-            if (!barrierObject.TryGetComponent(out EnemyBarrierReceiver barrierReceiver))
+            if (barrierReceiver == null)
             {
-                Debug.LogWarning("[EnemySpawner] EnemyBarrierReceiver が付与されていないためバリアの生成を中止します。", barrierObject);
+                Debug.LogWarning("[EnemySpawner] EnemyBarrierReceiver が子階層にも見つからないためバリアの生成を中止します。", barrierObject);
                 Destroy(barrierObject);
                 return false;
             }
