@@ -184,7 +184,12 @@ public class S_UpgradeDetail : MonoBehaviour
 
     private void ConfigureTextLayout()
     {
-        ConfigureText(_nameText, new Vector2(0f, 98f), new Vector2(372f, 76f), 40f, FontStyles.Bold);
+        ConfigureText(
+            _nameText,
+            new Vector2(0f, 98f),
+            new Vector2(372f, 76f),
+            40f,
+            FontStyles.Bold | FontStyles.Underline);
         ConfigureAutoSize(_nameText, 26f, 40f);
         ConfigureText(_descriptionText, new Vector2(0f, 0f), new Vector2(378f, 116f), 38f, FontStyles.Bold);
         ConfigureAutoSize(_descriptionText, 22f, 38f);
