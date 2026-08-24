@@ -6616,7 +6616,7 @@ RectTransform:
   m_GameObject: {fileID: 3572420630460547704}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.1921281, y: 1.1921281, z: 1.1921281}
+  m_LocalScale: {x: 2.3842561, y: 2.3842561, z: 2.3842561}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8212174340071120019}
@@ -6725,9 +6725,9 @@ MonoBehaviour:
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
   _outlineSize: 12
   _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
-  _unselectedScale: 1
-  _selectedMinScale: 1
-  _selectedMaxScale: 1.4
+  _unselectedScale: 2
+  _selectedMinScale: 2
+  _selectedMaxScale: 2.4
   _animationSpeed: 4
   _animationTarget: {fileID: 4499138225183068781}
   _visualRoot: {fileID: 4499138225183068781}
@@ -7391,7 +7391,7 @@ RectTransform:
   m_GameObject: {fileID: 4024908662843768582}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.1921281, y: 1.1921281, z: 1.1921281}
+  m_LocalScale: {x: 2.3842561, y: 2.3842561, z: 2.3842561}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4099238084622355500}
@@ -7499,9 +7499,9 @@ MonoBehaviour:
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
   _outlineSize: 12
   _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
-  _unselectedScale: 1
-  _selectedMinScale: 1
-  _selectedMaxScale: 1.4
+  _unselectedScale: 2
+  _selectedMinScale: 2
+  _selectedMaxScale: 2.4
   _animationSpeed: 4
   _animationTarget: {fileID: 7799218085855556777}
   _visualRoot: {fileID: 7799218085855556777}
@@ -11113,7 +11113,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2f6a94b8e3141cdb9c314bc62eaa762, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseAllowImageAnimator
   _selectionFeedback: {fileID: 8000000000000000002}
   _loopDuration: 2
@@ -11292,7 +11292,7 @@ RectTransform:
   m_GameObject: {fileID: 6638330484228386288}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.1921281, y: 1.1921281, z: 1.1921281}
+  m_LocalScale: {x: 2.3842561, y: 2.3842561, z: 2.3842561}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3219910053042428415}
@@ -11400,9 +11400,9 @@ MonoBehaviour:
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
   _outlineSize: 12
   _unselectedTint: {r: 0.62, g: 0.62, b: 0.62, a: 1}
-  _unselectedScale: 1
-  _selectedMinScale: 1
-  _selectedMaxScale: 1.4
+  _unselectedScale: 2
+  _selectedMinScale: 2
+  _selectedMaxScale: 2.4
   _animationSpeed: 4
   _animationTarget: {fileID: 126237241023283751}
   _visualRoot: {fileID: 126237241023283751}

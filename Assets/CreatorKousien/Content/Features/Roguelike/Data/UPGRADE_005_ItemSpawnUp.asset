@@ -13,14 +13,14 @@ MonoBehaviour:
   m_Name: UPGRADE_005_ItemSpawnUp
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
   Id: 5
-  DisplayName: "\u51FA\u73FE\u6570\u5897\u52A0"
+  DisplayName: "\u3010\u51FA\u73FE\u6570\u5897\u52A0\u3011"
   Description: "\u304B\u307C\u3061\u3083\u304C\u843D\u3068\u3059\u30AA\u30C8\u30B7\u30E2\u30CE\u304C\u5897\u3048\u308B\uFF01"
   LevelDescriptions: []
   LevelCardDescriptions: []
   Modifiers: []
   GameplayValue: 2
   OfferType: 0
-  CombatPressureRuleId:
+  CombatPressureRuleId: 
   CombatPressureOutputType: 0
   RequiresCollectibleFocus: 0
   SynergyTags: 0
