@@ -14,12 +14,16 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class CollectableGravity : MonoBehaviour
 {
+    private const float SleepSpeedThresholdSqr = 0.01f;
+    private const int StableFixedStepsBeforeSleep = 15;
+
     [Tooltip("重力加速度")]
     [SerializeField] private float _gravity = 9.8f;
 
     private Vector3 _gravityDir = Vector3.down;
     private Rigidbody _rb;
     private bool _released;     // 落とされてワールド重力に切り替えたかどうか
+    private int _stableFixedStepCount;
 
 
     private void Awake()
@@ -33,6 +37,7 @@ public class CollectableGravity : MonoBehaviour
     {
         // プール再利用に備えて毎回フィールド重力にリセット
         _released = false;
+        _stableFixedStepCount = 0;
         _rb.useGravity = false;
         _gravityDir = FieldContext.GravityDir;
     }
@@ -43,6 +48,7 @@ public class CollectableGravity : MonoBehaviour
     public void Release()
     {
         _released = true;
+        _stableFixedStepCount = 0;
         _rb.useGravity = true;      // ワールド重力に切り替える
     }
 
@@ -67,6 +73,26 @@ public class CollectableGravity : MonoBehaviour
         {
             // 落とされた後はワールド重力に任せる
             return;
+        }
+
+        if (_rb.IsSleeping())
+        {
+            return;
+        }
+
+        if (_rb.linearVelocity.sqrMagnitude <= SleepSpeedThresholdSqr)
+        {
+            _stableFixedStepCount++;
+            if (_stableFixedStepCount >= StableFixedStepsBeforeSleep)
+            {
+                _stableFixedStepCount = 0;
+                _rb.Sleep();
+                return;
+            }
+        }
+        else
+        {
+            _stableFixedStepCount = 0;
         }
 
         // 質量に頼らず、重力加速度を直接加えるために ForceMode.Acceleration を使用する

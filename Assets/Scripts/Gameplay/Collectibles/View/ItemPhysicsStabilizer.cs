@@ -49,7 +49,13 @@ public class ItemPhysicsStabilizer : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (_impactLimitTimer <= 0f && _rb.IsSleeping())
+        {
+            return;
+        }
+
         Vector3 velocity = _rb.linearVelocity;
+        bool velocityChanged = false;
 
         float currentMaxSpeed = _maxSpeed;
 
@@ -61,19 +67,24 @@ public class ItemPhysicsStabilizer : MonoBehaviour
 
         // 水平方向の速度を制限
         Vector2 horizontalVelocity = new Vector2(velocity.x, velocity.z);
-        if (horizontalVelocity.magnitude > currentMaxSpeed)
+        if (horizontalVelocity.sqrMagnitude > currentMaxSpeed * currentMaxSpeed)
         {
             horizontalVelocity = horizontalVelocity.normalized * currentMaxSpeed;
             velocity.x = horizontalVelocity.x;
             velocity.z = horizontalVelocity.y;
+            velocityChanged = true;
         }
 
         if (velocity.y > currentMaxSpeed)
         {
             velocity.y = currentMaxSpeed;
+            velocityChanged = true;
         }
 
-        _rb.linearVelocity = velocity;
+        if (velocityChanged)
+        {
+            _rb.linearVelocity = velocity;
+        }
     }
 
 

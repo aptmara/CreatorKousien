@@ -23,12 +23,16 @@ namespace Game.Gameplay.Collectibles
         [Tooltip("Trigger内で許可する最大横方向速度 (0なら制限なし)")]
         [SerializeField, Min(0f)] private float _maxHorizontalSpeed = 3.0f;
 
+        [Tooltip("中心への誘導を止め、横方向速度を減速する半径")]
+        [SerializeField, Min(0f)] private float _centerStopRadius = 2.0f;
+
         [Header("下方向への加速設定")]
         [Tooltip("Trigger内で下方向への加速の強さ")]
         [SerializeField, Min(0f)] private float _extraDownwardAcceleration = 5.0f;
 
         private readonly HashSet<Rigidbody> _targets = new HashSet<Rigidbody>();
         private readonly List<Rigidbody> _removeBuffer = new List<Rigidbody>();
+        private Collider _zoneCollider;
 
         /// <summary>
         /// AwakeでコライダーをTriggerに設定する
@@ -36,8 +40,8 @@ namespace Game.Gameplay.Collectibles
         private void Awake()
         {
             // コライダーはTriggerにする
-            Collider col = GetComponent<Collider>();
-            col.isTrigger = true;
+            _zoneCollider = GetComponent<Collider>();
+            _zoneCollider.isTrigger = true;
         }
 
 
@@ -47,6 +51,8 @@ namespace Game.Gameplay.Collectibles
         private void FixedUpdate()
         {
             _removeBuffer.Clear();
+            Vector3 zoneCenter = _zoneCollider.bounds.center;
+            float centerStopRadiusSqr = _centerStopRadius * _centerStopRadius;
 
             foreach (Rigidbody target in _targets)
             {
@@ -56,16 +62,36 @@ namespace Game.Gameplay.Collectibles
                     continue;
                 }
 
-                // 横方向の速度を減速
+                Vector2 toCenter = new Vector2(
+                    zoneCenter.x - target.position.x,
+                    zoneCenter.z - target.position.z);
+
+                if (target.IsSleeping() && toCenter.sqrMagnitude <= centerStopRadiusSqr)
+                {
+                    continue;
+                }
+
+                // ゾーン中心へ向かうように横方向速度を更新
                 Vector3 velocity = target.linearVelocity;
                 Vector2 horizontalVelocity = new Vector2(velocity.x, velocity.z);
 
-                if (_maxHorizontalSpeed > 0f && horizontalVelocity.magnitude > _maxHorizontalSpeed)
+                if (toCenter.sqrMagnitude > centerStopRadiusSqr)
+                {
+                    horizontalVelocity += toCenter.normalized
+                        * (_horizontalDeceleration * Time.fixedDeltaTime);
+                }
+                else
+                {
+                    horizontalVelocity = Vector2.MoveTowards(
+                        horizontalVelocity,
+                        Vector2.zero,
+                        _horizontalDeceleration * Time.fixedDeltaTime);
+                }
+
+                if (_maxHorizontalSpeed > 0f && horizontalVelocity.sqrMagnitude > _maxHorizontalSpeed * _maxHorizontalSpeed)
                 {
                     horizontalVelocity = horizontalVelocity.normalized * _maxHorizontalSpeed;
                 }
-
-                horizontalVelocity = Vector2.MoveTowards(horizontalVelocity, Vector2.zero, _horizontalDeceleration * Time.fixedDeltaTime);
 
                 velocity.x = horizontalVelocity.x;
                 velocity.z = horizontalVelocity.y;
@@ -131,4 +157,3 @@ namespace Game.Gameplay.Collectibles
         }
     }
 }
-
