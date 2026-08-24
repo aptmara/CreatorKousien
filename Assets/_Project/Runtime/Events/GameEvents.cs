@@ -561,4 +561,17 @@ namespace Game.Core.Events
             Position = position;
         }
     }
+
+    /// <summary>
+    /// ボスの警告開始イベント
+    /// </summary>
+    public struct BossIntroWarningStartedEvent
+    { }
+
+    /// <summary>
+    /// ボスの警告終了イベント
+    /// </summary>
+    public struct BossIntroWarningEndedEvent
+    { }
+
 }

@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24955dee9c23e3f428246a0dd8d54350, type: 3}
+  m_Name: Enemies_SO_BalanceBoss_IntroSequence
+  m_EditorClassIdentifier: Assembly-CSharp::BossIntroSequenceData
+  _playFromLeft: 1
+  _leftStartLocalPosition: {x: 0, y: -20, z: -20}
+  _leftStartEulerAngles: {x: 0, y: 0, z: 0}
+  _rightStartLocalPosition: {x: 0, y: 0, z: 0}
+  _rightStartEulerAngles: {x: 0, y: 0, z: 0}
+  _battleLocalPosition: {x: 0, y: -8, z: -7}
+  _battleEulerAngles: {x: 0, y: 180, z: 0}
+  _moveDuration: 1.2
+  _moveCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.82139707
+      value: 0.23790067
+      inSlope: 8.359756
+      outSlope: 8.359756
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.022150282
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _animatorTriggerName: 
+  _battleCameraConfig: {fileID: 11400000, guid: 1c476a725e63dab4ba0182d0cc3e495e, type: 2}
+  _battleCameraProjectionMode: 1
+  _cameraMoveDuration: 1
+  _cameraBlendCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _cameraReturnDuration: 0.5
+  _showWarningUI: 1
