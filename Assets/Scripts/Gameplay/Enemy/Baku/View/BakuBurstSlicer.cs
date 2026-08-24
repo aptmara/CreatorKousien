@@ -92,8 +92,11 @@ namespace Game.Gameplay.Enemy.Baku
                 // EzySliceはSkinnedMeshを直接切れないから、
                 // 破裂した瞬間のポーズを静的メッシュへ焼いてから切る
                 source = new Mesh { name = "BakuBakedSnapshot" };
+
+                // スケール無しで焼いて、localScaleで拡大縮小する
                 skinned.BakeMesh(source, true);
-                pieceScale = Vector3.one;
+                pieceScale = skinned.transform.lossyScale;
+
                 isSnapshot = true;
             }
             else
