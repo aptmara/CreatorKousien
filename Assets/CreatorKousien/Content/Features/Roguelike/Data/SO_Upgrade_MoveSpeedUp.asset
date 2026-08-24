@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SO_Upgrade_MoveSpeedUp
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
   Id: 2
-  DisplayName: "\u79FB\u52D5\u901F\u5EA6\u5F37\u5316"
+  DisplayName: "\u3010\u79FB\u52D5\u901F\u5EA6\u5F37\u5316\u3011"
   Description: "\u79FB\u52D5\u901F\u5EA6\u3092\u73FE\u5728\u306E1.5\u500D\u6587\u52A0\u7B97\u3059\u308B\u305E\uFF01"
   LevelDescriptions: []
   LevelCardDescriptions: []
@@ -23,7 +23,7 @@ MonoBehaviour:
     Value: 1.5
   GameplayValue: 0
   OfferType: 0
-  CombatPressureRuleId:
+  CombatPressureRuleId: 
   CombatPressureOutputType: 0
   RequiresCollectibleFocus: 0
   SynergyTags: 0

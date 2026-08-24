@@ -13,14 +13,14 @@ MonoBehaviour:
   m_Name: UPGRADE_014_BarrierRepair
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
   Id: 14
-  DisplayName: "\u30D0\u30EA\u30A2\u6642\u9593\u7D4C\u904E\u56DE\u5FA9"
+  DisplayName: "\u3010\u30D0\u30EA\u30A2\u6642\u9593\u7D4C\u904E\u56DE\u5FA9\u3011"
   Description: "\u30D0\u30EA\u30A2\u306E\u8010\u4E45\u304C\u6642\u9593\u7D4C\u904E\u3067\u5C11\u3057\u305A\u3064\u56DE\u5FA9\uFF01"
   LevelDescriptions: []
   LevelCardDescriptions: []
   Modifiers: []
   GameplayValue: 1.03
   OfferType: 0
-  CombatPressureRuleId:
+  CombatPressureRuleId: 
   CombatPressureOutputType: 0
   RequiresCollectibleFocus: 0
   SynergyTags: 0
