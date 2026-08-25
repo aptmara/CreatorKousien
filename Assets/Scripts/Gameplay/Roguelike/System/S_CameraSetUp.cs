@@ -86,10 +86,6 @@ public class S_CameraSetUp : MonoBehaviour
 
     public void SceneEnd()
     {
-        Destroy(_backUICam.gameObject);
-        Destroy(_middleCam.gameObject);
-        Destroy(_frontUICam.gameObject);
-
         // 破棄する前に、必ずスタックから取り除く
         if (_mainCam != null)
         {
