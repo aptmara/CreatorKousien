@@ -28,9 +28,9 @@ MonoBehaviour:
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
-      spawnCount: 8
+      spawnCount: 12
       startDelay: 0
-      spawnInterval: 5
+      spawnInterval: 1
   - groupName: Wave_Middle_Helloo
     plannerMemo: 
     delayBeforeStart: 0
@@ -38,6 +38,32 @@ MonoBehaviour:
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
-      spawnCount: 15
+      spawnCount: 8
       startDelay: 0
       spawnInterval: 3
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 4
+      startDelay: 0
+      spawnInterval: 3
+    - enemyDefinition: {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
+      spawnCount: 3
+      startDelay: 0
+      spawnInterval: 5
+  - groupName: Wave_Middle_Hellooo
+    plannerMemo: 
+    delayBeforeStart: 0
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 10
+      startDelay: 0
+      spawnInterval: 3
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 8
+      startDelay: 0
+      spawnInterval: 3
+    - enemyDefinition: {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
+      spawnCount: 8
+      startDelay: 0
+      spawnInterval: 5

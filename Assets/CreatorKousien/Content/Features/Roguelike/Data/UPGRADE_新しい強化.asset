@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 730422566b7cc734ea8529d8457fd466, type: 3}
+  m_Name: "UPGRADE_\u65B0\u3057\u3044\u5F37\u5316"
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
+  Id: ee9b18ae8087468ba94dbe2650262c99
+  DisplayName: "\u65B0\u3057\u3044\u5F37\u5316"
+  Description: "\u52B9\u679C\u8AAC\u660E\u3092\u5165\u529B"
+  LevelDescriptions: []
+  LevelCardDescriptions: []
+  Modifiers:
+  - TargetStat: 0
+    Operation: 0
+    Value: 0
+  GameplayValue: 0
+  OfferType: 0
+  CombatPressureRuleId: 
+  CombatPressureOutputType: 0
+  RequiresCollectibleFocus: 0
+  SynergyTags: 0
+  SuppressedTags: 0
+  DraftWeight: 1
+  Effects: []
+  MaxLevel: 10
+  Icon: {fileID: 0}
+  Category: 0
+  Cost: 10
+  CostMagni: 1.2
+  references:
+    version: 2
+    RefIds: []

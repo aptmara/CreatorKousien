@@ -27,7 +27,7 @@ MonoBehaviour:
     advanceType: 0
     timeUntilNextGroup: 0
     spawnEntries:
-    - enemyDefinition: {fileID: 11400000, guid: 5d78bca46e2c39648841f11362a49081, type: 2}
+    - enemyDefinition: {fileID: 11400000, guid: 2cec0d0912be7c74b9e1661e8f15cf2a, type: 2}
       spawnCount: 1
       startDelay: 0
       spawnInterval: 0
