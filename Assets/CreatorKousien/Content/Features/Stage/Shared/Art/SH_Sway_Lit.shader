@@ -32,6 +32,18 @@ Shader "Custom/SH_Sway_Lit"
 
         [KeywordEnum(Lit,Toon,Smooth)] _LightingMode("Lighting Mode",Float) = 0
 
+
+        [Header(Lighting Response)]
+        _AmbientStrength   ("Ambient Strength", Range(0,2)) = 1
+        _MainLightStrength ("Main Light Strength", Range(0,2)) = 1
+        _AddLightStrength  ("Additional Light Strength", Range(0,4)) = 1
+
+        [Header(Night)]
+        _NightResponse     ("Night Response", Range(0,1)) = 1
+        _NightDarkness     ("Night Darkness", Range(0,1)) = 0.7
+        _NightTint         ("Night Tint", Color) = (0.55, 0.6, 0.95, 1)
+        _EmissionNightBoost("Emission Night Boost", Range(0,8)) = 0
+
     }
 
     SubShader
@@ -101,7 +113,17 @@ Shader "Custom/SH_Sway_Lit"
                 float4 _SpecColor;float _SpecPower;float _SpecIntensity;
                 float4 _EmissionColor;float _EmissionStrength;
                 float _Cutoff;
+                float _AmbientStrength;
+                float _MainLightStrength;
+                float _AddLightStrength;
+                float _NightResponse;
+                float _NightDarkness;
+                float4 _NightTint;
+                float _EmissionNightBoost;
             CBUFFER_END
+            // グローバル変数
+            // 0 = 昼, 1 = 夜
+            float _GlobalNight;
 
             float _Beat;
             #define TWO_PI 6.28318530718
@@ -187,7 +209,8 @@ Shader "Custom/SH_Sway_Lit"
                 half3 direct = mainLight.color
                              * saturate(dot(normal, mainLight.direction))
                              * mainLight.distanceAttenuation
-                             * mainLight.shadowAttenuation;
+                             * mainLight.shadowAttenuation
+                             * _MainLightStrength;
 
                 // 追加ライト（Spot / Point）を加算
             #if defined(_ADDITIONAL_LIGHTS)
@@ -197,11 +220,25 @@ Shader "Custom/SH_Sway_Lit"
                     direct += addLight.color
                             * saturate(dot(normal, addLight.direction))
                             * addLight.distanceAttenuation
-                            * addLight.shadowAttenuation;
+                            * addLight.shadowAttenuation
+                            * _AddLightStrength;
                 LIGHT_LOOP_END
             #endif
+                // 夜のブレンド量。マテリアルごとに追従度を変えられる
+                half night = saturate(_GlobalNight * _NightResponse);
 
-                diffuse = baseColor * (ambient + direct);
+                half3 lighting = ambient * _AmbientStrength + direct;
+
+                // ライト自体はいじらず、受けた光を減衰させて色を寄せる
+                lighting *= lerp(1.0h, 1.0h - _NightDarkness, night);
+                lighting *= lerp(half3(1, 1, 1), _NightTint.rgb, night);
+
+                diffuse = baseColor * lighting;
+
+                // エミッションは減衰の外側で足すので、暗くしても光り続ける
+                half3 emission = _EmissionColor.rgb * _EmissionStrength
+                               * (1.0h + _EmissionNightBoost * night);
+                diffuse += emission;
             #endif
 
             #ifdef _LIGHTINGMODE_SMOOTH
