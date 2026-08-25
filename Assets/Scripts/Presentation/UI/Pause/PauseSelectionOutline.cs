@@ -79,6 +79,7 @@ namespace Game.Presentation.UI.Pause
             base.OnDestroy();
         }
 
+#if UNITY_EDITOR
         protected override void OnValidate()
         {
             base.OnValidate();
@@ -87,6 +88,7 @@ namespace Game.Presentation.UI.Pause
             graphic?.SetVerticesDirty();
             graphic?.SetMaterialDirty();
         }
+#endif
 
         private void Update()
         {

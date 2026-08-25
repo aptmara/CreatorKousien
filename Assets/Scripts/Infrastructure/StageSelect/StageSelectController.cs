@@ -1,8 +1,6 @@
 using Game.Infrastructure.Loading;
 using Game.WaveSystem;
 using System;
-using UnityEditor.Build.Content;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
