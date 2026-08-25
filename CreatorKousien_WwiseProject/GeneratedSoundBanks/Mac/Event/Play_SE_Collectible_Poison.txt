@@ -1,0 +1,2 @@
+Event	ID	Name			Wwise Object Path	Notes
+	3203106012	Play_SE_Collectible_Poison			\Default Work Unit\Play_SE_Collectible_Poison

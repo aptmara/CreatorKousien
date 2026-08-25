@@ -1,0 +1,2 @@
+Event	ID	Name			Wwise Object Path	Notes
+	2358718591	Play_SE_Collectible_Candy			\Default Work Unit\Play_SE_Collectible_Candy

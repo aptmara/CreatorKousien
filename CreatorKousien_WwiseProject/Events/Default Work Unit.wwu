@@ -21,6 +21,73 @@
 				<Event Name="Play_SE_PumpkinShot_Big" ID="{B411605A-3580-43AB-991F-302B08BAF49E}"><ChildrenList>
 					<Action Name="" ID="{3ED4E681-A240-4DB4-B95A-2EAC1A618D6E}" ShortID="401797556"><ReferenceList><Reference Name="Target"><ObjectRef Name="PumpkinShot_Big" ID="{3799CCE7-3452-4FBB-AD6E-F113705B7FC6}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/></Reference></ReferenceList></Action>
 				</ChildrenList></Event>
+
+				<Event Name="Play_SE_Collectible_Candy" ID="{6163EE75-6B1F-4BD2-B839-3A89E4DE0E8F}">
+					<ChildrenList>
+						<Action Name="" ID="{4F0EF04E-0D10-4F6E-AA0F-F7AF2396DD14}" ShortID="181274858">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="CollectibleHit_Candy" ID="{CE5BECA3-136A-4DEF-BD5A-1D2725F6DE77}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_SE_Collectible_Gummy" ID="{C2C26547-2623-4D63-B44C-A0180F3298C9}">
+					<ChildrenList>
+						<Action Name="" ID="{281532DF-5585-4F4D-98F1-9692CA8A0169}" ShortID="105969876">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="CollectibleHit_Gummy" ID="{78713279-974B-4ABF-8899-B8AEF4FD4274}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_SE_Collectible_Ice" ID="{931A6A58-82E2-46BA-AB63-83D1BF0CEF5B}">
+					<ChildrenList>
+						<Action Name="" ID="{C6F7C5F2-771A-4B65-87AC-3632B2DB503F}" ShortID="103868732">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="CollectibleHit_Ice" ID="{C940D6F8-044D-40FB-951D-2B75D14F641B}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_SE_Collectible_Poison" ID="{2D158A79-9FB6-47EB-9B80-BCABBB481B5A}">
+					<ChildrenList>
+						<Action Name="" ID="{2BB64438-9424-43BB-84BD-FB60DC3D9592}" ShortID="901584924">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="CollectibleHit_Poison" ID="{FC6B0B10-FF15-45C8-A6C9-8F417AB78EB1}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_SE_Collectible_Toge" ID="{6C929E0F-05AA-430F-8C5D-D275560F879F}">
+					<ChildrenList>
+						<Action Name="" ID="{F6274A7B-35A0-43E7-9F7C-472FEF039A9A}" ShortID="378817566">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="CollectibleHit_Toge" ID="{D9A65DF1-A3E2-4569-9B00-94126A62B1B1}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_SE_PlayerPunchHit" ID="{894F806C-DB9C-4189-8D6D-8B6A794BE678}">
+					<ChildrenList>
+						<Action Name="" ID="{1685DF76-A229-4394-9F95-95D3E150BEAC}" ShortID="863841384">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="PlayerPunchHit" ID="{38F8BCE9-CF6F-4D38-A790-FE75691E346E}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
 			</ChildrenList>
 		</WorkUnit>
 	</Events>

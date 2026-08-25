@@ -164,6 +164,7 @@ namespace Game.Gameplay.Player
             {
                 Action hitAction = _pendingHitAction;
                 _pendingHitAction = null;
+                SoundManager.instance?.PlaySE("PlayerPunchHit");
                 hitAction.Invoke();
                 return;
             }
@@ -172,6 +173,7 @@ namespace Game.Gameplay.Player
             if (_pendingTarget != null)
             {
                 Vector3 dir = AimTransform.forward;
+                SoundManager.instance?.PlaySE("PlayerPunchHit");
                 _pendingTarget.Break(_pendingHitPoint, dir);
                 _pendingTarget = null;
             }

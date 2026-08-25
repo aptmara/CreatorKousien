@@ -1,0 +1,2 @@
+Event	ID	Name			Wwise Object Path	Notes
+	2795023259	Play_SE_Collectible_Toge			\Default Work Unit\Play_SE_Collectible_Toge

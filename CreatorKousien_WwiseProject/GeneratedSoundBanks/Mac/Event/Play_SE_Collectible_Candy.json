@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "2358718591",
+    "Type": "Event",
+    "GUID": "{6163EE75-6B1F-4BD2-B839-3A89E4DE0E8F}",
+    "Language": "SFX",
+    "Hash": "{EB968CD2-DE85-3076-747C-5B52E6CA1EC6}",
+    "ObjectPath": "Play_SE_Collectible_Candy",
+    "ShortName": "Play_SE_Collectible_Candy",
+    "Path": "Event/Play_SE_Collectible_Candy.bnk",
+    "Media": [
+     {
+      "Id": "321821733",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Candy.wav",
+      "Path": "Media/321821733.wem",
+      "CachePath": "F8/{F8641974-935A-BF89-872A-DA8481002254}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "2358718591",
+      "Name": "Play_SE_Collectible_Candy",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Collectible_Candy",
+      "GUID": "{6163EE75-6B1F-4BD2-B839-3A89E4DE0E8F}",
+      "DurationType": "OneShot",
+      "DurationMin": "2",
+      "DurationMax": "2",
+      "MediaRefs": [
+       {
+        "Id": "321821733"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{0838E796-475F-9274-BE2B-4B829C7459B4}"
+ }
+}

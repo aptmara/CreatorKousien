@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "2662272053",
+    "Type": "Event",
+    "GUID": "{894F806C-DB9C-4189-8D6D-8B6A794BE678}",
+    "Language": "SFX",
+    "Hash": "{7C13C838-9CF5-E1ED-8B2C-0C41903CFCA9}",
+    "ObjectPath": "Play_SE_PlayerPunchHit",
+    "ShortName": "Play_SE_PlayerPunchHit",
+    "Path": "Event/Play_SE_PlayerPunchHit.bnk",
+    "Media": [
+     {
+      "Id": "982407180",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "PlayerPunchHit.wav",
+      "Path": "Media/982407180.wem",
+      "CachePath": "0F/{0F5F3899-269C-F328-1866-B70AB4A5D133}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "2662272053",
+      "Name": "Play_SE_PlayerPunchHit",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_PlayerPunchHit",
+      "GUID": "{894F806C-DB9C-4189-8D6D-8B6A794BE678}",
+      "DurationType": "OneShot",
+      "DurationMin": "0.37752083",
+      "DurationMax": "0.37752083",
+      "MediaRefs": [
+       {
+        "Id": "982407180"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{35CA707D-A172-0324-7F61-916CEF64C536}"
+ }
+}

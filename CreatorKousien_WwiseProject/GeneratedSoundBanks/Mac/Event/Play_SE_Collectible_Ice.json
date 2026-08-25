@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "3437287673",
+    "Type": "Event",
+    "GUID": "{931A6A58-82E2-46BA-AB63-83D1BF0CEF5B}",
+    "Language": "SFX",
+    "Hash": "{1C7508C6-A076-9A50-FF04-6FD4028907C7}",
+    "ObjectPath": "Play_SE_Collectible_Ice",
+    "ShortName": "Play_SE_Collectible_Ice",
+    "Path": "Event/Play_SE_Collectible_Ice.bnk",
+    "Media": [
+     {
+      "Id": "1035622241",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "IceCandy.wav",
+      "Path": "Media/1035622241.wem",
+      "CachePath": "CC/{CC52FDDD-DAFA-A9F1-3DF1-BB320DA6DBF6}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "3437287673",
+      "Name": "Play_SE_Collectible_Ice",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Collectible_Ice",
+      "GUID": "{931A6A58-82E2-46BA-AB63-83D1BF0CEF5B}",
+      "DurationType": "OneShot",
+      "DurationMin": "2",
+      "DurationMax": "2",
+      "MediaRefs": [
+       {
+        "Id": "1035622241"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{C2E0870E-2524-FE2A-B74C-61D560BF6A54}"
+ }
+}
