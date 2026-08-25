@@ -20,32 +20,32 @@ MonoBehaviour:
     allowDuplicateSelection: 0
     candidates:
     - isEnabled: 1
-      waveData: {fileID: 11400000, guid: 148348ed5000b0841882e2517af60d5a, type: 2}
+      waveData: {fileID: 11400000, guid: c11fe9e26f546be4e9dc25f642953d4b, type: 2}
       weight: 3
     - isEnabled: 1
-      waveData: {fileID: 11400000, guid: 8e3a295bf6045e84b89b36d5913dff2d, type: 2}
+      waveData: {fileID: 11400000, guid: 31dc4faf8e364e6469f622fec135fa0e, type: 2}
       weight: 2
     - isEnabled: 1
-      waveData: {fileID: 11400000, guid: dc9cab9867d86df43a28fc0981843fb7, type: 2}
+      waveData: {fileID: 11400000, guid: a1050cc19bae1ee49bae25b53953b95b, type: 2}
       weight: 1
   middleWavePool:
     selectionCount: 2
     allowDuplicateSelection: 0
     candidates:
     - isEnabled: 1
-      waveData: {fileID: 11400000, guid: 4ff6717b57df9fd4ca01931405487085, type: 2}
+      waveData: {fileID: 11400000, guid: bbcc7960d0f6e894b9ab236318061eb8, type: 2}
       weight: 3
     - isEnabled: 1
-      waveData: {fileID: 11400000, guid: ca4c88f0d9adc6242b67e281585adbd8, type: 2}
+      waveData: {fileID: 11400000, guid: 457aab29c19cf7a4d8cf566b544cd799, type: 2}
       weight: 2
   lateWavePool:
     selectionCount: 1
     allowDuplicateSelection: 0
     candidates:
     - isEnabled: 1
-      waveData: {fileID: 11400000, guid: c476aaacfdd56de4185d6fdfcd616183, type: 2}
+      waveData: {fileID: 11400000, guid: aa3b7cc4e544a8f49b01fe3330dfde82, type: 2}
       weight: 3
-  bossWave: {fileID: 11400000, guid: 13bfd27def824fc468a8ad95ae4add70, type: 2}
+  bossWave: {fileID: 11400000, guid: 010f193da088fbb4382ceb75755415ef, type: 2}
   stageSceneName: Stage_2
   nextStage: {fileID: 0}
   clearHealRatio: 0.5
