@@ -144,7 +144,13 @@ namespace Game.Core.Enemy
                 false,
                 definition.AttackMotionTime,
                 definition.AttackStartUpTime,
-                attackPower => EventBus.Publish(new RuleBarrierAttackEvent(attackPower, transform.position)));
+                attackPower =>
+                {
+                    // 状態異常解除などの遅延コールバックで攻撃が再有効化されても、生存中かつ通常状態で防衛ラインへ到達している敵だけがダメージを与えられるように修正しますお！！！
+                    if (_health == null || _health.IsDefeated || !_stateManager.CanAttackDefenceLine) return;
+
+                    EventBus.Publish(new RuleBarrierAttackEvent(attackPower, transform.position));
+                });
 
 
             // 初期HP・ゲージをUIに通知
@@ -291,6 +297,8 @@ namespace Game.Core.Enemy
         /// </summary>
         public void AttackNow()
         {
+            if (!IsBoss && (_health == null || _health.IsDefeated || !_stateManager.CanAttackDefenceLine)) return;
+
             _enemyAttack?.AttackNow();
         }
 
@@ -346,6 +354,9 @@ namespace Game.Core.Enemy
 
         private void HandleFreezeEnd()
         {
+            // 凍結解除ダメージで撃破された場合、解除処理は死亡コールバックから戻った後にも続くから、ここで移動を再開すると再到達コールバック経由で攻撃が復活するため、撃破後は再開しない！！
+            if (_health == null || _health.IsDefeated) return;
+
             _rising.ResumeMove();
         }
 
@@ -438,6 +449,13 @@ namespace Game.Core.Enemy
         /// </summary>
         private void HandleRose()
         {
+            if (_health == null || _health.IsDefeated)
+            {
+                _enemyAttack.ResetAttack();
+                _enemyAttack.SetActiv(false);
+                return;
+            }
+
             _stateManager.SetRose(true);
             _enemyAttack.SetActiv(_stateManager.CanAttackDefenceLine);
         }
@@ -681,7 +699,7 @@ namespace Game.Core.Enemy
         public bool CanReceiveGaugeDamage => CurrentState == EnemyState.Normal;
         public bool CanReceiveBodyDamage => CurrentState == EnemyState.Down || CurrentState == EnemyState.Normal;
         public bool CanReceiveBodyCombo => CurrentState == EnemyState.Down || CurrentState == EnemyState.Normal || CurrentState == EnemyState.OverHit || CurrentState == EnemyState.Drop;
-        public bool CanAttackDefenceLine => IsRose;
+        public bool CanAttackDefenceLine => IsRose && CurrentState == EnemyState.Normal;
         public bool CanAddDebuff => CurrentState == EnemyState.Normal || CurrentState == EnemyState.Down;
 
         public void SetRose(bool a_isRised)
