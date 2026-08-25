@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+namespace Game.Gameplay.Enemy.Boss
+{
 public enum TraySide { Left, Right, Level }
 
 public interface IBossTrayItem
@@ -95,4 +98,5 @@ public sealed class BossBalanceBeamController : MonoBehaviour
             OnTrayFullyLowered?.Invoke(side);
         }
     }
+}
 }

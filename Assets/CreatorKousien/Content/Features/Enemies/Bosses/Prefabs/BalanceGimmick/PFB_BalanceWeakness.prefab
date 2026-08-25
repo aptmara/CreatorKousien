@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2876942215081343606}
   - component: {fileID: 2934729907795979115}
   - component: {fileID: 7136180240002397430}
+  - component: {fileID: 3248323932791637932}
   m_Layer: 0
   m_Name: PFB_BalanceWeakness
   m_TagString: Untagged
@@ -117,6 +118,26 @@ MonoBehaviour:
   _spawnLayer: CollectibleSpawning
   _normalLayer: Collectible
   _passThroughDuration: 0.4
+--- !u!114 &3248323932791637932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 62624467482769536}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7be90c084865f84caeef8cef9ab0cff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BalanceCatapultBall
+  _rigidbody: {fileID: 2934729907795979115}
+  _battleFlowController: {fileID: 0}
+  _baseDamage: 5
+  _speedDamageMultiplier: 2
+  _minLaunchSpeed: 0
+  _bossLayer:
+    serializedVersion: 2
+    m_Bits: 1
 --- !u!1001 &6222394822971739052
 PrefabInstance:
   m_ObjectHideFlags: 0

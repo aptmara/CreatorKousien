@@ -20,5 +20,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: fbb2cc8966f32664a8448550983be955, type: 2}
   - {fileID: 11400000, guid: 9998b8dbc0c5ce04e9654396168d57bf, type: 2}
   - {fileID: 11400000, guid: 0bd912b3ef729924d81e248d6df2ca12, type: 2}
-  _weaknessObjectChance: 0.3
+  _weaknessObjectChance: 1
   _SummonMonster: {fileID: 6342730725154082049, guid: b69e6f96a0b7df14ea6d1426833735b0, type: 3}

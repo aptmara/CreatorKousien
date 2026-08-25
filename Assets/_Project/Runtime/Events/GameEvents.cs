@@ -574,4 +574,11 @@ namespace Game.Core.Events
     public struct BossIntroWarningEndedEvent
     { }
 
+    public readonly struct BalanceSlamWarningEvent
+    {
+        public readonly int DangerSide;
+        public BalanceSlamWarningEvent(int dangerSide) => DangerSide = dangerSide;
+    }
+    
+
 }

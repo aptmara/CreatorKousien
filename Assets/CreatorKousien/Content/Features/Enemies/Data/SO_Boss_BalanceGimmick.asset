@@ -17,7 +17,7 @@ MonoBehaviour:
   ExecutionType: 0
   animTriggerName: BalamceAction
   isRandomInterval: 0
-  minInterval: 5
+  minInterval: 2
   maxInterval: 10
   triggerTimes: []
   waitForCompletion: 1

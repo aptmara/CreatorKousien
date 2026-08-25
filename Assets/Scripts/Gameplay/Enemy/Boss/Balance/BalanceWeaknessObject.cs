@@ -16,6 +16,11 @@ public class BalanceWeaknessObject : MonoBehaviour, IBossHittable, IBossTrayItem
         if (_hitCollider != null) _hitCollider.enabled = false;
     }
 
+    public void Initialize(BossBattleFlowController flowController )
+    {
+        _flowController = flowController;
+    }
+
     public void OnTrayRaised()
     {
         _isExposed = true;

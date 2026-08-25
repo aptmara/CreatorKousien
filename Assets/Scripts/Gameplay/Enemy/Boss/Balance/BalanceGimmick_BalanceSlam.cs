@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using Game.Core.Events;
-using Game.Core.DefenceLine;
 using Game.Gameplay.Collectibles;
 
 namespace Game.Gameplay.Enemy.Boss
@@ -24,6 +23,15 @@ namespace Game.Gameplay.Enemy.Boss
         [SerializeField] private int _bonusRewardCount = 4;
         [SerializeField] private Vector3 _rewardSpawnOffset = new Vector3(0f, 1f, 0f);
 
+        [Header("==== 自動傾斜(抑制対象) =====")]
+        [SerializeField] private RealisticBalanceScale _scale;
+        [SerializeField] private float _biasStrength = 8.0f;
+
+        [Header("==== 警告(演出フック) ====")]
+        [Tooltip("この割合を超えたら警告イベントを一回だけ発行")]
+        [SerializeField, Range(0.0f, 1.0f)] private float _warningThreshold = 0.7f;
+        private bool _hasWarned;
+
         private BossBalanceBeamController _beam;
         private CollectibleSpawner _collectibleSpawner;
 
@@ -39,6 +47,7 @@ namespace Game.Gameplay.Enemy.Boss
         {
             base.Initialize(context);
             _beam = context.Transform.GetComponentInChildren<BossBalanceBeamController>();
+            _scale = context.Transform.GetComponentInChildren<RealisticBalanceScale>();
             _collectibleSpawner = UnityEngine.Object.FindFirstObjectByType<CollectibleSpawner>();
         }
 
@@ -47,7 +56,10 @@ namespace Game.Gameplay.Enemy.Boss
             _elapsed = 0f;
             _safeTime = 0f;
             _hasDamagedThisRaise = false;
+            _hasWarned = false;
             _isComplete = false;
+
+            _scale.SetExternalBias(_dangerSide == TraySide.Left ? -_biasStrength : _biasStrength);
 
             if (_beam != null)
             {
@@ -60,13 +72,18 @@ namespace Game.Gameplay.Enemy.Boss
         {
             _elapsed += dt;
 
-            var side = _beam.FindSideOf<BalanceBarrierAttackObject>();
-            if(side.HasValue) _dangerSide = side.Value;
+            float tilt = _beam != null ? _beam.GetTiltRatio(_dangerSide) : 0.0f;
 
-            // 危険側が振り切られていない時間だけ「耐えた時間」として積算
-            if (_beam == null || _beam.GetTiltRatio(_dangerSide) < 1.0f)
+            if (tilt < 1.0f) _safeTime += dt;
+
+            if (!_hasWarned && tilt >= _warningThreshold)
             {
-                _safeTime += dt;
+                _hasWarned = true;
+                EventBus.Publish(new BalanceSlamWarningEvent((int)_dangerSide));
+            }
+            else if (_hasWarned && tilt < _warningThreshold - 0.1f)
+            {
+                _hasWarned = false;
             }
 
             if (_elapsed >= _challengeDuration)
@@ -95,6 +112,7 @@ namespace Game.Gameplay.Enemy.Boss
 
         private void Complete()
         {
+            _scale.SetExternalBias(0.0f);
             Unsubscribe();
 
             float safeRatio = _challengeDuration > 0f ? Mathf.Clamp01(_safeTime / _challengeDuration) : 0f;
@@ -117,6 +135,7 @@ namespace Game.Gameplay.Enemy.Boss
 
         public override void Cancel()
         {
+            _scale.SetExternalBias(0.0f);
             Unsubscribe();
         }
 
