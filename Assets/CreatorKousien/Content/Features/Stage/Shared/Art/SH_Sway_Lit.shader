@@ -50,6 +50,11 @@ Shader "Custom/SH_Sway_Lit"
 
         Pass
         {
+            Tags
+            {
+                "LightMode" = "UniversalForward"
+            }
+
             HLSLPROGRAM
 
             #pragma vertex vert
@@ -119,7 +124,7 @@ Shader "Custom/SH_Sway_Lit"
             {
                 Varyings OUT;
                 float4 localPos = float4(JellyVertex(IN.positionOS.xyz),1.0f);
-                
+
                 OUT.positionHCS = TransformObjectToHClip(localPos.xyz);
                 OUT.normalWS = TransformObjectToWorldNormal(IN.normalOS);
 
@@ -145,7 +150,7 @@ Shader "Custom/SH_Sway_Lit"
             #endif
 
             #ifdef _LIGHTINGMODE_TOON
-               half shade = step(_ShadeThreshold,ndl);
+               half shade = step(_ShadeThreshold, ndl);
 
                diffuse = lerp(
                    _ShadowColor.rgb,
@@ -155,7 +160,20 @@ Shader "Custom/SH_Sway_Lit"
             #endif
 
             #ifdef _LIGHTINGMODE_LIT
-                diffuse = tex * ndl;
+                half attenuation =
+                    light.distanceAttenuation *
+                    light.shadowAttenuation;
+
+                half3 baseColor =
+                    tex.rgb * _BaseColor.rgb;
+
+                // Environment Lighting やLight Probeから取得する環境光
+                half3 ambient = SampleSH(normal);
+
+                // direction lightの直接光
+                half3 direct = light.color * ndl * attenuation;
+
+                diffuse = baseColor * (ambient + direct);
             #endif
 
             #ifdef _LIGHTINGMODE_SMOOTH
@@ -244,7 +262,7 @@ Shader "Custom/SH_Sway_Lit"
 
                 OUT.positionCS = TransformObjectToHClip(pos);
 
-                // Get the VertexPositionInputs for the vertex position  
+                // Get the VertexPositionInputs for the vertex position
                 VertexPositionInputs positions = GetVertexPositionInputs(pos);
 
                 // Convert the vertex position to a position on the shadow map
