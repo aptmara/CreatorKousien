@@ -1,6 +1,6 @@
 using UnityEngine;
 using Game.Core.Events;
-
+using Game.Gameplay.Enemy.Boss;
 
 public class BalanceBarrierAttackObject : MonoBehaviour, IBossTrayItem
 {

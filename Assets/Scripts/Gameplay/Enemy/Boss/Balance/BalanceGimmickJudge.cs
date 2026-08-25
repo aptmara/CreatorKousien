@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Game.Gameplay.Enemy.Boss;
 
 [CreateAssetMenu(fileName = "Gimmick_Judge", menuName = "Boss/Gimmicks/Balance/")]
 public class BalanceGimmickJudge : BossGimmickSO

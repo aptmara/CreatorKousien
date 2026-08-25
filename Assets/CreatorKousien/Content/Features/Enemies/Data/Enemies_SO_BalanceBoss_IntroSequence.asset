@@ -17,7 +17,7 @@ MonoBehaviour:
   _leftStartEulerAngles: {x: 0, y: 0, z: 0}
   _rightStartLocalPosition: {x: 0, y: 0, z: 0}
   _rightStartEulerAngles: {x: 0, y: 0, z: 0}
-  _battleLocalPosition: {x: 0, y: -8, z: -7}
+  _battleLocalPosition: {x: 0, y: -13, z: -7}
   _battleEulerAngles: {x: 0, y: 180, z: 0}
   _moveDuration: 1.2
   _moveCurve:

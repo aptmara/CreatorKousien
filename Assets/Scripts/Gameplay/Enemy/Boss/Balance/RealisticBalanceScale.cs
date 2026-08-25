@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Data;
 using UnityEngine;
 
 public class RealisticBalanceScale : MonoBehaviour
@@ -10,11 +11,23 @@ public class RealisticBalanceScale : MonoBehaviour
     [SerializeField] private Transform _leftPanTransform;
     [SerializeField] private Transform _rightPanTransform;
 
-    [Header("==== 天秤んの物理パラメータ =====")]
+    [Header("==== 天秤の物理パラメータ =====")]
     [SerializeField] private float _maxTiltAngle = 30.0f;
     [SerializeField] private float _tiltSensitivity = 5.0f;
     [SerializeField] private float _stiffness = 12.0f;
     [SerializeField] private float _damping = 2.5f;
+
+    [Header("==== カタパルト検知 ====")]
+    [Tooltip("１階の登録でこの質量以上が一気に増えたら急速加重とみなす")]
+    [SerializeField] private float _suddenWeightThreshold = 5.0f;
+
+    // 外部バイアス　ギミックから傾きを強制
+    private bool _isFrozen;
+    public void SetFrozen(bool frozen) => _isFrozen = frozen;
+
+    private float _externalBias;
+    public void SetExternalBias(float bias) => _externalBias = bias;
+    
 
     [Header("==== 皿の傾き(滑り落ち)設定 ====")]
     [SerializeField] private float _maxPanTiltAngle = 40.0f;
@@ -22,19 +35,26 @@ public class RealisticBalanceScale : MonoBehaviour
     private float _currentAngle = 0.0f;
     private float _angularVelocity = 0.0f;
 
-    private readonly HashSet<Rigidbody> _leftPanWights = new HashSet<Rigidbody>();
-    private readonly HashSet<Rigidbody> _rightPanWights = new HashSet<Rigidbody>();
+    private readonly HashSet<Rigidbody> _leftPanWeights = new HashSet<Rigidbody>();
+    private readonly HashSet<Rigidbody> _rightPanWeights = new HashSet<Rigidbody>();
 
     public float CurrentAngle => _currentAngle;
     public Transform LeftPanTransform => _leftPanTransform;
     public Transform RightPanTransform => _rightPanTransform;
 
+    public event System.Action<bool, float> OnWeightSuddenlyAdded;
+
+    public IReadOnlyCollection<Rigidbody> GetWeightOnSide(bool isLeft) =>
+        isLeft ? _leftPanWeights : _rightPanWeights;
+
     private void FixedUpdate()
     {
-        float leftMass = CalculateTotalMass(_leftPanWights);
-        float rightMass = CalculateTotalMass(_rightPanWights);
+        if (_isFrozen) return;
 
-        float massDifference = rightMass - leftMass;
+        float leftMass = CalculateTotalMass(_leftPanWeights);
+        float rightMass = CalculateTotalMass(_rightPanWeights);
+
+        float massDifference = (rightMass - leftMass) + _externalBias;
         float targetAngle = Mathf.Clamp(massDifference * _tiltSensitivity, -_maxTiltAngle, _maxTiltAngle);
 
         float force = (targetAngle - _currentAngle) * _stiffness;
@@ -84,15 +104,23 @@ public class RealisticBalanceScale : MonoBehaviour
     public void RegisterWeight(bool isLeft,Rigidbody rb)
     {
         if (rb == null) return;
-        if (isLeft) _leftPanWights.Add(rb);
-        else _rightPanWights.Add(rb);
+
+        var set = isLeft ? _leftPanWeights : _rightPanWeights;
+        if (set.Contains(rb)) return;
+
+        set.Add(rb);
+        
+        if(rb.mass >= _suddenWeightThreshold)
+        {
+            OnWeightSuddenlyAdded?.Invoke(isLeft, rb.mass);
+        }
     }
 
     public void UnregisterWeight(bool isLeft, Rigidbody rb)
     {
         if (rb == null) return;
-        if (isLeft) _leftPanWights.Remove(rb);
-        else _rightPanWights.Remove(rb);
+        if (isLeft) _leftPanWeights.Remove(rb);
+        else _rightPanWeights.Remove(rb);
     }
 
 }

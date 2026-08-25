@@ -1,8 +1,9 @@
 using Game.Data.Collectibles;
 using Game.Gameplay.Collectibles;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
+using Game.Gameplay.Enemy.Boss;
+using UnityEditor.Rendering.LookDev;
 
 [CreateAssetMenu(fileName = "BalanceGimmick_BringWeight", menuName = "Boss/Gimmick/Balance_BringWeight")]
 public class BalanceGimmick_BringWeight : BossGimmickSO
@@ -104,10 +105,19 @@ public class BalanceGimmick_BringWeight : BossGimmickSO
         var prefab = _weaknessPrefabs[UnityEngine.Random.Range(0, _weaknessPrefabs.Count)];
         var instance = Instantiate(prefab, position, rotation);
 
+        if(instance.TryGetComponent(out BalanceWeaknessObject weakObj))
+        {
+            weakObj.Initialize(Context.Controller);
+        }
+        if(instance.TryGetComponent(out BalanceCatapultBall catapultObj))
+        {
+            catapultObj.Initialize(Context);
+        }
+
         if (instance.TryGetComponent(out IBossTrayItem item))
         {
             _beamController.RegisterItem(_targetSide, item);
-        }
+        }        
     }
 
     private void SpawnCollectible(Vector3 position)
