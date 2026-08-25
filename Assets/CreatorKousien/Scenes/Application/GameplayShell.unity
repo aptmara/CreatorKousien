@@ -473,6 +473,7 @@ MonoBehaviour:
   _minimumStageLoadingDuration: 3
   _waveRunner: {fileID: 737055405}
   _enemySpawner: {fileID: 0}
+  _gameUIController: {fileID: 0}
   _cameraRigController: {fileID: 1756462886}
   _shopVehicleController: {fileID: 0}
   _shopCinematicCameraController: {fileID: 0}
@@ -491,6 +492,51 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.WaveRunner
   spawnRetryInterval: 0.25
+--- !u!1 &748350911
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 748350913}
+  - component: {fileID: 748350912}
+  m_Layer: 0
+  m_Name: DebugTool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &748350912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 748350911}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fc756c48db972a4b80022017a6a8da9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.DebugTools.RenderStateProbe
+  _interval: 1
+--- !u!4 &748350913
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 748350911}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.79189, y: -0, z: 5.45498}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &806947044
 GameObject:
   m_ObjectHideFlags: 0
@@ -1186,3 +1232,4 @@ SceneRoots:
   - {fileID: 572247458}
   - {fileID: 320376344}
   - {fileID: 1922201348}
+  - {fileID: 748350913}
