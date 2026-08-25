@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "1464973675",
+    "Type": "Event",
+    "GUID": "{C2C26547-2623-4D63-B44C-A0180F3298C9}",
+    "Language": "SFX",
+    "Hash": "{A7AA0ABA-2895-D036-9CEC-EDDAE72268E3}",
+    "ObjectPath": "Play_SE_Collectible_Gummy",
+    "ShortName": "Play_SE_Collectible_Gummy",
+    "Path": "Event/Play_SE_Collectible_Gummy.bnk",
+    "Media": [
+     {
+      "Id": "800147448",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Gumi.wav",
+      "Path": "Media/800147448.wem",
+      "CachePath": "19/{193CA7D3-CC52-772C-BEAF-393215405D4F}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "1464973675",
+      "Name": "Play_SE_Collectible_Gummy",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Collectible_Gummy",
+      "GUID": "{C2C26547-2623-4D63-B44C-A0180F3298C9}",
+      "DurationType": "OneShot",
+      "DurationMin": "2",
+      "DurationMax": "2",
+      "MediaRefs": [
+       {
+        "Id": "800147448"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{57C42A53-8C80-088D-3DA4-27E1EC794C2B}"
+ }
+}

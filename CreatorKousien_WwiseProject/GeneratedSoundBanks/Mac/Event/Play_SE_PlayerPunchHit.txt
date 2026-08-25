@@ -1,0 +1,2 @@
+Event	ID	Name			Wwise Object Path	Notes
+	2662272053	Play_SE_PlayerPunchHit			\Default Work Unit\Play_SE_PlayerPunchHit

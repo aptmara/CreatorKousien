@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "2795023259",
+    "Type": "Event",
+    "GUID": "{6C929E0F-05AA-430F-8C5D-D275560F879F}",
+    "Language": "SFX",
+    "Hash": "{5BF362F7-668E-8158-273B-E4026F54316E}",
+    "ObjectPath": "Play_SE_Collectible_Toge",
+    "ShortName": "Play_SE_Collectible_Toge",
+    "Path": "Event/Play_SE_Collectible_Toge.bnk",
+    "Media": [
+     {
+      "Id": "143500710",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "konpeto.wav",
+      "Path": "Media/143500710.wem",
+      "CachePath": "36/{36249449-9640-9AD6-540B-143480365F13}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "2795023259",
+      "Name": "Play_SE_Collectible_Toge",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Collectible_Toge",
+      "GUID": "{6C929E0F-05AA-430F-8C5D-D275560F879F}",
+      "DurationType": "OneShot",
+      "DurationMin": "2",
+      "DurationMax": "2",
+      "MediaRefs": [
+       {
+        "Id": "143500710"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{78497092-0CF8-4857-AB07-8F7017BA97F9}"
+ }
+}

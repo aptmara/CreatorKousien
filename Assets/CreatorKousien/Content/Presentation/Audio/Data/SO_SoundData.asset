@@ -43,6 +43,12 @@ MonoBehaviour:
       WwiseObjectReference: {fileID: 11400000, guid: 771ba1dbf77064947a5cdbef06df0a2c, type: 2}
     Name: PumpkinShot_Big
     bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: ff7aa4eaac108264d80cf030d4caf43b, type: 2}
+    Name: PlayerPunchHit
+    bpm: 0
   BGMDataList:
   - WwiseEvent:
       idInternal: 0

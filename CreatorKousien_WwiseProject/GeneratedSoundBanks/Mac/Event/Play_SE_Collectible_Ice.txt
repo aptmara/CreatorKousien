@@ -1,0 +1,2 @@
+Event	ID	Name			Wwise Object Path	Notes
+	3437287673	Play_SE_Collectible_Ice			\Default Work Unit\Play_SE_Collectible_Ice

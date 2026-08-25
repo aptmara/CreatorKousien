@@ -704,12 +704,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94154a6c66479af4f9af6f32246db596, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.Audio.EnemyHitAudioPresenter
+  _candyHitEvent:
+    idInternal: 0
+    valueGuidInternal:
+    WwiseObjectReference: {fileID: 11400000, guid: fdc0dabccc3a9b74691e7881f21d51e6, type: 2}
+  _togeHitEvent:
+    idInternal: 0
+    valueGuidInternal:
+    WwiseObjectReference: {fileID: 11400000, guid: 0eb6863eff21cc8428f6f5a6ce431b0b, type: 2}
+  _poisonHitEvent:
+    idInternal: 0
+    valueGuidInternal:
+    WwiseObjectReference: {fileID: 11400000, guid: 09cf85ac1743fbf48bce62345a2f3a7f, type: 2}
+  _iceHitEvent:
+    idInternal: 0
+    valueGuidInternal:
+    WwiseObjectReference: {fileID: 11400000, guid: 62d5a82afa5208d4484e764962a6a373, type: 2}
+  _gummyHitEvent:
+    idInternal: 0
+    valueGuidInternal:
+    WwiseObjectReference: {fileID: 11400000, guid: e3259f386d1019f4a98a90d1f6a108f0, type: 2}
   _streakWindowSeconds: 0.6
   _maxStreak: 8
-  _hitEvent:
-    idInternal: 0
-    valueGuidInternal: 
-    WwiseObjectReference: {fileID: 11400000, guid: 9122aa3275f122b478f8514055fe4ffa, type: 2}
   _hitStreakRtpc:
     idInternal: 0
     valueGuidInternal: 

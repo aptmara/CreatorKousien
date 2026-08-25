@@ -70,6 +70,139 @@
 					</AudioFileSource></ChildrenList>
 					<ActiveSourceList><ActiveSource Name="PumpkinShot_Big" ID="{71C86E52-E411-48E5-97C3-33999D6B4694}" Platform="Linked"/></ActiveSourceList>
 				</Sound>
+
+				<Sound Name="CollectibleHit_Candy" ID="{CE5BECA3-136A-4DEF-BD5A-1D2725F6DE77}" ShortID="692722365">
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="Candy" ID="{4646A2BA-2419-4A83-9868-2936B69AA518}">
+							<Language>SFX</Language>
+							<AudioFile>Candy.wav</AudioFile>
+							<MediaIDList>
+								<MediaID ID="321821733"/>
+							</MediaIDList>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="Candy" ID="{4646A2BA-2419-4A83-9868-2936B69AA518}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<Sound Name="CollectibleHit_Gummy" ID="{78713279-974B-4ABF-8899-B8AEF4FD4274}" ShortID="130294243">
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="Gumi" ID="{D5A20852-315C-4429-AC17-7E525B577393}">
+							<Language>SFX</Language>
+							<AudioFile>Gumi.wav</AudioFile>
+							<MediaIDList>
+								<MediaID ID="800147448"/>
+							</MediaIDList>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="Gumi" ID="{D5A20852-315C-4429-AC17-7E525B577393}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<Sound Name="CollectibleHit_Ice" ID="{C940D6F8-044D-40FB-951D-2B75D14F641B}" ShortID="237322280">
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="IceCandy" ID="{0A6F6C35-72FA-46AC-A7B1-7B70ED98DDEE}">
+							<Language>SFX</Language>
+							<AudioFile>IceCandy.wav</AudioFile>
+							<MediaIDList>
+								<MediaID ID="1035622241"/>
+							</MediaIDList>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="IceCandy" ID="{0A6F6C35-72FA-46AC-A7B1-7B70ED98DDEE}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<Sound Name="CollectibleHit_Poison" ID="{FC6B0B10-FF15-45C8-A6C9-8F417AB78EB1}" ShortID="130303793">
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="PoisonCandy" ID="{34F66F11-FE47-415D-B2F9-44FDEACDF6AC}">
+							<Language>SFX</Language>
+							<AudioFile>PoisonCandy.wav</AudioFile>
+							<MediaIDList>
+								<MediaID ID="945135922"/>
+							</MediaIDList>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="PoisonCandy" ID="{34F66F11-FE47-415D-B2F9-44FDEACDF6AC}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<Sound Name="CollectibleHit_Toge" ID="{D9A65DF1-A3E2-4569-9B00-94126A62B1B1}" ShortID="681389146">
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="konpeto" ID="{01F9CEE7-21AA-4AE8-97BE-1D8EFDC6EFD6}">
+							<Language>SFX</Language>
+							<AudioFile>konpeto.wav</AudioFile>
+							<MediaIDList>
+								<MediaID ID="143500710"/>
+							</MediaIDList>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="konpeto" ID="{01F9CEE7-21AA-4AE8-97BE-1D8EFDC6EFD6}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<Sound Name="PlayerPunchHit" ID="{38F8BCE9-CF6F-4D38-A790-FE75691E346E}" ShortID="699229010">
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="PlayerPunchHit" ID="{60C527CF-CB48-4D6D-AFC9-67DE1A643496}">
+							<Language>SFX</Language>
+							<AudioFile>PlayerPunchHit.wav</AudioFile>
+							<MediaIDList>
+								<MediaID ID="982407180"/>
+							</MediaIDList>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="PlayerPunchHit" ID="{60C527CF-CB48-4D6D-AFC9-67DE1A643496}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
 			</ChildrenList>
 		</WorkUnit>
 	</Containers>

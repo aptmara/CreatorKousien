@@ -1,0 +1,2 @@
+Event	ID	Name			Wwise Object Path	Notes
+	1464973675	Play_SE_Collectible_Gummy			\Default Work Unit\Play_SE_Collectible_Gummy
