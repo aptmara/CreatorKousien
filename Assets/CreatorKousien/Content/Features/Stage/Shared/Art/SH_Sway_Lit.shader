@@ -62,6 +62,13 @@ Shader "Custom/SH_Sway_Lit"
             #pragma multi_compile _ _ALPHATEST_ON
             #pragma multi_compile _LIGHTINGMODE_LIT _LIGHTINGMODE_TOON _LIGHTINGMODE_SMOOTH
 
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile _ _FORWARD_PLUS
+            #pragma multi_compile_fragment _ _LIGHT_COOKIES
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
@@ -79,6 +86,7 @@ Shader "Custom/SH_Sway_Lit"
                 float3 viewDirWS : TEXCOORD1;
                 float2 uv : TEXCOORD2;
                 float height : TEXCOORD3;
+                float3 positionWS : TEXCOORD4;
             };
 
             TEXTURE2D(_BaseMap);
@@ -130,6 +138,7 @@ Shader "Custom/SH_Sway_Lit"
 
                 float3 positionWS = TransformObjectToWorld(localPos.xyz);
                 OUT.viewDirWS = GetWorldSpaceViewDir(positionWS);
+                OUT.positionWS = positionWS;
                 OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
                 OUT.height = smoothstep(0.0f,1.0f,localPos.y);
                 return OUT;
@@ -160,18 +169,37 @@ Shader "Custom/SH_Sway_Lit"
             #endif
 
             #ifdef _LIGHTINGMODE_LIT
-                half attenuation =
-                    light.distanceAttenuation *
-                    light.shadowAttenuation;
+                half3 baseColor = tex.rgb * _BaseColor.rgb;
 
-                half3 baseColor =
-                    tex.rgb * _BaseColor.rgb;
-
-                // Environment Lighting やLight Probeから取得する環境光
+                // Environment Lighting や Light Probe から取得する環境光
                 half3 ambient = SampleSH(normal);
 
-                // direction lightの直接光
-                half3 direct = light.color * ndl * attenuation;
+                // Forward+ のライトループが inputData を参照するので用意する
+                InputData inputData = (InputData)0;
+                inputData.positionWS = IN.positionWS;
+                inputData.normalWS = normal;
+                inputData.viewDirectionWS = viewDir;
+                inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(IN.positionHCS);
+
+                // メインライト
+                float4 shadowCoord = TransformWorldToShadowCoord(IN.positionWS);
+                Light mainLight = GetMainLight(shadowCoord);
+                half3 direct = mainLight.color
+                             * saturate(dot(normal, mainLight.direction))
+                             * mainLight.distanceAttenuation
+                             * mainLight.shadowAttenuation;
+
+                // 追加ライト（Spot / Point）を加算
+            #if defined(_ADDITIONAL_LIGHTS)
+                uint pixelLightCount = GetAdditionalLightsCount();
+                LIGHT_LOOP_BEGIN(pixelLightCount)
+                    Light addLight = GetAdditionalLight(lightIndex, IN.positionWS, half4(1, 1, 1, 1));
+                    direct += addLight.color
+                            * saturate(dot(normal, addLight.direction))
+                            * addLight.distanceAttenuation
+                            * addLight.shadowAttenuation;
+                LIGHT_LOOP_END
+            #endif
 
                 diffuse = baseColor * (ambient + direct);
             #endif
