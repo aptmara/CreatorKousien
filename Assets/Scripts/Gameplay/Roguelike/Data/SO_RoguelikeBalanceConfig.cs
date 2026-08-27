@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Data.Collectibles;
+using Game.Data.Player;
 using Game.Core.Roguelike;
 using Game.Gameplay.Roguelike.CombatPressure;
 using Game.WaveSystem;
@@ -50,6 +51,28 @@ namespace Game.Gameplay.Roguelike
         public float SynergyWeightBonus => Mathf.Max(0f, _synergyWeightBonus);
         public float SuppressedWeightMultiplier => Mathf.Max(0f, _suppressedWeightMultiplier);
         public float MinimumWeight => Mathf.Max(0.001f, _minimumWeight);
+
+        /// <summary>
+        /// ドラフト抽選の実重み計算。S_UpgradeSelectionUIの実装と一致させること
+        /// （バランスエディタの検証シミュレーションもここを共用する）。
+        /// </summary>
+        public float GetCandidateWeight(
+            UpgradeData data,
+            int ownedLevel,
+            UpgradeSynergyTag ownedTags,
+            UpgradeSynergyTag suppressedTags)
+        {
+            if (data == null)
+                return 0f;
+
+            float weight = Mathf.Max(0.001f, data.DraftWeight) + Mathf.Max(0, ownedLevel) * OwnedLevelWeight;
+            if ((data.GetEffectiveTags() & ownedTags) != 0)
+                weight += SynergyWeightBonus;
+            if ((data.GetEffectiveTags() & suppressedTags) != 0)
+                weight *= SuppressedWeightMultiplier;
+
+            return Mathf.Max(MinimumWeight, weight);
+        }
     }
 
     [Serializable]
