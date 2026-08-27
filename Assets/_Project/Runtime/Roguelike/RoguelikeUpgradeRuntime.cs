@@ -62,7 +62,6 @@ namespace Game.Core.Roguelike
             BarrierMaxHpMultiplier = 1f;
             ExplicitlyUnlockedCollectibles.Clear();
             RoguelikeBuildRuntime.Reset();
-            RoguelikeRunRuleRuntime.Reset();
             CombatPressureProgression.ResetDefaults();
             _runtimeStateNeedsClear = true;
             Changed?.Invoke();
