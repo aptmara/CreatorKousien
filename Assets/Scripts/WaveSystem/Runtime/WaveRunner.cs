@@ -189,6 +189,7 @@ namespace Game.WaveSystem
                 (aliveWaveEnemyIds.Count == 0 || aliveWaveEnemyIds.IsSubsetOf(defeatDroppingEnemyIds)));
 
             EventBus.Publish(new GroupChangeEvent(groups.Count, groups.Count));
+            EventBus.Publish(new WaveEndEvent(0));
 
             LastRunSucceeded = true;
             IsRunning = false;

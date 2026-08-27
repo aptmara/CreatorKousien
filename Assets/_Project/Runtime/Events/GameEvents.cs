@@ -38,9 +38,17 @@ namespace Game.Core.Events
             CurrentCount = currentCount;
             MaxCount = maxCount;
         }
-
-
     }
+
+    public readonly struct WaveEndEvent
+    {
+        // 今の所情報はそこまで必要ないので空
+        public WaveEndEvent(int dummy)
+        {
+            
+        }
+    }
+
 
 
     public readonly struct StageCursorSelectEvent
