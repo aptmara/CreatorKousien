@@ -19,7 +19,7 @@ MonoBehaviour:
   ExpRate: 0.8
   DownDuration: 3.5
   HasBarrier: 1
-  MaxGauge: 300
+  MaxGauge: 500
   BarrierBody: {fileID: 180197807806133772, guid: 23a14d1624590fe49b83c3dd3bfc3c36, type: 3}
   barrierBreakMaxLossRate: 0.7
   AttackPower: 1
@@ -28,7 +28,8 @@ MonoBehaviour:
   AttackStartUpTime: 1.15
   HealRegenWaitTime: 7
   HealPower: 30
-  RiseDuration: 6.5
+  RiseDuration: 15
+  LateralDuration: 30
   DropDuration: 0.9
   BarrierBreakDuration: 0.8
   DamageDropDuration: 0.04
@@ -50,6 +51,21 @@ MonoBehaviour:
       inSlope: 1
       outSlope: 1
       tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  LateralCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0

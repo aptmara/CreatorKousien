@@ -6,11 +6,15 @@
 // Created      : 2026-07-03
 // ================================================================================
 
+using Game.Infrastructure.Loading;
+using Game.Presentation.UI.Common;
 using Game.Presentation.UI.Pause;
+using Game.WaveSystem;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections;
 
 namespace Game.Presentation.UI.Title
 {
@@ -28,9 +32,18 @@ namespace Game.Presentation.UI.Title
         [SerializeField] private PauseMenuController _optionMenuPrefab;
 
         private PauseMenuController _optionMenuInstance;
+        private MenuSelectionFeedbackController _selectionFeedback;
+        private TitleSignboardAnimator _signboardAnimator;
 
         [Header("--- 遷移先のシーン ---")]
         [SerializeField] private string _selectSceneName = "StageSelect";
+
+        [SerializeField] private StageDataSO _stageDataSO;
+        private void Awake()
+        {
+            _selectionFeedback = GetComponent<MenuSelectionFeedbackController>();
+            _signboardAnimator = GetComponent<TitleSignboardAnimator>();
+        }
 
         public void OnEnable()
         {
@@ -39,13 +52,36 @@ namespace Game.Presentation.UI.Title
             EventSystem.current.SetSelectedGameObject(_startButton.gameObject);
         }
 
+        private void Update()
+        {
+            if (_selectionFeedback != null)
+            {
+                if (!_selectionFeedback.enabled)
+                {
+                    bool signboardAnimationPlaying = _signboardAnimator != null && _signboardAnimator.IsPlaying;
+                    if (signboardAnimationPlaying)
+                    {
+                        return;
+                    }
+
+                    _selectionFeedback.enabled = true;
+                }
+
+                bool optionMenuOpen = _optionMenuInstance != null && _optionMenuInstance.IsShowingTitleOptions;
+                _selectionFeedback.SetInputEnabled(!optionMenuOpen);
+            }
+        }
+
         /// <summary>
         /// New Gameボタンが押されたときに呼び出す
         /// </summary>
         public void OnClickNewGame()
         {
             Debug.Log("New Game が押されたぜよ。シーン遷移: " + _selectSceneName);
-            SceneManager.LoadScene(_selectSceneName);
+            // SceneManager.LoadScene(_selectSceneName);
+
+            // Beta版での一時的な実装
+            StartCoroutine(StageLoad(_stageDataSO));
         }
 
         /// <summary>
@@ -72,6 +108,7 @@ namespace Game.Presentation.UI.Title
             }
 
             _optionMenuInstance.OpenTitleOptions(_optionButton);
+            _selectionFeedback?.SetInputEnabled(false);
         }
 
         /// <summary>
@@ -88,6 +125,20 @@ namespace Game.Presentation.UI.Title
             // ビルドした実際のゲームではアプリを終了する
             Application.Quit();
 #endif
+        }
+
+        private IEnumerator StageLoad(StageDataSO stage)
+        {
+            // Scemeをロードする
+            AsyncOperation bootLoad = SceneManager.LoadSceneAsync(_selectSceneName, LoadSceneMode.Additive);
+            yield return bootLoad;
+
+            // 生成が完了次第、ステージデータを渡してロードを起動
+            LoadingFlowController loadingFlowController = UnityEngine.Object.FindFirstObjectByType<LoadingFlowController>();
+            loadingFlowController.LoadBootScene(stage);
+            // 現シーンを削除する
+            Scene currentSceneName = gameObject.scene;
+            SceneManager.UnloadSceneAsync(currentSceneName);
         }
     }
 }

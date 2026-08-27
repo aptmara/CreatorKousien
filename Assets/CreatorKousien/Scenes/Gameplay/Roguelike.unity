@@ -428,6 +428,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2cf371b462b9b04bb73888f38835fd6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::S_UpgradeSelectionUI
+  _balanceConfig: {fileID: 0}
   _upgradePool: {fileID: 11400000, guid: 923e90d5d4af61d499ac5f02788db0a7, type: 2}
   _upgradeRuntimeState: {fileID: 11400000, guid: 92fac92d5c2060646b8ef9eae07812fd, type: 2}
   _collectibleTable: {fileID: 11400000, guid: b35532d05e2eec54cbe79d863bfa2aeb, type: 2}
@@ -436,11 +437,14 @@ MonoBehaviour:
   _cardParent: {fileID: 97049208}
   _panelRoot: {fileID: 1113188341}
   _exitButton: {fileID: 241682758}
+  _exitUIRoot: {fileID: 2122145296}
   _backGround: {fileID: 280133138533333906, guid: 9a04e90fc9bb88c439ee030e4c81a0ef, type: 3}
   _upgradeBoard: {fileID: 7856578012856789490, guid: bb5dd133f2d42b742962ab320493d158, type: 3}
   _moneyData: {fileID: 11400000, guid: ed79cb34a0ad631409cafd0e16aac641, type: 2}
   _moneyUI: {fileID: 705193404}
   _upgradeDetail: {fileID: 705193405}
+  _showMoneyUI: 0
+  _showExitButton: 0
   _cardidateCount: 3
   _rerollBaseCost: 50
   _columnCount: 3
@@ -467,7 +471,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705193396}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e05d12d59ceee2546b627e58c439bd8c, type: 3}
   m_Name: 
@@ -1064,6 +1068,63 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1863937171}
   m_CullTransparentMesh: 1
+--- !u!1 &2018930614
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2018930616}
+  - component: {fileID: 2018930615}
+  m_Layer: 0
+  m_Name: WwiseGlobal
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2018930615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2018930614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 128397a76af94974594b1571ff5f22ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AK.Wwise.Unity.MonoBehaviour::AkInitializer
+  InitializationSettings: {fileID: 11400000, guid: 64f466d6b9e6e2a4a9bd6561049ff79c, type: 2}
+  basePath: 
+  language: 
+  defaultPoolSize: 0
+  lowerPoolSize: 0
+  streamingPoolSize: 0
+  memoryCutoffThreshold: 0
+  monitorPoolSize: 0
+  monitorQueuePoolSize: 0
+  callbackManagerBufferSize: 0
+  spatialAudioPoolSize: 0
+  maxSoundPropagationDepth: 0
+  engineLogging: 0
+--- !u!4 &2018930616
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2018930614}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2021988337
 GameObject:
   m_ObjectHideFlags: 0
@@ -1247,3 +1308,4 @@ SceneRoots:
   - {fileID: 1511859091}
   - {fileID: 705193397}
   - {fileID: 1310496027}
+  - {fileID: 2018930616}

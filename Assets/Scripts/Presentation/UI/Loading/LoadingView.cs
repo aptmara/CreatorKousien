@@ -1,67 +1,52 @@
 using System.Collections;
-using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Game.Presentation.UI.Loading;
 
 namespace Game.Presentation.UI.Loading
 {
     public sealed class LoadingView : MonoBehaviour
     {
-        private const string TextureRoot = "Textures/Title/UI_Title_Logo/";
+        private const float OpenFrameDuration = 1.8f;
+        private const float HalfClosedFrameDuration = 0.08f;
+        private const float ClosedFrameDuration = 0.12f;
+        private const float CharacterEdgePadding = 24f;
+        private const float LoadingTextHeight = 64f;
         private const string GameStartTextureRoot = "Textures/GAMECLEAR/";
 
-        private readonly List<DecorationState> _decorations = new();
         private Camera _loadingCamera;
         private CanvasGroup _loadingGroup;
         private Image _blackOverlay;
-        private RectTransform _logo;
+        private Image _characterImage;
         private CanvasGroup _gameStartGroup;
         private RectTransform[] _gameCharacters;
-        private float _logoAngle;
+        private Sprite[] _blinkFrames;
+        private int _blinkFrameIndex;
+        private float _nextBlinkFrameAt;
         private bool _animateLoading = true;
-
-        private sealed class DecorationState
-        {
-            public RectTransform Transform;
-            public Vector2 BasePosition;
-            public Vector3 BaseScale;
-            public float Phase;
-            public float FloatHeight;
-            public float FloatSpeed;
-        }
 
         public void Initialize()
         {
             CreateCamera();
             CreateCanvas();
+            ResetBlinkAnimation();
         }
 
         private void Update()
         {
-            if (!_animateLoading)
+            if (!_animateLoading || Time.unscaledTime < _nextBlinkFrameAt)
             {
                 return;
             }
 
-            float phase = Mathf.Repeat(_logoAngle, 360f) / 360f;
-            float speed = Mathf.Lerp(45f, 230f, Mathf.Sin(phase * Mathf.PI) * Mathf.Sin(phase * Mathf.PI));
-            _logoAngle = Mathf.Repeat(_logoAngle - speed * Time.unscaledDeltaTime, 360f);
-            _logo.localRotation = Quaternion.Euler(0f, 0f, _logoAngle);
-
-            float time = Time.unscaledTime;
-            foreach (DecorationState decoration in _decorations)
-            {
-                float wave = Mathf.Sin(time * decoration.FloatSpeed + decoration.Phase);
-                decoration.Transform.anchoredPosition = decoration.BasePosition + Vector2.up * wave * decoration.FloatHeight;
-                decoration.Transform.localScale = decoration.BaseScale * (1f + wave * 0.035f);
-            }
+            _blinkFrameIndex = (_blinkFrameIndex + 1) % _blinkFrames.Length;
+            _characterImage.sprite = _blinkFrames[_blinkFrameIndex];
+            _nextBlinkFrameAt = Time.unscaledTime + GetFrameDuration(_blinkFrameIndex);
         }
 
         public IEnumerator PlayGameStartRoutine()
         {
-            yield return StopLogoRoutine(0.45f);
-
+            _animateLoading = false;
             _blackOverlay.color = new Color(0.035f, 0.01f, 0.06f, 0f);
             yield return FadeImageRoutine(_blackOverlay, 0f, 1f, 0.25f);
             _loadingGroup.alpha = 0f;
@@ -115,7 +100,6 @@ namespace Game.Presentation.UI.Loading
             _gameStartGroup.transform.localScale = Vector3.one;
         }
 
-
         /// <summary>
         /// ローディング表示の表示・非表示を即座に切り替える処理
         /// 8/15 - Stage2で使えるようにするために追加 Asano
@@ -134,8 +118,12 @@ namespace Game.Presentation.UI.Loading
             {
                 _loadingCamera.enabled = visible;
             }
-        }
 
+            if (visible)
+            {
+                ResetBlinkAnimation();
+            }
+        }
 
         /// <summary>
         /// 黒フェードを挟んでローディング画面を表示します
@@ -153,25 +141,6 @@ namespace Game.Presentation.UI.Loading
             // 黒の裏でローディング画面を差し替えてから黒を明ける
             SetLoadingVisible(true);
             yield return FadeImageRoutine(_blackOverlay, 1f, 0f, fadeDuration);
-        }
-
-
-        private IEnumerator StopLogoRoutine(float duration)
-        {
-            _animateLoading = false;
-            float startAngle = _logoAngle;
-            float targetAngle = Mathf.Floor(startAngle / 360f) * 360f - 360f;
-            float elapsed = 0f;
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.unscaledDeltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
-                _logo.localRotation = Quaternion.Euler(0f, 0f, Mathf.Lerp(startAngle, targetAngle, 1f - Mathf.Pow(1f - t, 3f)));
-                yield return null;
-            }
-
-            _logo.localRotation = Quaternion.identity;
         }
 
         private IEnumerator PopCharacterRoutine(RectTransform target, int index)
@@ -251,61 +220,51 @@ namespace Game.Presentation.UI.Loading
             Stretch(background.rectTransform);
             background.color = new Color(0.09f, 0.015f, 0.14f, 1f);
 
-            CreateDecorations(loadingRoot);
+            LoadingBlinkFrames frameSettings = Resources.Load<LoadingBlinkFrames>("Loading/LoadingBlinkFrames");
+            _blinkFrames = new[]
+            {
+                frameSettings.Open,
+                frameSettings.HalfClosed,
+                frameSettings.Closed,
+                frameSettings.HalfClosed
+            };
 
-            Image logoImage = CreateImage("LoadingLogo", loadingRoot, LoadSprite("UI_Title_Logo_ALL"));
-            _logo = logoImage.rectTransform;
-            _logo.anchorMin = _logo.anchorMax = new Vector2(0.5f, 0.52f);
-            _logo.sizeDelta = new Vector2(620f, 410f);
-            _logo.anchoredPosition = Vector2.zero;
-            logoImage.preserveAspect = true;
+            _characterImage = CreateImage("BlinkingCharacter", loadingRoot, _blinkFrames[0]);
+            RectTransform character = _characterImage.rectTransform;
+            character.anchorMin = character.anchorMax = Vector2.zero;
+            character.pivot = Vector2.zero;
+            character.sizeDelta = new Vector2(400f, 400f);
+            character.anchoredPosition = new Vector2(
+                CharacterEdgePadding,
+                CharacterEdgePadding + LoadingTextHeight);
+            _characterImage.preserveAspect = true;
+
+            GameObject loadingTextObject = new GameObject(
+                "LoadingText",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(TextMeshProUGUI));
+            loadingTextObject.transform.SetParent(loadingRoot, false);
+            RectTransform loadingTextRect = (RectTransform)loadingTextObject.transform;
+            loadingTextRect.anchorMin = loadingTextRect.anchorMax = Vector2.zero;
+            loadingTextRect.pivot = Vector2.zero;
+            loadingTextRect.sizeDelta = new Vector2(400f, LoadingTextHeight);
+            loadingTextRect.anchoredPosition = new Vector2(CharacterEdgePadding, CharacterEdgePadding);
+
+            TextMeshProUGUI loadingText = loadingTextObject.GetComponent<TextMeshProUGUI>();
+            loadingText.font = frameSettings.Font;
+            loadingText.text = "ロード中･･･";
+            loadingText.alignment = TextAlignmentOptions.Center;
+            loadingText.fontStyle = FontStyles.Bold;
+            loadingText.fontSize = 40f;
+            loadingText.color = Color.white;
+            loadingText.raycastTarget = false;
 
             _blackOverlay = CreateImage("TransitionBlack", canvasObject.transform, null);
             Stretch(_blackOverlay.rectTransform);
             _blackOverlay.color = new Color(0.035f, 0.01f, 0.06f, 0f);
 
             CreateGameStart(canvasObject.transform);
-        }
-
-        private void CreateDecorations(RectTransform parent)
-        {
-            CreateDecoration(parent, "UI_Title_Pumpkin", new Vector2(-760f, -330f), new Vector2(260f, 260f), -14f, 0.2f, 20f, 1.2f);
-            CreateDecoration(parent, "UI_Title_Apple", new Vector2(760f, -350f), new Vector2(300f, 300f), 13f, 1.1f, 24f, 1.05f);
-            CreateDecoration(parent, "UI_Title_Ghost", new Vector2(-770f, 340f), new Vector2(230f, 230f), 9f, 2.2f, 28f, 0.9f);
-            CreateDecoration(parent, "UI_Title_Candy", new Vector2(780f, 330f), new Vector2(220f, 220f), -10f, 3.1f, 22f, 1.25f);
-            CreateDecoration(parent, "UI_Title_Ice", new Vector2(-470f, -430f), new Vector2(180f, 180f), 16f, 4.2f, 18f, 1.4f);
-            CreateDecoration(parent, "UI_Title_Soul1", new Vector2(500f, 390f), new Vector2(150f, 150f), -8f, 5.1f, 34f, 0.8f);
-            CreateDecoration(parent, "UI_Title_Soul2", new Vector2(390f, -390f), new Vector2(130f, 130f), 7f, 0.8f, 30f, 1.0f);
-        }
-
-        private void CreateDecoration(
-            RectTransform parent,
-            string spriteName,
-            Vector2 position,
-            Vector2 size,
-            float rotation,
-            float phase,
-            float floatHeight,
-            float floatSpeed)
-        {
-            Image image = CreateImage(spriteName, parent, LoadSprite(spriteName));
-            RectTransform rect = image.rectTransform;
-            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = position;
-            rect.sizeDelta = size;
-            rect.localRotation = Quaternion.Euler(0f, 0f, rotation);
-            image.preserveAspect = true;
-            image.color = new Color(1f, 1f, 1f, 0.72f);
-
-            _decorations.Add(new DecorationState
-            {
-                Transform = rect,
-                BasePosition = position,
-                BaseScale = Vector3.one,
-                Phase = phase,
-                FloatHeight = floatHeight,
-                FloatSpeed = floatSpeed
-            });
         }
 
         private void CreateGameStart(Transform parent)
@@ -345,9 +304,21 @@ namespace Game.Presentation.UI.Loading
             }
         }
 
-        private static Sprite LoadSprite(string name)
+        private void ResetBlinkAnimation()
         {
-            return Resources.Load<Sprite>(TextureRoot + name);
+            _blinkFrameIndex = 0;
+            _characterImage.sprite = _blinkFrames[_blinkFrameIndex];
+            _nextBlinkFrameAt = Time.unscaledTime + OpenFrameDuration;
+        }
+
+        private static float GetFrameDuration(int frameIndex)
+        {
+            return frameIndex switch
+            {
+                0 => OpenFrameDuration,
+                2 => ClosedFrameDuration,
+                _ => HalfClosedFrameDuration
+            };
         }
 
         private static RectTransform CreateRect(string name, Transform parent)

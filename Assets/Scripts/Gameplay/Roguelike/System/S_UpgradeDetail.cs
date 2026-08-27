@@ -7,8 +7,10 @@
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using Game.Data.Player;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Game.Core.Roguelike;
 using Game.Data.Collectibles;
 
@@ -46,6 +48,7 @@ public class S_UpgradeDetail : MonoBehaviour
     private TextMeshProUGUI _nameText;
     private TextMeshProUGUI _costText;
     private GameObject _spawnedInstance;
+    private readonly Image[] _nameUnderlines = new Image[2];
 
 
     private int _soldOutTxtOutputCount;
@@ -149,11 +152,12 @@ public class S_UpgradeDetail : MonoBehaviour
         }
 
 
-        _nameText.text = upgrade.DisplayName;
+        _nameText.text = FormatDisplayName(upgrade.DisplayName);
+        RefreshNameUnderlines();
 
         int level = _upgradeRuntimeState.GetLevel(upgrade);
         int nextLevel = Mathf.Clamp(level + Mathf.Max(1, levelGain), 1, upgrade.MaxLevel);
-        _descriptionText.text = upgrade.GetTransitionText(level, levelGain);
+        _descriptionText.text = FormatDescription(upgrade.GetTransitionText(level, levelGain));
     
 
         if (level >= upgrade.MaxLevel)
@@ -183,10 +187,216 @@ public class S_UpgradeDetail : MonoBehaviour
 
     private void ConfigureTextLayout()
     {
-        ConfigureText(_nameText, new Vector2(0f, 106f), new Vector2(372f, 60f), 50f, FontStyles.Bold);
-        ConfigureText(_descriptionText, new Vector2(0f, 14f), new Vector2(378f, 126f), 38f, FontStyles.Bold);
+        ConfigureText(
+            _nameText,
+            new Vector2(0f, 98f),
+            new Vector2(372f, 76f),
+            40f,
+            FontStyles.Bold);
+        ConfigureAutoSize(_nameText, 26f, 40f);
+        ConfigureText(_descriptionText, new Vector2(0f, 0f), new Vector2(378f, 116f), 38f, FontStyles.Bold);
+        ConfigureAutoSize(_descriptionText, 22f, 38f);
         ConfigureText(_levelText, new Vector2(0f, -78f), new Vector2(372f, 42f), 34f, FontStyles.Bold);
         ConfigureText(_costText, new Vector2(0f, -122f), new Vector2(378f, 40f), 29f, FontStyles.Bold);
+    }
+
+    private static void ConfigureAutoSize(TextMeshProUGUI text, float minimumSize, float maximumSize)
+    {
+        text.enableAutoSizing = true;
+        text.fontSizeMin = minimumSize;
+        text.fontSizeMax = maximumSize;
+    }
+
+    private static string FormatDisplayName(string displayName)
+    {
+        if (string.IsNullOrEmpty(displayName))
+            return displayName;
+
+        string formattedName = displayName.Trim();
+        if (formattedName.Length >= 2 &&
+            formattedName[0] == '【' &&
+            formattedName[formattedName.Length - 1] == '】')
+        {
+            formattedName = formattedName.Substring(1, formattedName.Length - 2).Trim();
+        }
+
+        if (formattedName.Length <= 7)
+            return formattedName;
+
+        int center = formattedName.Length / 2;
+        int breakIndex = -1;
+        int nearestDistance = int.MaxValue;
+
+        TryUseBreakAfter(formattedName, "ごと", center, ref breakIndex, ref nearestDistance);
+        TryUseBreakAfter(formattedName, "種類", center, ref breakIndex, ref nearestDistance);
+        TryUseBreakAfter(formattedName, "時", center, ref breakIndex, ref nearestDistance);
+        TryUseBreakAfter(formattedName, "分", center, ref breakIndex, ref nearestDistance);
+        TryUseBreakBefore(formattedName, "生成", center, ref breakIndex, ref nearestDistance);
+
+        if (breakIndex < 2 || breakIndex > formattedName.Length - 2)
+            breakIndex = center;
+
+        return formattedName.Insert(breakIndex, "\n");
+    }
+
+    private void RefreshNameUnderlines()
+    {
+        const float thickness = 4f;
+        const float horizontalPadding = 8f;
+
+        EnsureNameUnderlines();
+        _nameText.ForceMeshUpdate();
+
+        int visibleLineCount = string.IsNullOrEmpty(_nameText.text)
+            ? 0
+            : Mathf.Min(_nameText.textInfo.lineCount, _nameUnderlines.Length);
+
+        for (int index = 0; index < _nameUnderlines.Length; index++)
+        {
+            Image underline = _nameUnderlines[index];
+            bool isVisible = index < visibleLineCount;
+            underline.gameObject.SetActive(isVisible);
+            if (!isVisible)
+                continue;
+
+            TMP_LineInfo line = _nameText.textInfo.lineInfo[index];
+            float lineWidth = line.lineExtents.max.x - line.lineExtents.min.x;
+            float centerX = (line.lineExtents.min.x + line.lineExtents.max.x) * 0.5f;
+            RectTransform rect = underline.rectTransform;
+            rect.anchoredPosition = new Vector2(centerX, line.descender - thickness);
+            rect.sizeDelta = new Vector2(lineWidth + horizontalPadding, thickness);
+            underline.color = _nameText.color;
+        }
+    }
+
+    private void EnsureNameUnderlines()
+    {
+        for (int index = 0; index < _nameUnderlines.Length; index++)
+        {
+            if (_nameUnderlines[index] != null)
+                continue;
+
+            var lineObject = new GameObject(
+                $"NameUnderline_{index + 1}",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image));
+            lineObject.layer = _nameText.gameObject.layer;
+            lineObject.transform.SetParent(_nameText.rectTransform, false);
+
+            Image underline = lineObject.GetComponent<Image>();
+            underline.raycastTarget = false;
+            RectTransform rect = underline.rectTransform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            _nameUnderlines[index] = underline;
+        }
+    }
+
+    private static void TryUseBreakAfter(
+        string text,
+        string separator,
+        int center,
+        ref int breakIndex,
+        ref int nearestDistance)
+    {
+        int separatorIndex = text.IndexOf(separator, System.StringComparison.Ordinal);
+        if (separatorIndex < 0)
+            return;
+
+        TryUseBreak(separatorIndex + separator.Length, text.Length, center, ref breakIndex, ref nearestDistance);
+    }
+
+    private static void TryUseBreakBefore(
+        string text,
+        string separator,
+        int center,
+        ref int breakIndex,
+        ref int nearestDistance)
+    {
+        int separatorIndex = text.IndexOf(separator, System.StringComparison.Ordinal);
+        if (separatorIndex < 0)
+            return;
+
+        TryUseBreak(separatorIndex, text.Length, center, ref breakIndex, ref nearestDistance);
+    }
+
+    private static void TryUseBreak(
+        int candidate,
+        int textLength,
+        int center,
+        ref int breakIndex,
+        ref int nearestDistance)
+    {
+        if (candidate < 2 || candidate > textLength - 2)
+            return;
+
+        int distance = Mathf.Abs(candidate - center);
+        if (distance >= nearestDistance)
+            return;
+
+        breakIndex = candidate;
+        nearestDistance = distance;
+    }
+
+    private static string FormatDescription(string description)
+    {
+        if (string.IsNullOrEmpty(description))
+            return description;
+
+        string[] sourceLines = description
+            .Replace("\r\n", "\n")
+            .Replace('\r', '\n')
+            .Replace("。", "。\n")
+            .Replace("！", "！\n")
+            .Replace("？", "？\n")
+            .Split('\n');
+        var formattedLines = new List<string>();
+
+        foreach (string sourceLine in sourceLines)
+        {
+            string line = sourceLine.Trim();
+            if (line.Length == 0)
+                continue;
+
+            int breakIndex = FindDescriptionBreak(line);
+            if (breakIndex < 0)
+            {
+                formattedLines.Add(line);
+                continue;
+            }
+
+            formattedLines.Add(line.Substring(0, breakIndex + 1).TrimEnd());
+            formattedLines.Add(line.Substring(breakIndex + 1).TrimStart());
+        }
+
+        return string.Join("\n", formattedLines);
+    }
+
+    private static int FindDescriptionBreak(string line)
+    {
+        const int minimumLengthToBreak = 16;
+        if (line.Length < minimumLengthToBreak)
+            return -1;
+
+        int center = line.Length / 2;
+        int nearestIndex = -1;
+        int nearestDistance = int.MaxValue;
+        for (int index = 0; index < line.Length; index++)
+        {
+            if (line[index] != '、' || index < 4 || index > line.Length - 5)
+                continue;
+
+            int distance = Mathf.Abs(index - center);
+            if (distance >= nearestDistance)
+                continue;
+
+            nearestIndex = index;
+            nearestDistance = distance;
+        }
+
+        return nearestIndex;
     }
 
     private static void ConfigureText(
@@ -230,6 +440,7 @@ public class S_UpgradeDetail : MonoBehaviour
         SpawnDetail(upgrade);
         string targetName = CollectibleTable.GetDisplayName(target.Type);
         _nameText.text = targetName + "特化";
+        RefreshNameUnderlines();
         _descriptionText.text =
             $"{upgrade.DisplayName}で発生する連鎖・爆発生成を、{targetName}へ集中する。\n取得直後に生成して効果をプレビュー。";
         _levelText.text = "このラン中の生成先";
@@ -243,6 +454,7 @@ public class S_UpgradeDetail : MonoBehaviour
         _descriptionText.text = str;
 
         _nameText.text = "";
+        RefreshNameUnderlines();
         _levelText.text = "";
         _costText.text = "";
     }
@@ -261,6 +473,7 @@ public class S_UpgradeDetail : MonoBehaviour
         _descriptionText.text = str;
 
         _nameText.text = "";
+        RefreshNameUnderlines();
         _levelText.text = "";
         _costText.text = "";
 

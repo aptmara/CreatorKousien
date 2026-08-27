@@ -290,7 +290,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d578bdc799504a4e84ee83bef7fed4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.StageSceneContext
-  stageData: {fileID: 11400000, guid: d23dd9200f4c55347a4fb3892b3edc04, type: 2}
+  stageData: {fileID: 11400000, guid: 1a984c9714a36e349b28f604f8e3daa0, type: 2}
   useFixedSeed: 1
   fixedSeed: 12345
   manualTestMode: 1

@@ -15,7 +15,7 @@ MonoBehaviour:
   EnemyId: Enemy_01
   IsBoss: 0
   EnemyBody: {fileID: 2892064686585189634, guid: 25a29f82bac9b504aaf2a33899654094, type: 3}
-  MaxHp: 500
+  MaxHp: 180
   ExpRate: 1
   DownDuration: 7
   HasBarrier: 0
@@ -29,6 +29,7 @@ MonoBehaviour:
   HealRegenWaitTime: 7
   HealPower: 30
   RiseDuration: 25
+  LateralDuration: 30
   DropDuration: 1.2
   BarrierBreakDuration: 0.8
   DamageDropDuration: 0.04
@@ -47,6 +48,21 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  LateralCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0

@@ -57,11 +57,16 @@ public class S_UpgradeSelectionUI : MonoBehaviour
     [SerializeField] private Transform _cardParent;
     [SerializeField] private GameObject _panelRoot;
     [SerializeField] private Button _exitButton;
+    [SerializeField] private GameObject _exitUIRoot;
     [SerializeField] private Image _backGround;
     [SerializeField] private Image _upgradeBoard;
     [SerializeField] private MoneyData _moneyData;
     [SerializeField] private S_RoguelikeMoneyUI _moneyUI;
     [SerializeField] private S_UpgradeDetail _upgradeDetail;
+
+    [Header("表示設定")]
+    [SerializeField] private bool _showMoneyUI;
+    [SerializeField] private bool _showExitButton;
 
     [Header("ドラフト設定")]
     [SerializeField, Min(1)] private int _cardidateCount = 3;
@@ -108,6 +113,7 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         }
 
         _exitButton.onClick.AddListener(OnRerollButtonPressed);
+        _exitUIRoot.SetActive(_showExitButton);
     }
 
     private void OnDisable()
@@ -149,6 +155,7 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         UpdateBuildStrip();
 
         _moneyUI.SpawnMoneyUI(_moneyData.moneyOnHand);
+        _moneyUI.SetVisible(_showMoneyUI);
         List<UpgradeData> available = _upgradePool.GetAvailableUpgrades(_upgradeRuntimeState);
         foreach (DraftCandidate picked in PickDraftCandidates(available))
             SpawnUpgradeCard(picked);

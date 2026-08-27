@@ -9,6 +9,7 @@
 // Notes    :
 // - 5/6: Bootから設計通りのAdditiveシーンを読み込む統合用Bootstrapを追加
 // - 8/14: Stage2対応 - 浅野
+// - 8/25: なんかイントロでプレイヤーが移動するバグ直しますお - 浅野
 // ------------------------------------------------------------
 using System.Collections;
 using Game.Core.Management;
@@ -258,7 +259,15 @@ namespace Game.Infrastructure.Bootstrap
             }
 
             PlayerController controller = player.GetComponentInChildren<PlayerController>(true);
-            controller?.SetCanMove(canMove);
+
+            if (canMove)
+            {
+                controller?.UnfreezePhysics();
+            }
+            else
+            {
+                controller?.FreezePhysics();
+            }
         }
 
         private IEnumerator PrepareAndStartStandaloneRoutine()

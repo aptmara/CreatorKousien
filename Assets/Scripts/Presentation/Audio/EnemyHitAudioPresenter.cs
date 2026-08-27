@@ -1,4 +1,5 @@
 using Game.Core.Events;
+using Game.Data.Collectibles;
 using UnityEngine;
 
 namespace Game.Presentation.Audio
@@ -6,10 +7,16 @@ namespace Game.Presentation.Audio
     [DisallowMultipleComponent]
     public sealed class EnemyHitAudioPresenter : MonoBehaviour
     {
+        [Header("落ちもの別ヒットSE")]
+        [SerializeField] private AK.Wwise.Event _candyHitEvent;
+        [SerializeField] private AK.Wwise.Event _togeHitEvent;
+        [SerializeField] private AK.Wwise.Event _poisonHitEvent;
+        [SerializeField] private AK.Wwise.Event _iceHitEvent;
+        [SerializeField] private AK.Wwise.Event _gummyHitEvent;
+
         [Header("連続ヒット")]
         [SerializeField, Min(0f)] private float _streakWindowSeconds = 0.6f;
         [SerializeField, Min(1)] private int _maxStreak = 8;
-        [SerializeField] private AK.Wwise.Event _hitEvent;
         [SerializeField] private AK.Wwise.RTPC _hitStreakRtpc;
 
         private int _currentStreak;
@@ -29,7 +36,13 @@ namespace Game.Presentation.Audio
 
         private void OnEnemyHit(EnemyHitBatchEvent ev)
         {
-            if (ev.HitCount <= 0)
+            if (ev.HitCount <= 0 || ev.ItemDataRaw is not CollectibleData collectibleData)
+            {
+                return;
+            }
+
+            AK.Wwise.Event hitEvent = GetHitEvent(collectibleData.Type);
+            if (hitEvent == null || !hitEvent.IsValid())
             {
                 return;
             }
@@ -48,7 +61,21 @@ namespace Game.Presentation.Audio
             _lastHitTime = currentTime;
 
             _hitStreakRtpc?.SetValue(gameObject, _currentStreak);
-            _hitEvent?.Post(gameObject);
+            hitEvent.Post(gameObject);
+        }
+
+        private AK.Wwise.Event GetHitEvent(CollectibleType type)
+        {
+            return type switch
+            {
+                CollectibleType.Candy => _candyHitEvent,
+                CollectibleType.Cross => _candyHitEvent,
+                CollectibleType.Toge => _togeHitEvent,
+                CollectibleType.Poison => _poisonHitEvent,
+                CollectibleType.Ice => _iceHitEvent,
+                CollectibleType.Gummy => _gummyHitEvent,
+                _ => null,
+            };
         }
     }
 }

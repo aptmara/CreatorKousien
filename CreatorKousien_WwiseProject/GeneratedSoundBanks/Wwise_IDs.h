@@ -17,6 +17,12 @@ namespace AK
         static const AkUniqueID PLAY_SE_BARRIER_01 = 1815017956U;
         static const AkUniqueID PLAY_SE_BARRIER_02 = 1815017959U;
         static const AkUniqueID PLAY_SE_COLLECTABLEHIT = 3880553476U;
+        static const AkUniqueID PLAY_SE_COLLECTIBLE_CANDY = 2358718591U;
+        static const AkUniqueID PLAY_SE_COLLECTIBLE_GUMMY = 1464973675U;
+        static const AkUniqueID PLAY_SE_COLLECTIBLE_ICE = 3437287673U;
+        static const AkUniqueID PLAY_SE_COLLECTIBLE_POISON = 3203106012U;
+        static const AkUniqueID PLAY_SE_COLLECTIBLE_TOGE = 2795023259U;
+        static const AkUniqueID PLAY_SE_PLAYERPUNCHHIT = 2662272053U;
         static const AkUniqueID PLAY_SE_PUMPKINSHOT = 277560843U;
         static const AkUniqueID PLAY_SE_PUMPKINSHOT_BIG = 250610020U;
     } // namespace EVENTS

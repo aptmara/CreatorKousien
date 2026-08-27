@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7668529516d4668830b99d7508063cb, type: 3}
+  m_Name: LoadingBlinkFrames
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Loading.LoadingBlinkFrames
+  _open: {fileID: 21300000, guid: 9012947f8ebd7e94aab7213aa1541fc5, type: 3}
+  _halfClosed: {fileID: 21300000, guid: 955366ee4ebcf4448ab36f3f3be295bd, type: 3}
+  _closed: {fileID: 21300000, guid: 7fd1141e07b990a41ac5c4f463160c76, type: 3}
+  _font: {fileID: 11400000, guid: c9ecfcc1218e802419fa2413548fc04a, type: 2}

@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 // ------------------------------------------------------------
 // File		: StageDebugShortcuts.cs
 // Summary	: Stage進行の動作確認用ショートカット
@@ -139,3 +140,4 @@ namespace Game.DebugTools
         }
     }
 }
+#endif

@@ -33,6 +33,7 @@ public class S_UpgradeCard : MonoBehaviour
 
     [Header("フォーカス演出")]
     [SerializeField] private S_UIScaleAnimator _scaleAnimator;
+    [SerializeField] private Shader _grayscaleShader;
 
     [Header("旧Frame演出")]
     [SerializeField] private GameObject _highlightFrame;
@@ -46,6 +47,8 @@ public class S_UpgradeCard : MonoBehaviour
     private UpgradeData _cardData;
     private Image _runtimeFrame;
     private Outline _runtimeOutline;
+    private Material _defaultIconMaterial;
+    private static Material _sharedGrayscaleMaterial;
     private bool _isRuleChange;
 
 
@@ -75,9 +78,11 @@ public class S_UpgradeCard : MonoBehaviour
 
         _cardData = cardData;
         EnsureRuntimeFrame();
+        PrepareIconMaterial();
         ApplyCardLayout();
-        _nameText.gameObject.SetActive(true);
-        _descriptionText.gameObject.SetActive(true);
+        DisableScaleAnimation();
+        _nameText.gameObject.SetActive(false);
+        _descriptionText.gameObject.SetActive(false);
         _levelText.gameObject.SetActive(true);
         if (_costText != null)
             _costText.gameObject.SetActive(false);
@@ -95,7 +100,9 @@ public class S_UpgradeCard : MonoBehaviour
 
         _cardData = null;
         EnsureRuntimeFrame();
-        ApplyCardLayout();
+        PrepareIconMaterial();
+        ApplyFocusTargetLayout();
+        DisableScaleAnimation();
         _iconImage.sprite = fallbackIcon;
         _nameText.gameObject.SetActive(true);
         _nameText.text = CollectibleTable.GetDisplayName(target.Type);
@@ -125,7 +132,7 @@ public class S_UpgradeCard : MonoBehaviour
             : _cardData.GetTransitionText(currentLevel, levelGain);
         _levelText.text = isMaxed
             ? "MAX"
-            : GetStageLabel(_cardData, currentLevel, nextLevel, isDeepening);
+            : GetStageLabel(currentLevel, nextLevel);
         ApplyOfferColors(_cardData.OfferType, isDeepening);
 
         if (_costText != null && isMaxed)
@@ -134,7 +141,7 @@ public class S_UpgradeCard : MonoBehaviour
         }
         else if (_costText != null)
         {
-            _costText.text = GetStageLabel(_cardData, currentLevel, nextLevel, isDeepening);
+            _costText.text = GetStageLabel(currentLevel, nextLevel);
         }
 
         if(_acquiredMark != null)
@@ -146,18 +153,9 @@ public class S_UpgradeCard : MonoBehaviour
         _selectButton.interactable = !isMaxed;
     }
 
-    private static string GetStageLabel(
-        UpgradeData data,
-        int currentLevel,
-        int nextLevel,
-        bool isDeepening)
+    private static string GetStageLabel(int currentLevel, int nextLevel)
     {
-        if (isDeepening) return $"深化 +{nextLevel - currentLevel}";
-        if (data.OfferType == UpgradeOfferType.Relic ||
-            data.OfferType == UpgradeOfferType.Contract ||
-            data.OfferType == UpgradeOfferType.Evolution)
-            return $"NEW {data.GetOfferLabel()}";
-        return currentLevel <= 0 ? $"NEW Lv.{nextLevel}" : $"Lv.{currentLevel}→{nextLevel}";
+        return currentLevel <= 0 ? $"Lv.{nextLevel}" : $"Lv.{currentLevel}→{nextLevel}";
     }
 
     private void ApplyOfferColors(UpgradeOfferType offerType, bool isDeepening)
@@ -201,19 +199,48 @@ public class S_UpgradeCard : MonoBehaviour
         _runtimeOutline.effectDistance = new Vector2(3f, -3f);
     }
 
+    private void PrepareIconMaterial()
+    {
+        _defaultIconMaterial = _iconImage.material;
+
+        if (_sharedGrayscaleMaterial == null && _grayscaleShader != null)
+        {
+            _sharedGrayscaleMaterial = new Material(_grayscaleShader)
+            {
+                hideFlags = HideFlags.HideAndDontSave,
+            };
+        }
+    }
+
+    private void DisableScaleAnimation()
+    {
+        if (_scaleAnimator != null)
+            _scaleAnimator.enabled = false;
+    }
+
     private void ApplyCardLayout()
     {
         if (transform is RectTransform rootRect)
             rootRect.sizeDelta = new Vector2(216f, 216f);
 
-        ConfigureRect(_iconImage.rectTransform, new Vector2(0f, 58f), new Vector2(54f, 54f));
+        ConfigureRect(_iconImage.rectTransform, new Vector2(0f, 16f), new Vector2(156f, 156f));
         _iconImage.preserveAspect = true;
         _iconImage.raycastTarget = false;
 
-        ConfigureText(_nameText, new Vector2(0f, 10f), new Vector2(208f, 58f), 36f, FontStyles.Bold);
-        ConfigureText(_descriptionText, new Vector2(0f, -61f), new Vector2(208f, 78f), 32f, FontStyles.Bold);
-        ConfigureText(_levelText, new Vector2(0f, 94f), new Vector2(202f, 30f), 28f, FontStyles.Bold);
+        ConfigureText(_levelText, new Vector2(0f, -84f), new Vector2(194f, 32f), 28f, FontStyles.Bold);
         _levelText.color = new Color(1f, 0.72f, 0.28f, 1f);
+    }
+
+    private void ApplyFocusTargetLayout()
+    {
+        if (transform is RectTransform rootRect)
+            rootRect.sizeDelta = new Vector2(216f, 216f);
+
+        ConfigureRect(_iconImage.rectTransform, new Vector2(0f, 30f), new Vector2(138f, 138f));
+        _iconImage.preserveAspect = true;
+        _iconImage.raycastTarget = false;
+
+        ConfigureText(_nameText, new Vector2(0f, -78f), new Vector2(194f, 42f), 30f, FontStyles.Bold);
     }
 
     private static void ConfigureText(
@@ -259,19 +286,14 @@ public class S_UpgradeCard : MonoBehaviour
                     : new Color(0.12f, 0.07f, 0.16f, 0.96f);
         if (_runtimeOutline != null)
             _runtimeOutline.effectColor = isHighlighted
-                ? new Color(1f, 0.72f, 0.25f, 1f)
+                ? Color.white
                 : _isRuleChange
                     ? new Color(0.88f, 0.40f, 1f, 1f)
                     : new Color(0.48f, 0.32f, 0.18f, 1f);
 
-        if(_scaleAnimator != null)
-        {
-            _scaleAnimator.SetHighlighted(isHighlighted);
-        }
-        else
-        {
-            Debug.LogWarning($"[S_UpgradeCard] _scaleAnimatorが未設定です({gameObject.name})");
-        }
+        _iconImage.material = isHighlighted || _sharedGrayscaleMaterial == null
+            ? _defaultIconMaterial
+            : _sharedGrayscaleMaterial;
 
         // 旧Frame方式
         if (_useFrameHighlight && _highlightFrame != null)
@@ -286,10 +308,7 @@ public class S_UpgradeCard : MonoBehaviour
     /// <param name="onComplete"></param>
     public void PlaySelectedAnimation(System.Action onComplete = null)
     {
-        if (_scaleAnimator != null)
-            _scaleAnimator.PlaySelectedAnimation(onComplete);
-        else
-            onComplete?.Invoke();
+        onComplete?.Invoke();
     }
 
 }

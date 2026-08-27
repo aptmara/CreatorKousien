@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "3203106012",
+    "Type": "Event",
+    "GUID": "{2D158A79-9FB6-47EB-9B80-BCABBB481B5A}",
+    "Language": "SFX",
+    "Hash": "{5C4F4501-05A6-E1FB-0B27-4559F6E79F8C}",
+    "ObjectPath": "Play_SE_Collectible_Poison",
+    "ShortName": "Play_SE_Collectible_Poison",
+    "Path": "Event/Play_SE_Collectible_Poison.bnk",
+    "Media": [
+     {
+      "Id": "945135922",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "PoisonCandy.wav",
+      "Path": "Media/945135922.wem",
+      "CachePath": "C8/{C8267302-0CAA-B6B4-3D20-CF1544DEAFDA}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "3203106012",
+      "Name": "Play_SE_Collectible_Poison",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Collectible_Poison",
+      "GUID": "{2D158A79-9FB6-47EB-9B80-BCABBB481B5A}",
+      "DurationType": "OneShot",
+      "DurationMin": "2",
+      "DurationMax": "2",
+      "MediaRefs": [
+       {
+        "Id": "945135922"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{45E4ADEE-3676-3FE0-7D0D-7F9C4F7D229F}"
+ }
+}

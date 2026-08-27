@@ -12,6 +12,7 @@ using Game.Core.Events;
 using System;
 using System.Collections.Generic;
 using Game.Core.Roguelike;
+using Game.Gameplay.Enemy.Boss;
 
 namespace Game.Gameplay.Collectibles
 {
@@ -79,6 +80,7 @@ namespace Game.Gameplay.Collectibles
         public string Id => _data != null ? _data.Id : string.Empty;
         public float DamageAmount => _data != null ? _data.DamageAmount : 0f;
 
+        public CollectibleType Type => _data != null ? _data.Type : default;
         public float SameItemCooldown => _data != null ? _data.SameItemCooldown : 0.25f;
 
         public bool CanBeCollectedByPlayer { get; private set; } = true;
@@ -95,8 +97,17 @@ namespace Game.Gameplay.Collectibles
         {
             UpdateGummyBounce();
 
+            if (_rigidbody != null && _rigidbody.IsSleeping())
+            {
+                return;
+            }
+
+            Vector3 position = _rigidbody != null
+                ? _rigidbody.position
+                : transform.position;
+
             // アイテムがステージ外へ落下した場合は自動クリーンアップ
-            if (transform.position.y < _fallDeadLineY)
+            if (position.y < _fallDeadLineY)
             {
                 Despawn();
                 return;
@@ -105,7 +116,7 @@ namespace Game.Gameplay.Collectibles
             ResolveFieldWallBoundsIfNeeded();
             if (_fieldWallRoot != null && _hasFieldWallBounds)
             {
-                Vector3 localPosition = _fieldWallRoot.InverseTransformPoint(transform.position);
+                Vector3 localPosition = _fieldWallRoot.InverseTransformPoint(position);
                 if (IsOutsideFieldBounds(localPosition))
                 {
                     MoveInsideField();
@@ -160,6 +171,7 @@ namespace Game.Gameplay.Collectibles
 
             UpdateVisual();
             ApplySpecialPhysics();
+            BeginSpawnPassThrough();
         }
 
         private void ResolveFieldWallBoundsIfNeeded()
@@ -495,6 +507,12 @@ namespace Game.Gameplay.Collectibles
                 SpawnCrossLaser(hitPosition);
             }
 
+            // 4. 天秤弱点専用ロジック
+            if(_data.Type == CollectibleType.BossWeak)
+            {
+                var weaker = enemyTransform != null ? enemyTransform.GetComponentInParent<IBossHittable>() : null;
+            }
+
             return true;
         }
 
@@ -734,8 +752,6 @@ namespace Game.Gameplay.Collectibles
 
             _rigidbody.linearVelocity = velocity;
             _rigidbody.angularVelocity = angularVelocity;
-
-            BeginSpawnPassThrough();
         }
 
         private void UpdateVisual()

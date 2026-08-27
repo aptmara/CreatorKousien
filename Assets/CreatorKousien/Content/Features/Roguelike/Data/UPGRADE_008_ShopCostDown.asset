@@ -13,14 +13,14 @@ MonoBehaviour:
   m_Name: UPGRADE_008_ShopCostDown
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
   Id: 8
-  DisplayName: "\u30A2\u30A4\u30C6\u30E0\u5024\u5F15\u304D"
+  DisplayName: "\u3010\u30A2\u30A4\u30C6\u30E0\u5024\u5F15\u304D\u3011"
   Description: "\u8CFC\u5165\u4FA1\u683C\u304C\u5B89\u304F\u306A\u308B\uFF01"
   LevelDescriptions: []
   LevelCardDescriptions: []
   Modifiers: []
   GameplayValue: 0.1
   OfferType: 0
-  CombatPressureRuleId:
+  CombatPressureRuleId: 
   CombatPressureOutputType: 0
   RequiresCollectibleFocus: 0
   SynergyTags: 0

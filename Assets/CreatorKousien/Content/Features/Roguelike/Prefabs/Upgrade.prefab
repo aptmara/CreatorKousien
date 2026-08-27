@@ -475,6 +475,7 @@ MonoBehaviour:
   _acquiredMark: {fileID: 0}
   _costText: {fileID: 6640026042103563822}
   _scaleAnimator: {fileID: 1573296515765069036}
+  _grayscaleShader: {fileID: 4800000, guid: 4f86b56852f94ea2b61f784a9ae3880a, type: 3}
   _highlightFrame: {fileID: 7925062359935321367}
   _useFrameHighlight: 0
   _selectButton: {fileID: 4821205370466514890}

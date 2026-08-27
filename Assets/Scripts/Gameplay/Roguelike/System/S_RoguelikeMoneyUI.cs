@@ -71,5 +71,11 @@ public class S_RoguelikeMoneyUI : MonoBehaviour
         _text.text = money.ToString();
     }
 
+    public void SetVisible(bool isVisible)
+    {
+        if (_spawnedInstance != null)
+            _spawnedInstance.SetActive(isVisible);
+    }
+
 
 }

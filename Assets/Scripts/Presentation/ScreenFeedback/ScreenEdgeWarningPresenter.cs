@@ -8,6 +8,7 @@
 // Notes	:
 // -
 // ------------------------------------------------------------
+using System;
 using System.Collections;
 using Game.Core.Events;
 using UnityEngine;
@@ -55,6 +56,7 @@ namespace Game.Presentation.ScreenFeedback
 
         private Coroutine _blinkRoutine;
 
+        
         private void Awake()
         {
             if (_vignetteImage != null)
@@ -71,6 +73,9 @@ namespace Game.Presentation.ScreenFeedback
             EventBus.Subscribe<BossThornWarningStartedEvent>(HandleWarningStarted);
 
             EventBus.Subscribe<BossThornWarningEndedEvent>(HandleWarningEnded);
+
+            EventBus.Subscribe<BossIntroWarningStartedEvent>(HandleBossIntroWarningStarted);
+            EventBus.Subscribe<BossIntroWarningEndedEvent>(HandleBossIntroWarningEnded);
         }
 
 
@@ -79,10 +84,22 @@ namespace Game.Presentation.ScreenFeedback
             EventBus.Unsubscribe<BossThornWarningStartedEvent>(HandleWarningStarted);
             EventBus.Unsubscribe<BossThornWarningEndedEvent>(HandleWarningEnded);
 
+            EventBus.Unsubscribe<BossIntroWarningStartedEvent>(HandleBossIntroWarningStarted);
+            EventBus.Unsubscribe<BossIntroWarningEndedEvent>(HandleBossIntroWarningEnded);
+
             StopBlink();
             SetAlpha(0f);
         }
 
+        private void HandleBossIntroWarningStarted(BossIntroWarningStartedEvent _)
+        {
+            HandleWarningStarted(default);
+        }
+
+        private void HandleBossIntroWarningEnded(BossIntroWarningEndedEvent _)
+        {
+            HandleWarningEnded(default);
+        }
 
         private void HandleWarningStarted(BossThornWarningStartedEvent _)
         {

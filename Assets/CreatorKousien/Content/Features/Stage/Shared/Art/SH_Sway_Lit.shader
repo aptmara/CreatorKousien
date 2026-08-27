@@ -32,6 +32,18 @@ Shader "Custom/SH_Sway_Lit"
 
         [KeywordEnum(Lit,Toon,Smooth)] _LightingMode("Lighting Mode",Float) = 0
 
+
+        [Header(Lighting Response)]
+        _AmbientStrength   ("Ambient Strength", Range(0,2)) = 1
+        _MainLightStrength ("Main Light Strength", Range(0,2)) = 1
+        _AddLightStrength  ("Additional Light Strength", Range(0,4)) = 1
+
+        [Header(Night)]
+        _NightResponse     ("Night Response", Range(0,1)) = 1
+        _NightDarkness     ("Night Darkness", Range(0,1)) = 0.7
+        _NightTint         ("Night Tint", Color) = (0.55, 0.6, 0.95, 1)
+        _EmissionNightBoost("Emission Night Boost", Range(0,8)) = 0
+
     }
 
     SubShader
@@ -50,12 +62,24 @@ Shader "Custom/SH_Sway_Lit"
 
         Pass
         {
+            Tags
+            {
+                "LightMode" = "UniversalForward"
+            }
+
             HLSLPROGRAM
 
             #pragma vertex vert
             #pragma fragment frag
             #pragma multi_compile _ _ALPHATEST_ON
             #pragma multi_compile _LIGHTINGMODE_LIT _LIGHTINGMODE_TOON _LIGHTINGMODE_SMOOTH
+
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile _ _FORWARD_PLUS
+            #pragma multi_compile_fragment _ _LIGHT_COOKIES
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -74,6 +98,7 @@ Shader "Custom/SH_Sway_Lit"
                 float3 viewDirWS : TEXCOORD1;
                 float2 uv : TEXCOORD2;
                 float height : TEXCOORD3;
+                float3 positionWS : TEXCOORD4;
             };
 
             TEXTURE2D(_BaseMap);
@@ -88,7 +113,17 @@ Shader "Custom/SH_Sway_Lit"
                 float4 _SpecColor;float _SpecPower;float _SpecIntensity;
                 float4 _EmissionColor;float _EmissionStrength;
                 float _Cutoff;
+                float _AmbientStrength;
+                float _MainLightStrength;
+                float _AddLightStrength;
+                float _NightResponse;
+                float _NightDarkness;
+                float4 _NightTint;
+                float _EmissionNightBoost;
             CBUFFER_END
+            // グローバル変数
+            // 0 = 昼, 1 = 夜
+            float _GlobalNight;
 
             float _Beat;
             #define TWO_PI 6.28318530718
@@ -119,12 +154,13 @@ Shader "Custom/SH_Sway_Lit"
             {
                 Varyings OUT;
                 float4 localPos = float4(JellyVertex(IN.positionOS.xyz),1.0f);
-                
+
                 OUT.positionHCS = TransformObjectToHClip(localPos.xyz);
                 OUT.normalWS = TransformObjectToWorldNormal(IN.normalOS);
 
                 float3 positionWS = TransformObjectToWorld(localPos.xyz);
                 OUT.viewDirWS = GetWorldSpaceViewDir(positionWS);
+                OUT.positionWS = positionWS;
                 OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
                 OUT.height = smoothstep(0.0f,1.0f,localPos.y);
                 return OUT;
@@ -145,7 +181,7 @@ Shader "Custom/SH_Sway_Lit"
             #endif
 
             #ifdef _LIGHTINGMODE_TOON
-               half shade = step(_ShadeThreshold,ndl);
+               half shade = step(_ShadeThreshold, ndl);
 
                diffuse = lerp(
                    _ShadowColor.rgb,
@@ -155,7 +191,54 @@ Shader "Custom/SH_Sway_Lit"
             #endif
 
             #ifdef _LIGHTINGMODE_LIT
-                diffuse = tex * ndl;
+                half3 baseColor = tex.rgb * _BaseColor.rgb;
+
+                // Environment Lighting や Light Probe から取得する環境光
+                half3 ambient = SampleSH(normal);
+
+                // Forward+ のライトループが inputData を参照するので用意する
+                InputData inputData = (InputData)0;
+                inputData.positionWS = IN.positionWS;
+                inputData.normalWS = normal;
+                inputData.viewDirectionWS = viewDir;
+                inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(IN.positionHCS);
+
+                // メインライト
+                float4 shadowCoord = TransformWorldToShadowCoord(IN.positionWS);
+                Light mainLight = GetMainLight(shadowCoord);
+                half3 direct = mainLight.color
+                             * saturate(dot(normal, mainLight.direction))
+                             * mainLight.distanceAttenuation
+                             * mainLight.shadowAttenuation
+                             * _MainLightStrength;
+
+                // 追加ライト（Spot / Point）を加算
+            #if defined(_ADDITIONAL_LIGHTS)
+                uint pixelLightCount = GetAdditionalLightsCount();
+                LIGHT_LOOP_BEGIN(pixelLightCount)
+                    Light addLight = GetAdditionalLight(lightIndex, IN.positionWS, half4(1, 1, 1, 1));
+                    direct += addLight.color
+                            * saturate(dot(normal, addLight.direction))
+                            * addLight.distanceAttenuation
+                            * addLight.shadowAttenuation
+                            * _AddLightStrength;
+                LIGHT_LOOP_END
+            #endif
+                // 夜のブレンド量。マテリアルごとに追従度を変えられる
+                half night = saturate(_GlobalNight * _NightResponse);
+
+                half3 lighting = ambient * _AmbientStrength + direct;
+
+                // ライト自体はいじらず、受けた光を減衰させて色を寄せる
+                lighting *= lerp(1.0h, 1.0h - _NightDarkness, night);
+                lighting *= lerp(half3(1, 1, 1), _NightTint.rgb, night);
+
+                diffuse = baseColor * lighting;
+
+                // エミッションは減衰の外側で足すので、暗くしても光り続ける
+                half3 emission = _EmissionColor.rgb * _EmissionStrength
+                               * (1.0h + _EmissionNightBoost * night);
+                diffuse += emission;
             #endif
 
             #ifdef _LIGHTINGMODE_SMOOTH
@@ -244,7 +327,7 @@ Shader "Custom/SH_Sway_Lit"
 
                 OUT.positionCS = TransformObjectToHClip(pos);
 
-                // Get the VertexPositionInputs for the vertex position  
+                // Get the VertexPositionInputs for the vertex position
                 VertexPositionInputs positions = GetVertexPositionInputs(pos);
 
                 // Convert the vertex position to a position on the shadow map

@@ -30,13 +30,21 @@ public class S_CameraSetUp : MonoBehaviour
             return;
         }
         _mainCam = mainCamObj.GetComponent<Camera>();
+        if (_mainCam == null)
+        {
+            Debug.LogError("[Roguelike::S_CameraSetUp] CameraRootにCameraコンポーネントがありません");
+            return;
+        }
+
+        var baseCamData = _mainCam.GetUniversalAdditionalCameraData();
+
+        baseCamData.cameraStack.RemoveAll(cam => cam == null);
 
         _backUICam = CreateOverlayCamera("Cam_BackUI", _backUILayerName);
         _middleCam = CreateOverlayCamera("Cam_Middle", _middleLayerName);
         _frontUICam = CreateOverlayCamera("Cam_FrontUI", _frontUILayerName);
 
 
-        var baseCamData = _mainCam.GetUniversalAdditionalCameraData();
 //        baseCamData.cameraStack.Clear();
         baseCamData.cameraStack.Add(_backUICam);
         baseCamData.cameraStack.Add(_middleCam);
@@ -51,6 +59,12 @@ public class S_CameraSetUp : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Startで取得に失敗した場合、毎フレームNREを出し続けるのを防ぐ
+        if (_mainCam == null || _backUICam == null)
+        {
+            return;
+        }
+
         Vector3 camPos = _mainCam.gameObject.transform.position;
         Quaternion camRot = _mainCam.gameObject.transform.rotation;
 
@@ -65,12 +79,40 @@ public class S_CameraSetUp : MonoBehaviour
 
     }
 
+    private void OnDestroy()
+    {
+        SceneEnd();
+    }
+
     public void SceneEnd()
     {
-        Destroy(_backUICam.gameObject);
-        Destroy(_middleCam.gameObject);
-        Destroy(_frontUICam.gameObject);
+        // 破棄する前に、必ずスタックから取り除く
+        if (_mainCam != null)
+        {
+            var baseCamData = _mainCam.GetUniversalAdditionalCameraData();
+            baseCamData.cameraStack.Remove(_backUICam);
+            baseCamData.cameraStack.Remove(_middleCam);
+            baseCamData.cameraStack.Remove(_frontUICam);
+            baseCamData.cameraStack.RemoveAll(cam => cam == null);
+        }
+
+        DestroyOverlayCamera(ref _backUICam);
+        DestroyOverlayCamera(ref _middleCam);
+        DestroyOverlayCamera(ref _frontUICam);
     }
+
+
+    private void DestroyOverlayCamera(ref Camera cam)
+    {
+        if (cam == null)
+        {
+            return;
+        }
+
+        Destroy(cam.gameObject);
+        cam = null;
+    }
+
 
     private void AssignCameraToCanvas(Canvas canvas, Camera targetCam)
     {
@@ -97,7 +139,7 @@ public class S_CameraSetUp : MonoBehaviour
 
         // CullingMaskをレイヤー名から設定
         int layer = LayerMask.NameToLayer(layerName);
-        if(layer == 1)
+        if(layer == -1)
         {
             Debug.LogError($"[S_CameraSetUp] Layer '{layerName}' が見つかりません");
         }

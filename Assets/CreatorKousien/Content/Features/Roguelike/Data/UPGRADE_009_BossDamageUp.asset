@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: UPGRADE_009_BossDamageUp
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Player.UpgradeData
   Id: 9
-  DisplayName: "\u30DC\u30B9\u7279\u653B"
+  DisplayName: "\u3010\u30DC\u30B9\u7279\u653B\u3011"
   Description: "\u30DC\u30B9\u306B\u5BFE\u3059\u308B\u30C0\u30E1\u30FC\u30B8\u304C\u5897\u52A0\uFF01"
   LevelDescriptions: []
   LevelCardDescriptions: []
@@ -23,7 +23,7 @@ MonoBehaviour:
     Value: 1.1
   GameplayValue: 0
   OfferType: 0
-  CombatPressureRuleId:
+  CombatPressureRuleId: 
   CombatPressureOutputType: 0
   RequiresCollectibleFocus: 0
   SynergyTags: 0
