@@ -8,7 +8,6 @@ using Game.WaveSystem;
 using System.Collections;
 using System.Collections.Generic;
 
-using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 
 public class TutorialFlowManager : MonoBehaviour
@@ -187,7 +186,7 @@ public class TutorialFlowManager : MonoBehaviour
 
                 return true;
 
-                
+
         }
         Debug.LogError("チュートリアルの終了条件が登録されていません、クリアしたことにして次に進みます");
         return true;

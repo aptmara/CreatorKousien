@@ -11,7 +11,6 @@
 using UnityEngine;
 using Game.Core.Events;
 using System.Collections;
-using Unity.VisualScripting;
 
 namespace Game.Presentation.CameraFeedback
 {
