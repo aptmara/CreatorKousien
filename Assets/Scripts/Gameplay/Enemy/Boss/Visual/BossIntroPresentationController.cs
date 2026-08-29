@@ -555,7 +555,8 @@ namespace Game.Gameplay.Enemy.Boss
             float viewportX = Mathf.Clamp01(viewportPosition.x);
 
             // X=0で0、X=0.5で1、X=1で0になる山型
-            mountainAmount = Mathf.Sin(viewportX * Mathf.PI);
+            // 負の値にならないようにmaxで0を下限にする
+            mountainAmount = Mathf.Max(0.0f, Mathf.Sin(viewportX * Mathf.PI));
 
             // 山の尖り具合を調整
             mountainAmount = Mathf.Pow(mountainAmount, _rumbleMountainSharpness);

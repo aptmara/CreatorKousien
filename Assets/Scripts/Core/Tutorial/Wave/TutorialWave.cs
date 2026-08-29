@@ -1,5 +1,3 @@
-using NUnit.Framework;
-using UnityEditorInternal;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -13,7 +11,7 @@ public class TutorialWave : ScriptableObject
     [Header("存在している敵を動かすかどうか")]
     [SerializeField] public bool useEnemy = false;
 
-    
+
 
     public enum ClearConditions
     {
