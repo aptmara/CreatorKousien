@@ -490,9 +490,9 @@ namespace Game.Presentation.GameOverCinematic
             yield return new WaitForSeconds(_settings.TransitionResultDelay);
 
             // phase 6: リザルトシーンへの加算ロード
-            if (GameProgressionManager.Instance != null)
+            if (GameProgressionManagerBase.Instance != null)
             {
-                GameProgressionManager.Instance.GoToResult(isClear: false);
+                GameProgressionManagerBase.Instance.GoToResult(isClear: false);
             }
             else
             {

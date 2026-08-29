@@ -97,14 +97,14 @@ namespace Game.DebugTools
         /// </summary>
         private static void RequestNextStage()
         {
-            if (GameProgressionManager.Instance == null)
+            if (GameProgressionManagerBase.Instance == null)
             {
                 Debug.LogWarning("[StageDebug] F2: GameProgressionManagerが見つかりません。");
                 return;
             }
 
             Debug.Log("[StageDebug] F2: 次のStageへの移行を要求します。");
-            GameProgressionManager.Instance.RequestNextStage();
+            GameProgressionManagerBase.Instance.RequestNextStage();
         }
 
 
@@ -113,14 +113,14 @@ namespace Game.DebugTools
         /// </summary>
         private static void SkipToNextWave()
         {
-            if (GameProgressionManager.Instance == null)
+            if (GameProgressionManagerBase.Instance == null)
             {
                 Debug.LogWarning("[StageDebug] F3: GameProgressionManagerが見つかりません。");
                 return;
             }
 
             Debug.Log("[StageDebug] F3: 次のWaveへスキップします。");
-            GameProgressionManager.Instance.DebugSkipToNextWave();
+            GameProgressionManagerBase.Instance.DebugSkipToNextWave();
         }
 
 
@@ -129,14 +129,14 @@ namespace Game.DebugTools
         /// </summary>
         private static void JumpToFinalWave()
         {
-            if (GameProgressionManager.Instance == null)
+            if (GameProgressionManagerBase.Instance == null)
             {
                 Debug.LogWarning("[StageDebug] F4: GameProgressionManagerが見つかりません。");
                 return;
             }
 
             Debug.Log("[StageDebug] F4: 最終Wave(Boss)へジャンプします。");
-            GameProgressionManager.Instance.DebugJumpToFinalWave();
+            GameProgressionManagerBase.Instance.DebugJumpToFinalWave();
         }
     }
 }

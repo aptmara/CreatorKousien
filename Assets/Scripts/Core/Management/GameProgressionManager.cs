@@ -31,31 +31,13 @@ namespace Game.Core.Management
     /// <summary>
     /// ゲーム全体のループ進行を統括する司令塔マネージャー
     /// </summary>
-    public sealed class GameProgressionManager : MonoBehaviour
+    public sealed class GameProgressionManager : GameProgressionManagerBase
     {
-        public static GameProgressionManager Instance { get; private set; }
-
-        [Header("--- シーン名設定 ---")]
-        [SerializeField] private string _roguelikeSceneName = "Roguelike";
-        [SerializeField] private string _resultSceneName = "Result";
-
 
         [Header("--- Stage移行 ---")]
         [Tooltip("Stage移行時にローディング画面を最低限見せる時間(秒)")]
         [SerializeField] private float _minimumStageLoadingDuration = 3f;
 
-
-        [Header("--- Waveシステム ---")]
-        [SerializeField] private WaveRunner _waveRunner;
-
-        [Header("--- 参照 ---")]
-        [SerializeField] private EnemySpawner _enemySpawner;
-        [SerializeField] private GameUIController _gameUIController;
-
-        [Header("--- ショップ演出関連の参照 ---")]
-        [SerializeField] private CameraRigController _cameraRigController;
-        [SerializeField] private ShopVehicleController _shopVehicleController;
-        [SerializeField] private ShopCinematicCameraController _shopCinematicCameraController;
 
         [Header("--- クリア演出・猶予設定 ---")]
 
@@ -64,12 +46,6 @@ namespace Game.Core.Management
         [SerializeField] private float _slowMotionTimeScale = 0.2f;
 
 
-        [Header("--- クリア演出関連の参照 ---")]
-        [SerializeField] private GameClearCinematicController _gameClearCinematicController;
-
-
-        private GameProgressionState _currentState = GameProgressionState.Setup;
-        private int _currentWaveIndex = 0;
         private bool _isCameraWorkFinished = false;
         private List<WaveDataSO> _waveSequence = new();
         private bool _isFirstWavePrepared;
@@ -93,131 +69,6 @@ namespace Game.Core.Management
         private Vector3 _savedBattleCameraPosition;
         private Quaternion _savedBattleCameraRotation;
 
-        public GameResultSummary ResultSummary { get; private set; }
-        public GameProgressionState CurrentState => _currentState;
-        public int CurrentWaveIndex => _currentWaveIndex + 1;
-
-        /// <summary>
-        /// 現在プレイ中のStageDataSO
-        /// </summary>
-        public StageDataSO CurrentStageData => _currentStageData;
-
-        public bool HasNextStage => _currentStageData != null && _currentStageData.HasNextStage;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-
-            // 自動参照取得のセーフティ
-            // Enemy Spawner
-            if (_enemySpawner == null)
-            {
-                _enemySpawner = Object.FindFirstObjectByType<EnemySpawner>();
-            }
-
-            if (_gameUIController == null)
-            {
-                _gameUIController = Object.FindFirstObjectByType<GameUIController>();
-            }
-
-            // Camera Rig Controller
-            if (_cameraRigController == null)
-            {
-                _cameraRigController = Object.FindFirstObjectByType<CameraRigController>();
-            }
-
-            // Shop Vehicle Controller
-            if (_shopVehicleController == null)
-            {
-                var vehicles = Object.FindObjectsByType<ShopVehicleController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-                if (vehicles.Length > 0) _shopVehicleController = vehicles[0];
-            }
-
-            // Shop Cinematic Camera Controller
-            if (_shopCinematicCameraController == null)
-            {
-                var cams = Object.FindObjectsByType<ShopCinematicCameraController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-                if (cams.Length > 0) _shopCinematicCameraController = cams[0];
-            }
-
-            // Game Clear Cinematic Controller
-            if (_gameClearCinematicController == null)
-            {
-                _gameClearCinematicController = Object.FindFirstObjectByType<GameClearCinematicController>();
-            }
-
-            if (_waveRunner == null)
-            {
-                _waveRunner = GetComponent<WaveRunner>();
-            }
-        }
-
-        private void Start()
-        {
-            Scene loadingScene = SceneManager.GetSceneByName("Loading");
-            if (!loadingScene.IsValid() || !loadingScene.isLoaded)
-            {
-                StartCoroutine(PrepareAndBeginForStandaloneRoutine());
-            }
-        }
-
-        private void OnEnable()
-        {
-            // エネミーの撃破イベントを購読
-            EventBus.Subscribe<DefLineBreakReactionEvent>(OnDefenseLineBroken);
-
-            // 演出カメラからの完了通知イベントを購読
-            if (_shopCinematicCameraController != null)
-            {
-                _shopCinematicCameraController.OnCompleteCameraWork += HandleCameraWorkComplete;
-            }
-        }
-
-        private void OnDisable()
-        {
-            // エネミーの撃破イベントの購読解除
-            EventBus.Unsubscribe<DefLineBreakReactionEvent>(OnDefenseLineBroken);
-
-            // 演出カメラからの完了通知イベントを購読解除
-            if (_shopCinematicCameraController != null)
-            {
-                _shopCinematicCameraController.OnCompleteCameraWork -= HandleCameraWorkComplete;
-            }
-        }
-
-        private void Update()
-        {
-            // ESCでマウスカーソル解放
-            if (Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame)
-            {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-            }
-
-            // バトル中にマウスクリックで再ロック
-            if (_currentState == GameProgressionState.Battle)
-            {
-                if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-                {
-                    Cursor.lockState = CursorLockMode.Locked;
-                    Cursor.visible = false;
-                }
-            }
-        }
-
-        private void HandleCameraWorkComplete()
-        {
-            // カメラの回り込み完了合図を受け取ったらフラグをONに
-            _isCameraWorkFinished = true;
-        }
-
-
-
         /// <summary>
         /// 指定された番号のWaveを開始します。
         /// </summary>
@@ -226,122 +77,48 @@ namespace Game.Core.Management
             StartCoroutine(StartBattleWaveRoutine(waveIndex));
         }
 
-
-
-        /// <summary>
-        /// WaveRunnerを使って1Waveを実行し、完了後の演出へ進みます。
-        /// </summary>
-        private IEnumerator StartBattleWaveRoutine(int waveIndex)
+        protected override void RoguelikeToComeback()
         {
-            if (_waveSequence == null || waveIndex < 0 || waveIndex >= _waveSequence.Count)
+            // ウェーブカウントをインクリメント
+            _currentWaveIndex++;
+
+            // 次のウェーブがあるかチェック
+            if (_currentWaveIndex < _waveSequence.Count)
             {
-                Debug.LogError($"[Progression] Wave Index {waveIndex}のデータが存在しません。");
-                yield break;
+                // マウスカーソルをロック
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+
+                // 次のウェーブを開始
+                StartBattleWave(_currentWaveIndex);
             }
-
-            if (_waveRunner == null || _enemySpawner == null)
-            {
-                Debug.LogError("[Progression] WaveRunnerまたはEnemySpawnerが見つかりません。");
-                yield break;
-            }
-
-            if (_gameUIController == null)
-            {
-                Debug.LogError("[Progression] GameUIConterollerが見つかりません。");
-                yield break;
-            }
-            _currentState = GameProgressionState.Battle;
-
-            Time.timeScale = 1f;
-            Time.fixedDeltaTime = 0.02f;
-
-            _gameUIController.UIVisible(0.5f);
-            _gameUIController.SetWave((waveIndex + 1).ToString() + " / " + _waveSequence.Count);
-
-            WaveDataSO waveData = _waveSequence[waveIndex];
-
-            Debug.Log($"[Progression] ===== Wave {waveIndex + 1} 開始：{waveData.WaveName} =====");
-
-            yield return StartCoroutine(_waveRunner.PlayWave(waveData, _enemySpawner));
-
-            if (!_waveRunner.LastRunSucceeded)
-            {
-                _currentState = GameProgressionState.Setup;
-                Debug.LogError($"[Progression] Wave「{waveData.WaveName}」の実行に失敗しました。", waveData);
-                yield break;
-            }
-
-            bool isFinalWave = waveIndex + 1 >= _waveSequence.Count;
-            if (!isFinalWave)
-            {
-                
-            }
-
-
-            yield return StartCoroutine(AnimateWaveClearRoutine(isFinalWave, waveData.CompleteDelay));
         }
 
-
-        private void OnDefenseLineBroken(DefLineBreakReactionEvent ev)
+        protected override void OnDefenseLineBroken(DefLineBreakReactionEvent ev)
         {
             if (_currentState != GameProgressionState.Battle) return;
             Debug.Log("[Progression] 防衛ラインのバリア崩壊を検知。ゲームオーバー処理を開始するぜよ。");
-            // HandleGameResult(isClear: false);
+            HandleGameResult(isClear: false);
         }
 
-        /// <summary>
-        /// クリア演出コルーチン
-        /// </summary>
-        private IEnumerator AnimateWaveClearRoutine(bool isFinalWave, float completeDelay)
+
+        protected override GameResultSummary CreateSummry(bool isClear)
         {
-            float validCompleteDelay = Mathf.Max(0f, completeDelay);
+            _currentState = GameProgressionState.Result;
 
-            // 一時的に状態を逃がす
-            _currentState = GameProgressionState.Setup;
-            Debug.Log($"[Progression] 最後の敵の撃破を検知！ 弾の着弾猶予として {validCompleteDelay} 秒間スローモーション演出を行うぜよ。");
+            // バトル側のポーズ処理、マウスカーソル解放
+            Time.timeScale = 0f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
 
+            // 現状の防衛ラインの残りHPをシーンから取得
+            var gauge = Object.FindFirstObjectByType<Core.DefenceLine.DefenseLineGauge>();
+            float currentHp = gauge != null ? gauge.CurrentHP : 0f;
 
-            // --- 最終ウェーブクリア時の処理 ---
-            if (isFinalWave)
-            {
-                // 最終ウェーブクリア時は、ゲームクリア演出を再生する
-                SoundManager.instance?.StopBGM();
-                if (_gameClearCinematicController != null)
-                {
-                    yield return StartCoroutine(_gameClearCinematicController.PlayRoutine());
-                }
-                else
-                {
-                    // ゲームクリア演出が設定されていない場合は、スローモーション猶予だけ行う
-                    Time.timeScale = _slowMotionTimeScale;
-                    Time.fixedDeltaTime = 0.02f * Time.timeScale;
-
-                    yield return new WaitForSecondsRealtime(validCompleteDelay);
-
-                    Time.timeScale = 1f;
-                    Time.fixedDeltaTime = 0.02f;
-                }
-
-                // 最終ウェーブクリア後は、ゲームクリア状態へ遷移
-                HandleGameResult(isClear: true);
-                yield break;
-            }
-
-
-
-            // --- 通常のウェーブクリア時の処理 ---
-
-            // 1. 画面を一瞬スローモーション、同時にUIを透明化
-            Time.timeScale = _slowMotionTimeScale;
-            Time.fixedDeltaTime = 0.02f * Time.timeScale;
-            _gameUIController.UIInvisible(0.5f);
-            // 2. コンボが切れるまでの時間を実時間で待機
-            yield return new WaitForSecondsRealtime(validCompleteDelay);
-
-            // 3. 猶予が終了したら、進行処理へ
-            // 屋台演出へ繋ぐ
-            yield return StartCoroutine(ShopPresentationSequenceRoutine());
-            SoundManager.instance?.SoundVolume(0.3f);
+            // リザルト画面に渡す全データをパッキング
+            // リザルト画面に渡す全データをパッキング
+            // クリアかつ次のStageがあるときだけ「つぎへ」ボタンを出せるようにする
+            return new GameResultSummary(isClear, _currentWaveIndex, currentHp, isClear && HasNextStage);
         }
 
         /// <summary>
@@ -425,37 +202,20 @@ namespace Game.Core.Management
             HandleWaveClear();
         }
 
-        /// <summary>
-        /// ウェーブクリア時の処理
-        ///     (バトルポーズ -> ローグライク加算ロード)
-        /// </summary>
-        private void HandleWaveClear()
+
+        public override void BeginPreparedGame()
         {
-            Debug.Log($"[Progression] よくやった。ウェーブ {_currentWaveIndex + 1} クリアしたぜよ！\nローグライクフェーズへ遷移するぜよ。");
+            if (!_isFirstWavePrepared ||
+                _preparationFailed ||
+                _hasGameStarted ||
+                _waveSequence == null ||
+                _waveSequence.Count == 0)
+            {
+                return;
+            }
 
-            _currentState = GameProgressionState.Roguelike;
-
-            // バトル側のポーズ処理
-            Time.timeScale = 0f;
-
-            // マウスカーソル表示
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-
-            // ローグライクシーンの加算ロード
-            StartCoroutine(LoadSceneAdditiveRoutine(_roguelikeSceneName));
-        }
-
-        /// <summary>
-        /// ローグライクで強化カードが選択され、シーケンスが完了した時に呼ぶよ。
-        /// ローグライクシーンからこれ呼んでね^^
-        /// </summary>
-        public void CompleteRoguelikeSequence()
-        {
-            if (_currentState != GameProgressionState.Roguelike) return;
-
-            StartCoroutine(UnloadRoguelikeAndAdvanceRoutine());
-            EventBus.Publish(new PlayerTiltEvent(0.0f));
+            _hasGameStarted = true;
+            StartBattleWave(_currentWaveIndex);
         }
 
         private IEnumerator UnloadRoguelikeAndAdvanceRoutine()
@@ -515,13 +275,6 @@ namespace Game.Core.Management
             SoundManager.instance?.SoundVolume(1.0f);
         }
 
-        /// <summary>
-        /// ゲームオーバー演出などが終了した後に、外部からリザルト画面へ遷移させるためのメソッド
-        /// </summary>
-        public void GoToResult(bool isClear)
-        {
-            HandleGameResult(isClear);
-        }
 
         private void HandleGameResult(bool isClear)
         {
@@ -548,7 +301,7 @@ namespace Game.Core.Management
         /// リザルト画面の「つぎへ」ボタンが押された時に呼ばれるメソッド
         /// 8/16 Asano: Stage2移行のために新規追加
         /// </summary>
-        public void RequestNextStage()
+        public override void RequestNextStage()
         {
             if (_isAdvancingStage)
             {
@@ -683,50 +436,17 @@ namespace Game.Core.Management
         }
 
 
-        private void RefreshStageSceneReferences()
+        protected override void HandleWaveClear()
         {
-            // 古い演出カメラの購読を解除しておく
-            if (_shopCinematicCameraController != null)
-            {
-                _shopCinematicCameraController.OnCompleteCameraWork -= HandleCameraWorkComplete;
-            }
-
-            _enemySpawner = Object.FindFirstObjectByType<EnemySpawner>();
-
-            var vehicles = Object.FindObjectsByType<ShopVehicleController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            _shopVehicleController = vehicles.Length > 0 ? vehicles[0] : null;
-
-            var cams = Object.FindObjectsByType<ShopCinematicCameraController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            _shopCinematicCameraController = cams.Length > 0 ? cams[0] : null;
-
-            // 新しい演出カメラうを購読する
-            if (_shopCinematicCameraController != null)
-            {
-                _shopCinematicCameraController.OnCompleteCameraWork += HandleCameraWorkComplete;
-            }
-
-            if (_enemySpawner == null)
-            {
-                Debug.LogError("[Progression] 新しいStageシーンにEnemySpawnerが見つかりません。");
-            }
+            
         }
-
-        private void RefreshUISceneReferences()
-        {
-            _gameUIController = Object.FindFirstObjectByType<GameUIController>();
-            if (_gameUIController == null)
-            {
-                Debug.LogError("[Progression] 新しいUIシーンにGameUIControllerが見つかりません。");
-            }
-        }
-
 
 #if UNITY_EDITOR
         /// <summary>
         /// デバッグ用。実行中のWaveを中断して、指定したWaveを演出なしで開始しまっす！
         /// </summary>
         /// <param name="waveIndex">開始したいWaveの番号(0始まり)</param>
-        public void DebugStartWaveAt(int waveIndex)
+        public override void DebugStartWaveAt(int waveIndex)
         {
             if (_waveSequence == null || _waveSequence.Count == 0)
             {
@@ -774,7 +494,7 @@ namespace Game.Core.Management
         /// <summary>
         /// デバッグ用。演出を飛ばして次のWaveへ進みます
         /// </summary>
-        public void DebugSkipToNextWave()
+        public override void DebugSkipToNextWave()
         {
             DebugStartWaveAt(_currentWaveIndex + 1);
         }
@@ -783,7 +503,7 @@ namespace Game.Core.Management
         /// <summary>
         /// デバッグ用。演出を飛ばして最終Wave(Boss)へ飛びます
         /// </summary>
-        public void DebugJumpToFinalWave()
+        public override void DebugJumpToFinalWave()
         {
             DebugStartWaveAt(_waveSequence.Count - 1);
         }
@@ -793,7 +513,7 @@ namespace Game.Core.Management
         /// <summary>
         /// 加算ロード完了後、StageDataSOからWave順を生成して開始します。
         /// </summary>
-        public IEnumerator PrepareFirstWaveRoutine()
+        public override IEnumerator PrepareFirstWaveRoutine()
         {
             if (_isFirstWavePrepared || _preparationFailed)
             {
@@ -886,60 +606,5 @@ namespace Game.Core.Management
             return unchecked(_baseSeed + (stageIndex * StageSeedStride));
         }
 
-
-        public bool IsFirstWavePrepared => _isFirstWavePrepared;
-        public bool PreparationFailed => _preparationFailed;
-
-        public void BeginPreparedGame()
-        {
-            if (!_isFirstWavePrepared ||
-                _preparationFailed ||
-                _hasGameStarted ||
-                _waveSequence == null ||
-                _waveSequence.Count == 0)
-            {
-                return;
-            }
-
-            _hasGameStarted = true;
-            StartBattleWave(_currentWaveIndex);
-        }
-
-        private IEnumerator PrepareAndBeginForStandaloneRoutine()
-        {
-            yield return PrepareFirstWaveRoutine();
-            BeginPreparedGame();
-        }
-
-        /// <summary>
-        /// ローグライクシーンの加算ロード
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerator LoadSceneAdditiveRoutine(string sceneName)
-        {
-            // 重複ロード防止
-            Scene existingScene = SceneManager.GetSceneByName(sceneName);
-            if (existingScene.IsValid() && existingScene.isLoaded)
-            {
-                yield break;
-            }
-
-            // Additiveロード
-            AsyncOperation op = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-            if (op == null)
-            {
-                Debug.LogError($"[Progression] シーン '{sceneName}' のロードに失敗。Build Profiles を確認してちょ。");
-                Time.timeScale = 1f;
-                _currentState = GameProgressionState.Battle;
-                yield break;
-            }
-
-            while (!op.isDone)
-            {
-                yield return null;
-            }
-
-            Debug.Log("[Progression] ローグライクシーンの加算ロード完了ｩｩｳ！");
-        }
     }
 }

@@ -263,7 +263,7 @@ namespace Game.Presentation.UI.Pause
 
         private static bool CanOpenPause()
         {
-            GameProgressionManager progression = GameProgressionManager.Instance;
+            GameProgressionManagerBase progression = GameProgressionManagerBase.Instance;
             if (progression == null || Time.timeScale <= 0f)
             {
                 return false;

@@ -61,8 +61,8 @@ namespace Game.Core.DefenceLine
                 return;
             }
 
-            if (GameProgressionManager.Instance == null ||
-                GameProgressionManager.Instance.CurrentState != GameProgressionState.Battle)
+            if (GameProgressionManagerBase.Instance == null ||
+                GameProgressionManagerBase.Instance.CurrentState != GameProgressionState.Battle)
             {
                 return;
             }

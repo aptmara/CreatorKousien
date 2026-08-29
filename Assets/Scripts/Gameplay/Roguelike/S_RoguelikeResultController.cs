@@ -118,13 +118,13 @@ public class S_RoguelikeResultController : MonoBehaviour
             _roguelikeEndEvent.Raise();
         }
         // ゲーム進行マネージャーにローグライク終了を通知
-        if (Game.Core.Management.GameProgressionManager.Instance != null)
+        if (Game.Core.Management.GameProgressionManagerBase.Instance != null)
         {
-            Game.Core.Management.GameProgressionManager.Instance.CompleteRoguelikeSequence();
+            Game.Core.Management.GameProgressionManagerBase.Instance.CompleteRoguelikeSequence();
         }
         else
         {
-            Debug.LogError("[S_RoguelikeResultController] GameProgressionManager.Instanceが見つかりません。");
+            Debug.LogError("[S_RoguelikeResultController] GameProgressionManagerBase.Instanceが見つかりません。");
         }
 
     }

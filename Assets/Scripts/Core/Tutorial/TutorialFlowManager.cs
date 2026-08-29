@@ -23,9 +23,6 @@ public class TutorialFlowManager : MonoBehaviour
 
     // UI管理
     GameUIController _gameUI;
-    // TutorialUIController _tutorialUI;
-
-    // TutorialObjectController tutorial;
 
     [Header("ショップ演出関連の参照")]
     [SerializeField] private CameraRigController _cameraRigController;
@@ -52,8 +49,6 @@ public class TutorialFlowManager : MonoBehaviour
             // ウェーブ数を加算
             currentWave++;
         }
-
-
     }
 
     IEnumerator PlayTutorial(TutorialWave wave)

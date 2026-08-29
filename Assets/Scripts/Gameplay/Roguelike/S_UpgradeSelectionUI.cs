@@ -146,8 +146,8 @@ public class S_UpgradeSelectionUI : MonoBehaviour
         ClearCards();
         EnsureDecorations();
 
-        int clearedWave = GameProgressionManager.Instance != null
-            ? GameProgressionManager.Instance.CurrentWaveIndex
+        int clearedWave = GameProgressionManagerBase.Instance != null
+            ? GameProgressionManagerBase.Instance.CurrentWaveIndex
             : 1;
         _currentReward = _balanceConfig != null ? _balanceConfig.GetRewardForWave(clearedWave) : null;
         _draftKind = GetDraftKind(_currentReward, clearedWave);

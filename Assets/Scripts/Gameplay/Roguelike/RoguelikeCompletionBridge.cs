@@ -21,10 +21,10 @@ namespace Game.Gameplay.Roguelike
         /// </summary>
         public void TriggerComplete()
         {
-            if (GameProgressionManager.Instance != null)
+            if (GameProgressionManagerBase.Instance != null)
             {
                 Debug.Log("[Bridge] ローグライク完了ボタンが押されました。進行マネージャーへ通知します。");
-                GameProgressionManager.Instance.CompleteRoguelikeSequence();
+                GameProgressionManagerBase.Instance.CompleteRoguelikeSequence();
             }
             else
             {
