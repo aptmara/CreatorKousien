@@ -32,9 +32,9 @@ namespace Game.Presentation.UI.Result
             if (_uiController == null) _uiController = GetComponentInChildren<ResultUIController>();
 
             // GameProgressionManager からパッキングされたデータを引き抜く
-            if (GameProgressionManager.Instance != null && GameProgressionManager.Instance.ResultSummary != null )
+            if (GameProgressionManagerBase.Instance != null && GameProgressionManagerBase.Instance.ResultSummary != null )
             {
-                GameResultSummary data = GameProgressionManager.Instance.ResultSummary;
+                GameResultSummary data = GameProgressionManagerBase.Instance.ResultSummary;
 
                 // UIクラスに対して、表示情報の更新と演出切り替えを委譲
                 _uiController.SetupResultView(data, OnGameClearTitleButtonClicked, OnGameOverRetryButtonClicked, OnNextStageButtonClicked);
@@ -80,7 +80,7 @@ namespace Game.Presentation.UI.Result
 
         private void OnNextStageButtonClicked()
         {
-            if (GameProgressionManager.Instance == null)
+            if (GameProgressionManagerBase.Instance == null)
             {
                 Debug.LogError("[Result] GameProgressionManagerが見つかりません。次のステージへ進めません。");
                 return;
@@ -88,7 +88,7 @@ namespace Game.Presentation.UI.Result
 
             Debug.Log("[Result] 次のステージへ進むぜよ");
 
-            GameProgressionManager.Instance.RequestNextStage();
+            GameProgressionManagerBase.Instance.RequestNextStage();
         }
     }
 }

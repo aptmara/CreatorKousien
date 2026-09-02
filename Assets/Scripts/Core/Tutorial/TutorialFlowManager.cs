@@ -9,62 +9,179 @@ using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
-public class TutorialFlowManager : MonoBehaviour
+public class TutorialFlowManager : GameProgressionManagerBase
 {
     [Header("チュートリアルデータ")]
     [SerializeField] List<TutorialWave> _tutorialDatas;
 
-    [Header("コマンド用参照")]
-    [SerializeField] WaveRunner _waveRunner;
-    [SerializeField] EnemySpawner _spawner;
+    [SerializeField] private InputActionAsset _actionAssetRef;
+    private InputActionMap _actionMap;
 
+    [SerializeField] private InputAction _clickAction;
+    [SerializeField] private InputAction _submitAction;
 
     // UI管理
     GameUIController _gameUI;
-    // TutorialUIController _tutorialUI;
 
-    // TutorialObjectController tutorial;
-
-    [Header("ショップ演出関連の参照")]
-    [SerializeField] private CameraRigController _cameraRigController;
-    [SerializeField] private ShopVehicleController _shopVehicleController;
-    [SerializeField] private ShopCinematicCameraController _shopCinematicCameraController;
-
-    // 後戻りしたりもできるように数値で進行度を保持
-    int currentWave;
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public override IEnumerator PrepareFirstWaveRoutine()
     {
-        // 各参照を取得する
-    }
+        Debug.Log("[Tutorial]参照取得が開始されました。");
 
-    public IEnumerator StartTutorial()
-    {
-        // 全てのWaveを回す
-        while (currentWave < _tutorialDatas.Count)
+        if (_isFirstWavePrepared || _preparationFailed)
         {
-            // 開始し、終了まで待機
-            yield return StartCoroutine(PlayTutorial(_tutorialDatas[currentWave]));
+            yield break;
+        }
 
-            // ウェーブ数を加算
-            currentWave++;
+        if (_isPreparingFirstWave)
+        {
+            yield return new WaitUntil(() => _isFirstWavePrepared || _preparationFailed);
+            yield break;
+        }
+
+        _isPreparingFirstWave = true;
+
+        // 初期化
+        _currentWaveIndex = 0;
+        _currentState = GameProgressionState.Setup;
+
+        // 参照取得
+        StageSceneContext stageContext = null;
+        PlayerFacade player = null;
+
+        // 参照が揃うまで待機
+        while (_enemySpawner == null || stageContext == null || player == null || _gameUIController == null)
+        {
+            if (_enemySpawner == null) _enemySpawner = Object.FindFirstObjectByType<EnemySpawner>();
+            if (stageContext == null) stageContext = Object.FindFirstObjectByType<StageSceneContext>();
+            if (player == null) player = Object.FindFirstObjectByType<PlayerFacade>();
+            if (_gameUIController == null) _gameUIController = Object.FindFirstObjectByType<GameUIController>();
+
+
+            yield return null;
+        }
+
+        _actionMap = _actionAssetRef.FindActionMap("Roguelike", throwIfNotFound: false);
+
+        _clickAction = _actionMap.FindAction("Click");
+        _submitAction = _actionMap.FindAction("Submit");
+
+        if (_clickAction == null || _submitAction == null)
+        {
+            _preparationFailed = true;
+            _isPreparingFirstWave = false;
+            Debug.Log("[Tutorial]入力アクションが取得できませんでした");
+            yield break;
+
+        }
+
+        // WaveRunnerの参照がまだなら取得
+        if (_waveRunner == null) _waveRunner = GetComponent<WaveRunner>();
+
+        if (_waveRunner == null)
+        {
+            Debug.LogError("[Tutorial] WaveRunnerがGameProgressionManagerと同じGameObjectにありません。");
+            _preparationFailed = true;
+            _isPreparingFirstWave = false;
+            yield break;
         }
 
 
+        if (stageContext.ManualTestMode)
+        {
+            Debug.Log("[Tutorial] 手動テストモードのため、自動Wave進行をスキップします");
+            _isFirstWavePrepared = true;
+            _isPreparingFirstWave = false;
+            yield break;
+        }
+
+        // Bootシーンはこの後アンロードされるので、Stage進行に必要な情報を控えておく
+        _currentStageData = stageContext.StageData;
+        _baseSeed = stageContext.CreateSeed();
+        _stageIndex = 0;
+
+
+        _submitAction.Enable();
+        _clickAction.Enable();
+
+        _isFirstWavePrepared = true;
+        _isPreparingFirstWave = false;
+
+
+        Debug.Log("[Tutorial]参照取得が終了しました。");
+    }
+
+    public override void BeginPreparedGame()
+    {
+        Debug.Log("[Tutorial]チュートリアルを開始します。");
+        StartCoroutine(StartTutorial());
+    }
+
+    protected override GameResultSummary CreateSummry(bool isClear)
+    {
+        return new GameResultSummary(isClear, _currentWaveIndex, 0.0f);
+    }
+
+    public override void RequestNextStage()
+    {
+        _currentWaveIndex++;
+    }
+
+    protected override void HandleWaveClear()
+    {
+    }
+
+    protected override void OnDefenseLineBroken(DefLineBreakReactionEvent ev)
+    {
+
+    }
+
+
+    protected override void RoguelikeToComeback()
+    {
+
+    }
+
+
+
+
+    public IEnumerator StartTutorial()
+    {
+        yield return StartCoroutine(DrawTutoeialText("チュートリアル開始だよ！"));
+        // 全てのWaveを回す
+        while (_currentWaveIndex < _tutorialDatas.Count)
+        {
+            // 開始し、終了まで待機
+            yield return StartCoroutine(PlayTutorial(_tutorialDatas[_currentWaveIndex]));
+
+            // ウェーブ数を加算
+            _currentWaveIndex++;
+        }
+
+        yield return StartCoroutine(DrawTutoeialText("チュートリアルはこれで終わり！健闘を祈る！"));
+        Debug.Log("全てのチュートリアルが終了しました！");
+
+        SoundManager.instance?.StopBGM();
+        GoToResult(true);
     }
 
     IEnumerator PlayTutorial(TutorialWave wave)
     {
         // 事前処理
+        yield return StartCoroutine(StartChangeState(wave));
+        if (wave.UseStartText) yield return StartCoroutine(DrawTutoeialText(wave.StartText));
         TutorialStart(wave);
+
 
         // チュートリアルが終了しているか確認
         yield return TutorialMain(wave);
 
         // 終了処理
         TutorialEnd(wave);
+        if (wave.UseEndText) yield return StartCoroutine(DrawTutoeialText(wave.EndText));
+        yield return StartCoroutine(EndChangeState(wave));
     }
 
 
@@ -73,15 +190,15 @@ public class TutorialFlowManager : MonoBehaviour
     {
 
         // 参照が揃うまで待機
-        while (_spawner == null || _gameUI == null)
+        while (_enemySpawner == null || _gameUI == null)
         {
-            if (_spawner == null) _spawner = Object.FindFirstObjectByType<EnemySpawner>();
+            if (_enemySpawner == null) _enemySpawner = Object.FindFirstObjectByType<EnemySpawner>();
             if (_gameUI == null) _gameUI = Object.FindFirstObjectByType<GameUIController>();
 
             yield return null;
         }
 
-        while(_cameraRigController != null || _shopVehicleController != null || _shopCinematicCameraController != null)
+        while (_cameraRigController != null || _shopVehicleController != null || _shopCinematicCameraController != null)
         {
             if (_cameraRigController == null) _cameraRigController = Object.FindAnyObjectByType<CameraRigController>();
             if (_shopVehicleController == null) _shopVehicleController = Object.FindAnyObjectByType<ShopVehicleController>();
@@ -97,21 +214,34 @@ public class TutorialFlowManager : MonoBehaviour
     {
         Debug.Log(wave.name + "を開始します！");
 
+        if (wave == null) { return; }
 
-        TutorialStartRequest request = wave.waveStartRequest;
-        if (request == null) { return; }
-
-        if(request.UseStartWave)
+        if (wave.StartRoguelike)
         {
-            _waveRunner.PlayWave(request.WaveData, _spawner);
+            _currentState = GameProgressionState.Roguelike;
+
+            // バトル側のポーズ処理
+            Time.timeScale = 0f;
+
+            // マウスカーソル表示
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
+            // ローグライクシーンの加算ロード
+            StartCoroutine(LoadSceneAdditiveRoutine(_roguelikeSceneName));
         }
-        else if(request.UseEnemySpawn)
+        else if (wave.UseStartWave)
+        {
+            StartCoroutine(_waveRunner.PlayWave(wave.WaveData, _enemySpawner));
+            _gameUIController.UIVisible(1.0f);
+        }
+        else if (wave.UseEnemySpawn)
         {
             // 敵を生成
-            foreach(var spawnEnemy in request.Enemies)
+            foreach (var spawnEnemy in wave.Enemies)
             {
                 EnemyController _enemyController;
-                _spawner.TrySpawnEnemy(spawnEnemy, 1.0f, 1.0f, 0.5f, out _enemyController);
+                _enemySpawner.TrySpawnEnemy(spawnEnemy, 1.0f, 1.0f, 0.5f, out _enemyController);
             }
         }
     }
@@ -124,9 +254,9 @@ public class TutorialFlowManager : MonoBehaviour
                 // 登録する
                 {
                     // フラグ群を作成し、フラグを更新するラムダを生成
-                    int spawnEnemyCount = wave.waveStartRequest.Enemies.Count;
+                    int spawnEnemyCount = wave.Enemies.Count;
                     TutorialEndFlag endflag = new TutorialEndFlag(true, spawnEnemyCount);
-                    System.Action<EnemyDefeatedEvent> action = (EnemyDefeatedEvent ev) => endflag._count--;
+                    System.Action<EnemyDefeatedEvent> action = (EnemyDefeatedEvent ev) => { endflag._count--;};
 
                     // イベントにラムダを登録し、終了フラグが立つまで待機する
                     EventBus.Subscribe<EnemyDefeatedEvent>(action);
@@ -140,7 +270,6 @@ public class TutorialFlowManager : MonoBehaviour
                 {
                     TutorialEndFlag endflag = new TutorialEndFlag(false, 0);
                     System.Action<WaveEndEvent> action = (WaveEndEvent ev) => endflag._frag = true;
-                    yield return EndWaitCoroutine(endflag);
 
                     EventBus.Subscribe<WaveEndEvent>(action);
                     yield return EndWaitCoroutine(endflag);
@@ -148,49 +277,47 @@ public class TutorialFlowManager : MonoBehaviour
                 }
                 break;
 
-            //case TutorialWave.ClearConditions.GetCollectible:
-            //    {
-            //        TutorialEndFlag endflag = new TutorialEndFlag(true, 3);
-            //        System.Action action = () => endflag._count--;
+            case TutorialWave.ClearConditions.ShopEnd:
+                {
+                    TutorialEndFlag endflag = new TutorialEndFlag(false, 0);
+                    System.Action<TutorialShopEndEvent> action = (TutorialShopEndEvent ev) => endflag._frag = true;
 
-            //        yield return EndWaitCoroutine(endflag);
-            //    }
-            //    break;
+                    EventBus.Subscribe<TutorialShopEndEvent>(action);
+                    yield return EndWaitCoroutine(endflag);
+                    EventBus.Unsubscribe<TutorialShopEndEvent>(action);
+                }
+                break;
+
+            case TutorialWave.ClearConditions.GetCollectible:
+                {
+                    TutorialEndFlag endflag = new TutorialEndFlag(true, 1);
+                    System.Action<CrystalHitEvent> action = (CrystalHitEvent ev) => endflag._count--;
+
+
+                    // イベントにラムダを登録し、終了フラグが立つまで待機する
+                    EventBus.Subscribe<CrystalHitEvent>(action);
+                    yield return EndWaitCoroutine(endflag);
+                    EventBus.Unsubscribe<CrystalHitEvent>(action);
+                }
+                break;
 
             default:
                 Debug.LogError("チュートリアルの終了条件が登録されていません、クリアしたことにして次に進みます");
-            break;
+                break;
         }
     }
 
     void TutorialEnd(TutorialWave wave)
     {
         Debug.Log(wave.name + "を終了します！");
-        // TutorialEndRequest request = wave.waveEndRequest;
 
-    }
-
-    bool IsClearTutorial(TutorialWave wave)
-    {
-        switch(wave.clearConditions)
+        if (wave.UseStartWave)
         {
-            case TutorialWave.ClearConditions.EnemyKill:
-
-                return true;
-
-            case TutorialWave.ClearConditions.WaveClear:
-
-                return true;
-
-            case TutorialWave.ClearConditions.GetCollectible:
-
-                return true;
-
-
+            _gameUIController.UIInvisible(1.0f);
         }
-        Debug.LogError("チュートリアルの終了条件が登録されていません、クリアしたことにして次に進みます");
-        return true;
+
     }
+
 
     class TutorialEndFlag
     {
@@ -205,11 +332,75 @@ public class TutorialFlowManager : MonoBehaviour
         }
     }
 
+    IEnumerator DrawTutoeialText(string text)
+    {
+        yield return null;
+
+        Debug.Log("TutorialTextを生成");
+        EventBus.Publish(new TutorialTextEvent(text));
+        Time.timeScale = 0.0f;
+        while (!_clickAction.triggered && !_submitAction.triggered)
+        {
+            if (!_clickAction.enabled || !_submitAction.enabled) Debug.LogError("入力が効いてないぜ！！");
+            if (!_clickAction.enabled) _clickAction.Enable();
+            if (!_submitAction.enabled) _submitAction.Enable();
+            yield return null;
+        }
+        Time.timeScale = 1.0f;
+        EventBus.Publish(new TutorialTextResetEvent(text));
+        Debug.Log("TutorialTextを終了");
+        yield return null;
+    }
+
     IEnumerator EndWaitCoroutine(TutorialEndFlag flag)
     {
-        while(flag._count > 0 || flag._frag)
+        while (flag._count > 0 || !flag._frag)
         {
             yield return null;
         }
     }
+
+    IEnumerator StartChangeState(TutorialWave wave)
+    {
+        if (wave.StartRoguelike) yield return StartCoroutine(ShopPresentationSequenceRoutine());
+    }
+
+    IEnumerator EndChangeState(TutorialWave wave)
+    {
+        if (wave.StartRoguelike) yield return StartCoroutine(UnloadRoguelikeAndAdvanceRoutine());
+    }
+
+    public override void CompleteRoguelikeSequence()
+    {
+        EventBus.Publish(new TutorialShopEndEvent());
+    }
+
+
+#if UNITY_EDITOR
+
+    /// <summary>
+    /// デバッグ用。実行中のWaveを中断して、指定したWaveを演出なしで開始しまっす！
+    /// </summary>
+    /// <param name="waveIndex">開始したいWaveの番号(0始まり)</param>
+    public override void DebugStartWaveAt(int waveIndex)
+    {
+
+    }
+
+    /// <summary>
+    /// デバッグ用。演出を飛ばして次のチュートリアルWaveへ進みます
+    /// </summary>
+    public override void DebugSkipToNextWave()
+    {
+
+    }
+
+    /// <summary>
+    /// デバッグ用。
+    /// </summary>
+    public override void DebugJumpToFinalWave()
+    {
+
+    }
+#endif
 }

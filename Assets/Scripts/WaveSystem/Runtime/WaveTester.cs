@@ -105,9 +105,9 @@ namespace Game.WaveSystem
                 yield return StartCoroutine(cinematic.PlayRoutine());
             }
 
-            if (GameProgressionManager.Instance != null)
+            if (GameProgressionManagerBase.Instance != null)
             {
-                GameProgressionManager.Instance.GoToResult(true);
+                GameProgressionManagerBase.Instance.GoToResult(true);
             }
             else
             {

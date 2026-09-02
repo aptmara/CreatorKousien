@@ -1,5 +1,7 @@
-using UnityEngine;
+using Game.Core.Enemy;
+using Game.WaveSystem;
 using System.Collections.Generic;
+using UnityEngine;
 
 [CreateAssetMenu(fileName = "TutorialWave", menuName = "Game/Tutorial/TutorialWave")]
 public class TutorialWave : ScriptableObject
@@ -18,12 +20,38 @@ public class TutorialWave : ScriptableObject
         EnemyKill,
         WaveClear,
         GetCollectible,
+        ShopEnd
     }
     [Header("クリア条件")]
     [SerializeField] public ClearConditions clearConditions;
 
-    // Wave開始時に行う処理リクエストSO
-    [SerializeField] public TutorialStartRequest waveStartRequest;
 
-    // Wave終了時に行う処理リクエストSO
+    [Header("開始時リクエスト")]
+    [SerializeField] bool spawnEnemy;
+    public bool UseEnemySpawn => spawnEnemy;
+    [SerializeField] List<EnemyDefinition> enemies;
+    public List<EnemyDefinition> Enemies => enemies;
+
+    [SerializeField] bool useStartText;
+    public bool UseStartText => useStartText;
+    [SerializeField] string startText;
+    public string StartText => startText;
+
+    [SerializeField] bool startWave;
+    public bool UseStartWave => startWave;
+    [SerializeField]
+    WaveDataSO waveData;
+    public WaveDataSO WaveData => waveData;
+    [SerializeField]
+    bool startRoguelike;
+    public bool StartRoguelike => startRoguelike;
+
+    [Header("終了時リクエスト")]
+    [SerializeField] bool useEndText;
+    public bool UseEndText => useEndText;
+    [SerializeField] string endText;
+    public string EndText => endText;
+
+
+
 }

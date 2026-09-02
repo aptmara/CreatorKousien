@@ -6,9 +6,10 @@
 // Updated      : 2026/07/11 (ドロップテーブル拡張) - Iwai Shogo  
 // ================================================================================
 
+using Game.Core.Events;
+using Game.Data.Collectibles;
 using System;
 using UnityEngine;
-using Game.Data.Collectibles;
 
 namespace Game.Gameplay.Collectibles
 {

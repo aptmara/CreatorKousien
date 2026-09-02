@@ -38,6 +38,9 @@ namespace Game.Presentation.UI.Title
         [Header("--- 遷移先のシーン ---")]
         [SerializeField] private string _selectSceneName = "StageSelect";
 
+        [SerializeField] private string _defaultBootName = "Boot";
+        [SerializeField] private string _tutorialBootName = "TutorialBoot";
+
         [SerializeField] private StageDataSO _stageDataSO;
         private void Awake()
         {
@@ -81,7 +84,7 @@ namespace Game.Presentation.UI.Title
             // SceneManager.LoadScene(_selectSceneName);
 
             // Beta版での一時的な実装
-            StartCoroutine(StageLoad(_stageDataSO));
+            StartCoroutine(StageLoad(_defaultBootName, _stageDataSO));
         }
 
         /// <summary>
@@ -90,6 +93,15 @@ namespace Game.Presentation.UI.Title
         public void OnClickLoadGame()
         {
             Debug.Log("Load Game が押されたぜよ（だが未実装）");
+        }
+
+
+        /// <summary>
+        /// Tutorialボタンが押されたときに呼び出す
+        /// </summary>
+        public void OnClickTutorial()
+        {
+            StartCoroutine(StageLoad(_tutorialBootName, _stageDataSO));
         }
 
         /// <summary>
@@ -127,7 +139,7 @@ namespace Game.Presentation.UI.Title
 #endif
         }
 
-        private IEnumerator StageLoad(StageDataSO stage)
+        private IEnumerator StageLoad(string bootName, StageDataSO stage)
         {
             // Scemeをロードする
             AsyncOperation bootLoad = SceneManager.LoadSceneAsync(_selectSceneName, LoadSceneMode.Additive);
@@ -135,7 +147,7 @@ namespace Game.Presentation.UI.Title
 
             // 生成が完了次第、ステージデータを渡してロードを起動
             LoadingFlowController loadingFlowController = UnityEngine.Object.FindFirstObjectByType<LoadingFlowController>();
-            loadingFlowController.LoadBootScene(stage);
+            loadingFlowController.LoadBootScene(bootName, stage);
             // 現シーンを削除する
             Scene currentSceneName = gameObject.scene;
             SceneManager.UnloadSceneAsync(currentSceneName);

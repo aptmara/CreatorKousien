@@ -20,21 +20,21 @@ namespace Game.Infrastructure.Loading
             _view.Initialize();
         }
 
-        public void LoadBootScene(StageDataSO stageData)
+        public void LoadBootScene(string bootSceneName, StageDataSO stageData)
         {
-            StartCoroutine(Load(stageData));
+            StartCoroutine(Load(bootSceneName, stageData));
         }
 
-        IEnumerator Load(StageDataSO stageData)
+        IEnumerator Load(string bootSceneName, StageDataSO stageData)
         {
             Time.timeScale = 1f;
 
             float loadingStartedAt = Time.realtimeSinceStartup;
 
-            AsyncOperation bootLoad = SceneManager.LoadSceneAsync(_bootSceneName, LoadSceneMode.Additive);
+            AsyncOperation bootLoad = SceneManager.LoadSceneAsync(bootSceneName, LoadSceneMode.Additive);
             if (bootLoad == null)
             {
-                Debug.LogError($"[LoadingFlowController] {_bootSceneName}シーンのロード開始に失敗しました。");
+                Debug.LogError($"[LoadingFlowController] {bootSceneName}シーンのロード開始に失敗しました。");
                 yield break;
             }
 
@@ -69,7 +69,7 @@ namespace Game.Infrastructure.Loading
 
             boot.StartPreparedGame();
 
-            AsyncOperation bootUnload = SceneManager.UnloadSceneAsync(_bootSceneName);
+            AsyncOperation bootUnload = SceneManager.UnloadSceneAsync(bootSceneName);
             if (bootUnload != null)
             {
                 yield return bootUnload;
