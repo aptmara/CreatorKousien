@@ -35,6 +35,48 @@ pipeline {
     }
 
     post {
+        success {
+            withCredentials([
+                string(
+                    credentialsId: 'discord-webhook',
+                    variable: 'DISCORD_WEBHOOK_URL'
+                )
+            ]) {
+                powershell '''
+                $body = @{
+                    content = "CreatorKousien Jenkins Build SUCCESS`nBuild #$env:BUILD_NUMBER`n$env:BUILD_URL"
+                } | ConvertTo-Json
+
+                Invoke-RestMethod `
+                    -Uri "$env:DISCORD_WEBHOOK_URL" `
+                    -Method Post `
+                    -ContentType "application/json" `
+                    -Body $body
+                '''
+            }
+        }
+
+        failure {
+            withCredentials([
+                string(
+                    credentialsId: 'discord-webhook',
+                    variable: 'DISCORD_WEBHOOK_URL'
+                )
+            ]) {
+                powershell '''
+                $body = @{
+                    content = "CreatorKousien Jenkins Build FAILED`nBuild #$env:BUILD_NUMBER`n$env:BUILD_URL"
+                } | ConvertTo-Json
+
+                Invoke-RestMethod `
+                    -Uri "$env:DISCORD_WEBHOOK_URL" `
+                    -Method Post `
+                    -ContentType "application/json" `
+                    -Body $body
+                '''
+            }
+        }
+
         always {
             archiveArtifacts artifacts: 'unity-build.log',
                              allowEmptyArchive: true
