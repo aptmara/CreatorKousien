@@ -1,8 +1,6 @@
 using Game.Core.Enemy;
 using Game.WaveSystem;
-using NUnit.Framework;
 using System.Collections.Generic;
-using UnityEditorInternal;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "TutorialWave", menuName = "Game/Tutorial/TutorialWave")]
