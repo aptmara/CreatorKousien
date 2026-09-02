@@ -82,7 +82,7 @@ public class SoundManager : MonoBehaviour
         {
             beat = positionMilliseconds * 0.001 * _currentBGM.bpm / 60.0f;
         }
-        Debug.Log(beat);
+        // Debug.Log(beat);
         foreach(var mat in _swayMaterial)
         {
             mat.SetFloat("_Beat", (float)beat);

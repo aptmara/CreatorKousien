@@ -124,6 +124,7 @@ namespace Game.Infrastructure.Bootstrap
                 !IsSceneLoaded(_uiScene) ||
                 !IsSceneLoaded(_debugScene))
             {
+                Debug.LogError("[PrototypeSceneFlowController] Sceneがすべてロードされていません");
                 PreparationFailed = true;
                 yield break;
             }
@@ -150,7 +151,7 @@ namespace Game.Infrastructure.Bootstrap
 
             yield return WaitForRuntimeInitialization();
 
-            GameProgressionManager progression = Object.FindFirstObjectByType<GameProgressionManager>();
+            GameProgressionManagerBase progression = Object.FindFirstObjectByType<GameProgressionManagerBase>();
             if (progression == null)
             {
                 Debug.LogError("[PrototypeSceneFlowController] GameProgressionManagerが見つかりません。");
@@ -246,7 +247,7 @@ namespace Game.Infrastructure.Bootstrap
 
             SetPlayerMovement(_preparedPlayer, true);
 
-            GameProgressionManager progression = Object.FindFirstObjectByType<GameProgressionManager>();
+            GameProgressionManagerBase progression = Object.FindFirstObjectByType<GameProgressionManagerBase>();
             progression?.BeginPreparedGame();
             SoundManager.instance?.PlayBGM("InGame");
         }

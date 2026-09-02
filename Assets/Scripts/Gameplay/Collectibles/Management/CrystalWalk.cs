@@ -1,11 +1,10 @@
+using Game.Core.Events;
+using Game.Core.Roguelike;
 using Game.Gameplay.Collectibles;
 using Game.Gameplay.Stage;
-using Unity.VisualScripting;
-using UnityEngine;
-using Game.Core.Roguelike;
-using UnityEngine.Serialization;
 using System.Collections.Generic;
-
+using UnityEngine;
+using UnityEngine.Serialization;
 public class CrystalWalk : MonoBehaviour, ICrystalBreakable
 {
     private const string FieldWallRootName = "FIELD_WALL";
@@ -720,6 +719,9 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
         }
 
         float remainingDeltaTime = Time.deltaTime;
+
+
+        EventBus.Publish(new CrystalHitEvent(0));
 
         while (remainingDeltaTime > 0f && _pendingHitStyleEmissions.Count > 0)
         {

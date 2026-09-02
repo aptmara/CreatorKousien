@@ -28,6 +28,45 @@ namespace Game.Core.Events
         }
     }
 
+    public readonly struct TutorialTextEvent
+    {
+        public readonly string Text;
+
+        public TutorialTextEvent(string text)
+        {
+            Text = text;
+        }
+    }
+
+    public readonly struct TutorialTextResetEvent
+    {
+        public readonly string Text;
+
+        public TutorialTextResetEvent(string text)
+        {
+            Text = text;
+        }
+    }
+
+    // チュートリアルフローが内部で呼んで内部で受け取るイベント、別に代わりにショップ側に持たせたって良い
+    public readonly struct TutorialShopEndEvent
+    {
+        public TutorialShopEndEvent(int dummy)
+        {
+
+        }
+    }
+        
+
+    public readonly struct CrystalHitEvent
+    {
+        // チュートリアル用で作成、現状ほしいデータがないためダミーのコンストラクタを作成
+        public CrystalHitEvent(int dummy)
+        {
+        }
+    }
+
+
     public readonly struct GroupChangeEvent
     {
         public readonly int CurrentCount;

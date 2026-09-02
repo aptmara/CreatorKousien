@@ -10,16 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: adb686a904b701e4791e42b177fe4581, type: 3}
-  m_Name: GetCollectible
+  m_Name: ShopWave
   m_EditorClassIdentifier: Assembly-CSharp::TutorialWave
-  useCollectibleStopWall: 1
-  useEnemy: 1
-  clearConditions: 2
+  useCollectibleStopWall: 0
+  useEnemy: 0
+  clearConditions: 3
   spawnEnemy: 0
   enemies: []
   useStartText: 1
-  startText: "\u307E\u305A\u306F\u304B\u307C\u3061\u3083\u3092\u3076\u3093\u6BB4\u3063\u3066\u5C0F\u7269\u3092\u53D6\u5F97\u3057\u3088\u3046\uFF01"
+  startText: "\u30B7\u30E7\u30C3\u30D7\u3067\u306F\u30A2\u30A4\u30C6\u30E0\u3092\u9078\u629E\u3067\u304D\u308B\u305E\uFF01"
   startWave: 0
   waveData: {fileID: 0}
+  startRoguelike: 1
   useEndText: 1
-  endText: "\u3044\u3044\u611F\u3058\uFF01"
+  endText: "\u826F\u3044\u306D\uFF01\u30C9\u30F3\u30C9\u30F3\u5F37\u5316\u3057\u3066\u305F\u304F\u3055\u3093\u5C0F\u7269\u3092\u843D\u3068\u305D\u3046\uFF01"

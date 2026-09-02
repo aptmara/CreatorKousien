@@ -46,23 +46,12 @@ namespace Game.Core.Management
         [SerializeField] private float _slowMotionTimeScale = 0.2f;
 
 
-        private bool _isCameraWorkFinished = false;
-        private List<WaveDataSO> _waveSequence = new();
-        private bool _isFirstWavePrepared;
-        private bool _hasGameStarted;
-        private bool _preparationFailed;
-        private bool _isPreparingFirstWave;
 
         /// <summary>
         /// Stageごとに違うWave順になるように、SeedへStage番号をかけて足す値
         /// </summary>
         private const int StageSeedStride = 7919;
 
-        // --- Stage進行 ---
-        private StageDataSO _currentStageData;          // 現在プレイ中のStage
-        private int _baseSeed;                          // 現在のStageで使用する乱数シード
-        private int _stageIndex;                        // 現在のStage番号
-        private bool _isAdvancingStage;                 // Stage移行中かどうかのフラグ
 
 
         // カメラの固定画角を保持しておく変数
@@ -98,7 +87,7 @@ namespace Game.Core.Management
         {
             if (_currentState != GameProgressionState.Battle) return;
             Debug.Log("[Progression] 防衛ラインのバリア崩壊を検知。ゲームオーバー処理を開始するぜよ。");
-            HandleGameResult(isClear: false);
+            // HandleGameResult(isClear: false);
         }
 
 
@@ -121,85 +110,14 @@ namespace Game.Core.Management
             return new GameResultSummary(isClear, _currentWaveIndex, currentHp, isClear && HasNextStage);
         }
 
-        /// <summary>
-        /// 等速復帰、カメラ乗っ取り、屋台爆走、カメラズーム完了を待機する演出
-        /// </summary>
-        private IEnumerator ShopPresentationSequenceRoutine()
+        // 越智 TODO ShopPresentationSequenceRoutineを上書きしていたため消した。動かなくなったら確認する
+
+        public override void CompleteRoguelikeSequence()
         {
-            Debug.Log("[Progression] ショップ登場演出シーケンスを開始するぜよ！");
+            if (_currentState != GameProgressionState.Roguelike) return;
 
-            // プレイヤーの角度をフィールドに合わせる
-            EventBus.Publish(new PlayerTiltEvent(25f));
-
-            // バトル固定画角を退避
-            if (Camera.main != null)
-            {
-                _savedBattleCameraPosition = Camera.main.transform.position;
-                _savedBattleCameraRotation = Camera.main.transform.rotation;
-            }
-
-            // 1. スローモーションを解除
-            Time.timeScale = 1f;
-            Time.fixedDeltaTime = 0.02f;
-
-            if (_shopVehicleController == null)
-            {
-                var vehicles = Object.FindObjectsByType<ShopVehicleController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-                if (vehicles.Length > 0) _shopVehicleController = vehicles[0];
-            }
-            if (_shopCinematicCameraController == null)
-            {
-                var cams = Object.FindObjectsByType<ShopCinematicCameraController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-                if (cams.Length > 0) _shopCinematicCameraController = cams[0];
-            }
-
-            // シーン上のプレイヤーキャラクターを動的に検索
-            var playerFacade = Object.FindFirstObjectByType<Gameplay.Player.PlayerFacade>();
-            Transform playerTransform = playerFacade != null ? playerFacade.transform : null;
-
-            if (playerTransform == null || _shopVehicleController == null || _cameraRigController == null || _shopCinematicCameraController == null)
-            {
-                Debug.LogError("[Progression] 演出に必要なコンポーネントやプレイヤーが見つからないぜよ。演出をスキップするぜよ。");
-                HandleWaveClear();
-                yield break;
-            }
-
-            // プレイヤーの操作入力を禁止
-            var playerInput = playerTransform.GetComponentInChildren<MonoBehaviour>();
-            if (playerInput != null) playerInput.enabled = false;
-
-            // 2. 既存カメラの通常追従をOFFにして制御権を奪う
-            _cameraRigController.SetCinematicModeActive(true);
-
-            // 3. 演出用カメラと屋台スクリプトを同時に起動
-            _isCameraWorkFinished = false;
-            _shopCinematicCameraController.StartCinematic(playerTransform, _shopVehicleController);
-            _shopVehicleController.LaunchShopSequence(playerTransform);
-
-            // 4. 屋台のブレーキ振動 & カメラワークが完了するまで待機
-            while (!_shopCinematicCameraController.IsCameraWorkFinished ||
-                   _shopVehicleController.CurrentState != ShopVehicleController.VehicleState.Stationary)
-            {
-                // プレイヤーを屋台の方向に向かせるロジック
-                Vector3 rawToShop = _shopVehicleController.transform.position - playerTransform.position;
-                Vector3 fieldUp = FieldContext.Rotation * Vector3.up;
-                Vector3 flatToShop = Vector3.ProjectOnPlane(rawToShop, fieldUp).normalized;
-
-                if (flatToShop.sqrMagnitude > 0.001f)
-                {
-                    Quaternion targetLookRot = Quaternion.LookRotation(flatToShop, fieldUp);
-                    playerTransform.rotation = Quaternion.Slerp(playerTransform.rotation, targetLookRot, Time.deltaTime * 5f);
-                }
-
-                yield return null;
-            }
-
-            Debug.Log("[Progression] 全ての演出とカメラワークが完了！ローグライクフェーズへ移行するぜよ。");
-
-            if (playerInput != null) playerInput.enabled = true;
-
-            // 5. 演出完了後にロード & ポーズ
-            HandleWaveClear();
+            StartCoroutine(UnloadRoguelikeAndAdvanceRoutine());
+            EventBus.Publish(new PlayerTiltEvent(0.0f));
         }
 
 
@@ -218,62 +136,62 @@ namespace Game.Core.Management
             StartBattleWave(_currentWaveIndex);
         }
 
-        private IEnumerator UnloadRoguelikeAndAdvanceRoutine()
-        {
-            Debug.Log("[Progression] ローグライク強化終了。屋台退出ぜよ！");
+        //private IEnumerator UnloadRoguelikeAndAdvanceRoutine()
+        //{
+        //    Debug.Log("[Progression] ローグライク強化終了。屋台退出ぜよ！");
 
-            Time.timeScale = 1f;
-            Time.fixedDeltaTime = 0.02f;
+        //    Time.timeScale = 1f;
+        //    Time.fixedDeltaTime = 0.02f;
 
-            // 通常のカメラの画角に戻す
-            if (_shopCinematicCameraController != null )
-            {
-                _shopCinematicCameraController.StopCinematicAndReturn(_savedBattleCameraPosition, _savedBattleCameraRotation);
-            }
+        //    // 通常のカメラの画角に戻す
+        //    if (_shopCinematicCameraController != null )
+        //    {
+        //        _shopCinematicCameraController.StopCinematicAndReturn(_savedBattleCameraPosition, _savedBattleCameraRotation);
+        //    }
 
-            // 屋台を右の畦道へ走らせる
-            if (_shopVehicleController != null)
-            {
-                _shopVehicleController.DismissShopSequence();
-            }
+        //    // 屋台を右の畦道へ走らせる
+        //    if (_shopVehicleController != null)
+        //    {
+        //        _shopVehicleController.DismissShopSequence();
+        //    }
 
-            // UIシーンのアンロード
-            AsyncOperation op = SceneManager.UnloadSceneAsync(_roguelikeSceneName);
-            while (!op.isDone) yield return null;
+        //    // UIシーンのアンロード
+        //    AsyncOperation op = SceneManager.UnloadSceneAsync(_roguelikeSceneName);
+        //    while (!op.isDone) yield return null;
 
-            // 屋台が画面外にはけるまで、ゲームの再開を少し待機する
-            if (_shopVehicleController != null)
-            {
-                yield return new WaitUntil(() => _shopVehicleController.CurrentState == ShopVehicleController.VehicleState.Inactive);
-            }
+        //    // 屋台が画面外にはけるまで、ゲームの再開を少し待機する
+        //    if (_shopVehicleController != null)
+        //    {
+        //        yield return new WaitUntil(() => _shopVehicleController.CurrentState == ShopVehicleController.VehicleState.Inactive);
+        //    }
 
-            // 演出が終わったら通常カメラを再始動
-            if (_cameraRigController != null) _cameraRigController.SetCinematicModeActive(false);
+        //    // 演出が終わったら通常カメラを再始動
+        //    if (_cameraRigController != null) _cameraRigController.SetCinematicModeActive(false);
 
-            // 屋台が完全にはけたらプレイヤーの操作禁止を解除
-            var playerFacade = Object.FindFirstObjectByType<Gameplay.Player.PlayerFacade>();
-            Transform playerTransform = playerFacade != null ? playerFacade.transform : null;
-            if (playerTransform != null)
-            {
-                var playerInput = playerTransform.GetComponentInChildren<MonoBehaviour>();
-                if (playerInput != null) playerInput.enabled = true;
-            }
+        //    // 屋台が完全にはけたらプレイヤーの操作禁止を解除
+        //    var playerFacade = Object.FindFirstObjectByType<Gameplay.Player.PlayerFacade>();
+        //    Transform playerTransform = playerFacade != null ? playerFacade.transform : null;
+        //    if (playerTransform != null)
+        //    {
+        //        var playerInput = playerTransform.GetComponentInChildren<MonoBehaviour>();
+        //        if (playerInput != null) playerInput.enabled = true;
+        //    }
 
-            // ウェーブカウントをインクリメント
-            _currentWaveIndex++;
+        //    // ウェーブカウントをインクリメント
+        //    _currentWaveIndex++;
 
-            // 次のウェーブがあるかチェック
-            if (_currentWaveIndex < _waveSequence.Count)
-            {
-                // マウスカーソルをロック
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
+        //    // 次のウェーブがあるかチェック
+        //    if (_currentWaveIndex < _waveSequence.Count)
+        //    {
+        //        // マウスカーソルをロック
+        //        Cursor.lockState = CursorLockMode.Locked;
+        //        Cursor.visible = false;
 
-                // 次のウェーブを開始
-                StartBattleWave(_currentWaveIndex);
-            }
-            SoundManager.instance?.SoundVolume(1.0f);
-        }
+        //        // 次のウェーブを開始
+        //        StartBattleWave(_currentWaveIndex);
+        //    }
+        //    SoundManager.instance?.SoundVolume(1.0f);
+        //}
 
 
         private void HandleGameResult(bool isClear)
@@ -438,7 +356,19 @@ namespace Game.Core.Management
 
         protected override void HandleWaveClear()
         {
-            
+            Debug.Log($"[Progression] よくやった。ウェーブ {_currentWaveIndex + 1} クリアしたぜよ！\nローグライクフェーズへ遷移するぜよ。");
+
+            _currentState = GameProgressionState.Roguelike;
+
+            // バトル側のポーズ処理
+            Time.timeScale = 0f;
+
+            // マウスカーソル表示
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
+            // ローグライクシーンの加算ロード
+            StartCoroutine(LoadSceneAdditiveRoutine(_roguelikeSceneName));
         }
 
 #if UNITY_EDITOR

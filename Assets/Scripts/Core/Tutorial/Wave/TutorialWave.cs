@@ -1,7 +1,9 @@
+using Game.Core.Enemy;
+using Game.WaveSystem;
 using NUnit.Framework;
+using System.Collections.Generic;
 using UnityEditorInternal;
 using UnityEngine;
-using System.Collections.Generic;
 
 [CreateAssetMenu(fileName = "TutorialWave", menuName = "Game/Tutorial/TutorialWave")]
 public class TutorialWave : ScriptableObject
@@ -13,19 +15,45 @@ public class TutorialWave : ScriptableObject
     [Header("存在している敵を動かすかどうか")]
     [SerializeField] public bool useEnemy = false;
 
-    
+
 
     public enum ClearConditions
     {
         EnemyKill,
         WaveClear,
         GetCollectible,
+        ShopEnd
     }
     [Header("クリア条件")]
     [SerializeField] public ClearConditions clearConditions;
 
-    // Wave開始時に行う処理リクエストSO
-    [SerializeField] public TutorialStartRequest waveStartRequest;
 
-    // Wave終了時に行う処理リクエストSO
+    [Header("開始時リクエスト")]
+    [SerializeField] bool spawnEnemy;
+    public bool UseEnemySpawn => spawnEnemy;
+    [SerializeField] List<EnemyDefinition> enemies;
+    public List<EnemyDefinition> Enemies => enemies;
+
+    [SerializeField] bool useStartText;
+    public bool UseStartText => useStartText;
+    [SerializeField] string startText;
+    public string StartText => startText;
+
+    [SerializeField] bool startWave;
+    public bool UseStartWave => startWave;
+    [SerializeField]
+    WaveDataSO waveData;
+    public WaveDataSO WaveData => waveData;
+    [SerializeField]
+    bool startRoguelike;
+    public bool StartRoguelike => startRoguelike;
+
+    [Header("終了時リクエスト")]
+    [SerializeField] bool useEndText;
+    public bool UseEndText => useEndText;
+    [SerializeField] string endText;
+    public string EndText => endText;
+
+    
+
 }

@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.UI.Pause.PauseMenuController
   _titleSceneName: Title
   _playerActions: {fileID: -944628639613478452, guid: 935213eab0daf0f4b8b3d2344fcbaa0e, type: 3}
+  _tutorialActions: {fileID: -944628639613478452, guid: 7cac0db283e76384ab5ba61bede67563, type: 3}
   _roguelikeActions: {fileID: -944628639613478452, guid: 766b863253aa5a64184eee2469baf3ef, type: 3}
   _pauseAction:
     m_Name: Pause

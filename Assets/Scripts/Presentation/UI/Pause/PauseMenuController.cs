@@ -33,6 +33,7 @@ namespace Game.Presentation.UI.Pause
 
         [Header("Input Assets")]
         [SerializeField] private InputActionAsset _playerActions;
+        [SerializeField] private InputActionAsset _tutorialActions;
         [SerializeField] private InputActionAsset _roguelikeActions;
 
         [Header("Input")]
@@ -90,7 +91,7 @@ namespace Game.Presentation.UI.Pause
             DisableOptionScaling();
             _audioPanel.Initialize();
             _viewPanel.Initialize();
-            _keyConfigPanel.Initialize(_playerActions, _roguelikeActions, _pauseAction, _submitAction, _cancelAction);
+            _keyConfigPanel.Initialize(_playerActions, _roguelikeActions, _tutorialActions, _pauseAction, _submitAction, _cancelAction);
             ConfigureCallbacks();
 
             _optionPanel.SetActive(false);

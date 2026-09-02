@@ -14,6 +14,7 @@
 using System;
 using UnityEngine;
 using Game.Gameplay.Collectibles;
+using Game.Core.Events;
 
 namespace Game.Gameplay.Player
 {
@@ -233,8 +234,9 @@ namespace Game.Gameplay.Player
             // 球の中心が止まる距離を取得するために SphereCast を使う
             bool isHit = Physics.SphereCast(ray, _rayRadius, out hit, _rayMaxDistance, _rayMask, QueryTriggerInteraction.Ignore);
 
-            if (isHit)
-                breakable = hit.collider.GetComponentInParent<ICrystalBreakable>();
+            if (isHit) breakable = hit.collider.GetComponentInParent<ICrystalBreakable>();
+                
+                
 
 
             if (breakable == null)

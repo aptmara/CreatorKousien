@@ -112,7 +112,7 @@ public class StageSelectController : MonoBehaviour
 
         // 生成が完了次第、ステージデータを渡してロードを起動
         LoadingFlowController loadingFlowController = UnityEngine.Object.FindFirstObjectByType<LoadingFlowController>();
-        loadingFlowController.LoadBootScene(stage);
+        loadingFlowController.LoadBootScene("Boot" ,stage);
         // 現シーンを削除する
         Scene currentSceneName = gameObject.scene;
         SceneManager.UnloadSceneAsync(currentSceneName);

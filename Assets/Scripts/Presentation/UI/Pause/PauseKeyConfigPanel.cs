@@ -42,6 +42,7 @@ namespace Game.Presentation.UI.Pause
 
         private const string PlayerBindingsKey = "Options.KeyConfig.PlayerBindings";
         private const string RoguelikeBindingsKey = "Options.KeyConfig.RoguelikeBindings";
+        private const string TutorialBindingsKey = "Options.KeyConfig.TutorialBindings";
         private const string PauseKeyboardBindingKey = "Options.KeyConfig.Pause.Keyboard";
         private const string PauseGamepadBindingKey = "Options.KeyConfig.Pause.Gamepad";
         private const string SubmitKeyboardBindingKey = "Options.KeyConfig.Submit.Keyboard";
@@ -59,6 +60,7 @@ namespace Game.Presentation.UI.Pause
 
         private InputActionAsset _playerActions;
         private InputActionAsset _roguelikeActions;
+        private InputActionAsset _tutorialActions;
         private InputAction _pauseAction;
         private InputAction _submitAction;
         private InputAction _cancelAction;
@@ -77,6 +79,7 @@ namespace Game.Presentation.UI.Pause
         public void Initialize(
             InputActionAsset playerActions,
             InputActionAsset roguelikeActions,
+            InputActionAsset tutorialActions,
             InputAction pauseAction,
             InputAction submitAction,
             InputAction cancelAction)
@@ -89,6 +92,7 @@ namespace Game.Presentation.UI.Pause
             _initialized = true;
             _playerActions = playerActions;
             _roguelikeActions = roguelikeActions;
+            _tutorialActions = tutorialActions;
             _pauseAction = pauseAction;
             _submitAction = submitAction;
             _cancelAction = cancelAction;
@@ -186,6 +190,7 @@ namespace Game.Presentation.UI.Pause
             }
 
             FinishRebindUi();
+            // chimpo
         }
 
         private void BeginKeyRebind(KeyBindingId id, bool gamepad, Button originButton)
@@ -412,6 +417,11 @@ namespace Game.Presentation.UI.Pause
             {
                 PlayerPrefs.SetString(RoguelikeBindingsKey, _roguelikeActions.SaveBindingOverridesAsJson());
             }
+
+            //if(_tutorialActions != null)
+            //{
+            //    PlayerPrefs.SetString(TutorialBindingsKey, _tutorialActions.SaveBindingOverridesAsJson());
+            //}
 
             SaveStandaloneBindings(_pauseAction, PauseKeyboardBindingKey, PauseGamepadBindingKey);
             SaveStandaloneBindings(_submitAction, SubmitKeyboardBindingKey, SubmitGamepadBindingKey);

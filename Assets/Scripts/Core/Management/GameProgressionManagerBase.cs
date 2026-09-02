@@ -54,23 +54,18 @@ namespace Game.Core.Management
 
 
         protected GameProgressionState _currentState = GameProgressionState.Setup;
-        private bool _isCameraWorkFinished = false;
-        private List<WaveDataSO> _waveSequence = new();
-        private bool _isFirstWavePrepared;
-        private bool _hasGameStarted;
-        private bool _preparationFailed;
-        private bool _isPreparingFirstWave;
-
-        /// <summary>
-        /// Stageごとに違うWave順になるように、SeedへStage番号をかけて足す値
-        /// </summary>
-        private const int StageSeedStride = 7919;
+        protected bool _isCameraWorkFinished = false;
+        protected List<WaveDataSO> _waveSequence = new();
+        protected bool _isFirstWavePrepared;
+        protected bool _hasGameStarted;
+        protected bool _preparationFailed;
+        protected bool _isPreparingFirstWave;
 
         // --- Stage進行 ---
-        private StageDataSO _currentStageData;          // 現在プレイ中のStage
-        private int _baseSeed;                          // 現在のStageで使用する乱数シード
-        private int _stageIndex;                        // 現在のStage番号
-        private bool _isAdvancingStage;                 // Stage移行中かどうかのフラグ
+        protected StageDataSO _currentStageData;          // 現在プレイ中のStage
+        protected int _baseSeed;                          // 現在のStageで使用する乱数シード
+        protected int _stageIndex;                        // 現在のStage番号
+        protected bool _isAdvancingStage;                 // Stage移行中かどうかのフラグ
 
 
         // カメラの固定画角を保持しておく変数
@@ -89,6 +84,8 @@ namespace Game.Core.Management
         public StageDataSO CurrentStageData => _currentStageData;
 
         public bool HasNextStage => _currentStageData != null && _currentStageData.HasNextStage;
+        public bool IsFirstWavePrepared => _isFirstWavePrepared;
+        public bool PreparationFailed => _preparationFailed;
 
 
         // 共通の初期化処理
@@ -256,6 +253,7 @@ namespace Game.Core.Management
 
             }
 
+            // 越智 TODO 終了後のロジックは不要なので外に出す
             yield return StartCoroutine(AnimateWaveClearRoutine(isFinalWave, waveData.CompleteDelay));
         }
 
@@ -319,7 +317,7 @@ namespace Game.Core.Management
         /// <summary>
         /// 等速復帰、カメラ乗っ取り、屋台爆走、カメラズーム完了を待機する演出
         /// </summary>
-        private IEnumerator ShopPresentationSequenceRoutine()
+        protected IEnumerator ShopPresentationSequenceRoutine()
         {
             Debug.Log("[Progression] ショップ登場演出シーケンスを開始するぜよ！");
 
@@ -393,6 +391,7 @@ namespace Game.Core.Management
 
             if (playerInput != null) playerInput.enabled = true;
 
+            // 越智 TODO こっちもロジックは切り出す
             // 5. 演出完了後にロード & ポーズ
             HandleWaveClear();
         }
@@ -401,16 +400,9 @@ namespace Game.Core.Management
         /// ローグライクで強化カードが選択され、シーケンスが完了した時に呼ぶよ。
         /// ローグライクシーンからこれ呼んでね^^
         /// </summary>
-        public void CompleteRoguelikeSequence()
-        {
-            if (_currentState != GameProgressionState.Roguelike) return;
+        public abstract void CompleteRoguelikeSequence();
 
-            StartCoroutine(UnloadRoguelikeAndAdvanceRoutine());
-            EventBus.Publish(new PlayerTiltEvent(0.0f));
-        }
-
-
-        private IEnumerator UnloadRoguelikeAndAdvanceRoutine()
+        protected IEnumerator UnloadRoguelikeAndAdvanceRoutine()
         {
             Debug.Log("[Progression] ローグライク強化終了。屋台退出ぜよ！");
 
@@ -451,6 +443,8 @@ namespace Game.Core.Management
                 if (playerInput != null) playerInput.enabled = true;
             }
 
+            // プレイヤーの角度をフィールドに合わせる
+            EventBus.Publish(new PlayerTiltEvent(0.0f));
 
             SoundManager.instance?.SoundVolume(1.0f);
             RoguelikeToComeback();
@@ -495,16 +489,6 @@ namespace Game.Core.Management
         }
 
         /// <summary>
-        /// ウェーブクリア時の処理
-        /// </summary>
-        protected abstract void HandleWaveClear();
-
-        protected abstract void OnDefenseLineBroken(DefLineBreakReactionEvent ev);
-
-
-        protected abstract void RoguelikeToComeback();
-
-        /// <summary>
         /// ゲームオーバー演出などが終了した後に、外部からリザルト画面へ遷移させるためのメソッド
         /// </summary>
         public void GoToResult(bool isClear)
@@ -518,7 +502,7 @@ namespace Game.Core.Management
             StartCoroutine(LoadSceneAdditiveRoutine(_resultSceneName));
         }
 
-        // 越智 TODO 共通処理化
+
         protected void RefreshStageSceneReferences()
         {
             // 古い演出カメラの購読を解除しておく
@@ -547,7 +531,6 @@ namespace Game.Core.Management
             }
         }
 
-        // 越智 TODO 共通処理化
         protected void RefreshUISceneReferences()
         {
             _gameUIController = Object.FindFirstObjectByType<GameUIController>();
@@ -582,9 +565,6 @@ namespace Game.Core.Management
         /// </summary>
         public abstract IEnumerator PrepareFirstWaveRoutine();
 
-        public bool IsFirstWavePrepared => _isFirstWavePrepared;
-        public bool PreparationFailed => _preparationFailed;
-
         public abstract void BeginPreparedGame();
 
         protected abstract GameResultSummary CreateSummry(bool isClear);
@@ -595,6 +575,15 @@ namespace Game.Core.Management
         /// </summary>
         public abstract void RequestNextStage();
 
+        /// <summary>
+        /// ウェーブクリア時の処理
+        /// </summary>
+        protected abstract void HandleWaveClear();
+
+        protected abstract void OnDefenseLineBroken(DefLineBreakReactionEvent ev);
+
+
+        protected abstract void RoguelikeToComeback();
     }
 
 }
