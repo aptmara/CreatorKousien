@@ -52,6 +52,6 @@ public class TutorialWave : ScriptableObject
     [SerializeField] string endText;
     public string EndText => endText;
 
-    
+
 
 }

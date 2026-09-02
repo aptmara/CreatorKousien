@@ -372,7 +372,7 @@ public class TutorialFlowManager : GameProgressionManagerBase
 
     public override void CompleteRoguelikeSequence()
     {
-        EventBus.Publish(new TutorialShopEndEvent());   
+        EventBus.Publish(new TutorialShopEndEvent());
     }
 
 
