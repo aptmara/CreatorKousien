@@ -95,6 +95,15 @@ namespace Game.Presentation.UI.Title
             Debug.Log("Load Game が押されたぜよ（だが未実装）");
         }
 
+
+        /// <summary>
+        /// Tutorialボタンが押されたときに呼び出す
+        /// </summary>
+        public void OnClickTutorial()
+        {
+            StartCoroutine(StageLoad(_tutorialBootName, _stageDataSO));
+        }
+
         /// <summary>
         /// Optionボタンが押されたときに呼び出す
         /// </summary>
