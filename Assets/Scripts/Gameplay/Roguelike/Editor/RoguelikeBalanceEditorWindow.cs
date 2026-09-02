@@ -25,11 +25,20 @@ namespace Game.Gameplay.Roguelike.Editor
             CombatPressure,
             Effects,
             Validation,
+            DifficultyCurve,
         }
 
         private static readonly string[] TabLabels =
         {
-            "概要", "Wave報酬", "強化一覧", "出現物・確率", "コンボ・状態異常", "特殊効果", "検証・確率確認",
+            "概要", "Wave報酬", "強化一覧", "出現物・確率", "コンボ・状態異常", "特殊効果", "検証・確率確認", "難易度カーブ",
+        };
+
+        /// <summary>
+        /// RoguelikeUpgradeRuntime.Apply の switch が処理するId。変更したら必ず両方を更新すること。
+        /// </summary>
+        private static readonly HashSet<string> KnownSystemicUpgradeIds = new HashSet<string>
+        {
+            "3", "4", "5", "6", "7", "8", "10", "12", "13", "14", "15",
         };
 
         private SO_RoguelikeBalanceConfig _config;
@@ -44,11 +53,20 @@ namespace Game.Gameplay.Roguelike.Editor
         private int _simulationWave = 1;
         private int _simulationTrials = 1000;
         private Dictionary<UpgradeData, int> _simulationResult;
+        private readonly List<UpgradeData> _simulationOwnedUpgrades = new List<UpgradeData>();
+        private readonly Dictionary<UpgradeData, int> _simulationOwnedLevels = new Dictionary<UpgradeData, int>();
+        private UpgradeData _simulationOwnedToAdd;
         private int _wavePreviewSeed = 12345;
         private StageDataSO _cachedPreviewStage;
         private int _cachedPreviewSeed;
         private List<WaveDataSO> _cachedWaveSequence;
         private string _cachedWaveError;
+        private StageDataSO _waveSyncPromptedStage;
+        private int _waveSyncPromptedCount = -1;
+        private string _spawnSearch = string.Empty;
+        private string _combatPressureSearch = string.Empty;
+        private Vector2 _difficultyCurveScroll;
+        private WaveDataSO _selectedDifficultyWave;
 
         private readonly struct WaveRewardSnapshot
         {
@@ -113,6 +131,7 @@ namespace Game.Gameplay.Roguelike.Editor
                 case Tab.SpawnTable: DrawSpawnTable(); break;
                 case Tab.CombatPressure: DrawCombatPressure(); break;
                 case Tab.Validation: DrawValidation(); break;
+                case Tab.DifficultyCurve: DrawDifficultyCurve(); break;
             }
             EditorGUILayout.EndScrollView();
         }
@@ -239,6 +258,9 @@ namespace Game.Gameplay.Roguelike.Editor
                     GUILayout.Label("Play中はロード済みStageを表示", EditorStyles.miniLabel, GUILayout.Width(170f));
             }
 
+            if (stage != null && !Application.isPlaying && TryAutoSyncWaveRewards(stage))
+                return;
+
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
                 using (new EditorGUILayout.HorizontalScope())
@@ -259,15 +281,6 @@ namespace Game.Gameplay.Roguelike.Editor
                     using (new EditorGUI.DisabledScope(Application.isPlaying))
                         _wavePreviewSeed = EditorGUILayout.IntField(_wavePreviewSeed, seedStyle, GUILayout.Width(72f), GUILayout.Height(23f));
                     if (EditorGUI.EndChangeCheck()) InvalidateWavePreview();
-                    using (new EditorGUI.DisabledScope(stage == null))
-                    {
-                        if (GUILayout.Button("実Wave構成に同期", GUILayout.Width(140f), GUILayout.Height(26f)))
-                        {
-                            serialized.ApplyModifiedProperties();
-                            SynchronizeWaveRewardsToStage(stage);
-                            return;
-                        }
-                    }
                 }
                 if (stage != null)
                 {
@@ -279,6 +292,25 @@ namespace Game.Gameplay.Roguelike.Editor
                 }
                 if (!string.IsNullOrEmpty(_cachedWaveError))
                     EditorGUILayout.HelpBox(_cachedWaveError, MessageType.Error);
+
+                if (stage != null && _config.WaveRewards.Count != stage.RegularWaveCount)
+                {
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        EditorGUILayout.HelpBox(
+                            $"報酬設定数（{_config.WaveRewards.Count}）と実Wave数（{stage.RegularWaveCount}）が一致していません。" +
+                            "自動同期が保留中か、確認ダイアログでキャンセルされています。",
+                            MessageType.Warning);
+                        if (GUILayout.Button("今すぐ同期", GUILayout.Width(90f)))
+                        {
+                            serialized.ApplyModifiedProperties();
+                            _waveSyncPromptedStage = null;
+                            _waveSyncPromptedCount = -1;
+                            if (TryAutoSyncWaveRewards(stage))
+                                return;
+                        }
+                    }
+                }
             }
 
             using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
@@ -486,8 +518,15 @@ namespace Game.Gameplay.Roguelike.Editor
                 if (GUILayout.Button("Projectで選択", GUILayout.Width(105f))) Selection.activeObject = upgrade;
             }
 
+            EditorGUILayout.LabelField("実際に起きること（プレビュー）", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(BuildUpgradeEffectSummary(upgrade), MessageType.None);
+            DrawEffectSourceGuide(upgrade);
+
             SerializedObject serialized = new SerializedObject(upgrade);
             serialized.Update();
+
+            EditorGUILayout.Space(6f);
+            EditorGUILayout.LabelField("基本情報", EditorStyles.boldLabel);
             DrawProperty(serialized, "Id", "ID");
             DrawProperty(serialized, "DisplayName", "表示名");
             DrawProperty(serialized, "Description", "基本説明");
@@ -501,14 +540,44 @@ namespace Game.Gameplay.Roguelike.Editor
             DrawProperty(serialized, "SuppressedTags", "抑制タグ");
             DrawProperty(serialized, "Icon", "アイコン");
             DrawProperty(serialized, "Category", "カテゴリ");
-            EditorGUILayout.Space(5f);
-            DrawProperty(serialized, "Modifiers", "ステータス変化");
-            DrawProperty(serialized, "GameplayValue", "ゲーム効果値");
-            DrawProperty(serialized, "CombatPressureRuleId", "圧力ルールID");
-            DrawProperty(serialized, "CombatPressureOutputType", "ビルド出力モデル");
-            DrawProperty(serialized, "RequiresCollectibleFocus", "取得時にモデル選択");
             DrawProperty(serialized, "Cost", "基礎コスト");
             DrawProperty(serialized, "CostMagni", "コスト倍率");
+
+            EditorGUILayout.Space(10f);
+            EditorGUILayout.LabelField("① プレイヤーステータス変化", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                "PlayerStatsServiceが対応するTargetStat（MaxHp/MoveSpeed/AttachmentScale）のみ実際に反映されます。それ以外を選ぶと取得しても何も起きません。",
+                MessageType.None);
+            DrawProperty(serialized, "Modifiers", "ステータス変化");
+
+            EditorGUILayout.Space(10f);
+            EditorGUILayout.LabelField("② システム全体の数値", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                $"IdがRoguelikeUpgradeRuntime側の既知ID（{string.Join(", ", KnownSystemicUpgradeIds.OrderBy(id => id))}）のいずれかの場合のみGameplayValueが反映されます。" +
+                "新しいシステム値を増やすにはコード側の対応が必要です。",
+                MessageType.None);
+            DrawProperty(serialized, "GameplayValue", "ゲーム効果値");
+
+            EditorGUILayout.Space(10f);
+            EditorGUILayout.LabelField("③ Combat Pressure連携", EditorStyles.boldLabel);
+            DrawCombatPressureRuleIdField(serialized);
+            DrawProperty(serialized, "CombatPressureOutputType", "ビルド出力モデル");
+            DrawProperty(serialized, "RequiresCollectibleFocus", "取得時にモデル選択");
+
+            EditorGUILayout.Space(10f);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EditorGUILayout.LabelField("④ 特殊効果モジュール（遺物・契約・進化はここが本体）", EditorStyles.boldLabel);
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("特殊効果タブへ", GUILayout.Width(110f)))
+                {
+                    serialized.ApplyModifiedProperties();
+                    _tab = Tab.Effects;
+                    GUIUtility.ExitGUI();
+                }
+            }
+            EditorGUILayout.LabelField($"設定済み: {upgrade.Effects.Count} 個", EditorStyles.miniLabel);
+
             serialized.ApplyModifiedProperties();
 
             EditorGUILayout.Space(8f);
@@ -516,6 +585,120 @@ namespace Game.Gameplay.Roguelike.Editor
             int max = Mathf.Min(10, Mathf.Max(1, upgrade.MaxLevel));
             for (int level = 1; level <= max; level++)
                 EditorGUILayout.LabelField($"Lv.{level}", upgrade.GetCardText(level), EditorStyles.helpBox);
+        }
+
+        private static void DrawEffectSourceGuide(UpgradeData upgrade)
+        {
+            string message = upgrade.OfferType switch
+            {
+                UpgradeOfferType.Standard =>
+                    "Standard: 通常は下の①Modifiers（対応済みのTargetStatのみ）でLv1〜10の数値成長を作ります。プレイヤー以外のシステム値を変えたいなら②、独自の挙動が必要なら④を使ってください。",
+                UpgradeOfferType.CombatPressureRule =>
+                    "CombatPressureRule: ③で紐付けたルールの閾値到達時に何を降らせるかを④のEffectsで組みます。①②は通常使いません。",
+                UpgradeOfferType.Relic =>
+                    "Relic: 恒常的に効くルール変更なので④のEffectsが本体です。①②は基本使いません。",
+                UpgradeOfferType.Contract =>
+                    "Contract: リスクとリターンを併せ持つ強化です。④のEffectsに加え、SuppressedTagsで他候補を抑制する設計も検討してください。",
+                UpgradeOfferType.Evolution =>
+                    "Evolution: 既存ルールを強化・変質させる仕上げ強化です。④のEffectsで挙動を差し替えます。",
+                _ => string.Empty,
+            };
+            if (!string.IsNullOrEmpty(message))
+                EditorGUILayout.HelpBox(message, MessageType.Info);
+        }
+
+        private string BuildUpgradeEffectSummary(UpgradeData upgrade)
+        {
+            var lines = new List<string>();
+
+            if (upgrade.Modifiers != null)
+            {
+                foreach (StatModifier modifier in upgrade.Modifiers)
+                {
+                    if (modifier.TargetStat == PlayerStatType.None) continue;
+                    string op = modifier.Operation switch
+                    {
+                        ModifierOperation.Add => "+",
+                        ModifierOperation.Multiply => "×",
+                        ModifierOperation.SubTract => "-",
+                        _ => string.Empty,
+                    };
+                    lines.Add($"① {modifier.TargetStat}  {op}{modifier.Value}（1Lvあたり）");
+                }
+            }
+
+            if (Mathf.Abs(upgrade.GameplayValue) > 0.0001f)
+            {
+                lines.Add(KnownSystemicUpgradeIds.Contains(upgrade.Id)
+                    ? $"② システム値（Id={upgrade.Id}）に GameplayValue={upgrade.GameplayValue} を適用"
+                    : $"② GameplayValue={upgrade.GameplayValue} が設定されていますが、Id '{upgrade.Id}' が未対応のため無視されます");
+            }
+
+            if (upgrade.Effects != null)
+            {
+                foreach (RoguelikeEffectModule effect in upgrade.Effects)
+                {
+                    if (effect == null) continue;
+                    lines.Add(effect.Enabled ? $"④ {effect.Summary}" : $"④ (無効) {effect.Summary}");
+                }
+            }
+
+            return lines.Count > 0
+                ? string.Join("\n", lines)
+                : "このLvで有効な効果が見つかりません。①～④のいずれかを設定してください。";
+        }
+
+        private void DrawCombatPressureRuleIdField(SerializedObject serialized)
+        {
+            SerializedProperty property = serialized.FindProperty("CombatPressureRuleId");
+            if (property == null) return;
+
+            CombatPressureRuleSet ruleSet = _config.CombatPressureRuleSet;
+            IReadOnlyList<CombatPressureRule> rules = ruleSet != null ? ruleSet.Rules : null;
+            string current = property.stringValue;
+            CombatPressureRule matched = rules?.FirstOrDefault(rule => rule != null && rule.Id == current);
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EditorGUILayout.PrefixLabel("圧力ルールID");
+                string buttonLabel = string.IsNullOrEmpty(current)
+                    ? "(未設定)"
+                    : matched != null ? matched.DisplayName : $"⚠ 不明なID: {current}";
+
+                if (GUILayout.Button(buttonLabel, EditorStyles.popup))
+                {
+                    if (rules == null || rules.Count == 0)
+                    {
+                        EditorUtility.DisplayDialog("圧力ルールID", "CombatPressureRuleSetにルールが登録されていません。", "OK");
+                    }
+                    else
+                    {
+                        GenericMenu menu = new GenericMenu();
+                        menu.AddItem(new GUIContent("(未設定)"), string.IsNullOrEmpty(current), () => SetCombatPressureRuleId(serialized, string.Empty));
+                        foreach (CombatPressureRule rule in rules)
+                        {
+                            if (rule == null) continue;
+                            string ruleId = rule.Id;
+                            menu.AddItem(new GUIContent(rule.DisplayName), current == ruleId, () => SetCombatPressureRuleId(serialized, ruleId));
+                        }
+                        menu.ShowAsContext();
+                    }
+                }
+            }
+
+            if (matched == null && !string.IsNullOrEmpty(current))
+                EditorGUILayout.HelpBox(
+                    $"'{current}' はCombatPressureRuleSetのどのルールにも一致しません。シナジー判定・状態異常連携が無効になります。",
+                    MessageType.Warning);
+        }
+
+        private static void SetCombatPressureRuleId(SerializedObject serialized, string ruleId)
+        {
+            serialized.Update();
+            SerializedProperty property = serialized.FindProperty("CombatPressureRuleId");
+            if (property == null) return;
+            property.stringValue = ruleId;
+            serialized.ApplyModifiedProperties();
         }
 
         private void DrawEffectsEditor(UpgradeData upgrade)
@@ -584,8 +767,11 @@ namespace Game.Gameplay.Roguelike.Editor
                 EditorGUILayout.HelpBox("特殊枠の合計が100%を超えています。ベース枠が抽選されません。", MessageType.Error);
 
             EditorGUILayout.Space(8f);
+            _spawnSearch = EditorGUILayout.TextField("検索（モデル名/ID/種類）", _spawnSearch);
+
+            EditorGUILayout.Space(4f);
             EditorGUILayout.LabelField("ベース枠（残り確率を均等分配）", EditorStyles.boldLabel);
-            DrawCollectibleArray(baseItems, false, table, baseBudget);
+            DrawCollectibleArray(baseItems, table, baseBudget, _spawnSearch);
             if (GUILayout.Button("+ ベース枠", GUILayout.Width(120f))) baseItems.InsertArrayElementAtIndex(baseItems.arraySize);
 
             EditorGUILayout.Space(8f);
@@ -596,11 +782,12 @@ namespace Game.Gameplay.Roguelike.Editor
                 SerializedProperty row = specialItems.GetArrayElementAtIndex(index);
                 SerializedProperty data = row.FindPropertyRelative("Data");
                 SerializedProperty chance = row.FindPropertyRelative("DropChancePercent");
+                CollectibleData item = data.objectReferenceValue as CollectibleData;
+                if (!MatchesSpawnSearch(item, _spawnSearch)) continue;
                 using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
                 {
                     EditorGUILayout.PropertyField(data, GUIContent.none, GUILayout.MinWidth(250f));
                     EditorGUILayout.PropertyField(chance, new GUIContent("設定%"), GUILayout.Width(125f));
-                    CollectibleData item = data.objectReferenceValue as CollectibleData;
                     if (item != null && Application.isPlaying)
                         GUILayout.Label($"実効 {table.GetEffectiveDropPercent(item.Type):0.00}%", CreateMetricStyle(13, new Color(0.42f, 0.9f, 1f), TextAnchor.MiddleRight), GUILayout.Width(105f));
                     GUILayout.FlexibleSpace();
@@ -628,18 +815,19 @@ namespace Game.Gameplay.Roguelike.Editor
             serialized.ApplyModifiedProperties();
         }
 
-        private static void DrawCollectibleArray(SerializedProperty items, bool unused, CollectibleTable table, float baseBudget)
+        private static void DrawCollectibleArray(SerializedProperty items, CollectibleTable table, float baseBudget, string search)
         {
             int remove = -1;
             float each = items.arraySize > 0 ? baseBudget / items.arraySize : 0f;
             for (int index = 0; index < items.arraySize; index++)
             {
+                SerializedProperty itemProperty = items.GetArrayElementAtIndex(index);
+                CollectibleData item = itemProperty.objectReferenceValue as CollectibleData;
+                if (!MatchesSpawnSearch(item, search)) continue;
                 using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
                 {
-                    SerializedProperty itemProperty = items.GetArrayElementAtIndex(index);
                     EditorGUILayout.PropertyField(itemProperty, GUIContent.none, GUILayout.MinWidth(250f));
                     GUILayout.Label($"設定目安 {each:0.00}%", CreateMetricStyle(13, new Color(1f, 0.78f, 0.3f), TextAnchor.MiddleRight), GUILayout.Width(125f));
-                    CollectibleData item = itemProperty.objectReferenceValue as CollectibleData;
                     if (item != null && Application.isPlaying)
                         GUILayout.Label($"実効 {table.GetEffectiveDropPercent(item.Type):0.00}%", CreateMetricStyle(13, new Color(0.42f, 0.9f, 1f), TextAnchor.MiddleRight), GUILayout.Width(105f));
                     GUILayout.FlexibleSpace();
@@ -647,6 +835,17 @@ namespace Game.Gameplay.Roguelike.Editor
                 }
             }
             if (remove >= 0) items.DeleteArrayElementAtIndex(remove);
+        }
+
+        private static bool MatchesSpawnSearch(CollectibleData item, string search)
+        {
+            if (string.IsNullOrWhiteSpace(search))
+                return true;
+            if (item == null)
+                return false;
+            return item.name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   (item.Id != null && item.Id.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                   item.Type.ToString().IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private void DrawCombatPressure()
@@ -676,10 +875,22 @@ namespace Game.Gameplay.Roguelike.Editor
             _config.CombatPressureProgression.Apply();
             EditorGUILayout.Space(8f);
 
+            _combatPressureSearch = EditorGUILayout.TextField("検索（ルール名/ID）", _combatPressureSearch);
+            EditorGUILayout.Space(4f);
+
             int remove = -1;
             for (int index = 0; index < rules.arraySize; index++)
             {
                 SerializedProperty rule = rules.GetArrayElementAtIndex(index);
+                if (!string.IsNullOrWhiteSpace(_combatPressureSearch))
+                {
+                    string displayName = rule.FindPropertyRelative("_displayName").stringValue;
+                    string id = rule.FindPropertyRelative("_id").stringValue;
+                    bool matches =
+                        (!string.IsNullOrEmpty(displayName) && displayName.IndexOf(_combatPressureSearch, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                        (!string.IsNullOrEmpty(id) && id.IndexOf(_combatPressureSearch, StringComparison.OrdinalIgnoreCase) >= 0);
+                    if (!matches) continue;
+                }
                 using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
                 {
                     using (new EditorGUILayout.HorizontalScope())
@@ -698,6 +909,147 @@ namespace Game.Gameplay.Roguelike.Editor
             serialized.ApplyModifiedProperties();
         }
 
+        private void DrawDifficultyCurve()
+        {
+            StageDataSO stage = ResolveStageData();
+            IReadOnlyList<WaveDataSO> waveSequence = GetWaveSequence(stage);
+
+            EditorGUILayout.LabelField("難易度カーブ プレビュー", new GUIStyle(EditorStyles.boldLabel) { fontSize = 17 });
+            EditorGUILayout.HelpBox(
+                "各WaveのAttackPressure（防衛ラインへの秒間ダメージ見積り、WaveMetricsCalculator算出）と敵総数、Wave報酬の配置を並べて確認します。" +
+                "Combat Pressureルールの閾値はWave番号に対応しないため、参考値として下に一覧表示します。",
+                MessageType.Info);
+
+            if (stage == null)
+            {
+                EditorGUILayout.HelpBox("対象Stageが未設定です。Wave報酬タブでStageを設定してください。", MessageType.Warning);
+                return;
+            }
+            if (waveSequence == null || waveSequence.Count == 0)
+            {
+                EditorGUILayout.HelpBox($"実Wave構成を生成できません。{_cachedWaveError}", MessageType.Error);
+                return;
+            }
+
+            var metrics = new List<WaveMetrics>(waveSequence.Count);
+            float maxAttackPressure = 0f;
+            for (int index = 0; index < waveSequence.Count; index++)
+            {
+                WaveMetrics metric = WaveMetricsCalculator.Calculate(waveSequence[index], null);
+                metrics.Add(metric);
+                maxAttackPressure = Mathf.Max(maxAttackPressure, metric.AttackPressure);
+            }
+
+            const float chartHeight = 150f;
+            const float barWidth = 34f;
+
+            EditorGUILayout.Space(6f);
+            using (var scrollScope = new EditorGUILayout.ScrollViewScope(_difficultyCurveScroll, GUILayout.Height(chartHeight + 110f)))
+            {
+                _difficultyCurveScroll = scrollScope.scrollPosition;
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    for (int index = 0; index < waveSequence.Count; index++)
+                    {
+                        WaveDataSO wave = waveSequence[index];
+                        WaveMetrics metric = metrics[index];
+                        int waveNumber = index + 1;
+                        WaveRewardDefinition reward = _config.GetRewardForWave(waveNumber);
+                        bool isBossWave = stage.BossWave != null && waveNumber == stage.TotalWaveCount;
+
+                        using (new EditorGUILayout.VerticalScope(GUILayout.Width(barWidth)))
+                        {
+                            GUIStyle rewardStyle = CreateMetricStyle(9, new Color(1f, 0.75f, 0.28f), TextAnchor.LowerCenter);
+                            GUILayout.Label(reward != null ? $"報{reward.CandidateCount}" : string.Empty, rewardStyle, GUILayout.Width(barWidth), GUILayout.Height(14f));
+
+                            GUILayout.FlexibleSpace();
+                            float barHeight = maxAttackPressure > 0f
+                                ? Mathf.Max(2f, metric.AttackPressure / maxAttackPressure * chartHeight)
+                                : 2f;
+                            Color barColor = isBossWave ? new Color(1f, 0.42f, 0.35f) : new Color(0.35f, 0.85f, 1f);
+                            Color previousColor = GUI.color;
+                            GUI.color = barColor;
+                            bool clicked = GUILayout.Button(GUIContent.none, GUILayout.Width(barWidth - 6f), GUILayout.Height(barHeight));
+                            GUI.color = previousColor;
+                            if (clicked)
+                                _selectedDifficultyWave = wave;
+
+                            GUIStyle enemyCountStyle = CreateMetricStyle(9, new Color(0.82f, 0.84f, 0.88f), TextAnchor.UpperCenter);
+                            GUILayout.Label($"{metric.TotalEnemyCount}体", enemyCountStyle, GUILayout.Width(barWidth));
+                            GUIStyle waveNumberStyle = CreateMetricStyle(10, _selectedDifficultyWave == wave ? new Color(0.42f, 0.9f, 1f) : Color.white, TextAnchor.UpperCenter);
+                            if (GUILayout.Button(waveNumber.ToString(), waveNumberStyle, GUILayout.Width(barWidth)))
+                                _selectedDifficultyWave = wave;
+                        }
+                    }
+                }
+            }
+            EditorGUILayout.HelpBox(
+                $"棒の高さ = AttackPressure（最大値 {maxAttackPressure:0.#} で正規化）。赤棒はBoss Wave。「報N」はそのWaveクリア後の報酬候補数。" +
+                "棒かWave番号をクリックすると下に簡易編集欄が出ます。",
+                MessageType.None);
+
+            EditorGUILayout.Space(10f);
+            EditorGUILayout.LabelField("Combat Pressureルール閾値（参考・Wave非対応）", EditorStyles.boldLabel);
+            if (_config.CombatPressureRuleSet == null)
+            {
+                EditorGUILayout.HelpBox("コンボ・状態異常ルールが未設定です。", MessageType.Warning);
+            }
+            else
+            {
+                foreach (CombatPressureRule rule in _config.CombatPressureRuleSet.Rules)
+                {
+                    if (rule == null) continue;
+                    using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
+                    {
+                        EditorGUILayout.LabelField(rule.DisplayName, GUILayout.MinWidth(180f));
+                        GUILayout.Label(rule.Source == CombatPressureSource.Status ? $"{rule.StatusType}累計" : "全体コンボ", GUILayout.Width(100f));
+                        GUILayout.Label($"閾値 {rule.Threshold}", CreateMetricStyle(13, new Color(0.92f, 0.58f, 1f), TextAnchor.MiddleRight), GUILayout.Width(90f));
+                    }
+                }
+            }
+
+            if (_selectedDifficultyWave != null)
+                DrawWaveMiniEditor(_selectedDifficultyWave);
+        }
+
+        private void DrawWaveMiniEditor(WaveDataSO wave)
+        {
+            EditorGUILayout.Space(10f);
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUILayout.LabelField($"Wave簡易編集: {wave.WaveName}", EditorStyles.boldLabel);
+                    GUILayout.FlexibleSpace();
+                    if (GUILayout.Button("Projectで選択", GUILayout.Width(105f)))
+                    {
+                        Selection.activeObject = wave;
+                        EditorGUIUtility.PingObject(wave);
+                    }
+                    if (GUILayout.Button("Wave Editorで詳細を開く", GUILayout.Width(160f)))
+                    {
+                        Selection.activeObject = wave;
+                        EditorApplication.ExecuteMenuItem("Window/Wave System/Wave Editor");
+                    }
+                }
+                EditorGUILayout.HelpBox(
+                    "Group/敵構成などの詳細はWave Editorで編集してください。ここではWave全体の主要パラメータのみ調整できます。",
+                    MessageType.None);
+
+                SerializedObject serialized = new SerializedObject(wave);
+                serialized.Update();
+                DrawProperty(serialized, "waveName", "Wave名");
+                DrawProperty(serialized, "plannerMemo", "プランナーメモ");
+                DrawProperty(serialized, "startDelay", "開始待ち時間");
+                DrawProperty(serialized, "completeDelay", "完了待ち時間");
+                DrawProperty(serialized, "hpRate", "HP倍率");
+                DrawProperty(serialized, "barrierRate", "バリア倍率");
+                DrawProperty(serialized, "maxAliveEnemies", "同時出現数上限");
+                DrawProperty(serialized, "minDistanceFromOtherEnemies", "敵間の最小距離");
+                serialized.ApplyModifiedProperties();
+            }
+        }
+
         private void DrawValidation()
         {
             List<(MessageType Type, string Message)> messages = ValidateConfig();
@@ -710,8 +1062,53 @@ namespace Game.Gameplay.Roguelike.Editor
 
             EditorGUILayout.Space(12f);
             EditorGUILayout.LabelField("候補抽選シミュレーション", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                "実際の抽選ロジック（S_UpgradeSelectionUI.GetCandidateWeight）と同じ計算式で確率を出します。" +
+                "下の「所持中の強化」を設定すると、所持Lvボーナス・相性ボーナス・契約による抑制も反映されます。",
+                MessageType.Info);
             _simulationWave = EditorGUILayout.IntField("クリアWave", Mathf.Max(1, _simulationWave));
             _simulationTrials = EditorGUILayout.IntSlider("試行回数", _simulationTrials, 100, 10000);
+
+            EditorGUILayout.Space(4f);
+            EditorGUILayout.LabelField("所持中の強化（シミュレーション条件）", EditorStyles.boldLabel);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                _simulationOwnedToAdd = (UpgradeData)EditorGUILayout.ObjectField(
+                    _simulationOwnedToAdd, typeof(UpgradeData), false);
+                using (new EditorGUI.DisabledScope(
+                    _simulationOwnedToAdd == null || _simulationOwnedUpgrades.Contains(_simulationOwnedToAdd)))
+                {
+                    if (GUILayout.Button("追加", GUILayout.Width(60f)))
+                    {
+                        _simulationOwnedUpgrades.Add(_simulationOwnedToAdd);
+                        _simulationOwnedLevels[_simulationOwnedToAdd] = 1;
+                        _simulationOwnedToAdd = null;
+                    }
+                }
+            }
+
+            int removeOwned = -1;
+            for (int index = 0; index < _simulationOwnedUpgrades.Count; index++)
+            {
+                UpgradeData owned = _simulationOwnedUpgrades[index];
+                using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
+                {
+                    GUILayout.Label(owned != null ? owned.DisplayName : "(missing)", GUILayout.MinWidth(160f));
+                    int currentLevel = _simulationOwnedLevels.TryGetValue(owned, out int level) ? level : 1;
+                    int maxLevel = owned != null ? Mathf.Max(1, owned.MaxLevel) : 1;
+                    int newLevel = EditorGUILayout.IntSlider("所持Lv", currentLevel, 1, maxLevel, GUILayout.Width(220f));
+                    if (newLevel != currentLevel) _simulationOwnedLevels[owned] = newLevel;
+                    GUILayout.FlexibleSpace();
+                    if (GUILayout.Button("削除", GUILayout.Width(52f))) removeOwned = index;
+                }
+            }
+            if (removeOwned >= 0)
+            {
+                _simulationOwnedLevels.Remove(_simulationOwnedUpgrades[removeOwned]);
+                _simulationOwnedUpgrades.RemoveAt(removeOwned);
+            }
+
+            EditorGUILayout.Space(4f);
             if (GUILayout.Button("抽選を実行", GUILayout.Width(140f), GUILayout.Height(28f)))
                 RunSimulation();
 
@@ -760,6 +1157,45 @@ namespace Game.Gameplay.Roguelike.Editor
                     messages.Add((MessageType.Error, $"強化ID '{duplicate.Key}' が未設定または重複しています。"));
                 foreach (UpgradeData upgrade in _config.UpgradePool.Upgrades.Where(item => item != null && item.DraftWeight <= 0f))
                     messages.Add((MessageType.Warning, $"{upgrade.DisplayName}: 基礎抽選ウェイトが0以下です。"));
+
+                foreach (UpgradeData upgrade in _config.UpgradePool.Upgrades.Where(item => item != null))
+                {
+                    bool hasModifiers = upgrade.Modifiers != null && upgrade.Modifiers.Length > 0;
+                    bool hasEffects = upgrade.Effects != null && upgrade.Effects.Count > 0;
+                    bool hasGameplayValue = Mathf.Abs(upgrade.GameplayValue) > 0.0001f;
+                    bool idIsKnownToRuntime = KnownSystemicUpgradeIds.Contains(upgrade.Id);
+                    if (hasGameplayValue && !hasModifiers && !hasEffects && !idIsKnownToRuntime)
+                    {
+                        messages.Add((
+                            MessageType.Warning,
+                            $"{upgrade.DisplayName}: GameplayValueが設定されていますが、Modifiers/Effectsが空でIdもRoguelikeUpgradeRuntime側で" +
+                            "処理されていません。取得しても効果が発生しません（Idの追加実装が必要です）。"));
+                    }
+                }
+
+                var exclusiveGroupOwners = new Dictionary<string, List<string>>();
+                foreach (UpgradeData upgrade in _config.UpgradePool.Upgrades)
+                {
+                    if (upgrade?.Effects == null) continue;
+                    foreach (RoguelikeEffectModule effect in upgrade.Effects)
+                    {
+                        if (effect == null || string.IsNullOrEmpty(effect.ExclusiveGroup)) continue;
+                        if (!exclusiveGroupOwners.TryGetValue(effect.ExclusiveGroup, out List<string> owners))
+                        {
+                            owners = new List<string>();
+                            exclusiveGroupOwners[effect.ExclusiveGroup] = owners;
+                        }
+                        if (!owners.Contains(upgrade.DisplayName))
+                            owners.Add(upgrade.DisplayName);
+                    }
+                }
+                foreach (KeyValuePair<string, List<string>> pair in exclusiveGroupOwners.Where(p => p.Value.Count > 1))
+                {
+                    messages.Add((
+                        MessageType.Warning,
+                        $"排他グループ '{pair.Key}' を複数の強化が使用しています（{string.Join(", ", pair.Value)}）。" +
+                        "同時に所持すると後から取得した方だけが有効になり、残りは無言で無効化されます。"));
+                }
             }
 
             if (_config.CombatPressureRuleSet != null)
@@ -785,14 +1221,32 @@ namespace Game.Gameplay.Roguelike.Editor
             WaveRewardDefinition reward = _config.GetRewardForWave(_simulationWave);
             WaveRewardKind kind = reward != null ? reward.RewardKind : WaveRewardKind.Standard;
             List<UpgradeData> candidates = _config.UpgradePool.Upgrades.Where(item => item != null && MatchesReward(item, kind)).ToList();
-            float total = candidates.Sum(item => Mathf.Max(_config.Draft.MinimumWeight, item.DraftWeight));
+
+            UpgradeSynergyTag ownedTags = UpgradeSynergyTag.None;
+            UpgradeSynergyTag suppressedTags = UpgradeSynergyTag.None;
+            foreach (UpgradeData owned in _simulationOwnedUpgrades)
+            {
+                if (owned == null) continue;
+                ownedTags |= owned.GetEffectiveTags();
+                if (owned.OfferType == UpgradeOfferType.Contract)
+                    suppressedTags |= owned.SuppressedTags;
+            }
+
+            Dictionary<UpgradeData, float> weights = candidates.ToDictionary(
+                candidate => candidate,
+                candidate => _config.Draft.GetCandidateWeight(
+                    candidate,
+                    _simulationOwnedLevels.TryGetValue(candidate, out int ownedLevel) ? ownedLevel : 0,
+                    ownedTags,
+                    suppressedTags));
+            float total = weights.Values.Sum();
             var random = new System.Random(7919 + _simulationWave);
             for (int trial = 0; trial < _simulationTrials && total > 0f; trial++)
             {
                 float pick = (float)random.NextDouble() * total;
                 foreach (UpgradeData candidate in candidates)
                 {
-                    pick -= Mathf.Max(_config.Draft.MinimumWeight, candidate.DraftWeight);
+                    pick -= weights[candidate];
                     if (pick > 0f) continue;
                     _simulationResult.TryGetValue(candidate, out int count);
                     _simulationResult[candidate] = count + 1;
@@ -838,6 +1292,7 @@ namespace Game.Gameplay.Roguelike.Editor
             upgrade.OfferType = _newUpgradeType;
             upgrade.MaxLevel = _newUpgradeType == UpgradeOfferType.Standard || _newUpgradeType == UpgradeOfferType.CombatPressureRule ? 10 : 1;
             AssetDatabase.CreateAsset(upgrade, path);
+            Undo.RegisterCreatedObjectUndo(upgrade, "強化を作成");
             AddUpgradeToPool(pool, upgrade);
             AssetDatabase.SaveAssets();
             SelectUpgrade(upgrade);
@@ -853,6 +1308,7 @@ namespace Game.Gameplay.Roguelike.Editor
             string path = AssetDatabase.GenerateUniqueAssetPath(
                 $"{System.IO.Path.GetDirectoryName(sourcePath)?.Replace('\\', '/')}/{System.IO.Path.GetFileNameWithoutExtension(sourcePath)}_Copy.asset");
             AssetDatabase.CreateAsset(duplicate, path);
+            Undo.RegisterCreatedObjectUndo(duplicate, "強化を複製");
             AddUpgradeToPool(pool, duplicate);
             AssetDatabase.SaveAssets();
             SelectUpgrade(duplicate);
@@ -1055,6 +1511,45 @@ namespace Game.Gameplay.Roguelike.Editor
             _cachedWaveSequence = null;
             _cachedWaveError = string.Empty;
             Repaint();
+        }
+
+        /// <summary>
+        /// 報酬設定数と実Wave数のズレを検知し、必要なら自動で同期する。
+        /// 既存の報酬設定が削除される（Wave数が減った）場合のみ確認ダイアログを出す。
+        /// 同じズレに対して毎フレーム確認ダイアログを出さないよう、直近の対応状況を記憶する。
+        /// </summary>
+        private bool TryAutoSyncWaveRewards(StageDataSO stage)
+        {
+            if (_config.WaveRewards.Count == stage.RegularWaveCount)
+            {
+                _waveSyncPromptedStage = null;
+                _waveSyncPromptedCount = -1;
+                return false;
+            }
+
+            bool alreadyHandledThisMismatch =
+                _waveSyncPromptedStage == stage && _waveSyncPromptedCount == stage.RegularWaveCount;
+            if (alreadyHandledThisMismatch)
+                return false;
+
+            _waveSyncPromptedStage = stage;
+            _waveSyncPromptedCount = stage.RegularWaveCount;
+
+            bool losesCustomRows = _config.WaveRewards.Any(reward => reward != null && reward.ClearedWave > stage.RegularWaveCount);
+            if (losesCustomRows)
+            {
+                bool confirmed = EditorUtility.DisplayDialog(
+                    "Wave報酬の自動同期",
+                    $"対象Stageの通常Wave数（{stage.RegularWaveCount}）が現在の報酬設定数（{_config.WaveRewards.Count}）より少ないため、" +
+                    "超過分の報酬設定（カスタム設定を含む可能性があります）が削除されます。続行しますか？",
+                    "同期する",
+                    "キャンセル");
+                if (!confirmed)
+                    return false;
+            }
+
+            SynchronizeWaveRewardsToStage(stage);
+            return true;
         }
 
         private void SynchronizeWaveRewardsToStage(StageDataSO stage)

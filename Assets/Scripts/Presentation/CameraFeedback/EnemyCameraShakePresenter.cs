@@ -334,6 +334,13 @@ namespace Game.Presentation.CameraFeedback
         /// <param name="rotationOffset">回転オフセット</param>
         private void ApplyOffset(Vector3 basePosition, Quaternion baseRotation, Vector3 positionOffset, Quaternion rotationOffset)
         {
+            // Nan/Infinityチェック
+            if (!IsFinite(positionOffset) || !IsFinite(rotationOffset))
+            {
+                _remainingTime = 0f; // シェイクを終了させる
+                return;
+            }
+
             _shakeTarget.localPosition = basePosition + positionOffset;
             _shakeTarget.localRotation = baseRotation * rotationOffset;
 
@@ -344,6 +351,32 @@ namespace Game.Presentation.CameraFeedback
             _hasAppliedOffset = true;
         }
 
+
+        /// <summary>
+        /// Vector3が有限かどうかを確認します。NaNやInfinityが含まれていないかをチェックします。
+        /// </summary>
+        /// <param name="v">ベクター</param>
+        /// <returns>有限かどうか</returns>
+        private static bool IsFinite(Vector3 v)
+        {
+            return !float.IsNaN(v.x) && !float.IsInfinity(v.x) &&
+                   !float.IsNaN(v.y) && !float.IsInfinity(v.y) &&
+                   !float.IsNaN(v.z) && !float.IsInfinity(v.z);
+        }
+
+
+        /// <summary>
+        /// Quaternionが有限かどうかを確認します。NaNやInfinityが含まれていないかをチェックします。
+        /// </summary>
+        /// <param name="q">クオータニオン</param>
+        /// <returns>有限かどうか</returns>
+        private static bool IsFinite(Quaternion q)
+        {
+            return !float.IsNaN(q.x) && !float.IsInfinity(q.x) &&
+                   !float.IsNaN(q.y) && !float.IsInfinity(q.y) &&
+                   !float.IsNaN(q.z) && !float.IsInfinity(q.z) &&
+                   !float.IsNaN(q.w) && !float.IsInfinity(q.w);
+        }
 
 
         /// <summary>

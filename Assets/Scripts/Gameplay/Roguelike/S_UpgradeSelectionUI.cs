@@ -395,21 +395,8 @@ public class S_UpgradeSelectionUI : MonoBehaviour
             return 0f;
 
         int level = _upgradeRuntimeState.GetLevel(data);
-        RoguelikeDraftTuning tuning = _balanceConfig != null ? _balanceConfig.Draft : null;
-        float levelWeight = tuning != null ? tuning.OwnedLevelWeight : 1.4f;
-        float synergyBonus = tuning != null ? tuning.SynergyWeightBonus : 2f;
-        float suppressedMultiplier = tuning != null ? tuning.SuppressedWeightMultiplier : 0.2f;
-        float minimumWeight = tuning != null ? tuning.MinimumWeight : 0.05f;
-        float weight = Mathf.Max(0.001f, data.DraftWeight) + level * levelWeight;
-        UpgradeSynergyTag ownedTags = GetOwnedTags();
-        if ((data.GetEffectiveTags() & ownedTags) != 0)
-            weight += synergyBonus;
-
-        UpgradeSynergyTag suppressedTags = GetSuppressedTags();
-        if ((data.GetEffectiveTags() & suppressedTags) != 0)
-            weight *= suppressedMultiplier;
-
-        return Mathf.Max(minimumWeight, weight);
+        RoguelikeDraftTuning tuning = _balanceConfig != null ? _balanceConfig.Draft : new RoguelikeDraftTuning();
+        return tuning.GetCandidateWeight(data, level, GetOwnedTags(), GetSuppressedTags());
     }
 
     private UpgradeSynergyTag GetOwnedTags()

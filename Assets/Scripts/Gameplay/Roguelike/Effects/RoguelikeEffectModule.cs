@@ -236,6 +236,7 @@ namespace Game.Gameplay.Roguelike.Effects
         public int TriggerCount => Mathf.Max(1, _triggerCount);
         public float ReleaseMultiplier => Mathf.Max(0f, _releaseMultiplier);
         public override string Summary => $"{TriggerCount}回分を溜めて×{ReleaseMultiplier:0.##}で降下";
+        public override string ExclusiveGroup => "pressure-intercept-gate";
 
         [Serializable]
         private readonly struct PendingDrop
@@ -291,6 +292,7 @@ namespace Game.Gameplay.Roguelike.Effects
         public float GiantScale => Mathf.Max(1f, _giantScale);
         public float SpawnHeight => Mathf.Max(0f, _spawnHeight);
         public override string Summary => $"{ItemsPerGiant}個を大きさ×{GiantScale:0.##}の1個へ圧縮";
+        public override string ExclusiveGroup => "pressure-emit-shape";
 
         public override void EmitPressureDrop(RoguelikePressureEffectContext context)
         {
@@ -355,5 +357,224 @@ namespace Game.Gameplay.Roguelike.Effects
                 context.Host.FeedStatusProgress(_iceStatusType, ProgressAmount, context.Position);
             }
         }
+    }
+
+    [Serializable, RoguelikeEffectMenu("出現確率 / 直前と違うモデルへ分散")]
+    public sealed class DiversityWeightEffect : RoguelikeEffectModule
+    {
+        [SerializeField, Min(0f)] private float _otherMultiplier = 2f;
+        [SerializeField, Min(0f)] private float _lastHitMultiplier = 0.4f;
+
+        public override string Summary => $"直前と違うモデル×{_otherMultiplier:0.##}、直前と同じモデル×{_lastHitMultiplier:0.##}";
+        public override string ExclusiveGroup => "spawn-focus-weight";
+
+        public override float ModifySpawnWeight(
+            CollectibleType candidate,
+            CollectibleType? lastHit,
+            int sameTypeHitStreak,
+            int level,
+            float currentWeight)
+        {
+            if (!lastHit.HasValue)
+                return currentWeight;
+            return currentWeight * (candidate == lastHit.Value ? _lastHitMultiplier : _otherMultiplier);
+        }
+    }
+
+    [Serializable, RoguelikeEffectMenu("出現確率 / 同じモデル連続で疲労")]
+    public sealed class StreakFatigueWeightEffect : RoguelikeEffectModule
+    {
+        [SerializeField, Min(0f)] private float _fatiguePerHit = 0.15f;
+        [SerializeField, Range(0f, 1f)] private float _minimumMultiplier = 0.2f;
+
+        public override string Summary => $"同じモデルを当て続けるほど通常出現率-{_fatiguePerHit:P0}/Hit（下限×{_minimumMultiplier:0.##}）";
+        public override string ExclusiveGroup => "spawn-focus-weight";
+
+        public override float ModifySpawnWeight(
+            CollectibleType candidate,
+            CollectibleType? lastHit,
+            int sameTypeHitStreak,
+            int level,
+            float currentWeight)
+        {
+            if (!lastHit.HasValue || candidate != lastHit.Value)
+                return currentWeight;
+
+            float multiplier = Mathf.Max(_minimumMultiplier, 1f - sameTypeHitStreak * _fatiguePerHit);
+            return currentWeight * multiplier;
+        }
+    }
+
+    [Serializable, RoguelikeEffectMenu("出現確率 / Lvに応じて指定モデルを強化")]
+    public sealed class LevelScalingFocusWeightEffect : RoguelikeEffectModule
+    {
+        [SerializeField] private CollectibleType _collectibleType;
+        [SerializeField, Min(0f)] private float _bonusPerLevel = 0.5f;
+
+        public override string Summary => $"{CollectibleTable.GetDisplayName(_collectibleType)}の通常出現をLvごとに+{_bonusPerLevel:P0}";
+
+        public override float ModifySpawnWeight(
+            CollectibleType candidate,
+            CollectibleType? lastHit,
+            int sameTypeHitStreak,
+            int level,
+            float currentWeight)
+        {
+            if (candidate != _collectibleType)
+                return currentWeight;
+            return currentWeight * (1f + Mathf.Max(0, level) * _bonusPerLevel);
+        }
+    }
+
+    [Serializable, RoguelikeEffectMenu("出現確率 / 圧力発動直後だけ指定モデルへ集中")]
+    public sealed class PostTriggerFocusWeightEffect : RoguelikeEffectModule
+    {
+        [SerializeField] private CollectibleType _collectibleType;
+        [SerializeField, Min(0f)] private float _multiplier = 4f;
+        [SerializeField, Min(0f)] private float _windowSeconds = 2f;
+
+        public override string Summary => $"圧力発動から{_windowSeconds:0.#}秒間、{CollectibleTable.GetDisplayName(_collectibleType)}の通常出現を×{_multiplier:0.##}";
+
+        [NonSerialized] private float _lastTriggerTime = float.NegativeInfinity;
+
+        public override void OnPressureTriggered(RoguelikePressureEffectContext context)
+        {
+            _lastTriggerTime = Time.time;
+        }
+
+        public override float ModifySpawnWeight(
+            CollectibleType candidate,
+            CollectibleType? lastHit,
+            int sameTypeHitStreak,
+            int level,
+            float currentWeight)
+        {
+            if (candidate != _collectibleType || Time.time - _lastTriggerTime > _windowSeconds)
+                return currentWeight;
+            return currentWeight * _multiplier;
+        }
+
+        public override void ResetRuntimeState() => _lastTriggerTime = float.NegativeInfinity;
+    }
+
+    [Serializable, RoguelikeEffectMenu("追加降下 / 常に固定数を上乗せ")]
+    public sealed class FlatBonusDropEffect : RoguelikeEffectModule
+    {
+        [SerializeField, Min(0)] private int _bonusCount = 1;
+
+        public override string Summary => $"降下数に常時+{_bonusCount}";
+
+        public override void ModifyPressureSpawnCount(RoguelikePressureEffectContext context)
+        {
+            context.SpawnCount += Mathf.Max(0, _bonusCount);
+        }
+    }
+
+    [Serializable, RoguelikeEffectMenu("追加降下 / 常に倍率で増加")]
+    public sealed class PercentBonusDropEffect : RoguelikeEffectModule
+    {
+        [SerializeField, Min(0f)] private float _multiplier = 1.3f;
+
+        public override string Summary => $"降下数を常時×{_multiplier:0.##}";
+
+        public override void ModifyPressureSpawnCount(RoguelikePressureEffectContext context)
+        {
+            context.SpawnCount = Mathf.Max(1, Mathf.CeilToInt(context.SpawnCount * Mathf.Max(0f, _multiplier)));
+        }
+    }
+
+    [Serializable, RoguelikeEffectMenu("追加降下 / 拡散させて設置")]
+    public sealed class SpreadBurstEffect : RoguelikeEffectModule
+    {
+        [SerializeField, Min(0.01f)] private float _countMultiplier = 1.5f;
+        [SerializeField, Min(0f)] private float _spawnHeight = 10f;
+        [SerializeField, Min(0f)] private float _scatter = 4f;
+        [SerializeField, Min(0.01f)] private float _scale = 0.7f;
+
+        public override string Summary => $"降下を{_countMultiplier:0.##}倍の個数に分割して広く拡散設置（大きさ×{_scale:0.##}）";
+        public override string ExclusiveGroup => "pressure-emit-shape";
+
+        public override void EmitPressureDrop(RoguelikePressureEffectContext context)
+        {
+            int count = Mathf.Max(1, Mathf.CeilToInt(context.SpawnCount * _countMultiplier));
+            context.Host.SpawnCustom(context.Position, count, context.Collectible, _spawnHeight, _scatter, _scale);
+            context.CancelDefault = true;
+        }
+    }
+
+    [Serializable, RoguelikeEffectMenu("追加降下 / 一定回数ごとに別モデルへ差し替え")]
+    public sealed class AlternateCollectibleDropEffect : RoguelikeEffectModule
+    {
+        [SerializeField] private CollectibleData _alternateCollectible;
+        [SerializeField, Min(1)] private int _triggerInterval = 3;
+
+        public int TriggerInterval => Mathf.Max(1, _triggerInterval);
+        public override string Summary => _alternateCollectible != null
+            ? $"{TriggerInterval}回に1回、{_alternateCollectible.name}へ差し替え"
+            : "差し替え先モデルが未設定です";
+        public override string ExclusiveGroup => "pressure-emit-shape";
+
+        [NonSerialized] private int _triggerCount;
+
+        public override void EmitPressureDrop(RoguelikePressureEffectContext context)
+        {
+            if (_alternateCollectible == null || ++_triggerCount % TriggerInterval != 0)
+                return;
+            context.Host.SpawnDefault(context.Position, context.SpawnCount, _alternateCollectible);
+            context.CancelDefault = true;
+        }
+
+        public override void ResetRuntimeState() => _triggerCount = 0;
+    }
+
+    [Serializable, RoguelikeEffectMenu("追加降下 / 一定回数ごとに即時もう一度発動")]
+    public sealed class InstantReplayDropEffect : RoguelikeEffectModule
+    {
+        [SerializeField, Min(1)] private int _triggerInterval = 4;
+        [SerializeField, Range(0.01f, 2f)] private float _countRatio = 0.5f;
+
+        public int TriggerInterval => Mathf.Max(1, _triggerInterval);
+        public float CountRatio => Mathf.Max(0.01f, _countRatio);
+        public override string Summary => $"{TriggerInterval}回ごとに{_countRatio:P0}を即座にもう一度降らせる";
+        public override string ExclusiveGroup => "pressure-echo";
+
+        [NonSerialized] private int _triggerCount;
+
+        public override void AfterPressureDrop(RoguelikePressureEffectContext context)
+        {
+            if (!context.AllowEcho || ++_triggerCount % TriggerInterval != 0)
+                return;
+            context.Host.EmitPressureDrop(
+                context.RuleId,
+                context.Position,
+                Mathf.Max(1, Mathf.CeilToInt(context.SpawnCount * CountRatio)),
+                context.Collectible,
+                false);
+        }
+
+        public override void ResetRuntimeState() => _triggerCount = 0;
+    }
+
+    [Serializable, RoguelikeEffectMenu("抑制・調整 / 連続発動にクールダウンを設ける")]
+    public sealed class CooldownGateEffect : RoguelikeEffectModule
+    {
+        [SerializeField, Min(0f)] private float _cooldownSeconds = 3f;
+
+        public override string Summary => $"発動後{_cooldownSeconds:0.#}秒間は再発動しない";
+        public override string ExclusiveGroup => "pressure-intercept-gate";
+
+        [NonSerialized] private float _lastEmitTime = float.NegativeInfinity;
+
+        public override void InterceptPressureDrop(RoguelikePressureEffectContext context)
+        {
+            if (Time.time - _lastEmitTime < _cooldownSeconds)
+            {
+                context.CancelDefault = true;
+                return;
+            }
+            _lastEmitTime = Time.time;
+        }
+
+        public override void ResetRuntimeState() => _lastEmitTime = float.NegativeInfinity;
     }
 }

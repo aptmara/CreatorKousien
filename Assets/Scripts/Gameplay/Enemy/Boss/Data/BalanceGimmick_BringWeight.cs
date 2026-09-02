@@ -3,7 +3,6 @@ using Game.Gameplay.Collectibles;
 using System.Collections.Generic;
 using UnityEngine;
 using Game.Gameplay.Enemy.Boss;
-using UnityEditor.Rendering.LookDev;
 
 [CreateAssetMenu(fileName = "BalanceGimmick_BringWeight", menuName = "Boss/Gimmick/Balance_BringWeight")]
 public class BalanceGimmick_BringWeight : BossGimmickSO
@@ -41,7 +40,7 @@ public class BalanceGimmick_BringWeight : BossGimmickSO
     public override void Execute()
     {
         _isComplete = false;
-        
+
         if(!_SummonMonster.TryGetComponent<Balance_BringMonster>(out _))
         {
             Debug.Log("[BringWeight] Balance_BringMonsterを持っていません");
@@ -59,7 +58,7 @@ public class BalanceGimmick_BringWeight : BossGimmickSO
             _isComplete = true;
             return;
         }
-        
+
         _targetSide = UnityEngine.Random.value < 0.5f ? TraySide.Left : TraySide.Right;
         Transform targetTrans = _beamController.GetTraySocket(_targetSide);
 
@@ -73,7 +72,7 @@ public class BalanceGimmick_BringWeight : BossGimmickSO
             (pos, rot) => SpawnCollectible(pos);
 
         monster.Initialize(spawnPos, targetTrans.position, onArrived);
-        
+
     }
 
     public override void Tick(float dt)
@@ -117,7 +116,7 @@ public class BalanceGimmick_BringWeight : BossGimmickSO
         if (instance.TryGetComponent(out IBossTrayItem item))
         {
             _beamController.RegisterItem(_targetSide, item);
-        }        
+        }
     }
 
     private void SpawnCollectible(Vector3 position)

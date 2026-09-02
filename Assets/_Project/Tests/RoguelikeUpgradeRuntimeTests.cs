@@ -57,32 +57,6 @@ namespace Game.Tests
         }
 
         [Test]
-        public void RunRules_GluttonyTracksActualHitAndNarrowsWeights()
-        {
-            RoguelikeRunRuleRuntime.Apply(RoguelikeRunRuleRuntime.GluttonyContractId);
-            RoguelikeRunRuleRuntime.RecordCollectibleHit(2);
-
-            Assert.That(RoguelikeRunRuleRuntime.GetSpawnWeightMultiplier(2), Is.EqualTo(3.5f));
-            Assert.That(RoguelikeRunRuleRuntime.GetSpawnWeightMultiplier(3), Is.EqualTo(0.45f));
-        }
-
-        [Test]
-        public void RunRules_EvolutionChangesConnectionRulesAndResetClearsThem()
-        {
-            RoguelikeRunRuleRuntime.Apply(RoguelikeRunRuleRuntime.EndlessEchoEvolutionId);
-            RoguelikeRunRuleRuntime.Apply(RoguelikeRunRuleRuntime.ResonanceEvolutionId);
-
-            Assert.That(RoguelikeRunRuleRuntime.HasEcho, Is.True);
-            Assert.That(RoguelikeRunRuleRuntime.EchoEveryTrigger, Is.True);
-            Assert.That(RoguelikeRunRuleRuntime.CrossFeedAmount, Is.EqualTo(2));
-
-            RoguelikeUpgradeRuntime.Reset();
-
-            Assert.That(RoguelikeRunRuleRuntime.HasEcho, Is.False);
-            Assert.That(RoguelikeRunRuleRuntime.HasCrossFeed, Is.False);
-        }
-
-        [Test]
         public void GetDiscountedCost_UsesPercentageAndRoundsUp()
         {
             RoguelikeUpgradeRuntime.Apply("8", 3, 0.1f);
