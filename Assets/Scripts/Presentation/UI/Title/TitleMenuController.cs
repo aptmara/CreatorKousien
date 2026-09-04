@@ -41,6 +41,8 @@ namespace Game.Presentation.UI.Title
         [SerializeField] private string _defaultBootName = "Boot";
         [SerializeField] private string _tutorialBootName = "TutorialBoot";
 
+        [SerializeField] private string _openingSceneName = "Opening";
+
         [SerializeField] private StageDataSO _stageDataSO;
         private void Awake()
         {
@@ -80,11 +82,12 @@ namespace Game.Presentation.UI.Title
         /// </summary>
         public void OnClickNewGame()
         {
-            Debug.Log("New Game が押されたぜよ。シーン遷移: " + _selectSceneName);
+            Debug.Log("New Game が押されたぜよ。シーン遷移: " + _openingSceneName);
             // SceneManager.LoadScene(_selectSceneName);
 
             // Beta版での一時的な実装
-            StartCoroutine(StageLoad(_defaultBootName, _stageDataSO));
+            // オープニングシーンに切り替えます！ 9/4 - Asano
+            SceneManager.LoadScene(_openingSceneName, LoadSceneMode.Single);
         }
 
         /// <summary>
