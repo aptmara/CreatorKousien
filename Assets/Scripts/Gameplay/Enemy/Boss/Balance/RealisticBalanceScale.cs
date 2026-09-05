@@ -12,14 +12,20 @@ public class RealisticBalanceScale : MonoBehaviour
     [SerializeField] private Transform _rightPanTransform;
 
     [Header("==== 天秤の物理パラメータ =====")]
-    [SerializeField] private float _maxTiltAngle = 30.0f;
-    [SerializeField] private float _tiltSensitivity = 5.0f;
-    [SerializeField] private float _stiffness = 12.0f;
+    [SerializeField] private float _maxTiltAngle = 37.0f;
+    [SerializeField,Tooltip("傾きの感度")] private float _tiltSensitivity = 5.0f;
+    [SerializeField,Tooltip("剛性")] private float _stiffness = 12.0f;
     [SerializeField] private float _damping = 2.5f;
 
     [Header("==== カタパルト検知 ====")]
-    [Tooltip("１階の登録でこの質量以上が一気に増えたら急速加重とみなす")]
+    [Tooltip("１回の登録でこの質量以上が一気に増えたら急速加重とみなす")]
     [SerializeField] private float _suddenWeightThreshold = 5.0f;
+    // 角度が一定フレーム内に指定量変わったら
+    [SerializeField,Tooltip("")]
+    private float _suddenAngleThreshold = 20.0f;
+    [SerializeField, Tooltip("")]
+    private float _catapultValidityTime = 2.0f; 
+
 
     // 外部バイアス　ギミックから傾きを強制
     private bool _isFrozen;

@@ -18,3 +18,6 @@ MonoBehaviour:
   _baseRewardCount: 2
   _bonusRewardCount: 4
   _rewardSpawnOffset: {x: 0, y: 5, z: 5}
+  _scale: {fileID: 0}
+  _biasStrength: 8
+  _warningThreshold: 0

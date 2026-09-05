@@ -563,15 +563,26 @@ namespace Game.Core.Events
     }
 
     /// <summary>
-    /// ボスの警告開始イベント
+    /// ボスの登場警告開始イベント
     /// </summary>
     public struct BossIntroWarningStartedEvent
     { }
 
     /// <summary>
-    /// ボスの警告終了イベント
+    /// ボスの登場警告終了イベント
     /// </summary>
     public struct BossIntroWarningEndedEvent
+    { }
+
+    /// <summary>
+    /// ボスの攻撃警告開始イベント
+    /// </summary>
+    public struct BossAttackWarningStartedEvent
+    { }
+    /// <summary>
+    /// ボスの攻撃警告終了イベント
+    /// </summary>
+    public struct BossAttackWarningEndedEvent
     { }
 
     public readonly struct BalanceSlamWarningEvent
