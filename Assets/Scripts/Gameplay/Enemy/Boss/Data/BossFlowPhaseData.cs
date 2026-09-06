@@ -15,12 +15,16 @@ namespace Game.Gameplay.Enemy.Boss
         [Tooltip("次のフェーズへ移行するHPの割合")]
         [SerializeField,Range(0.0f,1.0f)] private float _hpThresholdToEnter = 1.0f;
 
+        [Header("===== パラメータ倍率 =====")]
+        [SerializeField] private BossPhaseMultipliers _multipliers = BossPhaseMultipliers.Default;
+
         [Header("===== このフェーズで使用するギミック =====")]
         [Tooltip("ギミックのデータ")]
         [SerializeField] private List<GimmickSlot> _gimmickSlots = new List<GimmickSlot>();
 
         public string PhaseName => _phaseName;
         public float HpThresholdToEnter => _hpThresholdToEnter;
+        public BossPhaseMultipliers Multipliers => _multipliers;
         public List<GimmickSlot> GimmickSlots => _gimmickSlots;
     }
 

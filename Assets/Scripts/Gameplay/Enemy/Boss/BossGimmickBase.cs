@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Game.Gameplay.Enemy.Boss;
+using UnityEngine.Rendering;
 
 public enum BossSocket
 {
@@ -19,6 +20,8 @@ public class BossContext
     public BossBattleFlowController Controller { get; }
     public Animator Animator { get; }
     public Transform Transform { get; }
+
+    public BossPhaseMultipliers PhaseMultipliers { get; private set; } = BossPhaseMultipliers.Default;
 
     // 部位の割り当て（BossBattleFlowController側から初期化時に受け取る）
     private readonly Dictionary<BossSocket, Transform> _sockets;
@@ -47,7 +50,35 @@ public class BossContext
         }
         return Transform;
     }
+
+    public void UpdatePhaseMultipliers(BossPhaseMultipliers multipliers)
+    {
+        PhaseMultipliers = multipliers;
+    }
 }
+
+[System.Serializable]
+public struct BossPhaseMultipliers
+{
+    [Tooltip("ダメージ量にかける倍率")]
+    public float DamageMultiplier;
+
+    [Tooltip("速度や移動関連にかける倍率")]
+    public float SpeedMultiplier;
+
+    [Tooltip("スポーン間隔にかける倍率(小さくすると頻度が上がる)")]
+    public float SpawnIntervalMultiplier;
+
+    public static BossPhaseMultipliers Default => new BossPhaseMultipliers
+    {
+        DamageMultiplier = 1.0f,
+        SpeedMultiplier = 1.0f,
+        SpawnIntervalMultiplier = 1.0f,
+    };
+
+
+}
+
 
 /// <summary>
 /// 各ギミック処理

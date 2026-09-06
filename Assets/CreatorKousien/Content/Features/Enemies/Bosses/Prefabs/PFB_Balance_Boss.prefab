@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 589366888828555011}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.15, y: 0.4697589, z: 0}
+  m_LocalPosition: {x: -0.15, y: 0.251, z: -0.094}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -363,7 +363,7 @@ Transform:
   m_GameObject: {fileID: 4389981377617131478}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.15, y: 0.4697589, z: 0}
+  m_LocalPosition: {x: 0.15, y: 0.283, z: -0.087}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1050,7 +1050,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88292ab8df4cdf54ba81c43ec5542b1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossGimmickController
-  _battleData: {fileID: 11400000, guid: 0f4d968dfd0017748a53e92d2379ae3c, type: 2}
+  _battleData: {fileID: 11400000, guid: 14b045289a2dc2d43982e9ac2e6e8fd5, type: 2}
   _maxHP: 1000
   _currentHP: 0
   _triggerVictoryOnZeroHp: 1
@@ -1065,9 +1065,9 @@ MonoBehaviour:
   _bossAnimator: {fileID: 0}
   _socketBindings:
   - socket: 2
-    transform: {fileID: 3852923020680528231}
+    transform: {fileID: 1058796692745124456}
   - socket: 3
-    transform: {fileID: 7742797030565827278}
+    transform: {fileID: 2441853577371548900}
   _introSequenceController: {fileID: 7857437713337581539}
   _introSequenceData: {fileID: 11400000, guid: 9dc04bc9e6f3e5c46a896e2b08231559, type: 2}
   _gimmickSlots:
@@ -1214,6 +1214,10 @@ PrefabInstance:
     - target: {fileID: -5012010121600683517, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
       propertyPath: m_AABB.m_Extent.z
       value: 0.059777047
+      objectReference: {fileID: 0}
+    - target: {fileID: -5012010121600683517, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
+      propertyPath: 'm_BlendShapeWeights.Array.data[0]'
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
       propertyPath: m_Name
@@ -1729,9 +1733,12 @@ MonoBehaviour:
   _rightPanTransform: {fileID: 2441853577371548900}
   _maxTiltAngle: 40
   _tiltSensitivity: 5
-  _stiffness: 10
+  _stiffness: 50
   _damping: 1
   _suddenWeightThreshold: 5
+  _suddenAngleThreshold: 20
+  _catapultValidityTime: 2
+  _shakeOffForce: 6
   _maxPanTiltAngle: 10
 --- !u!114 &8757943479672085338
 MonoBehaviour:

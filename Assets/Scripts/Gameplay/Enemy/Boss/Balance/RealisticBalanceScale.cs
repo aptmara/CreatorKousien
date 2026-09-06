@@ -24,8 +24,10 @@ public class RealisticBalanceScale : MonoBehaviour
     [SerializeField,Tooltip("")]
     private float _suddenAngleThreshold = 20.0f;
     [SerializeField, Tooltip("")]
-    private float _catapultValidityTime = 2.0f; 
+    private float _catapultValidityTime = 2.0f;
 
+    [Header("===== 振り落とし =====")]
+    [SerializeField] private float _shakeOffForce = 6.0f;
 
     // 外部バイアス　ギミックから傾きを強制
     private bool _isFrozen;
@@ -127,6 +129,36 @@ public class RealisticBalanceScale : MonoBehaviour
         if (rb == null) return;
         if (isLeft) _leftPanWeights.Remove(rb);
         else _rightPanWeights.Remove(rb);
+    }
+
+    public void ClearAllWeghts()
+    {
+        ShakeOffSide(_leftPanWeights, isLeft: true);
+        ShakeOffSide(_rightPanWeights, isLeft: false);
+    }
+
+    private void ShakeOffSide(HashSet<Rigidbody> weights, bool isLeft)
+    {
+        foreach(var rb in weights)
+        {
+            if(rb == null) continue;
+
+            Vector3 knockDirection = (isLeft ? Vector3.left : Vector3.right) + Vector3.up;
+            rb.AddForce(knockDirection.normalized * _shakeOffForce,ForceMode.Impulse);
+        }
+
+        weights.Clear();
+    }
+
+    public void ResetToLevel()
+    {
+        _currentAngle = 0.0f;
+        _angularVelocity = 0.0f;
+
+        if(!_beamTransform != null)
+        {
+            _beamTransform.localRotation = Quaternion.identity;
+        }
     }
 
 }

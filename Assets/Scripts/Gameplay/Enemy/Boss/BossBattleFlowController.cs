@@ -215,6 +215,7 @@ namespace Game.Gameplay.Enemy.Boss
 
             _currentPhaseIndex = phaseIndex;
             _currentPhaseData = phaseData;
+            _bossContext.UpdatePhaseMultipliers(_currentPhaseData.Multipliers);
 
             _battleTimer = 0.0f;
             _currentWaitingGimmick = null;
