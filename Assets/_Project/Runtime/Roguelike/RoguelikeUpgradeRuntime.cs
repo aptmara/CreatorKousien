@@ -20,6 +20,12 @@ namespace Game.Core.Roguelike
         private const string PinchHandId = "13";
         private const string BarrierRepairId = "14";
         private const string BarrierLifeUpId = "15";
+        private const string BarrierAllUpId = "20";
+
+        // BarrierAllUpId 統合強化の内訳（旧UPGRADE_012/014/015の値を踏襲）
+        private const float BarrierAllUpDefenseMultiplierPerLevel = 1.2f;
+        private const float BarrierAllUpRepairPerLevel = 1.03f;
+        private const float BarrierAllUpMaxHpMultiplierPerLevel = 1.25f;
 
         private static bool _runtimeStateNeedsClear = true;
         private static readonly HashSet<int> ExplicitlyUnlockedCollectibles = new HashSet<int>();
@@ -61,8 +67,6 @@ namespace Game.Core.Roguelike
             BarrierRepairRatePerSecond = 0f;
             BarrierMaxHpMultiplier = 1f;
             ExplicitlyUnlockedCollectibles.Clear();
-            RoguelikeBuildRuntime.Reset();
-            CombatPressureProgression.ResetDefaults();
             _runtimeStateNeedsClear = true;
             Changed?.Invoke();
         }
@@ -117,6 +121,11 @@ namespace Game.Core.Roguelike
                     break;
                 case BarrierLifeUpId:
                     BarrierMaxHpMultiplier = PowMultiplier(value, validLevel);
+                    break;
+                case BarrierAllUpId:
+                    BarrierDefenseMultiplier = PowMultiplier(BarrierAllUpDefenseMultiplierPerLevel, validLevel);
+                    BarrierRepairRatePerSecond = Mathf.Max(0f, BarrierAllUpRepairPerLevel - 1f) * validLevel;
+                    BarrierMaxHpMultiplier = PowMultiplier(BarrierAllUpMaxHpMultiplierPerLevel, validLevel);
                     break;
                 default:
                     return false;
