@@ -27,8 +27,6 @@
 using UnityEngine;
 using Game.Presentation.UI;
 using Game.Gameplay.Enemy.Boss;
-using UnityEditor.Compilation;
-using Unity.Hierarchy;
 
 namespace Game.Core.Enemy
 {

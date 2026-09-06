@@ -1,7 +1,6 @@
 using Game.Core.Enemy;
 using Game.Core.Events;
 using System.Collections.Generic;
-using TMPro.EditorUtilities;
 using UnityEngine;
 
 namespace Game.Gameplay.Enemy.Boss

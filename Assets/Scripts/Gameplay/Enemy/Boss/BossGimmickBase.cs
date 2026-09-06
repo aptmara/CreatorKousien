@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Game.Gameplay.Enemy.Boss;
-using UnityEngine.Rendering;
 
 public enum BossSocket
 {

@@ -9,9 +9,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 using System;
-using Game.Data.Enemy.Boss;
 using Game.Core.Events;
-using UnityEngine.UIElements;
 
 namespace Game.Gameplay.Enemy.Boss
 {
