@@ -13,17 +13,25 @@ MonoBehaviour:
   m_Name: Enemies_SO_CatapultGimmick
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BalanceCatapultGimmick
   _attackSide: 1
-  _biasStrength: 6
   _defenderDefinitions:
   - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
   - {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
   _defenderSpawnInterval: 3
   _defenderHpRate: 1
+  _defenderMinDistance: 2
+  _spawnerVfxPrefab: {fileID: 8518442979827585415, guid: f4bd3474d6bca7b4eb50d1a7e1fae100, type: 3}
   _ironBallDelay: 8
-  _reverseThreshold: 0.9
+  _ballCount: 4
   _ironBallPrefab: {fileID: 62624467482769536, guid: 72013cb1df2e4c8408b3c69fd8628c2a, type: 3}
+  _settleDuration: 1
+  _reverseThreshold: 0.9
   _ballBossDamage: 50
   _ballBarrierDamage: 25
   _beamAnimator: {fileID: 0}
   _shakeOffTriggerName: ShakeOff
   _shakeOffDuration: 0.8
+  _bossAnimator: {fileID: 0}
+  _barrierAttackTriggerName: BarrierSlam
+  _fullyRaisedBarrierDamage: 15
+  _barrierAttackVfxPrefab: {fileID: 0}
+  _vfxLifetime: 2
