@@ -167,22 +167,9 @@ public class S_UpgradeDetail : MonoBehaviour
         }
         else
         {
-            _levelText.text = upgrade.OfferType == UpgradeOfferType.Relic ||
-                              upgrade.OfferType == UpgradeOfferType.Contract ||
-                              upgrade.OfferType == UpgradeOfferType.Evolution
-                ? $"NEW  {upgrade.GetOfferLabel()}"
-                : isDeepening
-                    ? $"深化  Lv.{level} → {nextLevel}"
-                    : $"{upgrade.GetOfferLabel()}  Lv.{level} → {nextLevel}";
-            _costText.text = BuildSelectionNote(upgrade, isDeepening);
+            _levelText.text = $"成長  Lv.{level} → {nextLevel}";
+            _costText.text = BuildSelectionNote(upgrade, level);
         }
-
-        if (upgrade.OfferType == UpgradeOfferType.CombatPressureRule)
-        {
-            string outputName = CollectibleTable.GetDisplayName(upgrade.CombatPressureOutputType);
-            _costText.text = $"{upgrade.GetOfferLabel()} / 降下: {outputName}固定";
-        }
-
     }
 
     private void ConfigureTextLayout()
@@ -421,30 +408,9 @@ public class S_UpgradeDetail : MonoBehaviour
         text.overflowMode = TextOverflowModes.Truncate;
     }
 
-    private static string BuildSelectionNote(UpgradeData upgrade, bool isDeepening)
+    private static string BuildSelectionNote(UpgradeData upgrade, int currentLevel)
     {
-        if (isDeepening) return "所持強化を一気に2レベル進める";
-        return upgrade.OfferType switch
-        {
-            UpgradeOfferType.Relic => "取得したルールはこのラン中ずっと有効",
-            UpgradeOfferType.Contract => "以降の抽選と生成規則を固定する",
-            UpgradeOfferType.Evolution => "所持ビルドの接続規則を変える",
-            _ => "無料・1つ選択",
-        };
-    }
-
-    public void SpawnFocusTargetDetail(UpgradeData upgrade, CollectibleData target)
-    {
-        if (upgrade == null || target == null) return;
-
-        SpawnDetail(upgrade);
-        string targetName = CollectibleTable.GetDisplayName(target.Type);
-        _nameText.text = targetName + "特化";
-        RefreshNameUnderlines();
-        _descriptionText.text =
-            $"{upgrade.DisplayName}で発生する連鎖・爆発生成を、{targetName}へ集中する。\n取得直後に生成して効果をプレビュー。";
-        _levelText.text = "このラン中の生成先";
-        _costText.text = "決定すると強化を取得";
+        return $"{upgrade.GetCost(currentLevel)} コイン";
     }
 
     public void ChangeReactionSoldOut()
@@ -479,6 +445,45 @@ public class S_UpgradeDetail : MonoBehaviour
 
 
 
+    }
+
+    private static readonly string[] MoveSpeedReactions = { "足が速くなるよ！", "風みたいに駆け抜けろ！", "俊足自慢だね" };
+    private static readonly string[] BarrierReactions = { "これで守りも安心だね", "壊れにくくなるよ", "頼れる盾になるはずさ" };
+    private static readonly string[] SpawnCountReactions = { "たくさん出てくるよ", "数が増えるのはお得だよ", "どんどん降ってくるよ" };
+    private static readonly string[] ArmScaleReactions = { "手が大きくなるよ！", "リーチが伸びて便利だよ", "がっしりつかめるようになるね" };
+    private static readonly string[] ConsumableReactions = { "これは甘くて美味しいよ", "お客さんに人気の一品だよ", "出会える確率が上がるよ" };
+    private static readonly string[] DefaultReactions = { "いい選択だね", "気に入ってもらえて嬉しいよ" };
+
+private int _reactionRotationIndex = -1;
+
+    /// <summary>
+    /// 強化IDに応じて店主の一言を切り替える(購入成功時に呼び出し。移動速度/バリア/出現数/腕拡大の判定に使用)
+    /// </summary>
+    public void ChangeReactionOnPurchase(UpgradeData upgrade)
+    {
+        if (upgrade == null) return;
+
+        // ホバーが一度も発生しておらず詳細パネルが未生成の場合は何もしない
+        if (_descriptionText == null || _nameText == null || _levelText == null || _costText == null)
+            return;
+
+        string[] pool = upgrade.Id switch
+        {
+            "2" => MoveSpeedReactions,
+            "20" => BarrierReactions,
+            "5" => SpawnCountReactions,
+            "1" => ArmScaleReactions,
+            _ => upgrade.Category == UpgradeCategory.Consumable
+                ? ConsumableReactions
+                : DefaultReactions,
+        };
+
+        _reactionRotationIndex = (_reactionRotationIndex + 1) % pool.Length;
+        _descriptionText.text = pool[_reactionRotationIndex];
+        _nameText.text = "";
+        RefreshNameUnderlines();
+        _levelText.text = "";
+        _costText.text = "";
     }
 
     private void PlaySpawnAnimation()

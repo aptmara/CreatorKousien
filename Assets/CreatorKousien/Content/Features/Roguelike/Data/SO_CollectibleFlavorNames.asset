@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa78eb4bd7a67f9428830e57b6d4ebb1, type: 3}
+  m_Name: SO_CollectibleFlavorNames
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Collectibles.SO_CollectibleFlavorNames
+  _entries:
+  - Type: 0
+    FlavorName: "\u30AD\u30E3\u30F3\u30C7\u30A3"
+  - Type: 1
+    FlavorName: "\u30B3\u30F3\u30DA\u30FC\u30C8\u30FC"
+  - Type: 2
+    FlavorName: "\u30C9\u30AF\u30EA\u30F3\u30B4\u30AD\u30E3\u30F3\u30C7\u30A3"
+  - Type: 3
+    FlavorName: "\u30C4\u30E1\u30BF\u30A4\u30AD\u30E3\u30F3\u30C7\u30A3"
+  - Type: 5
+    FlavorName: "\u30B0\u30DF"
+  - Type: 4
+    FlavorName: "\u30AA\u30AB\u30EB\u30C8\u30AD\u30E3\u30F3\u30C7\u30A3"
