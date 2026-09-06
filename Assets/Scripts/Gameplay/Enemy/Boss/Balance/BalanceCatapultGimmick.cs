@@ -153,8 +153,11 @@ namespace Game.Gameplay.Enemy.Boss
         {
             if(_phaseTimer >= _shakeOffDuration)
             {
-                _currentSpawnerVfx = Instantiate(_spawnerVfxPrefab, Context.GetSocket(
-                    _attackSide == TraySide.Left ? BossSocket.LeftHand : BossSocket.RightHand).transform);
+                if(_spawnerVfxPrefab != null)
+                {
+                    _currentSpawnerVfx = Instantiate(_spawnerVfxPrefab, Context.GetSocket(
+                        _attackSide == TraySide.Left ? BossSocket.LeftHand : BossSocket.RightHand).transform);
+                }
                 ChangePhase(Phase.Prep);
             }
         }
