@@ -15,9 +15,9 @@ MonoBehaviour:
   BossGimmickName: Slam
   editColor: {r: 0, g: 1, b: 1, a: 1}
   ExecutionType: 0
-  animTriggerName: 
+  animTriggerName: Intro
   isRandomInterval: 0
-  minInterval: 20
+  minInterval: 5
   maxInterval: 30
   triggerTimes: []
   waitForCompletion: 1

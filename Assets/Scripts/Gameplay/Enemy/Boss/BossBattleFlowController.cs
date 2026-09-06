@@ -9,7 +9,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 using System;
-using Game.Data.Enemy.Boss;
 using Game.Core.Events;
 
 namespace Game.Gameplay.Enemy.Boss
@@ -43,7 +42,7 @@ namespace Game.Gameplay.Enemy.Boss
     public class BossBattleFlowController : MonoBehaviour
     {
         [Header("==== 基本ステータス =====")]
-        [SerializeField] private BossBattleDataSO _battleData;
+        [SerializeField] private BossFlowBattleData _battleData;
         [SerializeField] private float _maxHP = 1000.0f;
         [SerializeField] private float _currentHP;
 
@@ -79,7 +78,7 @@ namespace Game.Gameplay.Enemy.Boss
         private string _bossInstanceId = string.Empty;
         private BossBattleFlowState _currentState = BossBattleFlowState.Inactive;
         private int _currentPhaseIndex = -1;
-        private BossPhaseData _currentPhaseData;
+        private BossFlowPhaseData _currentPhaseData;
         private bool _isInitialized;
         private bool _isBattleActive;
 
@@ -99,13 +98,13 @@ namespace Game.Gameplay.Enemy.Boss
         public string BossInstanceId => _bossInstanceId;
         public BossBattleFlowState CurrentState => _currentState;
         public int CurrentPhaseIndex => _currentPhaseIndex;
-        public BossPhaseData CurrentPhaseData => _currentPhaseData;
+        public BossFlowPhaseData CurrentPhaseData => _currentPhaseData;
         public float CurrentHP => _currentHP;
         public float MaxHP => _maxHP;
         public float HpPercentage => Mathf.Clamp01(_currentHP / _maxHP);
         public bool IsDown => _currentState == BossBattleFlowState.Down;
         public bool IsBattleActive => _isBattleActive;
-        public List<GimmickSlot> GimmickSlots => _gimmickSlots;
+        public List<GimmickSlot> GimmickSlots => _currentPhaseData?.GimmickSlots;
 
         public bool CanReceiveBodyDamage =>
             _isBattleActive &&
@@ -115,7 +114,7 @@ namespace Game.Gameplay.Enemy.Boss
 
         //======= イベント ========
         public event Action<BossBattleFlowState, BossBattleFlowState> OnStateChanged;
-        public event Action<int, BossPhaseData> OnPhaseStarted;
+        public event Action<int, BossFlowPhaseData> OnPhaseStarted;
         public event Action<float, float> OnHpChanged; // <current , max>
         public event Action OnVictory;
         public event Action OnDefeat;
@@ -178,11 +177,6 @@ namespace Game.Gameplay.Enemy.Boss
             _interruptQueue.Clear();
             _isBattleActive = true;
 
-            foreach(var slot in _gimmickSlots)
-            {
-                slot?.InitializeSlot(_battleTimer, _bossContext);
-            }
-
             ChangeState(BossBattleFlowState.Intro);
             _stateRoutine = StartCoroutine(PlayIntroSequence());
 
@@ -211,10 +205,24 @@ namespace Game.Gameplay.Enemy.Boss
 
         public bool BeginPhase(int phaseIndex)
         {
-            if(_battleData != null && _battleData.TryGetPhaseData(phaseIndex,out BossPhaseData phaseData))
+            if(_battleData == null || !_battleData.TryGetPhaseData(phaseIndex,out BossFlowPhaseData phaseData))
             {
-                _currentPhaseIndex = phaseIndex;
-                _currentPhaseData = phaseData;
+                Debug.LogWarning($"[BattleFlow] Phase{phaseIndex}のデータが見つかりません");
+                return false;
+            }
+
+            _currentPhaseIndex = phaseIndex;
+            _currentPhaseData = phaseData;
+            _bossContext.UpdatePhaseMultipliers(_currentPhaseData.Multipliers);
+
+            _battleTimer = 0.0f;
+            _currentWaitingGimmick = null;
+            _currentWaitingData = null;
+            _interruptQueue.Clear();
+
+            foreach(var slot in _currentPhaseData.GimmickSlots)
+            {
+                slot?.InitializeSlot(_battleTimer, _bossContext);
             }
 
             ChangeState(BossBattleFlowState.InBattle);
@@ -307,6 +315,23 @@ namespace Game.Gameplay.Enemy.Boss
             {
                 TriggerVictory();
             }
+
+            CheckPhaseAdvance();
+        }
+
+        private void CheckPhaseAdvance()
+        {
+            if (_battleData == null) return;
+
+            int nextIndex = _currentPhaseIndex + 1;
+
+            if (_battleData.TryGetPhaseData(nextIndex, out BossFlowPhaseData nextPhase) &&
+                HpPercentage <= nextPhase.HpThresholdToEnter)
+            {
+                _currentWaitingGimmick?.Cancel();
+                ChangeState(BossBattleFlowState.PhaseTransition);
+                BeginPhase(nextIndex);
+            }
         }
 
         public void TriggerVictory()
@@ -338,7 +363,7 @@ namespace Game.Gameplay.Enemy.Boss
          */
         public void TriggerDown()
         {
-            if (!_useDownSystem || IsDown) return;
+            if (!_useDownSystem ||  IsDown) return;
 
             _downTimer = _downDuration;
             ChangeState(BossBattleFlowState.Down);
@@ -385,9 +410,12 @@ namespace Game.Gameplay.Enemy.Boss
 
         private void EvaluateIntervalGimmicks()
         {
-            for (int i = 0; i < _gimmickSlots.Count; ++i)
+            if(_currentPhaseData == null) return;
+            var slots = _currentPhaseData.GimmickSlots;
+
+            for (int i = 0; i < slots.Count; ++i)
             {
-                var slot = _gimmickSlots[i];
+                var slot = slots[i];
                 if (slot.data == null || slot.data.ExecutionType != GimmickExecutionType.interval) continue;
 
                 if(_battleTimer >= slot.nextExecuteTime)
@@ -402,9 +430,12 @@ namespace Game.Gameplay.Enemy.Boss
 
         private void EvaluateTimelineGimmicks()
         {
-            for(int i = 0;i < _gimmickSlots.Count;++i)
+            if (_currentPhaseData == null) return;
+            var slots = _currentPhaseData.GimmickSlots;
+
+            for (int i = 0;i < slots.Count;++i)
             {
-                var slot = _gimmickSlots[i];
+                var slot = slots[i];
                 if(slot.data == null || slot.data.ExecutionType != GimmickExecutionType.Timeline) continue;
 
                 if(slot.runtimeTimelineQueue != null && slot.runtimeTimelineQueue.Count > 0)
@@ -429,16 +460,13 @@ namespace Game.Gameplay.Enemy.Boss
 
         public void EnqueueInterruptGimmick(BossGimmickData gimmickData)
         {
-            if(gimmickData == null) return;
+            if(gimmickData == null || _currentPhaseData == null) return;
 
-            GimmickSlot targetSlot = _gimmickSlots.Find(s => s.data == gimmickData);
+            GimmickSlot targetSlot = _currentPhaseData.GimmickSlots.Find(s => s.data == gimmickData);
 
-            if (targetSlot.data != null)
+            if (targetSlot.data != null && !_interruptQueue.Contains(targetSlot))
             {
-                if(!_interruptQueue.Contains(targetSlot))
-                {
-                    _interruptQueue.Enqueue(targetSlot);
-                }
+                _interruptQueue.Enqueue(targetSlot);
             }
         }
 

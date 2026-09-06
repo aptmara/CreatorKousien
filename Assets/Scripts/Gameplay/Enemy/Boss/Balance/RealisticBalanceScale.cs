@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Data;
 using UnityEngine;
 
 public class RealisticBalanceScale : MonoBehaviour
@@ -12,14 +11,22 @@ public class RealisticBalanceScale : MonoBehaviour
     [SerializeField] private Transform _rightPanTransform;
 
     [Header("==== 天秤の物理パラメータ =====")]
-    [SerializeField] private float _maxTiltAngle = 30.0f;
-    [SerializeField] private float _tiltSensitivity = 5.0f;
-    [SerializeField] private float _stiffness = 12.0f;
+    [SerializeField] private float _maxTiltAngle = 37.0f;
+    [SerializeField,Tooltip("傾きの感度")] private float _tiltSensitivity = 5.0f;
+    [SerializeField,Tooltip("剛性")] private float _stiffness = 12.0f;
     [SerializeField] private float _damping = 2.5f;
 
     [Header("==== カタパルト検知 ====")]
-    [Tooltip("１階の登録でこの質量以上が一気に増えたら急速加重とみなす")]
+    [Tooltip("１回の登録でこの質量以上が一気に増えたら急速加重とみなす")]
     [SerializeField] private float _suddenWeightThreshold = 5.0f;
+    // 角度が一定フレーム内に指定量変わったら
+    [SerializeField,Tooltip("")]
+    private float _suddenAngleThreshold = 20.0f;
+    [SerializeField, Tooltip("")]
+    private float _catapultValidityTime = 2.0f;
+
+    [Header("===== 振り落とし =====")]
+    [SerializeField] private float _shakeOffForce = 6.0f;
 
     // 外部バイアス　ギミックから傾きを強制
     private bool _isFrozen;
@@ -31,6 +38,8 @@ public class RealisticBalanceScale : MonoBehaviour
 
     [Header("==== 皿の傾き(滑り落ち)設定 ====")]
     [SerializeField] private float _maxPanTiltAngle = 40.0f;
+    [SerializeField] private float _raisedPanTiltFactor = 0.8f;
+    [SerializeField] private float _maxRAisedPanTiltAngle = 25.0f;
 
     private float _currentAngle = 0.0f;
     private float _angularVelocity = 0.0f;
@@ -78,15 +87,28 @@ public class RealisticBalanceScale : MonoBehaviour
 
         float panTiltZ = 0.0f;
 
-        if(isLeft && _currentAngle < 0.0f)
+        if (isLeft)
         {
-            panTiltZ = Mathf.Clamp(_currentAngle * 1.2f, -_maxPanTiltAngle, 0.0f);
+            if (_currentAngle < 0.0f)
+            {
+                panTiltZ = Mathf.Clamp(_currentAngle * 1.2f, -_maxPanTiltAngle, 0.0f);
+            }
+            else if (_currentAngle > 0.0f)
+            {
+                panTiltZ = Mathf.Clamp(-_currentAngle * _raisedPanTiltFactor,-_maxPanTiltAngle,0.0f);
+            }
         }
-        else if(!isLeft && _currentAngle > 0.0f)
+        else
         {
-            panTiltZ = Mathf.Clamp(_currentAngle * 1.2f, 0.0f, _maxPanTiltAngle);
+            if (_currentAngle > 0.0f)
+            {
+                panTiltZ = Mathf.Clamp(_currentAngle * 1.2f, 0.0f ,_maxPanTiltAngle);
+            }
+            else if (_currentAngle < 0.0f)
+            {
+                panTiltZ = Mathf.Clamp(-_currentAngle * _raisedPanTiltFactor,0.0f,_maxPanTiltAngle);
+            }
         }
-
         pan.rotation = Quaternion.Euler(0.0f, 0.0f, panTiltZ);
     }
 
@@ -121,6 +143,36 @@ public class RealisticBalanceScale : MonoBehaviour
         if (rb == null) return;
         if (isLeft) _leftPanWeights.Remove(rb);
         else _rightPanWeights.Remove(rb);
+    }
+
+    public void ClearAllWeghts()
+    {
+        ShakeOffSide(_leftPanWeights, isLeft: true);
+        ShakeOffSide(_rightPanWeights, isLeft: false);
+    }
+
+    private void ShakeOffSide(HashSet<Rigidbody> weights, bool isLeft)
+    {
+        foreach(var rb in weights)
+        {
+            if(rb == null) continue;
+
+            Vector3 knockDirection = (isLeft ? Vector3.left : Vector3.right) + Vector3.up;
+            rb.AddForce(knockDirection.normalized * _shakeOffForce,ForceMode.Impulse);
+        }
+
+        weights.Clear();
+    }
+
+    public void ResetToLevel()
+    {
+        _currentAngle = 0.0f;
+        _angularVelocity = 0.0f;
+
+        if(_beamTransform != null)
+        {
+            _beamTransform.localRotation = Quaternion.identity;
+        }
     }
 
 }

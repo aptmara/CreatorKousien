@@ -149,6 +149,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bda5f83fde931f4fab7bb88109dac92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Balance_BringMonster
+  _speed: 12
   _animator: {fileID: 2952133711994553970}
 --- !u!1001 &8781547585107137443
 PrefabInstance:

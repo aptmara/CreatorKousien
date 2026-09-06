@@ -21,6 +21,8 @@
  * 7/15: EnemySpawnerほぼ全部修正。新たにつくったWave管理のデータから敵をスポーンするように変更。 - Asano a.k.a. Gachi
  *
  * 7/16: EnemySpawnerからBOSSのスポーン修正 - Asano a.k.a. hu_do
+ * 
+ * 9/05: Spawnを位置を指定してスポーンする関数を作成、スポーンのための初期化関数を作成し初期化をひとくくりに
  */
 using UnityEngine;
 using Game.Presentation.UI;
@@ -66,35 +68,7 @@ namespace Game.Core.Enemy
         {
             spawnedEnemy = null;
 
-            if (definition == null)
-            {
-                Debug.LogError("[EnemySpawner] スポーン対象の EnemyDefinition が null です。");
-                return false;
-            }
-
-            if (definition.EnemyBody == null)
-            {
-                Debug.LogError("[EnemySpawner] EnemyDefinition の EnemyBody が null です。");
-                return false;
-            }
-
-            // EnemyBodyController が付与されているか確認
-            // 通常敵とボスでは戦闘制御を担当するコンポーネントが異なるため、EnemyDefinitionのIsBossに応じて必要なコンポーネントを検証する
-            if (definition.IsBoss)
-            {
-                if (!definition.EnemyBody.TryGetComponent(out BossBattleController _))
-                {
-                    Debug.LogError($"[EnemySpawner] ボス「{definition.EnemyId}」のEnemyBodyにBossBattleControllerが設定されていません。", definition.EnemyBody);
-
-                    return false;
-                }
-            }
-            else if (!definition.EnemyBody.TryGetComponent(out EnemyBodyController _))
-            {
-                Debug.LogError($"[EnemySpawner] 敵「{definition.EnemyId}」のEnemyBodyにEnemyBodyControllerが設定されていません。", definition.EnemyBody);
-
-                return false;
-            }
+            if (!ValidateDefinition(definition)) return false;
 
             // 目標位置計算
             float validMinDistance = Mathf.Max(0f, minDistanceFromOtherEnemies);
@@ -104,119 +78,15 @@ namespace Game.Core.Enemy
                 return false;
             }
 
-            // 通常敵は制御用の親オブジェクトを作成し、ボスは回転軸を崩さないようにEnemyBody自身をルートとして生成する
-            GameObject enemyObject;
-            GameObject body;
+            return SpawnResolvedEnemy(definition,targetPosition,hpRate,barrierRate,out spawnedEnemy);
+        }
 
-            if (definition.IsBoss)
-            {
-                enemyObject = Instantiate(definition.EnemyBody, targetPosition, Quaternion.identity);
+        public bool TrySpawnEnemyAt(EnemyDefinition definition,Vector3 position,float hpRate,float barrierRate,out EnemyController spawnedEnemy)
+        {
+            spawnedEnemy = null;
+            if (!ValidateDefinition(definition)) return false;
 
-                body = enemyObject;
-            }
-            else
-            {
-                enemyObject = new GameObject($"Enemy_{definition.EnemyId}");
-
-                enemyObject.transform.SetPositionAndRotation(targetPosition, Quaternion.identity);
-
-                body = Instantiate(definition.EnemyBody, enemyObject.transform);
-            }
-            GameObject barrier = null;
-
-            if (definition.HasBarrier && definition.BarrierBody != null)
-            {
-                barrier = Instantiate(definition.BarrierBody, enemyObject.transform);
-            }
-
-            EnemyController enemyController = enemyObject.AddComponent<EnemyController>();
-
-            if (definition.IsBoss)
-            {
-
-                bool hasBossFlow = body.TryGetComponent(out BossBattleFlowController bossBattleFlowController);
-                bool hasBossController = body.TryGetComponent(out BossBattleController bossBattleController);
-                if (!hasBossController && !hasBossFlow)
-                {
-                    Debug.LogError($"[EnemySpawner] ボス「{definition.EnemyId}」のEnemyBodyにBossBattleControllerが設定されていません。", body);
-
-                    Destroy(enemyObject);
-                    return false;
-                }
-
-                string bossInstanceId = enemyController.InitializeForBoss(definition);
-
-                if (string.IsNullOrEmpty(bossInstanceId))
-                {
-                    Debug.LogError($"[EnemySpawner] ボス「{definition.EnemyId}」の初期化に失敗しました。", enemyObject);
-
-                    Destroy(enemyObject);
-                    return false;
-                }
-
-                // 最終フェーズ終了後
-                if(!hasBossFlow && bossBattleController != null)
-                {
-                    bossBattleController.BattleCompleted += _ => Destroy(enemyObject);
-                }
-                if(bossBattleFlowController != null)
-                {
-                    bossBattleFlowController.OnBossBattleCompleted += _ => Destroy(enemyObject,5.0f);
-                }
-
-                bool startSuccess = false;
-                if (!hasBossFlow && bossBattleController != null)
-                {
-                    startSuccess = bossBattleController.StartBattle(bossInstanceId);
-                }
-                if (bossBattleFlowController != null)
-                {
-                    startSuccess = bossBattleFlowController.StartBattle(bossInstanceId);
-                }
-
-                if (!startSuccess)
-                {
-                    Debug.LogError($"[EnemySpawner] ボス「{definition.EnemyId}」の戦闘開始に失敗しました。", enemyObject);
-                    Destroy(enemyObject);
-                    return false;
-                }
-
-                spawnedEnemy = enemyController;
-                return true;
-            }
-
-            enemyObject.AddComponent<EnemyRising>();
-            enemyObject.AddComponent<EnemyWorldStatusView>();
-
-            // 状態異常VFXの設定
-            EnemyStatusAilmentVFX statusVFX = enemyObject.AddComponent<EnemyStatusAilmentVFX>();
-
-            statusVFX.SetupEntries(_statusAilmentVFXEntries, _statusAilmentVFXRoot, _statusAilmentVFXOffset, !definition.IsBoss);
-
-            if (!body.TryGetComponent(out EnemyBodyController bodyController))
-            {
-                Debug.LogWarning("[EnemySpawner] EnemyBodyController が付与されていないため生成を中止します。", body);
-                Destroy(enemyObject);
-                return false;
-            }
-
-            // WaveData から受け取ったステータス倍率を適用して敵を初期化
-            float validHpRate = Mathf.Max(0.01f, hpRate);
-            float validBarrierRate = Mathf.Max(0.01f, barrierRate);
-
-            EnemyController.SpawnSummary spawnSummary = new EnemyController.SpawnSummary(targetPosition, _undergroundOffset, validHpRate, validBarrierRate);
-
-            string enemyId = enemyController.Initialize(definition, spawnSummary, bodyController);
-
-            bodyController.Initialize(enemyId, !definition.IsBoss);
-
-            if (definition.HasBarrier && barrier != null)
-            {
-                enemyController.BarrierInitialize(definition, spawnSummary, barrier);
-            }
-
-            spawnedEnemy = enemyController;
-            return true;
+            return SpawnResolvedEnemy(definition,position,hpRate,barrierRate, out spawnedEnemy);
         }
 
         /// <summary>
@@ -313,6 +183,165 @@ namespace Game.Core.Enemy
             }
 
             return true; // 十分な距離がある
+        }
+
+        /// <summary>
+        /// 受け取ったEnemyDefinitionを適用する
+        /// </summary>
+        /// <param name="definition"></param>
+        /// <returns></returns>
+        private bool ValidateDefinition(EnemyDefinition definition)
+        {
+            if (definition == null)
+            {
+                Debug.LogError("[EnemySpawner] スポーン対象の EnemyDefinition が null です。");
+                return false;
+            }
+
+            if (definition.EnemyBody == null)
+            {
+                Debug.LogError("[EnemySpawner] EnemyDefinition の EnemyBody が null です。");
+                return false;
+            }
+
+            // EnemyBodyController が付与されているか確認
+            // 通常敵とボスでは戦闘制御を担当するコンポーネントが異なるため、EnemyDefinitionのIsBossに応じて必要なコンポーネントを検証する
+            if (definition.IsBoss)
+            {
+                if (!definition.EnemyBody.TryGetComponent(out BossBattleController _))
+                {
+                    Debug.LogError($"[EnemySpawner] ボス「{definition.EnemyId}」のEnemyBodyにBossBattleControllerが設定されていません。", definition.EnemyBody);
+
+                    return false;
+                }
+            }
+            else if (!definition.EnemyBody.TryGetComponent(out EnemyBodyController _))
+            {
+                Debug.LogError($"[EnemySpawner] 敵「{definition.EnemyId}」のEnemyBodyにEnemyBodyControllerが設定されていません。", definition.EnemyBody);
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool SpawnResolvedEnemy(EnemyDefinition definition,Vector3 targetPosition,float hpRate,float barrierRate,out EnemyController spawnedEnemy)
+        {
+            spawnedEnemy = null;
+
+            // 通常敵は制御用の親オブジェクトを作成し、ボスは回転軸を崩さないようにEnemyBody自身をルートとして生成する
+            GameObject enemyObject;
+            GameObject body;
+
+            if (definition.IsBoss)
+            {
+                enemyObject = Instantiate(definition.EnemyBody, targetPosition, Quaternion.identity);
+
+                body = enemyObject;
+            }
+            else
+            {
+                enemyObject = new GameObject($"Enemy_{definition.EnemyId}");
+
+                enemyObject.transform.SetPositionAndRotation(targetPosition, Quaternion.identity);
+
+                body = Instantiate(definition.EnemyBody, enemyObject.transform);
+            }
+            GameObject barrier = null;
+
+            if (definition.HasBarrier && definition.BarrierBody != null)
+            {
+                barrier = Instantiate(definition.BarrierBody, enemyObject.transform);
+            }
+
+            EnemyController enemyController = enemyObject.AddComponent<EnemyController>();
+
+            if (definition.IsBoss)
+            {
+
+                bool hasBossFlow = body.TryGetComponent(out BossBattleFlowController bossBattleFlowController);
+                bool hasBossController = body.TryGetComponent(out BossBattleController bossBattleController);
+                if (!hasBossController && !hasBossFlow)
+                {
+                    Debug.LogError($"[EnemySpawner] ボス「{definition.EnemyId}」のEnemyBodyにBossBattleControllerが設定されていません。", body);
+
+                    Destroy(enemyObject);
+                    return false;
+                }
+
+                string bossInstanceId = enemyController.InitializeForBoss(definition);
+
+                if (string.IsNullOrEmpty(bossInstanceId))
+                {
+                    Debug.LogError($"[EnemySpawner] ボス「{definition.EnemyId}」の初期化に失敗しました。", enemyObject);
+
+                    Destroy(enemyObject);
+                    return false;
+                }
+
+                // 最終フェーズ終了後
+                if (!hasBossFlow && bossBattleController != null)
+                {
+                    bossBattleController.BattleCompleted += _ => Destroy(enemyObject);
+                }
+                if (bossBattleFlowController != null)
+                {
+                    bossBattleFlowController.OnBossBattleCompleted += _ => Destroy(enemyObject, 5.0f);
+                }
+
+                bool startSuccess = false;
+                if (!hasBossFlow && bossBattleController != null)
+                {
+                    startSuccess = bossBattleController.StartBattle(bossInstanceId);
+                }
+                if (bossBattleFlowController != null)
+                {
+                    startSuccess = bossBattleFlowController.StartBattle(bossInstanceId);
+                }
+
+                if (!startSuccess)
+                {
+                    Debug.LogError($"[EnemySpawner] ボス「{definition.EnemyId}」の戦闘開始に失敗しました。", enemyObject);
+                    Destroy(enemyObject);
+                    return false;
+                }
+
+                spawnedEnemy = enemyController;
+                return true;
+            }
+
+            enemyObject.AddComponent<EnemyRising>();
+            enemyObject.AddComponent<EnemyWorldStatusView>();
+
+            // 状態異常VFXの設定
+            EnemyStatusAilmentVFX statusVFX = enemyObject.AddComponent<EnemyStatusAilmentVFX>();
+
+            statusVFX.SetupEntries(_statusAilmentVFXEntries, _statusAilmentVFXRoot, _statusAilmentVFXOffset, !definition.IsBoss);
+
+            if (!body.TryGetComponent(out EnemyBodyController bodyController))
+            {
+                Debug.LogWarning("[EnemySpawner] EnemyBodyController が付与されていないため生成を中止します。", body);
+                Destroy(enemyObject);
+                return false;
+            }
+
+            // WaveData から受け取ったステータス倍率を適用して敵を初期化
+            float validHpRate = Mathf.Max(0.01f, hpRate);
+            float validBarrierRate = Mathf.Max(0.01f, barrierRate);
+
+            EnemyController.SpawnSummary spawnSummary = new EnemyController.SpawnSummary(targetPosition, _undergroundOffset, validHpRate, validBarrierRate);
+
+            string enemyId = enemyController.Initialize(definition, spawnSummary, bodyController);
+
+            bodyController.Initialize(enemyId, !definition.IsBoss);
+
+            if (definition.HasBarrier && barrier != null)
+            {
+                enemyController.BarrierInitialize(definition, spawnSummary, barrier);
+            }
+
+            spawnedEnemy = enemyController;
+            return true;
         }
 
         private void OnDrawGizmosSelected()
