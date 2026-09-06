@@ -157,7 +157,7 @@ MonoBehaviour:
   _tiltThresholdAngle: 3
   _fullyRaisedAngle: 30
   _lowerHysteresis: 10
-  _inverSign: 1
+  _inverSign: 0
 --- !u!114 &7857437713337581539
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1373,9 +1373,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -1463712420452952194, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7274475352982267307}
-    - targetCorrespondingSourceObject: {fileID: -1463712420452952194, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5199817675538081013}
     - targetCorrespondingSourceObject: {fileID: 2702152385106270400, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3331502786886190336}
@@ -1388,9 +1385,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2702152385106270400, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
       insertIndex: -1
       addedObject: {fileID: 992815793746967344}
-    - targetCorrespondingSourceObject: {fileID: 2702152385106270400, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 3656815189255811449}
   m_SourcePrefab: {fileID: 100100000, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
 --- !u!4 &835656554522274398 stripped
 Transform:
@@ -1549,22 +1543,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BalanceBarrierAttackObject
   _attackInterval: 2
   _barrierDamage: 10
---- !u!114 &5199817675538081013
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2678316548601998104}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64015ed2a9769a74491919657b77af26, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BoddTraySkinnedBlendVisual
-  _source: {fileID: 7274475352982267307}
-  _renderer: {fileID: 8427730941081800293}
-  _blendShapeIndex: 0
-  _transitionSpeed: 200
 --- !u!4 &5264191776173235085 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
@@ -1693,22 +1671,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BalanceBarrierAttackObject
   _attackInterval: 2
   _barrierDamage: 10
---- !u!114 &3656815189255811449
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7780930145452303526}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64015ed2a9769a74491919657b77af26, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BoddTraySkinnedBlendVisual
-  _source: {fileID: 992815793746967344}
-  _renderer: {fileID: 8341517052891440528}
-  _blendShapeIndex: 0
-  _transitionSpeed: 200
 --- !u!1 &8330038765687330724 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -4819223349682164798, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
@@ -1735,11 +1697,13 @@ MonoBehaviour:
   _tiltSensitivity: 5
   _stiffness: 50
   _damping: 1
-  _suddenWeightThreshold: 5
+  _suddenWeightThreshold: 1000
   _suddenAngleThreshold: 20
   _catapultValidityTime: 2
-  _shakeOffForce: 6
-  _maxPanTiltAngle: 10
+  _shakeOffForce: 10
+  _maxPanTiltAngle: 20
+  _raisedPanTiltFactor: 1.21
+  _maxRAisedPanTiltAngle: 25
 --- !u!114 &8757943479672085338
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1798,13 +1762,3 @@ MonoBehaviour:
   _startExposed: 0
   _triggerDownOnHit: 0
   _hitCooldown: 0.2
---- !u!137 &8341517052891440528 stripped
-SkinnedMeshRenderer:
-  m_CorrespondingSourceObject: {fileID: 4415663344214530550, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
-  m_PrefabInstance: {fileID: 5657809737843735654}
-  m_PrefabAsset: {fileID: 0}
---- !u!137 &8427730941081800293 stripped
-SkinnedMeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -5012010121600683517, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
-  m_PrefabInstance: {fileID: 5657809737843735654}
-  m_PrefabAsset: {fileID: 0}

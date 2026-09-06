@@ -39,6 +39,8 @@ public class RealisticBalanceScale : MonoBehaviour
 
     [Header("==== 皿の傾き(滑り落ち)設定 ====")]
     [SerializeField] private float _maxPanTiltAngle = 40.0f;
+    [SerializeField] private float _raisedPanTiltFactor = 0.8f;
+    [SerializeField] private float _maxRAisedPanTiltAngle = 25.0f;
 
     private float _currentAngle = 0.0f;
     private float _angularVelocity = 0.0f;
@@ -86,15 +88,28 @@ public class RealisticBalanceScale : MonoBehaviour
 
         float panTiltZ = 0.0f;
 
-        if(isLeft && _currentAngle < 0.0f)
+        if (isLeft)
         {
-            panTiltZ = Mathf.Clamp(_currentAngle * 1.2f, -_maxPanTiltAngle, 0.0f);
+            if (_currentAngle < 0.0f)
+            {
+                panTiltZ = Mathf.Clamp(_currentAngle * 1.2f, -_maxPanTiltAngle, 0.0f);
+            }
+            else if (_currentAngle > 0.0f)
+            {
+                panTiltZ = Mathf.Clamp(-_currentAngle * _raisedPanTiltFactor,-_maxPanTiltAngle,0.0f);
+            }
         }
-        else if(!isLeft && _currentAngle > 0.0f)
+        else
         {
-            panTiltZ = Mathf.Clamp(_currentAngle * 1.2f, 0.0f, _maxPanTiltAngle);
+            if (_currentAngle > 0.0f)
+            {
+                panTiltZ = Mathf.Clamp(_currentAngle * 1.2f, 0.0f ,_maxPanTiltAngle);
+            }
+            else if (_currentAngle < 0.0f)
+            {
+                panTiltZ = Mathf.Clamp(-_currentAngle * _raisedPanTiltFactor,0.0f,_maxPanTiltAngle);
+            }
         }
-
         pan.rotation = Quaternion.Euler(0.0f, 0.0f, panTiltZ);
     }
 
@@ -155,7 +170,7 @@ public class RealisticBalanceScale : MonoBehaviour
         _currentAngle = 0.0f;
         _angularVelocity = 0.0f;
 
-        if(!_beamTransform != null)
+        if(_beamTransform != null)
         {
             _beamTransform.localRotation = Quaternion.identity;
         }
