@@ -454,7 +454,7 @@ public class S_UpgradeDetail : MonoBehaviour
     private static readonly string[] ConsumableReactions = { "これは甘くて美味しいよ", "お客さんに人気の一品だよ", "出会える確率が上がるよ" };
     private static readonly string[] DefaultReactions = { "いい選択だね", "気に入ってもらえて嬉しいよ" };
 
-    private int _reactionRotationIndex;
+private int _reactionRotationIndex = -1;
 
     /// <summary>
     /// 強化IDに応じて店主の一言を切り替える(購入成功時に呼び出し。移動速度/バリア/出現数/腕拡大の判定に使用)
