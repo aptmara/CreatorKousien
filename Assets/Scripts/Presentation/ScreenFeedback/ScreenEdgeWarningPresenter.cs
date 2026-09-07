@@ -76,6 +76,9 @@ namespace Game.Presentation.ScreenFeedback
 
             EventBus.Subscribe<BossIntroWarningStartedEvent>(HandleBossIntroWarningStarted);
             EventBus.Subscribe<BossIntroWarningEndedEvent>(HandleBossIntroWarningEnded);
+
+            EventBus.Subscribe<BossAttackWarningStartedEvent>(HandleBossAttackWarningStarted);
+            EventBus.Subscribe<BossAttackWarningEndedEvent>(HandleBossAttackWarningEnded);
         }
 
 
@@ -86,6 +89,9 @@ namespace Game.Presentation.ScreenFeedback
 
             EventBus.Unsubscribe<BossIntroWarningStartedEvent>(HandleBossIntroWarningStarted);
             EventBus.Unsubscribe<BossIntroWarningEndedEvent>(HandleBossIntroWarningEnded);
+
+            EventBus.Unsubscribe<BossAttackWarningStartedEvent>(HandleBossAttackWarningStarted);
+            EventBus.Unsubscribe<BossAttackWarningEndedEvent>(HandleBossAttackWarningEnded);
 
             StopBlink();
             SetAlpha(0f);
@@ -100,6 +106,9 @@ namespace Game.Presentation.ScreenFeedback
         {
             HandleWarningEnded(default);
         }
+
+        private void HandleBossAttackWarningStarted(BossAttackWarningStartedEvent _) => HandleWarningStarted(default);
+        private void HandleBossAttackWarningEnded(BossAttackWarningEndedEvent _) => HandleWarningEnded(default);
 
         private void HandleWarningStarted(BossThornWarningStartedEvent _)
         {

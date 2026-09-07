@@ -7,7 +7,8 @@ public class BalancePanDetector : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.TryGetComponent<Rigidbody>(out var rb))
+        Rigidbody rb = other.attachedRigidbody;
+        if(rb != null)
         {
             _scaleController.RegisterWeight(_isLeftPan,rb);
         }
@@ -15,7 +16,26 @@ public class BalancePanDetector : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.TryGetComponent<Rigidbody>(out var rb))
+        Rigidbody rb = other.attachedRigidbody;
+        if (rb != null)
+        {
+            _scaleController.UnregisterWeight(_isLeftPan, rb);
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Rigidbody rb = collision.rigidbody;
+        if (rb != null)
+        {
+            _scaleController.RegisterWeight(_isLeftPan, rb);
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        Rigidbody rb = collision.rigidbody;
+        if (rb != null)
         {
             _scaleController.UnregisterWeight(_isLeftPan, rb);
         }

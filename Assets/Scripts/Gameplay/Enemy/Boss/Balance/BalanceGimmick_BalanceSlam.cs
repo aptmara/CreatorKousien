@@ -61,6 +61,8 @@ namespace Game.Gameplay.Enemy.Boss
 
             _scale.SetExternalBias(_dangerSide == TraySide.Left ? -_biasStrength : _biasStrength);
 
+            EventBus.Publish(new BossAttackWarningStartedEvent());
+
             if (_beam != null)
             {
                 _beam.OnTrayFullyRaised += HandleFullyRaised;
@@ -114,6 +116,7 @@ namespace Game.Gameplay.Enemy.Boss
         {
             _scale.SetExternalBias(0.0f);
             Unsubscribe();
+            EventBus.Publish(new BossAttackWarningEndedEvent());
 
             float safeRatio = _challengeDuration > 0f ? Mathf.Clamp01(_safeTime / _challengeDuration) : 0f;
             GrantReward(safeRatio);
@@ -137,6 +140,7 @@ namespace Game.Gameplay.Enemy.Boss
         {
             _scale.SetExternalBias(0.0f);
             Unsubscribe();
+            EventBus.Publish(new BossAttackWarningEndedEvent());
         }
 
         private void Unsubscribe()
