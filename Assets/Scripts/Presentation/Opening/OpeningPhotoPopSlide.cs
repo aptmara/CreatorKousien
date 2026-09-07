@@ -115,7 +115,6 @@ namespace Game.Presentation.Opening
                 }
 
                 _photoGroups[i].alpha = 0f;
-                _photos[i].localScale = Vector3.zero;
             }
         }
 
@@ -128,45 +127,29 @@ namespace Game.Presentation.Opening
                 yield break;
             }
 
-            // オープニングの写真
+            // 初期位置に置く
             CanvasGroup group = _photoGroups[index];
             Vector2 shownPosition = _showPositions[index];
-            float shownRotation = _showRotations[index];
-
-            // 開始位置と角度を計算
             Vector2 startPosition = shownPosition + Vector2.down * _riseDistance;
-            float startRotation = shownRotation + Random.Range(-_tiltAngle, _tiltAngle);
 
-            // 初期化
             photo.anchoredPosition = startPosition;
-            photo.localRotation = Quaternion.Euler(0f, 0f, startRotation);
-            photo.localScale = Vector3.zero;
-            group.alpha = 0f;
+            photo.localRotation = Quaternion.Euler(0f, 0f, _showRotations[index]);
+            group.alpha = 1f;
 
             float elapsed = 0f;
             while (elapsed < _popDuration)
             {
+                // 進捗を計算して位置を補間する
                 elapsed += Time.unscaledDeltaTime;
                 float t = Mathf.Clamp01(elapsed / _popDuration);
+                float eased = OpeningEase.SmoothStep(t);
 
-                // OutBackは1を超えるので、必ずLerpUnclampedを使う
-                float eased = OpeningEase.OutBack(t);
-
-                photo.anchoredPosition = Vector2.LerpUnclamped(startPosition, shownPosition, eased);
-                photo.localScale = Vector3.one * Mathf.LerpUnclamped(0f, 1f, eased);
-                photo.localRotation = Quaternion.Euler(0f, 0f, Mathf.LerpUnclamped(startRotation, shownRotation, eased));
-
-                // 序盤で素早く不透明にして、動きのほうを見せる
-                group.alpha = Mathf.Clamp01(t * 2.5f);
+                photo.anchoredPosition = Vector2.Lerp(startPosition, shownPosition, eased);
 
                 yield return null;
             }
 
-            // 最終値で固定
             photo.anchoredPosition = shownPosition;
-            photo.localScale = Vector3.one;
-            photo.localRotation = Quaternion.Euler(0f, 0f, shownRotation);
-            group.alpha = 1f;
         }
     }
 }

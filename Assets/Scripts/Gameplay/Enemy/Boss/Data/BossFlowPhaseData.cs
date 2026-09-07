@@ -26,6 +26,22 @@ namespace Game.Gameplay.Enemy.Boss
         public float HpThresholdToEnter => _hpThresholdToEnter;
         public BossPhaseMultipliers Multipliers => _multipliers;
         public List<GimmickSlot> GimmickSlots => _gimmickSlots;
+
+#if UNITY_EDITOR
+        /// <summary>
+        /// 倍率が未設定（3つとも0）かどうか。
+        /// Inspectorのリストへ要素を追加した直後はフィールド初期化子が走らずゼロ埋めされるため、その検出に使う。
+        /// </summary>
+        internal bool HasUnsetMultipliers =>
+            Mathf.Approximately(_multipliers.DamageMultiplier, 0.0f) &&
+            Mathf.Approximately(_multipliers.SpeedMultiplier, 0.0f) &&
+            Mathf.Approximately(_multipliers.SpawnIntervalMultiplier, 0.0f);
+
+        /// <summary>
+        /// 倍率を既定値へ戻す。
+        /// </summary>
+        internal void ResetMultipliersToDefault() => _multipliers = BossPhaseMultipliers.Default;
+#endif
     }
 
 }

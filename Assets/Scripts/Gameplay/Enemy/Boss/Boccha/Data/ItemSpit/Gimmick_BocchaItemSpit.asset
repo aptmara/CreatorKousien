@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f83b09318d86b648b79fa2d65be863b, type: 3}
+  m_Name: Gimmick_BocchaItemSpit
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BocchaGimmick_ItemSpit
+  _candyData: {fileID: 11400000, guid: efa7b9a6a24ab4c4bb0517fa1e83a3c6, type: 2}
+  _candyCount: 8
+  _spitInterval: 0.12
+  _dropHeight: 12
+  _candyScale: 1
+  _scatter:
+    _pattern: 0
+    _innerRadius: 6
+    _outerRadius: 12
+    _axisScale: {x: 1, y: 1}
+    _centerOffset: {x: 0, y: 0, z: 0}
+    _fitToSpawnAreas: 1
+    _fitMargin: 0.9
+    _angleJitter: 0.35
+    _radiusJitter: 0.25
+    _minSeparation: 1.5
+    _separationRetryCount: 6
+    _snapToGround: 1
+    _discardWhenNoGround: 1
+    _groundMask:
+      serializedVersion: 2
+      m_Bits: 64
+    _groundRayHeight: 50
+  _scatterFromFieldCenter: 1
+  _useArcThrow: 1
+  _throwSocket: 4
+  _arcApexHeight: 9
+  _apexRandomness: 0.2
+  _throwGravity: 9.8
+  _stoneCandyData: {fileID: 11400000, guid: 759fe0a5c65cc2e458b01884cac72753, type: 2}
+  _spikeBallData: {fileID: 0}
+  _skullFeverData: {fileID: 0}
+  _stoneWeight: 1
+  _spikeWeight: 1
+  _skullWeight: 1
+  _drawSpawnPoints: 1
+  _logSpit: 1

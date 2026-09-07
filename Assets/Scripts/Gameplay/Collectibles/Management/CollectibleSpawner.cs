@@ -5,6 +5,7 @@
 // Description  : 収集物の生成と初期化を制御する司令塔。
 // Created      : 2026-05-06
 // Updated      : 2026-05-12 (維持管理機能をFieldMonitorへ分離)
+// Updated      : 2026-09-07 (Stage3のボス用にアイテムの生成関数追加)
 // ================================================================================
 
 using UnityEngine;
@@ -256,7 +257,7 @@ namespace Game.Gameplay.Collectibles
         private void SpawnOne(Vector3 position, CollectibleData data, Vector3 initialVelocity)
             => SpawnOne(position, data, initialVelocity, 1f);
 
-        private void SpawnOne(Vector3 position, CollectibleData data, Vector3 initialVelocity, float scaleMultiplier)
+        private CollectibleObject SpawnOne(Vector3 position, CollectibleData data, Vector3 initialVelocity, float scaleMultiplier)
         {
             CollectibleObject obj = _pool.Get();
 
@@ -267,6 +268,8 @@ namespace Game.Gameplay.Collectibles
             obj.SetInitialMotion(initialVelocity, Random.insideUnitSphere * Random.Range(2f, 8f));
 
             _registry.Register(obj);
+
+            return obj;
         }
 
         /// <summary>
@@ -290,6 +293,23 @@ namespace Game.Gameplay.Collectibles
 
             _registry.Register(obj);
         }
+
+
+        public CollectibleObject SpawnWithVelocity(CollectibleData data, Vector3 position, Vector3 initialVelocity, float scaleMultiplier = 1f)
+        {
+            if (data == null || !RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)data.Type))
+            {
+                return null;
+            }
+
+            if (!CanSpawnAtPosition())
+            {
+                return null;
+            }
+
+            return SpawnOne(position, data, initialVelocity, scaleMultiplier);
+        }
+
 
         /// <summary>
         /// 生成時のランダムな初期速度を作る。

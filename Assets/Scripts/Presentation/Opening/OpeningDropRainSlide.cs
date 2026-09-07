@@ -63,6 +63,25 @@ namespace Game.Presentation.Opening
         [Tooltip("回転速度の最大(度/秒)")]
         [SerializeField] private float _spinSpeedRange = 120f;
 
+
+        [Header("--- 雨の回数・積み上げ ---")]
+        [Tooltip("左右に降らせる回数")]
+        [SerializeField, Min(1)] private int _burstCount = 3;
+
+        [Tooltip("片側の山を横何列にするか")]
+        [SerializeField, Min(1)] private int _pileColumns = 4;
+
+        [Tooltip("一段目の飴の中心Y。DropRootの中央基準")]
+        [SerializeField] private float _pileBaseY = -230f;
+
+        [Tooltip("次の段を何ピクセル高くするか")]
+        [SerializeField, Min(1f)] private float _pileLayerHeight = 70f;
+
+        private int _leftPileCount;
+        private int _rightPileCount;
+        private int _fallingDropCount;
+        private Coroutine _rainRoutine;
+
         // 使い回すためのプール
         private readonly Queue<Image> _pool = new Queue<Image>();
         private readonly List<Image> _activeDrops = new List<Image>();
@@ -73,17 +92,34 @@ namespace Game.Presentation.Opening
 
         public override IEnumerator PlayEnterRoutine()
         {
+            // まずは落下中のコルーチンを止めて、落下中の飴も回収する
+            StopRain();
+            ReturnAllDrops();
+
+            // どの段の何列目に置くかを決めるためのカウンタをリセットする
+            _leftPileCount = 0;
+            _rightPileCount = 0;
+            _fallingDropCount = 0;
+
             Group.alpha = 1f;
 
+            // プレイヤーをぽろっと出す
             yield return PlayerPopRoutine();
 
-            // ループを起動して即座に返す
-            StartCoroutine(RainLoopRoutine());
+            _rainRoutine = StartCoroutine(RainLoopRoutine());
         }
 
 
         public override IEnumerator PlayExitRoutine()
         {
+            // 雨を止める。落下中の飴があれば着地するまで待つ
+            if (_rainRoutine != null)
+            {
+                yield return _rainRoutine;
+                _rainRoutine = null;
+            }
+
+            // 雨を止める。落下中の飴があれば着地するまで待つ
             StopRain();
 
             yield return base.PlayExitRoutine();
@@ -151,10 +187,20 @@ namespace Game.Presentation.Opening
             }
 
             // 飴の雨を振らせるにダ！
-            while (true)
+            for (int i = 0; i < _burstCount; i++)
             {
                 yield return SpawnBurstRoutine();
-                yield return new WaitForSecondsRealtime(_burstInterval);
+
+                if (i < _burstCount - 1)
+                {
+                    yield return new WaitForSecondsRealtime(_burstInterval);
+                }
+            }
+
+            // 最後の飴が着地するまで待つ
+            while (_fallingDropCount > 0)
+            {
+                yield return null;
             }
         }
 
@@ -181,50 +227,87 @@ namespace Game.Presentation.Opening
                 return;
             }
 
+            // どの段の何列目に置くかを決める
+            int pileIndex = spawnArea == _leftSpawnArea ? _leftPileCount++ : _rightPileCount++;
+
+            int columns = Mathf.Max(1, _pileColumns);
+            int column = pileIndex % columns;
+            int row = pileIndex / columns;
+
+            // 落下開始位置を決める
+            Vector2 areaPosition = spawnArea.anchoredPosition;
+            float columnWidth = spawnArea.rect.width / columns;
+
+            // 各列の中心。少しずらして整列感を弱める
+            float x = areaPosition.x - spawnArea.rect.width * 0.5f + columnWidth * (column + 0.5f) + Random.Range(-columnWidth * 0.15f, columnWidth * 0.15f);
+
+            float y = _pileBaseY + row * _pileLayerHeight + Random.Range(-30f, 30f);
+
+            // 落ち始める高さも、飴ごとに変える
+            float startY = areaPosition.y + Random.Range(0f, 300f);
+
+            // 落下開始位置と落下終了位置を決める
+            Vector2 startPosition = new Vector2(x, startY);
+            Vector2 endPosition = new Vector2(x, y);
+
             Image drop = RentDrop();
             RectTransform rect = drop.rectTransform;
 
             drop.sprite = _dropSprites[Random.Range(0, _dropSprites.Length)];
             drop.color = Color.white;
 
-            // 範囲の幅の中でランダムなX位置から落とす
-            float halfWidth = spawnArea.rect.width * 0.5f;
-            Vector2 areaPosition = spawnArea.anchoredPosition;
-            Vector2 startPosition = new Vector2(areaPosition.x  + Random.Range(-halfWidth, halfWidth), areaPosition.y);
-
+            // 位置・回転・スケールを初期化して、最後に表示する
             rect.anchoredPosition = startPosition;
             rect.localRotation = Quaternion.Euler(0f, 0f, Random.Range(0f, 360f));
             rect.localScale = Vector3.one;
+            rect.SetAsLastSibling();
+
             drop.gameObject.SetActive(true);
 
-            StartCoroutine(FallRoutine(drop, startPosition, Random.Range(-_spinSpeedRange, _spinSpeedRange)));
+            // 落下コルーチンを開始する
+            StartCoroutine(FallRoutine(drop, startPosition, endPosition, Random.Range(-_spinSpeedRange, _spinSpeedRange)));
         }
 
 
-        private IEnumerator FallRoutine(Image drop, Vector2 startPosition, float spinSpeed)
+        private IEnumerator FallRoutine(Image drop, Vector2 startPosition, Vector2 endPosition, float spinSpeed)
         {
+            _fallingDropCount++;
+
+            // 落下中はRaycastを無効にする
             RectTransform rect = drop.rectTransform;
             float startRotation = rect.localEulerAngles.z;
+            float duration = Mathf.Max(0.01f, _fallDuration * Random.Range(0.8f, 1.25f));
             float elapsed = 0f;
 
-            while (elapsed < _fallDuration)
+            float swayWidth = Random.Range(15f, 45f);
+            float swayPhase = Random.Range(0f, Mathf.PI * 2f);
+
+            while (elapsed < duration)
             {
                 elapsed += Time.unscaledDeltaTime;
-                float t = Mathf.Clamp01(elapsed / _fallDuration);
+                float t = Mathf.Clamp01(elapsed / duration);
 
-                // 重力っぽく加速させる
-                float fallRate = t * t;
+                // 下に向かって加速
+                Vector2 position = Vector2.Lerp(startPosition, endPosition, t * t);
 
-                rect.anchoredPosition = startPosition + Vector2.down * (_fallDistance * fallRate);
-                rect.localRotation = Quaternion.Euler(0f, 0f, startRotation + spinSpeed * elapsed);
+                // 飴ごとに違う揺れ
+                float sway = Mathf.Sin(t * Mathf.PI * 2f + swayPhase);
+                float envelope = Mathf.Sin(t * Mathf.PI);
 
-                // 終盤で消えていく
-                drop.color = new Color(1f, 1f, 1f, Mathf.Clamp01((1f - t) * 3f));
+                position.x += sway * envelope * swayWidth;
+                rect.anchoredPosition = position;
+
+                rect.localRotation = Quaternion.Euler(0f, 0f, startRotation + spinSpeed * Mathf.Min(elapsed, duration));
 
                 yield return null;
             }
 
-            ReturnDrop(drop);
+            rect.anchoredPosition = endPosition;
+            drop.color = Color.white;
+
+            _fallingDropCount--;
+
+            // 着地後は残す。スライド終了時にReturnAllDropsで回収する!
         }
 
 

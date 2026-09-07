@@ -1,8 +1,8 @@
 /*
  * 寺田
  * ボスの動作のフローを管理する
- * 
- * 
+ *
+ *
  */
 
 using UnityEngine;
@@ -160,7 +160,7 @@ namespace Game.Gameplay.Enemy.Boss
         public bool StartBattle(string bossInstanceId)
         {
             if(!Initialize(bossInstanceId)) return false;
-            
+
             return BeginBattle();
         }
 
@@ -239,7 +239,7 @@ namespace Game.Gameplay.Enemy.Boss
             {
                 TriggerDefeat();
                 return;
-            
+
             }
 
             //======== ダウン中の処理 =========
@@ -298,9 +298,9 @@ namespace Game.Gameplay.Enemy.Boss
         }
 
         /*
-         * 
+         *
          * ダメージ処理
-         * 
+         *
          */
 
         public void TakeDamage(float amount)
@@ -354,12 +354,12 @@ namespace Game.Gameplay.Enemy.Boss
             OnDefeat?.Invoke();
         }
 
-    
+
 
         /*
-         * 
+         *
          * DownSystem
-         * 
+         *
          */
         public void TriggerDown()
         {
@@ -390,7 +390,7 @@ namespace Game.Gameplay.Enemy.Boss
         private void EndDown()
         {
             ChangeState(BossBattleFlowState.InBattle);
-            
+
             Debug.Log("[BattleFlow] ボスがダウンから復帰しました");
 
             if(_bossAnimator != null && !string.IsNullOrEmpty(_recoverAnimTrigger))
@@ -403,9 +403,9 @@ namespace Game.Gameplay.Enemy.Boss
 
 
         /*
-         * 
+         *
          * Gimmick
-         * 
+         *
          */
 
         private void EvaluateIntervalGimmicks()
@@ -453,9 +453,9 @@ namespace Game.Gameplay.Enemy.Boss
         }
 
         /*
-         * 
+         *
          * 割り込み処理
-         * 
+         *
          */
 
         public void EnqueueInterruptGimmick(BossGimmickData gimmickData)
@@ -463,6 +463,12 @@ namespace Game.Gameplay.Enemy.Boss
             if(gimmickData == null || _currentPhaseData == null) return;
 
             GimmickSlot targetSlot = _currentPhaseData.GimmickSlots.Find(s => s.data == gimmickData);
+
+            if (targetSlot == null)
+            {
+                Debug.LogWarning($"[BattleFlow] 割り込み対象「{gimmickData.name}」が" + $"現在のフェーズ（{_currentPhaseData.PhaseName}）のギミックスロットに登録されていません。", this);
+                return;
+            }
 
             if (targetSlot.data != null && !_interruptQueue.Contains(targetSlot))
             {
