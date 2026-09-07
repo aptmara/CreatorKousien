@@ -21,6 +21,9 @@ namespace Game.Presentation.UI
 
         [Header("--- 画面内クランプ設定 ---")]
         [SerializeField] private float _screenPadding = 60f;
+        [SerializeField, Min(0f), Tooltip("ヒットテキストを表示できる下端。画面下からのピクセル数です。")]
+        private float _bottomScreenBorder = 160f;
+        [SerializeField] private bool _showBottomBorderDebugLine = true;
 
         [Header("--- 文字被り自動回避設定 ---")]
         [SerializeField] private float _overlapOverlapThreshold = 75f;
@@ -37,6 +40,7 @@ namespace Game.Presentation.UI
         // 敵ごとの個別コンボトラッカー
         private readonly Dictionary<string, int> _enemyLocalComboTracker = new Dictionary<string, int>();
         private readonly Dictionary<string, GameObject> _activePopupsTracker = new Dictionary<string, GameObject>();
+        private readonly Vector3[] _popupWorldCorners = new Vector3[4];
 
         private float _currentGlobalDurationRatio = 1f;
         private Canvas _cachedCanvas;
@@ -54,6 +58,22 @@ namespace Game.Presentation.UI
             EventBus.Unsubscribe<EnemyDefeatedEvent>(OnDefeated);
             EventBus.Unsubscribe<ComboChangedEvent>(OnComboChanged);
         }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private void OnGUI()
+        {
+            if (!_showBottomBorderDebugLine)
+            {
+                return;
+            }
+
+            Color previousColor = GUI.color;
+            GUI.color = Color.red;
+            float lineY = Screen.height - GetBottomScreenBorder();
+            GUI.DrawTexture(new Rect(0f, lineY, Screen.width, 2f), Texture2D.whiteTexture);
+            GUI.color = previousColor;
+        }
+#endif
 
         private void OnHitBatch(EnemyHitBatchEvent ev)
         {
@@ -78,7 +98,7 @@ namespace Game.Presentation.UI
             {
                 Vector3 screenPoint = Camera.main.WorldToScreenPoint(targetWorldSpacePos);
                 screenPoint.x = Mathf.Clamp(screenPoint.x, _screenPadding, Screen.width - _screenPadding);
-                screenPoint.y = Mathf.Clamp(screenPoint.y, _screenPadding, Screen.height - _screenPadding);
+                screenPoint.y = Mathf.Clamp(screenPoint.y, GetBottomScreenBorder(), Screen.height - _screenPadding);
                 finalCalculatedPosition = screenPoint;
             }
 
@@ -133,6 +153,92 @@ namespace Game.Presentation.UI
             bridge.Setup(feedbacks, localHitCount, ev.EnemyId, this, 1.5f);
 
             if (isNewSpawn) bridge.ApplyScalePunch(_hitPunchScaleAmount, _hitPunchReturnSpeed);
+
+            KeepPopupInsideScreen(rectTransform, tmpText);
+        }
+
+        internal void KeepPopupInsideScreen(RectTransform popupRect, TMPro.TMP_Text tmpText)
+        {
+            if (popupRect == null || _cachedCanvas == null ||
+                _cachedCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            {
+                return;
+            }
+
+            if (tmpText != null)
+            {
+                tmpText.ForceMeshUpdate();
+                Bounds textBounds = tmpText.textBounds;
+                Transform textTransform = tmpText.rectTransform;
+                _popupWorldCorners[0] = textTransform.TransformPoint(textBounds.min.x, textBounds.min.y, 0f);
+                _popupWorldCorners[1] = textTransform.TransformPoint(textBounds.min.x, textBounds.max.y, 0f);
+                _popupWorldCorners[2] = textTransform.TransformPoint(textBounds.max.x, textBounds.max.y, 0f);
+                _popupWorldCorners[3] = textTransform.TransformPoint(textBounds.max.x, textBounds.min.y, 0f);
+            }
+            else
+            {
+                popupRect.GetWorldCorners(_popupWorldCorners);
+            }
+
+            float minX = float.PositiveInfinity;
+            float minY = float.PositiveInfinity;
+            float maxX = float.NegativeInfinity;
+            float maxY = float.NegativeInfinity;
+            for (int i = 0; i < _popupWorldCorners.Length; i++)
+            {
+                Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(null, _popupWorldCorners[i]);
+                minX = Mathf.Min(minX, screenPoint.x);
+                minY = Mathf.Min(minY, screenPoint.y);
+                maxX = Mathf.Max(maxX, screenPoint.x);
+                maxY = Mathf.Max(maxY, screenPoint.y);
+            }
+
+            Vector2 correction = Vector2.zero;
+            correction.x = CalculateScreenCorrection(
+                minX,
+                maxX,
+                _screenPadding,
+                Screen.width - _screenPadding);
+            correction.y = CalculateScreenCorrection(
+                minY,
+                maxY,
+                GetBottomScreenBorder(),
+                Screen.height - _screenPadding);
+            popupRect.position += new Vector3(correction.x, correction.y, 0f);
+        }
+
+        private float GetBottomScreenBorder()
+        {
+            return Mathf.Clamp(
+                _bottomScreenBorder,
+                0f,
+                Mathf.Max(0f, Screen.height - _screenPadding));
+        }
+
+        private static float CalculateScreenCorrection(
+            float contentMin,
+            float contentMax,
+            float minimum,
+            float maximum)
+        {
+            float contentSize = contentMax - contentMin;
+
+            if (contentSize > maximum - minimum)
+            {
+                return (minimum + maximum) * 0.5f - (contentMin + contentMax) * 0.5f;
+            }
+
+            if (contentMin < minimum)
+            {
+                return minimum - contentMin;
+            }
+
+            if (contentMax > maximum)
+            {
+                return maximum - contentMax;
+            }
+
+            return 0f;
         }
 
         private void ResolveUiOverlaps(Vector3 newPosition)
@@ -150,7 +256,7 @@ namespace Game.Presentation.UI
 
                     if (_cachedCanvas != null && _cachedCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
                     {
-                        currentPos.y = Mathf.Clamp(currentPos.y, _screenPadding, Screen.height - _screenPadding);
+                        currentPos.y = Mathf.Clamp(currentPos.y, GetBottomScreenBorder(), Screen.height - _screenPadding);
                         currentPos.x = Mathf.Clamp(currentPos.x, _screenPadding, Screen.width - _screenPadding);
                     }
                     existingPopup.transform.position = currentPos;
@@ -204,6 +310,8 @@ namespace Game.Presentation.UI
         private float _maxLifetime;
         private float _currentLifetimeTimer;
         private bool _isTargetDead = false;
+        private RectTransform _popupRect;
+        private TMPro.TMP_Text _popupText;
 
         private float _currentPunchScale = 1.0f;
         private float _punchReturnSpeed = 12f;
@@ -218,6 +326,8 @@ namespace Game.Presentation.UI
             _presenter = presenter;
             _maxLifetime = lifetime;
             _isTargetDead = false;
+            _popupRect = GetComponent<RectTransform>();
+            _popupText = GetComponentInChildren<TMPro.TMP_Text>();
             ResetLifetime();
         }
 
@@ -256,6 +366,8 @@ namespace Game.Presentation.UI
             {
                 if (fb != null) fb.OnUpdate(_myHitCount, currentRatio);
             }
+
+            _presenter.KeepPopupInsideScreen(_popupRect, _popupText);
         }
     }
 }

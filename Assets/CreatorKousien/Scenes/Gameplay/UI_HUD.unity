@@ -667,6 +667,8 @@ MonoBehaviour:
   _popupPrefab: {fileID: 4027335750273633657, guid: deb5967c8ce36674fab9a9b0759ce6e0, type: 3}
   _popupContainer: {fileID: 1720261977}
   _screenPadding: 60
+  _bottomScreenBorder: 80
+  _showBottomBorderDebugLine: 0
   _overlapOverlapThreshold: 75
   _pushUpStrength: 45
   _numberSizePercent: 140
