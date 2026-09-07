@@ -21,6 +21,9 @@ namespace Game.Presentation.UI
 
         [Header("--- 画面内クランプ設定 ---")]
         [SerializeField] private float _screenPadding = 60f;
+        [SerializeField, Min(0f), Tooltip("ヒットテキストを表示できる下端。画面下からのピクセル数です。")]
+        private float _bottomScreenBorder = 160f;
+        [SerializeField] private bool _showBottomBorderDebugLine = true;
 
         [Header("--- 文字被り自動回避設定 ---")]
         [SerializeField] private float _overlapOverlapThreshold = 75f;
@@ -56,6 +59,22 @@ namespace Game.Presentation.UI
             EventBus.Unsubscribe<ComboChangedEvent>(OnComboChanged);
         }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private void OnGUI()
+        {
+            if (!_showBottomBorderDebugLine)
+            {
+                return;
+            }
+
+            Color previousColor = GUI.color;
+            GUI.color = Color.red;
+            float lineY = Screen.height - GetBottomScreenBorder();
+            GUI.DrawTexture(new Rect(0f, lineY, Screen.width, 2f), Texture2D.whiteTexture);
+            GUI.color = previousColor;
+        }
+#endif
+
         private void OnHitBatch(EnemyHitBatchEvent ev)
         {
             if (_popupPrefab == null || _popupContainer == null || string.IsNullOrEmpty(ev.EnemyId)) return;
@@ -79,7 +98,7 @@ namespace Game.Presentation.UI
             {
                 Vector3 screenPoint = Camera.main.WorldToScreenPoint(targetWorldSpacePos);
                 screenPoint.x = Mathf.Clamp(screenPoint.x, _screenPadding, Screen.width - _screenPadding);
-                screenPoint.y = Mathf.Clamp(screenPoint.y, _screenPadding, Screen.height - _screenPadding);
+                screenPoint.y = Mathf.Clamp(screenPoint.y, GetBottomScreenBorder(), Screen.height - _screenPadding);
                 finalCalculatedPosition = screenPoint;
             }
 
@@ -175,20 +194,38 @@ namespace Game.Presentation.UI
             }
 
             Vector2 correction = Vector2.zero;
-            correction.x = CalculateScreenCorrection(minX, maxX, Screen.width);
-            correction.y = CalculateScreenCorrection(minY, maxY, Screen.height);
+            correction.x = CalculateScreenCorrection(
+                minX,
+                maxX,
+                _screenPadding,
+                Screen.width - _screenPadding);
+            correction.y = CalculateScreenCorrection(
+                minY,
+                maxY,
+                GetBottomScreenBorder(),
+                Screen.height - _screenPadding);
             popupRect.position += new Vector3(correction.x, correction.y, 0f);
         }
 
-        private float CalculateScreenCorrection(float contentMin, float contentMax, float screenSize)
+        private float GetBottomScreenBorder()
         {
-            float minimum = _screenPadding;
-            float maximum = screenSize - _screenPadding;
+            return Mathf.Clamp(
+                _bottomScreenBorder,
+                0f,
+                Mathf.Max(0f, Screen.height - _screenPadding));
+        }
+
+        private static float CalculateScreenCorrection(
+            float contentMin,
+            float contentMax,
+            float minimum,
+            float maximum)
+        {
             float contentSize = contentMax - contentMin;
 
             if (contentSize > maximum - minimum)
             {
-                return screenSize * 0.5f - (contentMin + contentMax) * 0.5f;
+                return (minimum + maximum) * 0.5f - (contentMin + contentMax) * 0.5f;
             }
 
             if (contentMin < minimum)
@@ -219,7 +256,7 @@ namespace Game.Presentation.UI
 
                     if (_cachedCanvas != null && _cachedCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
                     {
-                        currentPos.y = Mathf.Clamp(currentPos.y, _screenPadding, Screen.height - _screenPadding);
+                        currentPos.y = Mathf.Clamp(currentPos.y, GetBottomScreenBorder(), Screen.height - _screenPadding);
                         currentPos.x = Mathf.Clamp(currentPos.x, _screenPadding, Screen.width - _screenPadding);
                     }
                     existingPopup.transform.position = currentPos;
