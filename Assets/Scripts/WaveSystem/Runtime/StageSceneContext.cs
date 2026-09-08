@@ -13,6 +13,7 @@
 // - Stage2対応 (8/13 - Asano)
 // ------------------------------------------------------------
 using System;
+using Game.Core.Save;
 using UnityEngine;
 
 namespace Game.WaveSystem
@@ -56,11 +57,19 @@ namespace Game.WaveSystem
         private bool hasCreatedSeed;        ///< Seedを生成済みかどうかを取得します。
         private int createdSeed;            ///< 生成済みのSeedの値を取得します。
 
+        private bool isRegisteredResumeState;           ///< セーブからの再開情報が登録済みかどうか。
+
 
 
         public StageDataSO StageData => stageData;      ///< StageDataSOの参照を取得します。
         public bool UseFixedSeed => useFixedSeed;       ///< 同じSeedでWaveを抽選するかどうかを取得します。
         public int FixedSeed => fixedSeed;              ///< UseFixedSeedが有効な場合に使用するSeedの値を取得します。
+
+        /// <summary>
+        /// 「つづきから」で再開する場合のセーブデータ。
+        /// 通常の新規開始(New Game / Tutorial)の場合はnullのままです。
+        /// </summary>
+        public GameSaveData ResumeData { get; private set; }
 
         /// <summary>
         /// Wave抽選用のSeedを生成します。
@@ -95,6 +104,19 @@ namespace Game.WaveSystem
             this.stageData = stageData;
 
             Debug.Log("StageContextに" + stageData.name + "を登録しました。");
+        }
+
+        /// <summary>
+        /// セーブデータからの再開情報を一度のみ登録します。
+        /// 通常の新規開始(New Game / Tutorial)の場合はnullを渡してください。
+        /// </summary>
+        /// <param name="resumeData">「つづきから」のセーブデータ。新規開始の場合はnull。</param>
+        public void RegisterResumeState(GameSaveData resumeData)
+        {
+            if (isRegisteredResumeState) return;
+
+            isRegisteredResumeState = true;
+            ResumeData = resumeData;
         }
     }
 }

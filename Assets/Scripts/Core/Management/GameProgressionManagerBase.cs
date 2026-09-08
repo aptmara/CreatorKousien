@@ -1,7 +1,12 @@
 using Game.Core.Enemy;
 using Game.Core.Events;
+using Game.Core.Roguelike;
+using Game.Core.Save;
+using Game.Data.Player;
 using Game.Gameplay.Cameras;
 using Game.Gameplay.Player;
+using Game.Gameplay.Roguelike;
+using Game.Gameplay.Roguelike.Effects;
 using Game.Gameplay.Shop;
 using Game.Gameplay.Stage;
 using Game.Presentation.GameClearCinematic;
@@ -23,6 +28,17 @@ namespace Game.Core.Management
         [Header("--- シーン名設定 ---")]
         [SerializeField] protected string _roguelikeSceneName = "Roguelike";
         [SerializeField] protected string _resultSceneName = "Result";
+
+
+        [Header("--- セーブ設定 ---")]
+        [Tooltip("セーブを行うタイミング。PerStageClear: Stageクリアで次のStageへ進む時だけ。PerWaveClear: Waveをクリアする度(Stage境界でも必ず)。")]
+        [SerializeField] private SaveCheckpointGranularity _saveCheckpointGranularity = SaveCheckpointGranularity.PerWaveClear;
+
+        [Tooltip("セーブ/つづきから復元の対象にするMoneyDataアセット。未設定の場合、お金はセーブされません。S_UpgradeSelectionUI等で使っているものと同じアセットを指定してください。")]
+        [SerializeField] private MoneyData _moneyDataForSave;
+
+        [Tooltip("セーブ/つづきから復元の対象にするSO_UpgradeRuntimeStateアセット。未設定の場合、強化状況はセーブされません。S_UpgradeSelectionUI等で使っているものと同じアセットを指定してください。")]
+        [SerializeField] private SO_UpgradeRuntimeState _upgradeRuntimeStateForSave;
 
 
         [Header("--- Stage移行 ---")]
@@ -64,7 +80,8 @@ namespace Game.Core.Management
         // --- Stage進行 ---
         protected StageDataSO _currentStageData;          // 現在プレイ中のStage
         protected int _baseSeed;                          // 現在のStageで使用する乱数シード
-        protected int _stageIndex;                        // 現在のStage番号
+        protected int _stageIndex;                        // 現在のセッション内でのStage番号(Wave抽選Seed用)
+        protected int _globalStageIndex;                  // Stage1から数えたStage番号(セーブ用)
         protected bool _isAdvancingStage;                 // Stage移行中かどうかのフラグ
 
 
@@ -86,6 +103,11 @@ namespace Game.Core.Management
         public bool HasNextStage => _currentStageData != null && _currentStageData.HasNextStage;
         public bool IsFirstWavePrepared => _isFirstWavePrepared;
         public bool PreparationFailed => _preparationFailed;
+
+        /// <summary>
+        /// セーブを行うタイミングの粒度設定。
+        /// </summary>
+        public SaveCheckpointGranularity SaveGranularity => _saveCheckpointGranularity;
 
 
         // 共通の初期化処理
@@ -537,6 +559,134 @@ namespace Game.Core.Management
             if (_gameUIController == null)
             {
                 Debug.LogError("[Progression] 新しいUIシーンにGameUIControllerが見つかりません。");
+            }
+        }
+
+
+        /// <summary>
+        /// 現在の進行状況(Stage・Wave・お金・強化状況)をセーブします。
+        /// </summary>
+        /// <param name="isStageBoundary">Stageの区切り(Stageクリア時)かどうか</param>
+        protected void SaveCheckpoint(bool isStageBoundary)
+        {
+            if (_currentStageData == null)
+            {
+                return;
+            }
+
+            // Stage境界のセーブは常に実行。Wave単位のセーブは設定がPerWaveClearの時だけ実行する
+            if (!isStageBoundary && _saveCheckpointGranularity != SaveCheckpointGranularity.PerWaveClear)
+            {
+                return;
+            }
+
+            var data = new GameSaveData
+            {
+                stageIndex = _globalStageIndex,
+                waveIndex = _currentWaveIndex,
+                stageName = _currentStageData.StageName,
+                money = _moneyDataForSave != null ? _moneyDataForSave.moneyOnHand : 0,
+            };
+
+            if (_upgradeRuntimeStateForSave != null)
+            {
+                foreach (UpgradeRuntimeEntry entry in _upgradeRuntimeStateForSave.Entries)
+                {
+                    if (entry?.CardData == null || entry.Level <= 0)
+                    {
+                        continue;
+                    }
+
+                    data.upgrades.Add(new UpgradeSaveEntry
+                    {
+                        upgradeId = entry.CardData.Id,
+                        level = entry.Level,
+                    });
+                }
+            }
+
+            SaveManager.Save(data);
+        }
+
+
+        /// <summary>
+        /// 「つづきから」で読み込んだセーブデータのお金・ローグライク強化状況を、実際のゲーム状態へ反映します。
+        /// MoneyData.Initialize() / RoguelikeUpgradeRuntime.Reset() で一旦まっさらになった直後に呼ぶことを想定しています。
+        /// (新規開始時はresumeDataがnullなので何もしません)
+        /// </summary>
+        /// <param name="resumeData">つづきからのセーブデータ。新規開始の場合はnull。</param>
+        /// <param name="player">強化のステータス反映先となるプレイヤー</param>
+        protected void RestoreRunState(GameSaveData resumeData, Gameplay.Player.PlayerFacade player)
+        {
+            if (resumeData == null)
+            {
+                return;
+            }
+
+            // お金の復元
+            if (_moneyDataForSave != null)
+            {
+                _moneyDataForSave.moneyOnHand = Mathf.Max(0, resumeData.money);
+            }
+
+            // 強化状況の復元(ショップで購入した時と全く同じ経路で反映する)
+            if (_upgradeRuntimeStateForSave != null)
+            {
+                // 前回のプレイ内容が残ったままになっていないよう、まず必ずクリアしてから復元する
+                // (Clear()内でRoguelikeEffectRuntime.Resetも呼ばれる)
+                _upgradeRuntimeStateForSave.Clear();
+
+                if (resumeData.upgrades != null && resumeData.upgrades.Count > 0)
+                {
+                    SO_UpgradePool pool = SO_RoguelikeBalanceConfig.LoadDefault()?.UpgradePool;
+                    if (pool == null)
+                    {
+                        Debug.LogWarning("[Progression] SO_UpgradePool(既定のバランス設定)が見つからないため、強化状況を復元できませんでした。");
+                    }
+                    else
+                    {
+                        foreach (UpgradeSaveEntry saved in resumeData.upgrades)
+                        {
+                            UpgradeData data = pool.GetById(saved.upgradeId);
+                            if (data == null)
+                            {
+                                Debug.LogWarning($"[Progression] セーブされた強化ID「{saved.upgradeId}」が見つからないため、復元をスキップします。");
+                                continue;
+                            }
+
+                            int appliedLevels = _upgradeRuntimeStateForSave.AddLevels(data, saved.level);
+                            if (appliedLevels <= 0)
+                            {
+                                continue;
+                            }
+
+                            int level = _upgradeRuntimeStateForSave.GetLevel(data);
+
+                            bool hasPlayerModifiers = data.Modifiers != null && data.Modifiers.Length > 0;
+                            if (hasPlayerModifiers && player != null)
+                            {
+                                for (int i = 0; i < appliedLevels; i++)
+                                {
+                                    player.ApplyUpgrade(data);
+                                }
+                            }
+
+                            RoguelikeUpgradeRuntime.Apply(data.Id, level, data.GameplayValue);
+                            RoguelikeEffectRuntime.Register(data, level);
+
+                            if (data.OfferType == UpgradeOfferType.CombatPressureRule)
+                            {
+                                int outputType = (int)data.CombatPressureOutputType;
+                                RoguelikeBuildRuntime.SetCombatRule(data.CombatPressureRuleId, level, outputType);
+                                RoguelikeUpgradeRuntime.UnlockCollectible(outputType);
+                            }
+                        }
+                    }
+                }
+
+                // RoguelikeUpgradeRuntime.Reset()が立てた「次のショップオープン時にクリアする」フラグをここで消費し、
+                // 復元した強化が最初のショップ表示時に消えてしまわないようにする
+                RoguelikeUpgradeRuntime.ConsumeRuntimeStateClearRequest();
             }
         }
 

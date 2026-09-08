@@ -14,6 +14,7 @@
 using System.Collections;
 using Game.Core.Management;
 using Game.Core.Roguelike;
+using Game.Core.Save;
 using Game.Gameplay.Cameras;
 using Game.Gameplay.Collectibles;
 using Game.Gameplay.Player;
@@ -87,6 +88,18 @@ namespace Game.Infrastructure.Bootstrap
         /// <param name="stageData">StageDataSOの参照。nullの場合はStageSceneContextの設定をそのまま使う。</param>
         public IEnumerator PrepareGameRoutine(StageDataSO stageData)
         {
+            yield return PrepareGameRoutine(stageData, null);
+        }
+
+
+        /// <summary>
+        /// シーン読み込み、参照接続、初期スポーンを順番に実行する。
+        /// セーブデータからの「つづきから」再開にも対応しています。
+        /// </summary>
+        /// <param name="stageData">StageDataSOの参照。nullの場合はStageSceneContextの設定をそのまま使う。</param>
+        /// <param name="resumeData">「つづきから」のセーブデータ。新規開始の場合はnull。</param>
+        public IEnumerator PrepareGameRoutine(StageDataSO stageData, GameSaveData resumeData)
+        {
             if (_isBootstrapped)
             {
                 yield break;
@@ -110,6 +123,9 @@ namespace Game.Infrastructure.Bootstrap
             {
                 stageContext.RegisterStageData(stageData);
             }
+
+            // つづきからの再開情報(通常の新規開始ではnullのまま)
+            stageContext.RegisterResumeState(resumeData);
 
             // どのStageを読み込むかStageDataSOから決める
             _resolvedStageScene = ResolveStageSceneName(stageContext.StageData);
