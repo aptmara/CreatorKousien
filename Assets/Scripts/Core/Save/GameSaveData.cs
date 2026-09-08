@@ -13,14 +13,12 @@ namespace Game.Core.Save
 {
     /// <summary>
     /// セーブファイルへ書き出す進行状況データ。
-    /// StageDataSOそのものは保存できないため、Stage1からNextStageを何回辿ったかを示す
-    /// stageIndexと、そのStage内の何Wave目かを示すwaveIndexだけを保存します。
     /// </summary>
     [Serializable]
     public sealed class GameSaveData
     {
         /// <summary>
-        /// セーブデータの形式バージョン。将来フォーマットを変えた時の互換判定用。
+        /// セーブデータの形式バージョン。
         /// </summary>
         public int saveVersion = 1;
 
@@ -35,12 +33,12 @@ namespace Game.Core.Save
         public int waveIndex;
 
         /// <summary>
-        /// デバッグ表示・確認用のStage名。ロード処理では使用しません。
+        /// デバッグ表示・確認用のStage名。
         /// </summary>
         public string stageName;
 
         /// <summary>
-        /// セーブした日時(UTC, ISO8601形式)。デバッグ確認用。
+        /// セーブした日時(UTC, ISO8601形式)。
         /// </summary>
         public string savedAtUtc;
 
@@ -56,8 +54,7 @@ namespace Game.Core.Save
     }
 
     /// <summary>
-    /// 取得済み強化1件分のセーブデータ。UpgradeData(ScriptableObject)は直接保存できないため、
-    /// 復元時にSO_UpgradePool.GetById(upgradeId)で引き直します。
+    /// 取得済み強化1件分のセーブデータ。
     /// </summary>
     [Serializable]
     public sealed class UpgradeSaveEntry

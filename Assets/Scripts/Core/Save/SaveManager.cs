@@ -15,7 +15,6 @@ namespace Game.Core.Save
 {
     /// <summary>
     /// セーブデータの読み書きを担当する静的クラス。
-    /// Application.persistentDataPath配下にJSONファイルとして1セーブ分だけ保存します。
     /// </summary>
     public static class SaveManager
     {
@@ -40,7 +39,7 @@ namespace Game.Core.Save
         }
 
         /// <summary>
-        /// セーブデータを読み込みます。存在しない・壊れている場合はnullを返します。
+        /// セーブデータを読み込みます。
         /// </summary>
         public static GameSaveData Load()
         {
@@ -72,10 +71,6 @@ namespace Game.Core.Save
         /// <summary>
         /// 現在の進行状況をセーブします。
         /// </summary>
-        /// <param name="data">
-        /// 書き出すセーブデータ。stageIndex/waveIndex/stageName/moneyは呼び出し側で設定してください。
-        /// saveVersionとsavedAtUtcはここで上書きします。
-        /// </param>
         public static void Save(GameSaveData data)
         {
             if (data == null)
@@ -106,7 +101,7 @@ namespace Game.Core.Save
         }
 
         /// <summary>
-        /// セーブデータを削除します。ゲームクリア後などに使用します。
+        /// セーブデータを削除します。
         /// </summary>
         public static void DeleteSave()
         {
@@ -126,7 +121,6 @@ namespace Game.Core.Save
 
         /// <summary>
         /// Stage1(ルート)のStageDataSOから、NextStageをstageIndex回辿った先のStageDataSOを解決します。
-        /// 途中でNextStageが途切れた場合は、辿り着けた最後のStageを返します。
         /// </summary>
         /// <param name="rootStage">Stage1に相当するStageDataSO</param>
         /// <param name="stageIndex">辿る回数(0ならrootStageそのもの)</param>

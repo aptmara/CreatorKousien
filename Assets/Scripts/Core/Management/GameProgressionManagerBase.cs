@@ -31,13 +31,13 @@ namespace Game.Core.Management
 
 
         [Header("--- セーブ設定 ---")]
-        [Tooltip("セーブを行うタイミング。PerStageClear: Stageクリアで次のStageへ進む時だけ。PerWaveClear: Waveをクリアする度(Stage境界でも必ず)。")]
+        [Tooltip("セーブを行うタイミング。PerStageClear: Stageクリアで次のStageへ進む時だけ。PerWaveClear: Waveをクリアする度。")]
         [SerializeField] private SaveCheckpointGranularity _saveCheckpointGranularity = SaveCheckpointGranularity.PerWaveClear;
 
-        [Tooltip("セーブ/つづきから復元の対象にするMoneyDataアセット。未設定の場合、お金はセーブされません。S_UpgradeSelectionUI等で使っているものと同じアセットを指定してください。")]
+        [Tooltip("セーブ/つづきから復元の対象にするMoneyDataアセット。")]
         [SerializeField] private MoneyData _moneyDataForSave;
 
-        [Tooltip("セーブ/つづきから復元の対象にするSO_UpgradeRuntimeStateアセット。未設定の場合、強化状況はセーブされません。S_UpgradeSelectionUI等で使っているものと同じアセットを指定してください。")]
+        [Tooltip("セーブ/つづきから復元の対象にするSO_UpgradeRuntimeStateアセット。")]
         [SerializeField] private SO_UpgradeRuntimeState _upgradeRuntimeStateForSave;
 
 
@@ -611,10 +611,8 @@ namespace Game.Core.Management
 
         /// <summary>
         /// 「つづきから」で読み込んだセーブデータのお金・ローグライク強化状況を、実際のゲーム状態へ反映します。
-        /// MoneyData.Initialize() / RoguelikeUpgradeRuntime.Reset() で一旦まっさらになった直後に呼ぶことを想定しています。
-        /// (新規開始時はresumeDataがnullなので何もしません)
         /// </summary>
-        /// <param name="resumeData">つづきからのセーブデータ。新規開始の場合はnull。</param>
+        /// <param name="resumeData">つづきからのセーブデータ。</param>
         /// <param name="player">強化のステータス反映先となるプレイヤー</param>
         protected void RestoreRunState(GameSaveData resumeData, Gameplay.Player.PlayerFacade player)
         {
@@ -629,11 +627,9 @@ namespace Game.Core.Management
                 _moneyDataForSave.moneyOnHand = Mathf.Max(0, resumeData.money);
             }
 
-            // 強化状況の復元(ショップで購入した時と全く同じ経路で反映する)
+            // 強化状況の復元
             if (_upgradeRuntimeStateForSave != null)
             {
-                // 前回のプレイ内容が残ったままになっていないよう、まず必ずクリアしてから復元する
-                // (Clear()内でRoguelikeEffectRuntime.Resetも呼ばれる)
                 _upgradeRuntimeStateForSave.Clear();
 
                 if (resumeData.upgrades != null && resumeData.upgrades.Count > 0)
@@ -684,8 +680,6 @@ namespace Game.Core.Management
                     }
                 }
 
-                // RoguelikeUpgradeRuntime.Reset()が立てた「次のショップオープン時にクリアする」フラグをここで消費し、
-                // 復元した強化が最初のショップ表示時に消えてしまわないようにする
                 RoguelikeUpgradeRuntime.ConsumeRuntimeStateClearRequest();
             }
         }

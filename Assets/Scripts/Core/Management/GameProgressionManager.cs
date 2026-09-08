@@ -108,7 +108,7 @@ namespace Game.Core.Management
             var gauge = Object.FindFirstObjectByType<Core.DefenceLine.DefenseLineGauge>();
             float currentHp = gauge != null ? gauge.CurrentHP : 0f;
 
-            // ゲームクリア(最終Stageクリア)の場合は、つづきからする対象がなくなるのでセーブデータを削除する
+            // ゲームクリアの場合は、つづきからする対象がなくなるのでセーブデータを削除する
             if (isClear && !HasNextStage)
             {
                 SaveManager.DeleteSave();
