@@ -114,6 +114,10 @@ namespace Game.Gameplay.Enemy.Boss
         [Tooltip("地面を探すレイの高さ")]
         private float _groundRayHeight = 50.0f;
 
+        [SerializeField]
+        [Tooltip("地面から浮かせる高さ。ピボットが中心にあるモデルは、半径ぶん上げると埋まらなくなる")]
+        private float _groundClearance = 0.0f;
+
 
         /// <summary>呼び出しごとに黄金角ぶん回して、毎回同じ配置にならないようにする</summary>
         private float _rotationSeed;
@@ -357,7 +361,7 @@ namespace Game.Gameplay.Enemy.Boss
                 return false;
             }
 
-            position = hit.point;
+            position = hit.point + up * _groundClearance;
 
             return true;
         }

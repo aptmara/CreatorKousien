@@ -30,7 +30,7 @@ namespace Game.Gameplay.Enemy.Boss
     /// <summary>
     /// お邪魔アイテムの基底クラス
     /// </summary>
-    public abstract class BocchaHazardBase : MonoBehaviour
+    public abstract class BocchaHazardBase : MonoBehaviour, IBocchaHazard
     {
         [Header("==== 落下 ====")]
 
@@ -74,7 +74,16 @@ namespace Game.Gameplay.Enemy.Boss
         private Collider _bodyCollider;
 
 
-        [Header("==== 演出(後付け用・空でOK) ====")]
+        [SerializeField]
+        [Tooltip("着地時にコライダーの下端が地面へ来るよう自動で持ち上げるか")]
+        private bool _alignBottomToGround = true;
+
+        [SerializeField]
+        [Tooltip("接地位置の追加オフセット。めり込ませたい場合はマイナス")]
+        private float _groundOffset = 0.0f;
+
+
+        [Header("==== 演出 ====")]
 
         [SerializeField]
         [Tooltip("着地時のVFX")]
@@ -103,6 +112,9 @@ namespace Game.Gameplay.Enemy.Boss
 
         /// <summary>着地済みかどうか。</summary>
         public bool IsLanded { get; private set; }
+
+        /// <summary>現在位置。</summary>
+        public Vector3 Position => transform.position;
 
         /// <summary>お邪魔アイテムの種類。</summary>
         public abstract BocchaHazardType HazardType { get; }
@@ -274,8 +286,6 @@ namespace Game.Gameplay.Enemy.Boss
         /// </summary>
         private void Land()
         {
-            // 接地点に到達したら着地処理
-            transform.position = _groundPosition;
             _isFalling = false;
             IsLanded = true;
 
@@ -283,6 +293,21 @@ namespace Game.Gameplay.Enemy.Boss
             {
                 _bodyCollider.enabled = true;
             }
+
+            // 接地点に到達したら着地処理
+            transform.position = _groundPosition;
+
+            Vector3 up = GetUp();
+
+            // コライダーの下端が接地点に来るように持ち上げる
+            if (_alignBottomToGround && _bodyCollider != null)
+            {
+                float bottomGap = Vector3.Dot(transform.position - _bodyCollider.bounds.min, up);
+
+                transform.position += up * bottomGap;
+            }
+
+            transform.position += up * _groundOffset;
 
             PlayVfx(_landingVfxPrefab);
 

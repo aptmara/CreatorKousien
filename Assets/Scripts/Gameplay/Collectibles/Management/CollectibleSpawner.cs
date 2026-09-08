@@ -295,9 +295,15 @@ namespace Game.Gameplay.Collectibles
         }
 
 
-        public CollectibleObject SpawnWithVelocity(CollectibleData data, Vector3 position, Vector3 initialVelocity, float scaleMultiplier = 1f)
+        public CollectibleObject SpawnWithVelocity(CollectibleData data, Vector3 position, Vector3 initialVelocity, float scaleMultiplier = 1f, bool ignoreUnlock = false)
         {
-            if (data == null || !RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)data.Type))
+            if (data == null)
+            {
+                return null;
+            }
+
+            // ボスギミックからの生成は、ローグライクのアンロック状況に左右させない
+            if (!ignoreUnlock && !RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)data.Type))
             {
                 return null;
             }

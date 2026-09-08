@@ -1,15 +1,16 @@
 // ------------------------------------------------------------
-// File		: BocchaGimmick_SpikeBall.cs
-// Summary	: トゲ玉を落し物として山なりに投げるギミック
+// File		: BocchaGimmick_SkullFever.cs
+// Summary	: ドクロを落し物として山なりに投げるギミック
 //
 // Author	: [浅野 勇生]
-// Created	: 2026-09-07
+// Created	: 2026-09-08
 //
 // Notes	:
-// - トゲ玉はプレイヤーが持ち運べるので、キャンディと同じ落し物として生成する!
-// - 調整値（サイズ・数）はこのSOのScale Multiplier / Spawn Countで行う!
-// - バリアダメージ量もこのSOで設定し、生成時にBocchaSpikeBallへ渡す。
-// - ボス自身が危険圏へ投げ込まないよう、危険圏内の散布点は除外する。
+// - ドクロはプレイヤーが持ち運べるので、キャンディと同じ落し物として生成する!
+// - カウントダウンは生成した瞬間から回るので、持ったままだと手元で爆発する！
+// - 調整値（数）はこのSOのSpawn Countで行う!
+// - 爆発の設定もこのSOで持ち、生成時にBocchaSkullへ渡す。
+// - バリアを削らないので、トゲ玉と違い危険圏を避ける必要はない。
 // ------------------------------------------------------------
 using System.Collections.Generic;
 using Game.Data.Collectibles;
@@ -20,26 +21,26 @@ using UnityEngine;
 namespace Game.Gameplay.Enemy.Boss
 {
     /// <summary>
-    /// トゲ玉を生成するギミック
+    /// ドクロを生成するギミック
     /// </summary>
-    [CreateAssetMenu(fileName = "Gimmick_BocchaSpikeBall", menuName = "Boss/Gimmicks/Boccha/SpikeBall")]
-    public sealed class BocchaGimmick_SpikeBall : BossGimmickSO
+    [CreateAssetMenu(fileName = "Gimmick_BocchaSkullFever", menuName = "Boss/Gimmicks/Boccha/SkullFever")]
+    public sealed class BocchaGimmick_SkullFever : BossGimmickSO
     {
-        [Header("--- トゲ玉 ---")]
+        [Header("--- ドクロ ---")]
 
         [SerializeField]
-        [Tooltip("トゲ玉の落し物データ")]
-        private CollectibleData _spikeBallData;
+        [Tooltip("ドクロの落し物データ")]
+        private CollectibleData _skullData;
 
         [SerializeField]
         [Min(1)]
         [Tooltip("1回あたりの生成数")]
-        private int _spawnCount = 2;
+        private int _spawnCount = 3;
 
         [SerializeField]
         [Min(0.1f)]
         [Tooltip("大きさの倍率")]
-        private float _scaleMultiplier = 3.0f;
+        private float _scaleMultiplier = 1.0f;
 
         [SerializeField]
         [Min(0f)]
@@ -69,16 +70,31 @@ namespace Game.Gameplay.Enemy.Boss
         private float _throwGravity = 9.8f;
 
 
-        [Header("--- バリアダメージ ---")]
+        [Header("--- 爆発 ---")]
 
         [SerializeField]
         [Min(0f)]
-        [Tooltip("防衛バリアに当たった時に与えるダメージ")]
-        private float _barrierDamage = 20.0f;
+        [Tooltip("生成してから爆発するまでの時間")]
+        private float _countdownDuration = 4.0f;
 
         [SerializeField]
-        [Tooltip("バリアへダメージが入った時のVFX")]
-        private GameObject _barrierHitVfxPrefab;
+        [Min(0f)]
+        [Tooltip("爆発が届く範囲")]
+        private float _explosionRadius = 6.0f;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("オカシを吹き飛ばす初速(m/s)。中心にいるものがこの速度で飛ぶ")]
+        private float _explosionSpeed = 8.0f;
+
+        [SerializeField]
+        [Range(0f, 1f)]
+        [Tooltip("吹き飛ばしを上方向へ寄せる割合。0で真横、1で真上寄り")]
+        private float _upwardRatio = 0.4f;
+
+        [SerializeField]
+        [Tooltip("爆発時のVFX")]
+        private GameObject _explosionVfxPrefab;
 
         [SerializeField]
         [Min(0f)]
@@ -95,10 +111,6 @@ namespace Game.Gameplay.Enemy.Boss
         [SerializeField]
         [Tooltip("ONならフィールド中心、OFFならボス位置を散布の中心にする")]
         private bool _scatterFromFieldCenter = true;
-
-        [SerializeField]
-        [Tooltip("ボス自身が危険圏へ投げ込まないよう、危険圏内の散布点を除外する")]
-        private bool _avoidDangerZone = true;
 
 
         [Header("--- デバッグ ---")]
@@ -135,14 +147,9 @@ namespace Game.Gameplay.Enemy.Boss
 
             _scatter.BuildPoints(ResolveScatterCenter(), _spawnCount, _points);
 
-            if (_avoidDangerZone)
+            if (_points.Count == 0 || _skullData == null)
             {
-                RemoveDangerZonePoints();
-            }
-
-            if (_points.Count == 0 || _spikeBallData == null)
-            {
-                Debug.LogWarning("[SpikeBall] データ未設定、または散布点が0のため生成できません。");
+                Debug.LogWarning("[SkullFever] データ未設定、または散布点が0のため生成できません。");
 
                 _isComplete = true;
             }
@@ -195,7 +202,7 @@ namespace Game.Gameplay.Enemy.Boss
         // ------------------------------------------------------------
 
         /// <summary>
-        /// トゲ玉を1個投げる
+        /// ドクロを1個投げる
         /// </summary>
         private void ThrowOne()
         {
@@ -223,55 +230,40 @@ namespace Game.Gameplay.Enemy.Boss
 
             Vector3 velocity = BocchaBallistics.SolveVelocityByApex(from, targetPoint, apex, gravity, out float flightTime);
 
-            // Toge型は既定でロックされているため、ボスギミックではアンロック判定を無視する
-            CollectibleObject ball = spawner.SpawnWithVelocity(_spikeBallData, from, Vector3.zero, _scaleMultiplier, true);
+            // ロックされた種類でも出せるよう、ボスギミックではアンロック判定を無視する
+            CollectibleObject skullObject =
+                spawner.SpawnWithVelocity(_skullData, from, Vector3.zero, _scaleMultiplier, true);
 
-            if (ball == null)
+            if (skullObject == null)
             {
                 return;
             }
 
             // 初速は与えず、放物線上を直接動かして軌道を保証する
-            if (!ball.TryGetComponent(out BocchaThrownItemMover mover))
+            if (!skullObject.TryGetComponent(out BocchaThrownItemMover mover))
             {
-                mover = ball.gameObject.AddComponent<BocchaThrownItemMover>();
+                mover = skullObject.gameObject.AddComponent<BocchaThrownItemMover>();
             }
 
             mover.Begin(from, velocity, gravity, flightTime);
 
             // 落し物はプールの使い回しなので、判定コンポーネントも実行時に付ける
-            if (!ball.TryGetComponent(out BocchaSpikeBall spikeBall))
+            if (!skullObject.TryGetComponent(out BocchaSkull skull))
             {
-                spikeBall = ball.gameObject.AddComponent<BocchaSpikeBall>();
+                skull = skullObject.gameObject.AddComponent<BocchaSkull>();
             }
 
-            spikeBall.Initialize(_barrierDamage, _barrierHitVfxPrefab, _vfxLifeTime);
+            skull.Initialize(
+                _countdownDuration,
+                _explosionRadius,
+                _explosionSpeed,
+                _upwardRatio,
+                _explosionVfxPrefab,
+                _vfxLifeTime);
 
             if (_drawSpawnPoints)
             {
-                BocchaBallistics.DrawTrajectory(from, velocity, gravity, flightTime, 5.0f, Color.red);
-            }
-        }
-
-
-        /// <summary>
-        /// 危険圏に入っている散布点を取り除く
-        /// </summary>
-        private void RemoveDangerZonePoints()
-        {
-            if (!BocchaBarrierDangerZone.HasAnyZone)
-            {
-                return;
-            }
-
-            for (int i = _points.Count - 1; i >= 0; --i)
-            {
-                if (!BocchaBarrierDangerZone.TryGetZone(_points[i], out _))
-                {
-                    continue;
-                }
-
-                _points.RemoveAt(i);
+                BocchaBallistics.DrawTrajectory(from, velocity, gravity, flightTime, 5.0f, Color.magenta);
             }
         }
 
@@ -304,7 +296,7 @@ namespace Game.Gameplay.Enemy.Boss
 
             if (_spawner == null)
             {
-                Debug.LogWarning("[SpikeBall] CollectibleSpawnerがシーンに見つかりません。");
+                Debug.LogWarning("[SkullFever] CollectibleSpawnerがシーンに見つかりません。");
             }
 
             return _spawner;

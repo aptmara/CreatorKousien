@@ -91,7 +91,7 @@ namespace Game.Gameplay.Enemy.Boss
         private bool _useFieldAxis = true;
 
 
-        [Header("==== 演出(後付け用・空でOK) ====")]
+        [Header("==== 演出 ====")]
 
         [SerializeField]
         [Tooltip("移動アニメーション用のAnimator。未設定なら何もしない")]

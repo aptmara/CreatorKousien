@@ -35,6 +35,7 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 64
     _groundRayHeight: 50
+    _groundClearance: 0
   _scatterFromFieldCenter: 1
   _useArcThrow: 1
   _throwSocket: 4
@@ -42,8 +43,8 @@ MonoBehaviour:
   _apexRandomness: 0.2
   _throwGravity: 9.8
   _stoneCandyData: {fileID: 11400000, guid: 759fe0a5c65cc2e458b01884cac72753, type: 2}
-  _spikeBallData: {fileID: 0}
-  _skullFeverData: {fileID: 0}
+  _spikeBallData: {fileID: 11400000, guid: 74f32a958edebdd4daa2b1b413cfb476, type: 2}
+  _skullFeverData: {fileID: 11400000, guid: 4bdfcd5af79976549acdd3221dbc5d1d, type: 2}
   _stoneWeight: 1
   _spikeWeight: 1
   _skullWeight: 1

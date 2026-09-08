@@ -24,3 +24,7 @@ MonoBehaviour:
       gimmick: {fileID: 11400000, guid: a75c0a5707403c6408db6ef047630ed8, type: 2}
     - data: {fileID: 11400000, guid: 759fe0a5c65cc2e458b01884cac72753, type: 2}
       gimmick: {fileID: 11400000, guid: 09e8f3f8d3a237b4caa60bb64acc0b27, type: 2}
+    - data: {fileID: 11400000, guid: 74f32a958edebdd4daa2b1b413cfb476, type: 2}
+      gimmick: {fileID: 11400000, guid: e1e683ef6949c274d8f2eef7a6b5db97, type: 2}
+    - data: {fileID: 11400000, guid: 4bdfcd5af79976549acdd3221dbc5d1d, type: 2}
+      gimmick: {fileID: 11400000, guid: 4da01ebd4124ed8449b2734339555e25, type: 2}

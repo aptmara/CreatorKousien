@@ -19,17 +19,18 @@ namespace Game.Gameplay.Enemy.Boss
     /// </summary>
     public static class BocchaHazardRegistry
     {
-        private static readonly List<BocchaHazardBase> _actives = new List<BocchaHazardBase>();
+        private static readonly List<IBocchaHazard> _actives = new List<IBocchaHazard>();
 
         /// <summary>
         /// 生存中のお邪魔アイテム一覧。
         /// </summary>
-        public static IReadOnlyList<BocchaHazardBase> Actives => _actives;
+        public static IReadOnlyList<IBocchaHazard> Actives => _actives;
+
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics() => _actives.Clear();
 
-        public static void Register(BocchaHazardBase hazard)
+        public static void Register(IBocchaHazard hazard)
         {
             if (hazard == null || _actives.Contains(hazard))
             {
@@ -40,7 +41,7 @@ namespace Game.Gameplay.Enemy.Boss
         }
 
 
-        public static void Unregister(BocchaHazardBase hazard)
+        public static void Unregister(IBocchaHazard hazard)
         {
             if (hazard == null)
             {
@@ -53,13 +54,22 @@ namespace Game.Gameplay.Enemy.Boss
         /// <summary>
         /// 生存中のお邪魔アイテムをすべて消す
         /// </summary>
-        public static void DespawnAll()
+        /// <param name="despawnVfxPrefab">消える位置に出すVFX。nullなら出さない</param>
+        /// <param name="vfxLifeTime">VFXを破棄するまでの時間</param>
+        public static void DespawnAll(GameObject despawnVfxPrefab = null, float vfxLifeTime = 3.0f)
         {
-            // ForceDespawnの中でUnregisterされるので、foreachではなくforループで回す
             for (int i = _actives.Count - 1; i >= 0; --i)
             {
-                if (_actives[i] == null)
-                    continue;
+                // インターフェース型はUnityの破棄済み判定が効かないので、Objectへ落として確認する
+                if (_actives[i] is UnityEngine.Object obj && obj == null) continue;
+
+                // 唐突に消えたように見えないよう、消える位置に煙を出す
+                if (despawnVfxPrefab != null)
+                {
+                    GameObject vfx = Object.Instantiate(despawnVfxPrefab, _actives[i].Position, Quaternion.identity);
+
+                    Object.Destroy(vfx, vfxLifeTime);
+                }
 
                 _actives[i].ForceDespawn();
             }
@@ -72,12 +82,22 @@ namespace Game.Gameplay.Enemy.Boss
         /// 指定したハザードタイプの生存中のお邪魔アイテムをすべて消す
         /// </summary>
         /// <param name="hazardType">お邪魔アイテムの種類</param>
-        public static void DespawnAll(BocchaHazardType hazardType)
+        public static void DespawnAll(BocchaHazardType hazardType, GameObject despawnVfxPrefab = null, float vfxLifeTime = 3.0f)
         {
             for (int i = _actives.Count - 1; i >= 0; i--)
             {
-                if (_actives[i] == null || _actives[i].HazardType != hazardType)
-                    continue;
+                // インターフェース型はUnityの破棄済み判定が効かないので、Objectへ落として確認する
+                if (_actives[i] is UnityEngine.Object obj && obj == null) continue;
+
+                // 指定された種類以外は残す
+                if (_actives[i].HazardType != hazardType) continue;
+
+                // 唐突に消えたように見えないよう、消える位置に煙を出す
+                if (despawnVfxPrefab != null)
+                {
+                    GameObject vfx = Object.Instantiate(despawnVfxPrefab, _actives[i].Position, Quaternion.identity);
+                    Object.Destroy(vfx, vfxLifeTime);
+                }
 
                 _actives[i].ForceDespawn();
             }
