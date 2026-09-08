@@ -644,7 +644,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Presentation.Opening.OpeningFlowController
   _loadingSceneName: Loading
-  _bootSceneName: TutorialBoot
+  _bootSceneName: Boot
   _stageData: {fileID: 11400000, guid: d23dd9200f4c55347a4fb3892b3edc04, type: 2}
   _placeholderDuration: 3
   _scenario: {fileID: 11400000, guid: 7d388f322a9c376468c6a0faa9fb1746, type: 2}

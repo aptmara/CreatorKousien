@@ -30,6 +30,8 @@ namespace Game.Presentation.UI.Title
 
         [Tooltip("「つづきから」ボタン。セーブデータが無い時は自動でinteractable = falseになります。")]
         [SerializeField] private Button _continueButton;
+        [SerializeField] private Image _continueButtonTextImage;
+
         [SerializeField] private Button _optionButton;
 
         [Header("====== オプション ======")]
@@ -69,7 +71,12 @@ namespace Game.Presentation.UI.Title
             // セーブデータが無い場合は「つづきから」を押せないようにする
             if (_continueButton != null)
             {
-                _continueButton.interactable = SaveManager.HasSaveData();
+                bool hasSaveData = SaveManager.HasSaveData();
+                _continueButton.interactable = hasSaveData;
+                if (_continueButtonTextImage != null)
+                {
+                    _continueButtonTextImage.color = hasSaveData ? Color.white : _continueButton.colors.disabledColor;
+                }
             }
         }
 
