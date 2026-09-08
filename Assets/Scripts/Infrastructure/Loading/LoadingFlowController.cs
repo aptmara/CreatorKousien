@@ -1,4 +1,5 @@
 using System.Collections;
+using Game.Core.Save;
 using Game.Infrastructure.Bootstrap;
 using Game.Presentation.UI.Loading;
 using Game.WaveSystem;
@@ -20,12 +21,18 @@ namespace Game.Infrastructure.Loading
             _view.Initialize();
         }
 
-        public void LoadBootScene(string bootSceneName, StageDataSO stageData)
+        /// <summary>
+        /// Bootシーンをロードしてゲームを準備します。
+        /// </summary>
+        /// <param name="bootSceneName">ロードするBootシーン名</param>
+        /// <param name="stageData">開始するStageDataSO</param>
+        /// <param name="resumeData">「つづきから」のセーブデータ。新規開始の場合はnull(省略可)。</param>
+        public void LoadBootScene(string bootSceneName, StageDataSO stageData, GameSaveData resumeData = null)
         {
-            StartCoroutine(Load(bootSceneName, stageData));
+            StartCoroutine(Load(bootSceneName, stageData, resumeData));
         }
 
-        IEnumerator Load(string bootSceneName, StageDataSO stageData)
+        IEnumerator Load(string bootSceneName, StageDataSO stageData, GameSaveData resumeData)
         {
             Time.timeScale = 1f;
 
@@ -48,7 +55,8 @@ namespace Game.Infrastructure.Loading
             }
 
             // StageSelectで選ばれたStageDataSOを渡して、対応するStageシーンを読み込ませる
-            yield return boot.PrepareGameRoutine(stageData);
+            // (つづきからの場合はresumeDataも一緒に渡す)
+            yield return boot.PrepareGameRoutine(stageData, resumeData);
             if (boot.PreparationFailed || !boot.IsPrepared)
             {
                 Debug.LogError("[LoadingFlowController] ゲームの初期化に失敗しました。");

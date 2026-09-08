@@ -12,6 +12,7 @@
 
 using Game.Core.Enemy;
 using Game.Core.Events;
+using Game.Core.Save;
 using Game.Gameplay.Cameras;
 using Game.Gameplay.Player;
 using Game.Gameplay.Shop;
@@ -74,6 +75,9 @@ namespace Game.Core.Management
             // 次のウェーブがあるかチェック
             if (_currentWaveIndex < _waveSequence.Count)
             {
+                // Wave単位セーブが有効な場合はここでチェックポイントを記録する
+                SaveCheckpoint(isStageBoundary: false);
+
                 // マウスカーソルをロック
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
@@ -103,6 +107,12 @@ namespace Game.Core.Management
             // 現状の防衛ラインの残りHPをシーンから取得
             var gauge = Object.FindFirstObjectByType<Core.DefenceLine.DefenseLineGauge>();
             float currentHp = gauge != null ? gauge.CurrentHP : 0f;
+
+            // ゲームクリアの場合は、つづきからする対象がなくなるのでセーブデータを削除する
+            if (isClear && !HasNextStage)
+            {
+                SaveManager.DeleteSave();
+            }
 
             // リザルト画面に渡す全データをパッキング
             // リザルト画面に渡す全データをパッキング
@@ -308,6 +318,7 @@ namespace Game.Core.Management
 
             // 次のStage用にWave順を作り直す
             _stageIndex++;
+            _globalStageIndex++;
             int seed = CreateStageSeed(_stageIndex);
 
             if (!StageWaveSequenceBuilder.TryBuild(nextStage, seed, out List<WaveDataSO> waveSequence, out string errorMessage))
@@ -322,6 +333,9 @@ namespace Game.Core.Management
             _currentWaveIndex = 0;
             _currentStageData = nextStage;
             ResultSummary = null;
+
+            // Stage境界のチェックポイント。セーブ粒度設定に関わらず必ずセーブする
+            SaveCheckpoint(isStageBoundary: true);
 
             string nextStageName = HasNextStage ? _currentStageData.NextStage.StageName : "なし";
             Debug.Log($"[Progression] Stage移行完了: {_currentStageData.StageName} / Seed : {seed} / Wave数 : {_waveSequence.Count} / 次のStage：{nextStageName}");
@@ -503,6 +517,10 @@ namespace Game.Core.Management
             _baseSeed = stageContext.CreateSeed();
             _stageIndex = 0;
 
+            // つづきからの再開情報(新規開始の場合はnull)
+            GameSaveData resumeData = stageContext.ResumeData;
+            _globalStageIndex = resumeData?.stageIndex ?? 0;
+
             // StageDataSOからWave順を生成
             int seed = CreateStageSeed(_stageIndex);
 
@@ -518,8 +536,16 @@ namespace Game.Core.Management
             // Wave順の生成に成功した場合は、生成されたWave順を保持
             _waveSequence = waveSequence;
 
+            // つづきからの場合は、セーブされていたWave番号から再開する(範囲外の値は安全にクランプ)
+            _currentWaveIndex = resumeData != null
+                ? Mathf.Clamp(resumeData.waveIndex, 0, _waveSequence.Count - 1)
+                : 0;
+
+            // つづきからの場合は、セーブされていたお金・強化状況を実際のゲーム状態へ反映する
+            RestoreRunState(resumeData, player);
+
             string nextStageName = HasNextStage ? _currentStageData.NextStage.StageName : "なし";
-            Debug.Log($"[Progression] Stage開始：{_currentStageData.StageName} / Seed：{seed} / Wave数：{_waveSequence.Count} / 次のStage：{nextStageName}");
+            Debug.Log($"[Progression] Stage開始：{_currentStageData.StageName} / Seed：{seed} / Wave数：{_waveSequence.Count} / 開始Wave：{_currentWaveIndex + 1} / 次のStage：{nextStageName}");
 
             _isFirstWavePrepared = true;
             _isPreparingFirstWave = false;

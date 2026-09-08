@@ -470,6 +470,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Management.GameProgressionManager
   _roguelikeSceneName: Roguelike
   _resultSceneName: Result
+  _saveCheckpointGranularity: 1
+  _moneyDataForSave: {fileID: 11400000, guid: ed79cb34a0ad631409cafd0e16aac641, type: 2}
+  _upgradeRuntimeStateForSave: {fileID: 11400000, guid: 92fac92d5c2060646b8ef9eae07812fd, type: 2}
   _minimumStageLoadingDuration: 3
   _waveRunner: {fileID: 737055405}
   _enemySpawner: {fileID: 0}
@@ -479,6 +482,9 @@ MonoBehaviour:
   _shopCinematicCameraController: {fileID: 0}
   _slowMotionTimeScale: 0.2
   _gameClearCinematicController: {fileID: 1760067149}
+  _currentWaveIndex: 0
+  _minimumStageLoadingDuration: 3
+  _slowMotionTimeScale: 0.2
 --- !u!114 &737055405
 MonoBehaviour:
   m_ObjectHideFlags: 0
