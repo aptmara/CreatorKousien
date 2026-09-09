@@ -35,12 +35,15 @@ namespace Game.Gameplay.Enemy.Boss
         // 無敵時間の残り
         private float _invincibleTimer;
 
+        // 秒数ではなくON/OFFで制御する無敵
+        private bool _isInvincibleLatched;
+
 
         /// <summary>無敵中は当たらない。分岐はOnHit側で行う。</summary>
-        public bool IsHittable => _invincibleTimer <= 0.0f;
+        public bool IsHittable => !_isInvincibleLatched && _invincibleTimer <= 0.0f;
 
         /// <summary>無敵中かどうか。演出の後付け用。</summary>
-        public bool IsInvincible => _invincibleTimer > 0.0f;
+        public bool IsInvincible => !_isInvincibleLatched && _invincibleTimer > 0.0f;
 
         /// <summary>分身フェーズ中かどうか。</summary>
         public bool IsFeverActive => _isFeverActive;
@@ -50,6 +53,13 @@ namespace Game.Gameplay.Enemy.Boss
 
         /// <summary>本体HPの割合。ゲージ表示の後付け用。</summary>
         public float HpRatio => _maxHp > 0.0f ? Mathf.Clamp01(_currentHp / _maxHp) : 0.0f;
+
+
+        /// <summary>
+        /// 無敵のON/OFFを切り替える。尺が決まっていない演出中に使う
+        /// </summary>
+        /// <param name="isInvincible">無敵にするかどうか</param>
+        public void SetInvincible(bool isInvincible) => _isInvincibleLatched = isInvincible;
 
 
         /// <summary>

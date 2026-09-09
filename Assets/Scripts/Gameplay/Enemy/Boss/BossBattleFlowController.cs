@@ -2,6 +2,7 @@
  * 寺田
  * ボスの動作のフローを管理する
  *
+ * ボス固有の撃破演出を再生する機能追加 - 2026/09/09 asano
  *
  */
 
@@ -241,8 +242,14 @@ namespace Game.Gameplay.Enemy.Boss
         {
             if (!_isBattleActive) return;
 
+            // 勝敗が決まったらギミックを止める
+            if (_currentState == BossBattleFlowState.Victory || _currentState == BossBattleFlowState.Defeat)
+            {
+                return;
+            }
+
             //======== タイムリミット =========
-            if(_timeLimit > 0.0f && _battleTimer >= _timeLimit)
+            if (_timeLimit > 0.0f && _battleTimer >= _timeLimit)
             {
                 TriggerDefeat();
                 return;
@@ -349,10 +356,33 @@ namespace Game.Gameplay.Enemy.Boss
             if (CurrentState == BossBattleFlowState.Victory) return;
 
             ChangeState(BossBattleFlowState.Victory);
-            StopBattle();
             Debug.Log("[BattleFlow] <color=green>勝利条件達成!</color>");
             OnVictory?.Invoke();
+
+            // ボス固有の撃破演出があれば最優先で使う
+            IBossDefeatPresentation defeatPresentation = GetComponent<IBossDefeatPresentation>();
+
+            if (defeatPresentation != null)
+            {
+                StartCoroutine(PlayDefeatThenStop(defeatPresentation));
+
+                return;
+            }
+
+            StopBattle();
         }
+
+
+        /// <summary>
+        /// ボス固有の撃破演出を再生してから戦闘を終了する
+        /// </summary>
+        private IEnumerator PlayDefeatThenStop(IBossDefeatPresentation presentation)
+        {
+            yield return StartCoroutine(presentation.PlayDefeat());
+
+            StopBattle();
+        }
+
 
         public void TriggerDefeat()
         {

@@ -51,6 +51,8 @@ GameObject:
   - component: {fileID: 5168672352257677194}
   - component: {fileID: 2871250152738598726}
   - component: {fileID: 6288256380999531775}
+  - component: {fileID: 4957582606146853031}
+  - component: {fileID: 2428891845751870232}
   m_Layer: 0
   m_Name: PFB_BOSS_Boccha
   m_TagString: Untagged
@@ -117,8 +119,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BocchaSwayMover
   _flowController: {fileID: 1556577316658952392}
   _moveTarget: {fileID: 0}
-  _moveSpeed: 2
-  _moveRangeX: 6
+  _moveSpeed: 1.5
+  _moveRangeX: 15
   _swayMode: 0
   _turnEaseWidth: 1
   _turnMinSpeedRate: 0.25
@@ -244,7 +246,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 4.72
+  m_Radius: 5.2
   m_Center: {x: 0, y: -3.78, z: 0.91}
 --- !u!114 &6288256380999531775
 MonoBehaviour:
@@ -260,27 +262,207 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BocchaIntroPresenter
   _steps:
   - _stepName: "\u5DE6"
-    _offsetX: -18
+    _offsetX: -16
     _appearDelay: 0.35
     _stayDuration: 0.6
     _isFinal: 0
+    _appearShakeStrength: 1.5
+    _hiddenDuration: 0.7
   - _stepName: "\u53F3"
-    _offsetX: 18
+    _offsetX: 16
     _appearDelay: 0.35
     _stayDuration: 0.6
     _isFinal: 0
+    _appearShakeStrength: 1.5
+    _hiddenDuration: 0.7
   - _stepName: "\u4E2D\u592E"
     _offsetX: 0
     _appearDelay: 0.35
     _stayDuration: 0.3
     _isFinal: 1
-  _startDelay: 0.3
-  _finishDelay: 0.5
+    _appearShakeStrength: 7
+    _hiddenDuration: 0.4
+  _startDelay: 1
+  _finishDelay: 0.3
   _smokeVfxPrefab: {fileID: 2593213970716381542, guid: 3e800cdd307cf464188f276adaa5e97d, type: 3}
-  _vfxOffset: {x: 0, y: -4.89, z: 0}
+  _vfxOffset: {x: 0, y: 1, z: -1}
   _vfxLifeTime: 3
   _appearAnimTrigger: 
   _animator: {fileID: 0}
+  _targetCamera: {fileID: 0}
+  _cameraRigController: {fileID: 0}
+  _introCameraConfig: {fileID: 11400000, guid: 6c4c4c0b1e4dd244ea035af2053806cb, type: 2}
+  _battleCameraConfig: {fileID: 11400000, guid: 6c4c4c0b1e4dd244ea035af2053806cb, type: 2}
+  _cameraProjectionMode: 1
+  _introCameraBlendDuration: 0.8
+  _battleCameraBlendDuration: 1
+  _cameraBlendCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _playEdgeWarning: 1
+  _appearShakeDuration: 0.25
+  _appearShakeFrequency: 30
+--- !u!114 &4957582606146853031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8373035013781116987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c130287b068b18a47a23a2152c609299, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossBattleController
+  _battleData: {fileID: 0}
+  _animationController: {fileID: 0}
+  _downPresentationController: {fileID: 0}
+  _introPresentationController: {fileID: 0}
+  _thornGroupController: {fileID: 0}
+  _mouthHealth: {fileID: 0}
+  _mouthHitReceiver: {fileID: 0}
+  _corpseHitReceivers: []
+  _biteWarningShakeDuration: 0.28
+  _biteWarningShakePositionStrength: 0.04
+  _biteWarningShakeRotationStrength: 0.6
+  _biteWarningShakeFrequency: 22
+  _biteImpactShakeDuration: 0.35
+  _biteImpactShakePositionStrength: 0.32
+  _biteImpactShakeRotationStrength: 4.5
+  _biteImpactShakeFrequency: 26
+  _bossHiddenLocalX: 25
+  _bossVisibleLocalY: -12
+  _thornWarningMinimumDuration: 0.9
+--- !u!114 &2428891845751870232
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8373035013781116987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21d57f97df611e14d91735b758d2d15e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BocchaDefeatPresenter
+  _flowController: {fileID: 0}
+  _swayMover: {fileID: 0}
+  _feverBody: {fileID: 0}
+  _targetCamera: {fileID: 0}
+  _cameraRigController: {fileID: 0}
+  _defeatCameraConfig: {fileID: 0}
+  _cameraProjectionMode: 1
+  _cameraBlendDuration: 1
+  _cameraBlendCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _startDelay: 0.4
+  _defeatVfxPrefab: {fileID: 6146615972990954900, guid: cf4176813ede5754794c82215372eacb, type: 3}
+  _hazardClearVfxPrefab: {fileID: 4429139194564467471, guid: c13cd973b5473e04c92b2a4316fc15a7, type: 3}
+  _vfxOffset: {x: 0, y: 0, z: 0}
+  _vfxLifeTime: 3
+  _shakeDuration: 0.5
+  _shakeStrength: 10
+  _burstDataList:
+  - {fileID: 11400000, guid: efa7b9a6a24ab4c4bb0517fa1e83a3c6, type: 2}
+  - {fileID: 11400000, guid: f4b5d9ed189e8f34892e8e133cc6ed09, type: 2}
+  - {fileID: 11400000, guid: fbb2cc8966f32664a8448550983be955, type: 2}
+  - {fileID: 11400000, guid: 9998b8dbc0c5ce04e9654396168d57bf, type: 2}
+  - {fileID: 11400000, guid: 0bd912b3ef729924d81e248d6df2ca12, type: 2}
+  _burstCount: 150
+  _burstInterval: 0.005
+  _burstOriginOffset: {x: 0, y: 6, z: 0}
+  _burstUpSpeed: 24
+  _burstAwaySpeed: 14
+  _burstSpread: 14
+  _burstWaveCount: 3
+  _burstWaveInterval: 0.7
+  _burstVfxPrefab: {fileID: 4429139194564467471, guid: c13cd973b5473e04c92b2a4316fc15a7, type: 3}
+  _burstShakeDuration: 0.25
+  _burstShakeStrength: 0.3
+  _spitKickAmount: 0.5
+  _spitKickDecay: 0.12
+  _fallDelay: 0.3
+  _fallDepth: 20
+  _fallDuration: 1.5
+  _fallCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _shakeAmplitude: 0.35
+  _shakeSpeed: 40
+  _impactShakeDuration: 0.8
+  _impactShakeStrength: 5
+  _impactHold: 0.3
+  _lockPlayerInput: 1
+  _burstCameraConfig: {fileID: 11400000, guid: 6c077ebac02b93e45bc2fe0e5a0574be, type: 2}
+  _burstCameraBlendDuration: 0.25
+  _fallHandoffDelay: 0.4
+  _slowMotionTimeScale: 0.25
+  _slowMotionDuration: 1.2
+  _slowMotionBlendBack: 0.5
 --- !u!1001 &3461314935740991683
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -291,15 +473,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: e6101424a1d8d4741922336174686e7f, type: 3}
       propertyPath: m_LocalScale.x
-      value: 25
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e6101424a1d8d4741922336174686e7f, type: 3}
       propertyPath: m_LocalScale.y
-      value: 25
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e6101424a1d8d4741922336174686e7f, type: 3}
       propertyPath: m_LocalScale.z
-      value: 25
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e6101424a1d8d4741922336174686e7f, type: 3}
       propertyPath: m_LocalPosition.x
@@ -307,11 +489,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e6101424a1d8d4741922336174686e7f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.23
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e6101424a1d8d4741922336174686e7f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 1.2582169
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e6101424a1d8d4741922336174686e7f, type: 3}
       propertyPath: m_LocalRotation.w

@@ -44,7 +44,7 @@ namespace Game.Gameplay.Enemy.Boss
             Battle = 3,
 
             // 撃破後の咆哮
-            Rcar = 4,
+            Roar = 4,
 
             // 攻撃後に消えて戻る
             Recover = 5,
@@ -205,6 +205,10 @@ namespace Game.Gameplay.Enemy.Boss
         [Tooltip("見た目を隠している間、当たり判定も切るかどうか")]
         private bool _disableColliderWhileHidden = true;
 
+        [SerializeField]
+        [Tooltip("ONならワールドの真下へ沈む。OFFならフィールドの傾きに沿って沈む")]
+        private bool _fallStraightDown = true;
+
 
         [Header("--- 撃破後の咆哮 ---")]
 
@@ -284,6 +288,9 @@ namespace Game.Gameplay.Enemy.Boss
         // 本体に実際に掛けたスケール
         private float _appliedMainScale = 1.0f;
 
+        // ボスのダウン回数を判定
+        private BossDownCountJudge _downCountJudge;
+
 
 
         /// <summary>
@@ -309,6 +316,7 @@ namespace Game.Gameplay.Enemy.Boss
             _feverBody = context.Transform.GetComponentInChildren<BocchaFeverBody>();
             _swayMover = context.Transform.GetComponentInChildren<BocchaSwayMover>();
             _capacityGauge = context.Transform.GetComponentInChildren<BocchaCapacityGauge>();
+            _downCountJudge = context.Transform.GetComponentInChildren<BossDownCountJudge>();
 
             if (_feverBody == null)
             {
@@ -399,7 +407,7 @@ namespace Game.Gameplay.Enemy.Boss
 
                     return;
 
-                case FeverPhase.Rcar:
+                case FeverPhase.Roar:
                     if (_phaseTimer < _roarDuration)
                         return;
 
@@ -644,11 +652,28 @@ namespace Game.Gameplay.Enemy.Boss
 
             if (isSuccess)
             {
-                Debug.Log("[Fever] <color=green>本体撃破！ 咆哮してから仕切り直します</color>");
+                // 最後のダウンは咆哮せず、静かに沈む撃破演出へ渡す
+                bool isFinalDown = _downCountJudge != null && _downCountJudge.CurrentDownCount + 1 >= _downCountJudge.RequiredDownCount;
 
-                PlayRoar();
+                Debug.Log(isFinalDown ? "[Fever] <color=green>最後の撃破！ そのまま中央へ戻ります</color>" : "[Fever] <color=green>本体撃破！ 咆哮してから仕切り直します</color>");
 
-                _phase = FeverPhase.Rcar;
+                if (isFinalDown)
+                {
+                    // 咆哮を飛ばして、そのまま消えて中央へ戻る
+                    PlayVfx(_explosionVfxPrefab, Context.Transform.position);
+
+                    SetBossVisible(false);
+
+                    _phase = FeverPhase.Recover;
+                }
+                else
+                {
+                    // 咆哮している間は姿を見せたままにする。爆発と非表示はRoarフェーズの最後で行う
+                    PlayRoar();
+
+                    _phase = FeverPhase.Roar;
+                }
+
                 _phaseTimer = 0.0f;
 
                 return;
@@ -748,7 +773,7 @@ namespace Game.Gameplay.Enemy.Boss
 
             // フィールドが傾いても右上を保つよう、フィールドの軸で補正する
             Vector3 right = FieldContext.IsReady ? FieldContext.Rotation * Vector3.right : Vector3.right;
-            Vector3 up = FieldContext.IsReady ? FieldContext.Up : Vector3.up;
+            Vector3 up = _fallStraightDown || !FieldContext.IsReady ? Vector3.up : FieldContext.Up;
             Vector3 forward = FieldContext.IsReady ? FieldContext.Rotation * Vector3.forward : Vector3.forward;
 
             Vector3 roarPosition = Context.Transform.position + right * _roarVfxOffset.x + up * _roarVfxOffset.y + forward * _roarVfxOffset.z;

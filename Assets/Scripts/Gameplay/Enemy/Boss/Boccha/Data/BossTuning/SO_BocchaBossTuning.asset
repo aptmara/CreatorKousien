@@ -69,7 +69,7 @@ MonoBehaviour:
     _cloneHp: 1250
     _mainAttack: 7
     _cloneAttack: 4
-  - _roundName: R4
+  - _roundName: R5
     _capacityMax: 40
     _candyCount: 20
     _stoneWeight: 1

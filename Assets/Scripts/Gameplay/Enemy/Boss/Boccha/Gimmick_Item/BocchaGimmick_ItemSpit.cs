@@ -118,17 +118,16 @@ namespace Game.Gameplay.Enemy.Boss
         [Tooltip("ドクロフィーバーの抽選重み")]
         private float _skullWeight = 1.0f;
 
-
         [Header("--- 吐き出しの迫力 ---")]
 
         [SerializeField]
         [Min(1f)]
-        [Tooltip("吐き出す瞬間に一瞬だけ大きくする倍率")]
+        [Tooltip("吐き出す瞬間に一瞬だけ大きくする倍率。1で無効")]
         private float _popScale = 1.15f;
 
         [SerializeField]
-        [Min(0f)]
-        [Tooltip("吐き出す瞬間に一瞬だけ大きくする時間")]
+        [Min(0.01f)]
+        [Tooltip("ポップの長さ。行って戻るまでの合計時間")]
         private float _popDuration = 0.3f;
 
 
@@ -156,9 +155,11 @@ namespace Game.Gameplay.Enemy.Boss
         private int _spawnedCount;
         private bool _isComplete;
 
+        // ポップ開始時の大きさ。実行のたびに取り直すと肥大化するので開始時だけ記録する
         private Vector3 _baseScale;
         private float _popTimer;
         private bool _isPopping;
+
 
 
         public override bool IsComplete => _isComplete;
@@ -190,6 +191,9 @@ namespace Game.Gameplay.Enemy.Boss
         /// </summary>
         public override void Execute()
         {
+            // 前回のポップが残っていたら先に戻す。基準が膨らんだまま記録されるのを防ぐ
+            RestorePop();
+
             _isComplete = false;
             _timer = 0.0f;
             _spawnedCount = 0;
@@ -232,29 +236,14 @@ namespace Game.Gameplay.Enemy.Boss
                 return;
             }
 
+            // 待ち時間に左右されないよう、ポップは毎フレーム進める
+            UpdatePop(dt);
+
             _timer -= dt;
 
             if (_timer > 0.0f)
             {
                 return;
-            }
-
-            if (_isPopping)
-            {
-                _popTimer += dt;
-
-                float t = Mathf.Clamp01(_popTimer / _popDuration);
-
-                // 0→1→0 の山を作って、行って戻る
-                float curve = Mathf.Sin(t * Mathf.PI);
-
-                Context.Transform.localScale = _baseScale * Mathf.Lerp(1.0f, _popScale, curve);
-
-                if (t >= 1.0f)
-                {
-                    Context.Transform.localScale = _baseScale;
-                    _isPopping = false;
-                }
             }
 
             _timer = _spitInterval;
@@ -268,6 +257,9 @@ namespace Game.Gameplay.Enemy.Boss
                 return;
             }
 
+            // 完了するとTickが呼ばれなくなるので、ここで必ず元へ戻す
+            RestorePop();
+
             _isComplete = true;
         }
 
@@ -277,13 +269,9 @@ namespace Game.Gameplay.Enemy.Boss
         /// </summary>
         public override void Cancel()
         {
-            if (_isPopping)
-            {
-                Context.Transform.localScale = _baseScale;
-                _isPopping = false;
-            }
-
             _pendingPoints.Clear();
+            RestorePop();
+
 
             // 中断された場合は、次のギミックを割り込み実行しない
             _nextOverride = null;
@@ -308,6 +296,42 @@ namespace Game.Gameplay.Enemy.Boss
 
         // 内部処理
         // ------------------------------------------------------------
+
+        /// <summary>
+        /// 吐き出す瞬間のポップを進める。待ち時間に左右されないよう毎フレーム呼ぶ
+        /// </summary>
+        /// <param name="dt">経過時間</param>
+        private void UpdatePop(float dt)
+        {
+            if (!_isPopping) return;
+
+            _popTimer += dt;
+
+            float t = Mathf.Clamp01(_popTimer / _popDuration);
+
+            // 0→1→0 の山を作って、行って戻る
+            float curve = Mathf.Sin(t * Mathf.PI);
+
+            Context.Transform.localScale = _baseScale * Mathf.Lerp(1.0f, _popScale, curve);
+
+            if (t < 1.0f) return;
+
+            RestorePop();
+        }
+
+
+        /// <summary>
+        /// ポップを終了して元の大きさへ戻す。
+        /// 完了するとTickが呼ばれなくなるため、取り残さないよう必ずここを通す
+        /// </summary>
+        private void RestorePop()
+        {
+            if (!_isPopping) return;
+
+            Context.Transform.localScale = _baseScale;
+            _isPopping = false;
+        }
+
 
         /// <summary>
         /// ギミックを一個ずつ吐き出す

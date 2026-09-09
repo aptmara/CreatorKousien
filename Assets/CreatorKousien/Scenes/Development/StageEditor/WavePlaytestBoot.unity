@@ -119,95 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1001 &676805311
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 443160519065849000, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: _moveSpeed
-      value: 1.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 443160519065849000, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: _moveRangeX
-      value: 15
-      objectReference: {fileID: 0}
-    - target: {fileID: 443160519065849000, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: _moveTarget
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000241989204700968, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 25
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000241989204700968, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 25
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000241989204700968, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 25
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000241989204700968, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -0.23
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000241989204700968, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 1.2582169
-      objectReference: {fileID: 0}
-    - target: {fileID: 6010145140413704302, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6010145140413704302, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -0.96
-      objectReference: {fileID: 0}
-    - target: {fileID: 6010145140413704302, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -12.12
-      objectReference: {fileID: 0}
-    - target: {fileID: 6010145140413704302, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6010145140413704302, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6010145140413704302, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6010145140413704302, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6010145140413704302, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6010145140413704302, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6010145140413704302, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8373035013781116987, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
-      propertyPath: m_Name
-      value: PFB_BOSS_Boccha
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 44b6af5c3d3f7e241815b7a3c4225310, type: 3}
 --- !u!1 &1144018305
 GameObject:
   m_ObjectHideFlags: 0
@@ -294,10 +205,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd3245b837c9d2b4eaa940b7349a1d27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.WaveTester
-  testWave: {fileID: 11400000, guid: 5f58d2a1ebac6044c8f5a503ecb823f9, type: 2}
+  testWave: {fileID: 11400000, guid: 15c396ba989112e45b80e0871099ca95, type: 2}
   waveRunner: {fileID: 0}
   enemySpawner: {fileID: 0}
-  _playResultFlowOnClear: 0
+  _playResultFlowOnClear: 1
 --- !u!4 &1283636159
 Transform:
   m_ObjectHideFlags: 0
@@ -403,4 +314,3 @@ SceneRoots:
   - {fileID: 1756462886}
   - {fileID: 1283636159}
   - {fileID: 1144018307}
-  - {fileID: 676805311}

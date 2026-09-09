@@ -296,7 +296,7 @@ MonoBehaviour:
   _alignBottomToGround: 1
   _groundOffset: 0
   _landingVfxPrefab: {fileID: 377722432082989388, guid: 86acd714d8561434cba505dc0e3c19fd, type: 3}
-  _despawnVfxPrefab: {fileID: 0}
+  _despawnVfxPrefab: {fileID: 6146615972990954900, guid: cf4176813ede5754794c82215372eacb, type: 3}
   _vfxLifeTime: 3
   _sinkDepth: 0.04
   _sinkDuration: 0.15

@@ -9,14 +9,20 @@
 // - 分身フェーズと同じく煙でボンボン移動する感じ！
 // - 勝手に作ってるから没になる可能性あり(´;ω;｀)
 // - ステップはリストにするから変更可能！
+// - カメラの揺れ追加
 // ------------------------------------------------------------
 using System;
 using System.Collections;
 using Game.Gameplay.Stage;
 using UnityEngine;
+using Game.Core.Events;
+using Game.Gameplay.Cameras;
 
 namespace Game.Gameplay.Enemy.Boss
 {
+    /// <summary>
+    /// キング・ボッチャの登場演出の1ステップ
+    /// </summary>
     [Serializable]
     public class BocchaIntroStep
     {
@@ -42,6 +48,17 @@ namespace Game.Gameplay.Enemy.Boss
         [Tooltip("ONならここで留まる")]
         private bool _isFinal = false;
 
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("出現した瞬間のカメラの揺れの強さ。0で揺らさない")]
+        private float _appearShakeStrength = 0.2f;
+
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("消えてから次のステップへ移るまでの待ち時間")]
+        private float _hiddenDuration = 0.4f;
+
 
         // --- 公開プロパティ---
         public string StepName => _stepName;
@@ -49,6 +66,8 @@ namespace Game.Gameplay.Enemy.Boss
         public float AppearDelay => _appearDelay;
         public float StayDuration => _stayDuration;
         public bool IsFinal => _isFinal;
+        public float AppearShakeStrength => _appearShakeStrength;
+        public float HiddenDuration => _hiddenDuration;
     }
 
 
@@ -100,8 +119,72 @@ namespace Game.Gameplay.Enemy.Boss
         private Animator _animator;
 
 
+
+        [Header("==== カメラ ====")]
+
+        [SerializeField]
+        [Tooltip("動かすカメラ。未設定ならMainCameraを使う")]
+        private Camera _targetCamera;
+
+        [SerializeField]
+        [Tooltip("カメラリグ。未設定なら自動で探す")]
+        private CameraRigController _cameraRigController;
+
+        [SerializeField]
+        [Tooltip("登場中に寄せるカメラ設定")]
+        private StaticCameraConfig _introCameraConfig;
+
+        [SerializeField]
+        [Tooltip("戦闘中のカメラ設定")]
+        private StaticCameraConfig _battleCameraConfig;
+
+        [SerializeField]
+        [Tooltip("使用する投影モード")]
+        private CameraRigController.ProjectionMode _cameraProjectionMode = CameraRigController.ProjectionMode.Perspective;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("登場カメラへ寄せる時間")]
+        private float _introCameraBlendDuration = 0.8f;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("戦闘カメラへ引く時間")]
+        private float _battleCameraBlendDuration = 1.0f;
+
+        [SerializeField]
+        [Tooltip("カメラのブレンド曲線")]
+        private AnimationCurve _cameraBlendCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
+
+        [SerializeField]
+        [Tooltip("登場中に画面のフチを赤くするかどうか")]
+        private bool _playEdgeWarning = true;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("出現時の揺れの長さ")]
+        private float _appearShakeDuration = 0.35f;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("出現時の揺れの周波数")]
+        private float _appearShakeFrequency = 30.0f;
+
+
+        // --- ランタイム変数 ---
         private Renderer[] _renderers;
         private Collider[] _colliders;
+
+        private Vector3 _normalCameraPosition;
+        private Quaternion _normalCameraRotation;
+        private float _normalCameraFieldOfView;
+        private float _normalCameraOrthographicSize;
+        private bool _hasSavedNormalCameraPose;
+        private BocchaFeverBody _feverBody;
+
+
+        // 演出中に中断されても無敵が残らないようにする
+        private void OnDisable() => _feverBody?.SetInvincible(false);
 
 
         private void Awake()
@@ -109,6 +192,26 @@ namespace Game.Gameplay.Enemy.Boss
             if (_animator == null)
             {
                 _animator = GetComponent<Animator>();
+            }
+
+            if (_targetCamera == null)
+            {
+                _targetCamera = Camera.main;
+            }
+
+            if (_cameraRigController == null && _targetCamera != null)
+            {
+                _cameraRigController = _targetCamera.GetComponentInParent<CameraRigController>();
+            }
+
+            if (_cameraRigController == null)
+            {
+                _cameraRigController = FindFirstObjectByType<CameraRigController>();
+            }
+
+            if (_feverBody == null)
+            {
+                _feverBody = GetComponent<BocchaFeverBody>();
             }
         }
 
@@ -120,6 +223,22 @@ namespace Game.Gameplay.Enemy.Boss
         {
             // 演出が終わるまで姿を隠す
             SetVisible(false);
+
+            // 演出中に殴られてキャパが溜まらないようにする
+            _feverBody?.SetInvincible(true);
+
+            if (_playEdgeWarning)
+            {
+                EventBus.Publish(new BossIntroWarningStartedEvent());
+            }
+
+            // 通常のカメラ追従を止めて、元の状態を覚えておく
+            _cameraRigController?.SetCinematicModeActive(true);
+
+            SaveNormalCameraPose();
+
+            // 登場用の画角へ寄せる
+            yield return StartCoroutine(BlendCameraTo(_introCameraConfig, _introCameraBlendDuration));
 
             if (_startDelay > 0.0f)
             {
@@ -143,6 +262,19 @@ namespace Game.Gameplay.Enemy.Boss
             {
                 yield return new WaitForSeconds(_finishDelay);
             }
+
+            if (_playEdgeWarning)
+            {
+                EventBus.Publish(new BossIntroWarningEndedEvent());
+            }
+
+            FinishCamera();
+
+            // ここから戦闘開始なので、無敵を解除する
+            _feverBody?.SetInvincible(false);
+
+
+
         }
 
 
@@ -159,8 +291,14 @@ namespace Game.Gameplay.Enemy.Boss
             // ステップの位置を求める
             Vector3 stepPosition = ResolveStepPosition(step.OffsetX);
 
+            transform.position = stepPosition;
+
             // 煙を出す
             PlayVfx(stepPosition);
+
+
+            // 出現の瞬間にカメラを揺らす
+            PlayAppearShake(step.AppearShakeStrength);
 
             if (step.AppearDelay > 0.0f)
             {
@@ -169,6 +307,8 @@ namespace Game.Gameplay.Enemy.Boss
 
             // 姿を見せる
             SetVisible(true);
+
+
 
             // 最後のステップならアニメーターにトリガーを送る
             if (step.IsFinal && _animator != null && !string.IsNullOrEmpty(_appearAnimTrigger))
@@ -188,6 +328,14 @@ namespace Game.Gameplay.Enemy.Boss
             PlayVfx(transform.position);
 
             SetVisible(false);
+
+
+
+            // 何もない時間を挟んでから次へ
+            if (step.HiddenDuration > 0.0f)
+            {
+                yield return new WaitForSeconds(step.HiddenDuration);
+            }
         }
 
 
@@ -250,6 +398,122 @@ namespace Game.Gameplay.Enemy.Boss
             GameObject vfx = Instantiate(_smokeVfxPrefab, position + _vfxOffset, Quaternion.identity);
 
             Destroy(vfx, _vfxLifeTime);
+        }
+
+
+
+        // --- カメラ関連 ---
+
+        /// <summary>
+        /// 通常のカメラの位置・回転・画角を保存する
+        /// </summary>
+        private void SaveNormalCameraPose()
+        {
+            if (_hasSavedNormalCameraPose || _targetCamera == null)
+            {
+                return;
+            }
+
+            Transform cameraTransform = _targetCamera.transform;
+
+            // カメラの位置・回転・画角を保存しておく
+            _normalCameraPosition = cameraTransform.position;
+            _normalCameraRotation = cameraTransform.rotation;
+            _normalCameraFieldOfView = _targetCamera.fieldOfView;
+            _normalCameraOrthographicSize = _targetCamera.orthographicSize;
+            _hasSavedNormalCameraPose = true;
+        }
+
+
+        /// <summary>
+        /// 指定した設定へカメラをブレンドさせる
+        /// </summary>
+        /// <param name="config">目標のカメラ設定</param>
+        /// <param name="duration">ブレンドにかける時間</param>
+        private IEnumerator BlendCameraTo(StaticCameraConfig config, float duration)
+        {
+            if (config == null || _targetCamera == null)
+            {
+                yield break;
+            }
+
+
+            StaticCameraConfig.ProjectionSettings settings = config.GetSettings(_cameraProjectionMode);
+            Transform cameraTransform = _targetCamera.transform;
+
+            // 現在のカメラの位置・回転・画角を保存しておく
+            Vector3 startPosition = cameraTransform.position;
+            Quaternion startRotation = cameraTransform.rotation;
+            float startFieldOfView = _targetCamera.fieldOfView;
+            float startOrthographicSize = _targetCamera.orthographicSize;
+
+            Vector3 targetPosition = settings.Position;
+            Quaternion targetRotation = Quaternion.Euler(settings.Rotation);
+
+            float elapsed = 0.0f;
+
+            while (elapsed < duration)
+            {
+                float t = _cameraBlendCurve.Evaluate(Mathf.Clamp01(elapsed / duration));
+
+                // LerpUnclampedを使うことで、曲線の値が0未満や1を超える場合でも補間できる
+                cameraTransform.position = Vector3.LerpUnclamped(startPosition, targetPosition, t);
+                cameraTransform.rotation = Quaternion.SlerpUnclamped(startRotation, targetRotation, t);
+                _targetCamera.fieldOfView = Mathf.LerpUnclamped(startFieldOfView, settings.FieldOfView, t);
+                _targetCamera.orthographicSize = Mathf.LerpUnclamped(startOrthographicSize, settings.OrthographicSize, t);
+
+                elapsed += Time.deltaTime;
+
+                yield return null;
+            }
+
+            // 最終的にターゲットの値を確実に設定する
+            cameraTransform.position = targetPosition;
+            cameraTransform.rotation = targetRotation;
+            _targetCamera.fieldOfView = settings.FieldOfView;
+            _targetCamera.orthographicSize = settings.OrthographicSize;
+        }
+
+
+        /// <summary>
+        /// カメラの後始末
+        /// </summary>
+        private void FinishCamera()
+        {
+            // 戦闘用の画角をしている間は、リグの追従を戻さず固定したままにする
+            if (_battleCameraConfig != null)
+            {
+                return;
+            }
+
+            if (_targetCamera != null && _hasSavedNormalCameraPose)
+            {
+                Transform cameraTransform = _targetCamera.transform;
+
+                cameraTransform.position = _normalCameraPosition;
+                cameraTransform.rotation = _normalCameraRotation;
+                _targetCamera.fieldOfView = _normalCameraFieldOfView;
+                _targetCamera.orthographicSize = _normalCameraOrthographicSize;
+            }
+
+            _cameraRigController?.SetCinematicModeActive(false);
+
+            _hasSavedNormalCameraPose = false;
+        }
+
+
+        /// <summary>
+        /// 出現時のカメラの揺れを再生する
+        /// </summary>
+        /// <param name="strength">強さ</param>
+        private void PlayAppearShake(float strength)
+        {
+            if (strength <= 0.0f || _appearShakeDuration <= 0.0f)
+            {
+                return;
+            }
+
+            EventBus.Publish(new CameraShakeRequestedEvent(_appearShakeDuration, strength, strength, _appearShakeFrequency));
         }
     }
 }
