@@ -470,7 +470,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Management.GameProgressionManager
   _roguelikeSceneName: Roguelike
   _resultSceneName: Result
-  _saveCheckpointGranularity: 1
+  _saveCheckpointGranularity: 0
   _moneyDataForSave: {fileID: 11400000, guid: ed79cb34a0ad631409cafd0e16aac641, type: 2}
   _upgradeRuntimeStateForSave: {fileID: 11400000, guid: 92fac92d5c2060646b8ef9eae07812fd, type: 2}
   _minimumStageLoadingDuration: 3
