@@ -83,6 +83,11 @@ namespace Game.Gameplay.Enemy.Boss
         public event Action<int, int> OnDownCountChanged;
 
 
+        /// <summary>
+        /// 撃退に必要なダウン回数を差し替える
+        /// </summary>
+        public void SetRequiredDownCount(int requiredDownCount) => _requiredDownCount = Mathf.Max(1, requiredDownCount);
+
         private void Awake()
         {
             if (_flowController == null)

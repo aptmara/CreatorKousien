@@ -2,11 +2,12 @@
 // File		: BocchaThrownItemMover.cs
 // Summary	: 投げられたアイテムを放物線上に直接動かす
 //
+// Author	: [浅野 勇生]
+// Created	: 2026-09-07
+//
 // Notes	:
-// - CollectableGravityが独自重力を使うため、初速を与えるだけでは軌道が一致しない。
-// - 速度を積分せず時刻から位置を直接求めるので、デバッグ表示の軌道と完全に一致する。
-// - 着地したら物理へ引き継いで自動的に無効化される。
-// - プールへ戻されて途中で無効化されても、OnDisableで状態を必ず復元する。
+// - 速度を積分せず時刻から位置を直接求めて、デバッグ表示の軌道と完全に一致させる!!
+// - 着地した瞬間にエフェクトを再生するのを追加！！9/9
 // ------------------------------------------------------------
 using UnityEngine;
 
@@ -18,6 +19,7 @@ namespace Game.Gameplay.Enemy.Boss
     [DisallowMultipleComponent]
     public sealed class BocchaThrownItemMover : MonoBehaviour
     {
+        // ランタイム状態
         private Rigidbody _rigidbody;
         private CollectableGravity _collectableGravity;
 
@@ -28,6 +30,8 @@ namespace Game.Gameplay.Enemy.Boss
         private float _elapsed;
 
         private bool _isFlying;
+        private GameObject _landingVfxPrefab;
+        private float _landingVfxLifeTime = 3.0f;
         private bool _wasKinematic;
         private bool _wasCollectableGravityEnabled;
 
@@ -66,6 +70,7 @@ namespace Game.Gameplay.Enemy.Boss
                 _rigidbody.isKinematic = true;
             }
 
+            // CollectableGravityが有効な場合は無効化する
             if (_collectableGravity != null)
             {
                 _wasCollectableGravityEnabled = _collectableGravity.enabled;
@@ -76,6 +81,9 @@ namespace Game.Gameplay.Enemy.Boss
         }
 
 
+        /// <summary>
+        /// 飛翔中の位置を更新
+        /// </summary>
         private void Update()
         {
             if (!_isFlying)
@@ -104,6 +112,13 @@ namespace Game.Gameplay.Enemy.Boss
         private void Finish()
         {
             transform.position = EvaluatePosition(_flightTime);
+
+            // 着地VFXを出す
+            if (_landingVfxPrefab != null)
+            {
+                GameObject vfx = Instantiate(_landingVfxPrefab, transform.position, Quaternion.identity);
+                Destroy(vfx, _landingVfxLifeTime);
+            }
 
             // 着地時点の速度をそのまま渡し、跳ね方が不自然にならないようにする
             Vector3 landingVelocity = _velocity + _gravity * _flightTime;
@@ -156,6 +171,18 @@ namespace Game.Gameplay.Enemy.Boss
             {
                 _collectableGravity = GetComponent<CollectableGravity>();
             }
+        }
+
+
+        /// <summary>
+        /// 着地した瞬間に出すVFXを設定する
+        /// </summary>
+        /// <param name="prefab">着地VFX</param>
+        /// <param name="lifeTime">VFXを破棄するまでの時間</param>
+        public void SetLandingVfx(GameObject prefab, float lifeTime)
+        {
+            _landingVfxPrefab = prefab;
+            _landingVfxLifeTime = lifeTime;
         }
     }
 }

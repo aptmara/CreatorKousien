@@ -23,7 +23,7 @@ namespace Game.Gameplay.Enemy.Boss
     /// トゲ玉を生成するギミック
     /// </summary>
     [CreateAssetMenu(fileName = "Gimmick_BocchaSpikeBall", menuName = "Boss/Gimmicks/Boccha/SpikeBall")]
-    public sealed class BocchaGimmick_SpikeBall : BossGimmickSO
+    public sealed class BocchaGimmick_SpikeBall : BossGimmickSO, IBocchaTunable
     {
         [Header("--- トゲ玉 ---")]
 
@@ -45,6 +45,10 @@ namespace Game.Gameplay.Enemy.Boss
         [Min(0f)]
         [Tooltip("1個ずつ投げる間隔")]
         private float _spawnInterval = 0.2f;
+
+        [SerializeField]
+        [Tooltip("着地した瞬間のVFX")]
+        private GameObject _landingVfxPrefab;
 
 
         [Header("--- 投げ方 ---")]
@@ -239,6 +243,8 @@ namespace Game.Gameplay.Enemy.Boss
 
             mover.Begin(from, velocity, gravity, flightTime);
 
+            mover.SetLandingVfx(_landingVfxPrefab, _vfxLifeTime);
+
             // 落し物はプールの使い回しなので、判定コンポーネントも実行時に付ける
             if (!ball.TryGetComponent(out BocchaSpikeBall spikeBall))
             {
@@ -308,6 +314,14 @@ namespace Game.Gameplay.Enemy.Boss
             }
 
             return _spawner;
+        }
+
+
+        public void ApplyTuning(BocchaRoundTuning tuning)
+        {
+            if (tuning == null) return;
+
+            _spawnCount = Mathf.Max(0, tuning.SpikeBallCount);
         }
     }
 }

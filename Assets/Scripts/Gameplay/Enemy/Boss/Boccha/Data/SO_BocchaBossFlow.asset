@@ -28,3 +28,5 @@ MonoBehaviour:
       gimmick: {fileID: 11400000, guid: e1e683ef6949c274d8f2eef7a6b5db97, type: 2}
     - data: {fileID: 11400000, guid: 4bdfcd5af79976549acdd3221dbc5d1d, type: 2}
       gimmick: {fileID: 11400000, guid: 4da01ebd4124ed8449b2734339555e25, type: 2}
+    - data: {fileID: 11400000, guid: 3234873a5cccfbd4ba6052f357288d58, type: 2}
+      gimmick: {fileID: 11400000, guid: 80c9439be3fb9c84094490dc3a6561c5, type: 2}

@@ -205,7 +205,7 @@ namespace Game.Gameplay.Enemy.Boss
         /// <summary>
         /// 現在位置を新しい中心位置として再設定する
         /// </summary>
-        private void ResetCenter()
+        public void ResetCenter()
         {
             _centerPosition = _moveTarget != null ? _moveTarget.position : transform.position;
             _offsetX = 0.0f;

@@ -186,11 +186,18 @@ namespace Game.Gameplay.Enemy.Boss
 
         private IEnumerator PlayIntroSequence()
         {
-            if (_introSequenceController != null && _introSequenceData != null)
+            // ボス固有の登場演出があれば最優先で使う
+            IBossIntroPresentation introPresentation = GetComponent<IBossIntroPresentation>();
+
+            if (introPresentation != null)
             {
-                yield return StartCoroutine(_introSequenceController.PlayPresentation(_introSequenceData,_bossAnimator));
+                yield return StartCoroutine(introPresentation.PlayIntro());
             }
-            else if(_bossAnimator != null)
+            else if (_introSequenceController != null && _introSequenceData != null)
+            {
+                yield return StartCoroutine(_introSequenceController.PlayPresentation(_introSequenceData, _bossAnimator));
+            }
+            else if (_bossAnimator != null)
             {
                 _bossAnimator.SetTrigger("Intro");
                 yield return new WaitForSeconds(3.0f);
@@ -262,6 +269,9 @@ namespace Game.Gameplay.Enemy.Boss
                 {
                     _currentWaitingGimmick.Tick(Time.deltaTime);
                 }
+
+                // Tickの中でTriggerDownなどが呼ばれると参照が捨てられるため、ここで再確認する
+                if (_currentWaitingGimmick == null) return;
 
                 bool isTimeout = _currentWaitingData != null &&
                     _currentWaitingData.timeoutDuration > 0.0f &&

@@ -46,6 +46,11 @@ GameObject:
   - component: {fileID: 456602691776101658}
   - component: {fileID: 6646052115890544138}
   - component: {fileID: 7647427419141416769}
+  - component: {fileID: 1153033101827538663}
+  - component: {fileID: 4423603486641863705}
+  - component: {fileID: 5168672352257677194}
+  - component: {fileID: 2871250152738598726}
+  - component: {fileID: 6288256380999531775}
   m_Layer: 0
   m_Name: PFB_BOSS_Boccha
   m_TagString: Untagged
@@ -84,10 +89,10 @@ MonoBehaviour:
   _battleData: {fileID: 11400000, guid: 3ae00b56238ec2747bb41fcb6ac0d528, type: 2}
   _maxHP: 1000
   _currentHP: 0
-  _triggerVictoryOnZeroHp: 1
+  _triggerVictoryOnZeroHp: 0
   _timeLimit: 0
   _useDownSystem: 1
-  _downDuration: 5
+  _downDuration: 0.4
   _downAnimTrigger: Down
   _recoverAnimTrigger: Recover
   _downPresentationController: {fileID: 0}
@@ -111,7 +116,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BocchaSwayMover
   _flowController: {fileID: 1556577316658952392}
-  _moveTarget: {fileID: 2820521448227551173}
+  _moveTarget: {fileID: 0}
   _moveSpeed: 2
   _moveRangeX: 6
   _swayMode: 0
@@ -169,11 +174,113 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BocchaCapacityGauge
   _flowController: {fileID: 1556577316658952392}
-  _source: 0
+  _source: 3
   _capacityMax: 3
-  _feverGimmickData: {fileID: 0}
+  _feverGimmickData: {fileID: 11400000, guid: 3234873a5cccfbd4ba6052f357288d58, type: 2}
   _autoResetWhenGimmickMissing: 1
   _logCapacity: 1
+--- !u!114 &1153033101827538663
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8373035013781116987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71f9d6afcd5a964439df0e344b03294c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BocchaFeverBody
+  _flowController: {fileID: 1556577316658952392}
+--- !u!114 &4423603486641863705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8373035013781116987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cff75fa1feeb99e4db3d3cf697e2a11a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BocchaTuningApplier
+  _flowController: {fileID: 1556577316658952392}
+  _downCountJudge: {fileID: 456602691776101658}
+  _capacityGauge: {fileID: 7647427419141416769}
+  _defaultTuning: {fileID: 11400000, guid: b83f842c2f9b63f4c94dc8e0ff937a4b, type: 2}
+  _logRound: 1
+--- !u!114 &5168672352257677194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8373035013781116987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0cca841aa5565346a7cd45d6ccc6628, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossHitReceiver
+  _flowController: {fileID: 1556577316658952392}
+  _minimumHitSpeed: 0.75
+  _damageMultiplier: 2.5
+  _despawnItemOnHit: 1
+--- !u!135 &2871250152738598726
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8373035013781116987}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 4.72
+  m_Center: {x: 0, y: -3.78, z: 0.91}
+--- !u!114 &6288256380999531775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8373035013781116987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20e72b79055f46941b7a190fd219db92, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BocchaIntroPresenter
+  _steps:
+  - _stepName: "\u5DE6"
+    _offsetX: -18
+    _appearDelay: 0.35
+    _stayDuration: 0.6
+    _isFinal: 0
+  - _stepName: "\u53F3"
+    _offsetX: 18
+    _appearDelay: 0.35
+    _stayDuration: 0.6
+    _isFinal: 0
+  - _stepName: "\u4E2D\u592E"
+    _offsetX: 0
+    _appearDelay: 0.35
+    _stayDuration: 0.3
+    _isFinal: 1
+  _startDelay: 0.3
+  _finishDelay: 0.5
+  _smokeVfxPrefab: {fileID: 2593213970716381542, guid: 3e800cdd307cf464188f276adaa5e97d, type: 3}
+  _vfxOffset: {x: 0, y: -4.89, z: 0}
+  _vfxLifeTime: 3
+  _appearAnimTrigger: 
+  _animator: {fileID: 0}
 --- !u!1001 &3461314935740991683
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -184,15 +291,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: e6101424a1d8d4741922336174686e7f, type: 3}
       propertyPath: m_LocalScale.x
-      value: 30
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e6101424a1d8d4741922336174686e7f, type: 3}
       propertyPath: m_LocalScale.y
-      value: 30
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e6101424a1d8d4741922336174686e7f, type: 3}
       propertyPath: m_LocalScale.z
-      value: 30
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e6101424a1d8d4741922336174686e7f, type: 3}
       propertyPath: m_LocalPosition.x

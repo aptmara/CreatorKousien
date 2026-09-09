@@ -293,7 +293,9 @@ MonoBehaviour:
   _arcApexRandomness: 0.15
   _lifeTime: 12
   _bodyCollider: {fileID: 486551657042990227}
-  _landingVfxPrefab: {fileID: 0}
+  _alignBottomToGround: 1
+  _groundOffset: 0
+  _landingVfxPrefab: {fileID: 377722432082989388, guid: 86acd714d8561434cba505dc0e3c19fd, type: 3}
   _despawnVfxPrefab: {fileID: 0}
   _vfxLifeTime: 3
   _sinkDepth: 0.04

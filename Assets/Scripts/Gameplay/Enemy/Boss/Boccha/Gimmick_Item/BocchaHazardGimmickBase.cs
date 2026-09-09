@@ -73,6 +73,8 @@ namespace Game.Gameplay.Enemy.Boss
         protected abstract BocchaHazardType HazardType { get; }
 
 
+        protected void SetSpawnCount(int spawnCount) => _spawnCount = Mathf.Max(0, spawnCount);
+
         /// <summary>
         /// ギミック開始時の初期化
         /// </summary>

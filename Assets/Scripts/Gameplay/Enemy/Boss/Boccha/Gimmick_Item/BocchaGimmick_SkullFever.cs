@@ -24,7 +24,7 @@ namespace Game.Gameplay.Enemy.Boss
     /// ドクロを生成するギミック
     /// </summary>
     [CreateAssetMenu(fileName = "Gimmick_BocchaSkullFever", menuName = "Boss/Gimmicks/Boccha/SkullFever")]
-    public sealed class BocchaGimmick_SkullFever : BossGimmickSO
+    public sealed class BocchaGimmick_SkullFever : BossGimmickSO, IBocchaTunable
     {
         [Header("--- ドクロ ---")]
 
@@ -46,6 +46,10 @@ namespace Game.Gameplay.Enemy.Boss
         [Min(0f)]
         [Tooltip("1個ずつ投げる間隔")]
         private float _spawnInterval = 0.2f;
+
+        [SerializeField]
+        [Tooltip("着地した瞬間のVFX")]
+        private GameObject _landingVfxPrefab;
 
 
         [Header("--- 投げ方 ---")]
@@ -198,6 +202,14 @@ namespace Game.Gameplay.Enemy.Boss
         }
 
 
+        public void ApplyTuning(BocchaRoundTuning tuning)
+        {
+            if (tuning == null) return;
+
+            _spawnCount = Mathf.Max(0, tuning.SkullCount);
+        }
+
+
         // 内部処理
         // ------------------------------------------------------------
 
@@ -231,8 +243,7 @@ namespace Game.Gameplay.Enemy.Boss
             Vector3 velocity = BocchaBallistics.SolveVelocityByApex(from, targetPoint, apex, gravity, out float flightTime);
 
             // ロックされた種類でも出せるよう、ボスギミックではアンロック判定を無視する
-            CollectibleObject skullObject =
-                spawner.SpawnWithVelocity(_skullData, from, Vector3.zero, _scaleMultiplier, true);
+            CollectibleObject skullObject = spawner.SpawnWithVelocity(_skullData, from, Vector3.zero, _scaleMultiplier, true);
 
             if (skullObject == null)
             {
@@ -246,6 +257,8 @@ namespace Game.Gameplay.Enemy.Boss
             }
 
             mover.Begin(from, velocity, gravity, flightTime);
+
+            mover.SetLandingVfx(_landingVfxPrefab, _vfxLifeTime);
 
             // 落し物はプールの使い回しなので、判定コンポーネントも実行時に付ける
             if (!skullObject.TryGetComponent(out BocchaSkull skull))

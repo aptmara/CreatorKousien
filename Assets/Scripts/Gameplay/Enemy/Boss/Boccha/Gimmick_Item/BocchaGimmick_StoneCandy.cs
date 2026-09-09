@@ -17,8 +17,15 @@ namespace Game.Gameplay.Enemy.Boss
     /// 石化キャンディを生成するギミック
     /// </summary>
     [CreateAssetMenu(fileName = "Gimmick_BocchaStoneCandy", menuName = "Boss/Gimmicks/Boccha/StoneCandy")]
-    public sealed class BocchaGimmick_StoneCandy : BocchaHazardGimmickBase
+    public sealed class BocchaGimmick_StoneCandy : BocchaHazardGimmickBase, IBocchaTunable
     {
         protected override BocchaHazardType HazardType => BocchaHazardType.StoneCandy;
+
+        public void ApplyTuning(BocchaRoundTuning tuning)
+        {
+            if (tuning == null) return;
+
+            SetSpawnCount(tuning.StoneCandyCount);
+        }
     }
 }

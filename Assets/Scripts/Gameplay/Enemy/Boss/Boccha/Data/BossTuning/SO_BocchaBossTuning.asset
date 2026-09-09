@@ -1,0 +1,86 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69a4302dd2a5fde409d043cdfbe9eae3, type: 3}
+  m_Name: SO_BocchaBossTuning
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BocchaBossTuning
+  _round:
+  - _roundName: R1
+    _capacityMax: 20
+    _candyCount: 12
+    _stoneWeight: 1
+    _spikeWeight: 1
+    _skullWeight: 1
+    _stoneCandyCount: 2
+    _spikeBallCount: 1
+    _skullCount: 2
+    _cloneCount: 1
+    _mainHp: 1000
+    _cloneHp: 500
+    _mainAttack: 5
+    _cloneAttack: 3
+  - _roundName: R2
+    _capacityMax: 25
+    _candyCount: 12
+    _stoneWeight: 1
+    _spikeWeight: 1
+    _skullWeight: 1
+    _stoneCandyCount: 2
+    _spikeBallCount: 2
+    _skullCount: 3
+    _cloneCount: 2
+    _mainHp: 1500
+    _cloneHp: 750
+    _mainAttack: 7
+    _cloneAttack: 3
+  - _roundName: R3
+    _capacityMax: 30
+    _candyCount: 18
+    _stoneWeight: 1
+    _spikeWeight: 1
+    _skullWeight: 1
+    _stoneCandyCount: 3
+    _spikeBallCount: 2
+    _skullCount: 3
+    _cloneCount: 2
+    _mainHp: 2000
+    _cloneHp: 1000
+    _mainAttack: 7
+    _cloneAttack: 4
+  - _roundName: R4
+    _capacityMax: 35
+    _candyCount: 20
+    _stoneWeight: 1
+    _spikeWeight: 1
+    _skullWeight: 1
+    _stoneCandyCount: 4
+    _spikeBallCount: 3
+    _skullCount: 4
+    _cloneCount: 3
+    _mainHp: 2500
+    _cloneHp: 1250
+    _mainAttack: 7
+    _cloneAttack: 4
+  - _roundName: R4
+    _capacityMax: 40
+    _candyCount: 20
+    _stoneWeight: 1
+    _spikeWeight: 1
+    _skullWeight: 1
+    _stoneCandyCount: 4
+    _spikeBallCount: 4
+    _skullCount: 5
+    _cloneCount: 3
+    _mainHp: 3000
+    _cloneHp: 1500
+    _mainAttack: 10
+    _cloneAttack: 5
+  _requiredDownCount: 5

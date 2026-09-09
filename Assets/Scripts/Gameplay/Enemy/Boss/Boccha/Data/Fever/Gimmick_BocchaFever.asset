@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561c3f2ea42ec9b4fbcf657fbf6abcde, type: 3}
+  m_Name: Gimmick_BocchaFever
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BocchaGimmick_HalloweenFever
+  _cloneUnitPrefab: {fileID: 8373035013781116987, guid: f289e379d7c8ef14ab5bf845bcbed194, type: 3}
+  _cloneCount: 2
+  _lineupTotalWidth: 28
+  _minLineupSpacing: 8
+  _vfxOffset: {x: 0, y: -2, z: 0}
+  _lineupFromFieldCenter: 1
+  _lineupMargin: 6
+  _hiddenDuration: 0.4
+  _hideRendererOnExplode: 1
+  _recoverDuration: 0.8
+  _spawnVfxExtraHeight: 2.5
+  _invincibleAfterFever: 2
+  _inheritBossRotation: 0
+  _returnToFieldCenter: 1
+  _clampLineupToField: 0
+  _mainHp: 100
+  _cloneHp: 30
+  _mainAttack: 25
+  _cloneAttack: 10
+  _mainAppearance:
+    _scaleMultiplier: 1
+    _tint: {r: 1, g: 1, b: 1, a: 1}
+  _cloneAppearances:
+  - _scaleMultiplier: 0.85
+    _tint: {r: 0.3301887, g: 0.3301887, b: 0.3301887, a: 0}
+  - _scaleMultiplier: 0.85
+    _tint: {r: 0.3301887, g: 0.3301887, b: 0.3301887, a: 0}
+  _appearanceDistinctiveness: 1
+  _smokeDuration: 1
+  _challengeDuration: 12
+  _explosionVfxPrefab: {fileID: 6146615972990954900, guid: cf4176813ede5754794c82215372eacb, type: 3}
+  _smokeVfxPrefab: {fileID: 4429139194564467471, guid: c13cd973b5473e04c92b2a4316fc15a7, type: 3}
+  _vfxLifeTime: 3
+  _disableColliderWhileHidden: 1
+  _roarDuration: 2.5
+  _roarAnimTrigger: Roar
+  _roarVfxPrefab: {fileID: 2765139239787536520, guid: 3551cca060d467543a9c32d81a67be44, type: 3}
+  _shakeCameraOnRoar: 1
+  _roarShakeDuration: 0.4
+  _roarShakeStrength: 0.35

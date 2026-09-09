@@ -16,6 +16,7 @@ MonoBehaviour:
   _spawnCount: 2
   _scaleMultiplier: 3
   _spawnInterval: 0.15
+  _landingVfxPrefab: {fileID: 377722432082989388, guid: d40eede2781f38740a569050b8a9e810, type: 3}
   _throwSocket: 4
   _arcApexHeight: 9
   _apexRandomness: 0.2

@@ -23,7 +23,7 @@ namespace Game.Gameplay.Enemy.Boss
     /// 「何が出るかな？」のギミッククラス
     /// </summary>
     [CreateAssetMenu(fileName = "Gimmick_BocchaItemSpit", menuName = "Boss/Gimmicks/Boccha/ItemSpit")]
-    public class BocchaGimmick_ItemSpit : BossGimmickSO
+    public class BocchaGimmick_ItemSpit : BossGimmickSO, IBocchaTunable
     {
         [Header("--- オカシ散布 ---")]
 
@@ -119,6 +119,19 @@ namespace Game.Gameplay.Enemy.Boss
         private float _skullWeight = 1.0f;
 
 
+        [Header("--- 吐き出しの迫力 ---")]
+
+        [SerializeField]
+        [Min(1f)]
+        [Tooltip("吐き出す瞬間に一瞬だけ大きくする倍率")]
+        private float _popScale = 1.15f;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("吐き出す瞬間に一瞬だけ大きくする時間")]
+        private float _popDuration = 0.3f;
+
+
         [Header("--- デバッグ ---")]
 
         [SerializeField]
@@ -142,6 +155,10 @@ namespace Game.Gameplay.Enemy.Boss
         private float _timer;
         private int _spawnedCount;
         private bool _isComplete;
+
+        private Vector3 _baseScale;
+        private float _popTimer;
+        private bool _isPopping;
 
 
         public override bool IsComplete => _isComplete;
@@ -177,6 +194,13 @@ namespace Game.Gameplay.Enemy.Boss
             _timer = 0.0f;
             _spawnedCount = 0;
             _nextOverride = null;
+
+            if (_popScale > 1.0f && _popDuration > 0.0f)
+            {
+                _baseScale = Context.Transform.localScale;
+                _popTimer = 0.0f;
+                _isPopping = true;
+            }
 
             _scatter.BuildPoints(ResolveScatterCenter(), _candyCount, _pendingPoints);
 
@@ -215,6 +239,24 @@ namespace Game.Gameplay.Enemy.Boss
                 return;
             }
 
+            if (_isPopping)
+            {
+                _popTimer += dt;
+
+                float t = Mathf.Clamp01(_popTimer / _popDuration);
+
+                // 0→1→0 の山を作って、行って戻る
+                float curve = Mathf.Sin(t * Mathf.PI);
+
+                Context.Transform.localScale = _baseScale * Mathf.Lerp(1.0f, _popScale, curve);
+
+                if (t >= 1.0f)
+                {
+                    Context.Transform.localScale = _baseScale;
+                    _isPopping = false;
+                }
+            }
+
             _timer = _spitInterval;
 
             // 散布点が残っていれば、1個ずつ吐き出す
@@ -235,11 +277,32 @@ namespace Game.Gameplay.Enemy.Boss
         /// </summary>
         public override void Cancel()
         {
+            if (_isPopping)
+            {
+                Context.Transform.localScale = _baseScale;
+                _isPopping = false;
+            }
+
             _pendingPoints.Clear();
 
             // 中断された場合は、次のギミックを割り込み実行しない
             _nextOverride = null;
             _isComplete = true;
+        }
+
+
+        /// <summary>
+        /// ボッチャのラウンドチューニングを適用する
+        /// </summary>
+        /// <param name="tuning">ラウンドのチューニング情報</param>
+        public void ApplyTuning(BocchaRoundTuning tuning)
+        {
+            if (tuning == null) return;
+
+            _candyCount = Mathf.Max(1, tuning.CandyCount);
+            _stoneWeight = tuning.StoneWeight;
+            _spikeWeight = tuning.SpikeWeight;
+            _skullWeight = tuning.SkullWeight;
         }
 
 

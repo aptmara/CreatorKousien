@@ -16,6 +16,7 @@ MonoBehaviour:
   _spawnCount: 3
   _scaleMultiplier: 3
   _spawnInterval: 0.15
+  _landingVfxPrefab: {fileID: 377722432082989388, guid: 9a9a08eb88dd74d47b5f8c8e3e4d3cda, type: 3}
   _throwSocket: 4
   _arcApexHeight: 9
   _apexRandomness: 0.2
@@ -24,7 +25,7 @@ MonoBehaviour:
   _explosionRadius: 15
   _explosionSpeed: 150
   _upwardRatio: 0.4
-  _explosionVfxPrefab: {fileID: 6653435561416492153, guid: 9f18587fa562008438a6a36774d910ca, type: 3}
+  _explosionVfxPrefab: {fileID: 887176818804198120, guid: dbfbbba36b39edd4fb1ae50110ea2fa2, type: 3}
   _vfxLifeTime: 3
   _scatter:
     _pattern: 0

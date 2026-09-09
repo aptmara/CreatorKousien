@@ -147,7 +147,7 @@ namespace Game.Gameplay.Enemy.Boss
 
         private void Update()
         {
-            if (_source == BocchaCapacitySource.ElapsedTime)
+            if (_source != BocchaCapacitySource.ElapsedTime)
             {
                 return;
             }
@@ -190,7 +190,7 @@ namespace Game.Gameplay.Enemy.Boss
                 return;
             }
 
-            _current = Mathf.Min(_capacityMax, _capacityMax + amount);
+            _current = Mathf.Min(_capacityMax, _current + amount);
 
             NotifyChanged();
 
@@ -202,6 +202,17 @@ namespace Game.Gameplay.Enemy.Boss
             if (_current < _capacityMax) return;
 
             TriggerOverflow();
+        }
+
+
+        /// <summary>
+        /// キャパオーバーになる値を差し替える。ラウンド切り替えから呼ばれる
+        /// </summary>
+        public void SetCapacityMax(float capacityMax)
+        {
+            _capacityMax = Mathf.Max(0.01f, capacityMax);
+
+            NotifyChanged();
         }
 
 
