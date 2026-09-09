@@ -1,18 +1,19 @@
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 // file   : S_UpgradeCard.cs
-// brief  : 強化選択画面の1枚分のUI
+// brief  : 常設ショップメニューの1枚分のボタンUI
 //
 // auther : Shohei Takitani
 // date   : 2026/06/30 - begin.
+// update : 2026/09/07 - 常設MENU化に伴い購入ボタン形式へ改修 - 浅野
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+using System;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 using Game.Data.Player;
-using Game.Data.Collectibles;
-using Game.Core.Roguelike;
 
-public class S_UpgradeCard : MonoBehaviour
+public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     //____________________________________
     // variables
@@ -49,108 +50,79 @@ public class S_UpgradeCard : MonoBehaviour
     private Outline _runtimeOutline;
     private Material _defaultIconMaterial;
     private static Material _sharedGrayscaleMaterial;
-    private bool _isRuleChange;
+
+    /// <summary>ホバー開始時に呼ばれる(自分自身を渡す)</summary>
+    public event Action<S_UpgradeCard> HoverEnter;
+    /// <summary>ホバー終了時に呼ばれる</summary>
+    public event Action<S_UpgradeCard> HoverExit;
+    /// <summary>クリック(購入試行)時に呼ばれる</summary>
+    public event Action<S_UpgradeCard> Clicked;
+
+    public UpgradeData CardData => _cardData;
 
 
     //____________________________________
     // public function
 
+    private void Awake()
+    {
+        if (_selectButton != null)
+            _selectButton.onClick.AddListener(() => Clicked?.Invoke(this));
+    }
+
     /// <summary>
-    /// カードの表示内容を設定する
+    /// ボタンの表示内容を設定する
     /// </summary>
-    /// <param name="cardData">表示するカードデータ</param>
+    /// <param name="cardData">表示する強化データ</param>
     /// <param name="currentLevel">現在の取得済みレベル</param>
-    /// <param name="onSelected">選択時に呼ばれるコールバック</param>
-    public void Setup(
-        UpgradeData cardData,
-        int currentLevel,
-        int levelGain = 1,
-        bool isDeepening = false)
+    public void Setup(UpgradeData cardData, int currentLevel)
     {
         if (!_useFrameHighlight && _highlightFrame != null)
         {
             _highlightFrame.SetActive(false);
         }
-
-        // 使用しない
-        //_selectButton.onClick.RemoveAllListeners();
-        //_selectButton.onClick.AddListener(() => onSelected?.Invoke(_cardData));
 
         _cardData = cardData;
         EnsureRuntimeFrame();
         PrepareIconMaterial();
         ApplyCardLayout();
         DisableScaleAnimation();
-        _nameText.gameObject.SetActive(false);
+        _nameText.gameObject.SetActive(true);
         _descriptionText.gameObject.SetActive(false);
         _levelText.gameObject.SetActive(true);
         if (_costText != null)
-            _costText.gameObject.SetActive(false);
-        Refresh(currentLevel, levelGain, isDeepening);
-    }
-
-    public void SetupFocusTarget(CollectibleData target, Sprite fallbackIcon)
-    {
-        if (target == null) return;
-
-        if (!_useFrameHighlight && _highlightFrame != null)
-        {
-            _highlightFrame.SetActive(false);
-        }
-
-        _cardData = null;
-        EnsureRuntimeFrame();
-        PrepareIconMaterial();
-        ApplyFocusTargetLayout();
-        DisableScaleAnimation();
-        _iconImage.sprite = fallbackIcon;
-        _nameText.gameObject.SetActive(true);
-        _nameText.text = CollectibleTable.GetDisplayName(target.Type);
-        _descriptionText.gameObject.SetActive(false);
-        _levelText.gameObject.SetActive(false);
-        if (_costText != null)
-            _costText.gameObject.SetActive(false);
-        _selectButton.interactable = true;
+            _costText.gameObject.SetActive(true);
+        Refresh(currentLevel);
     }
 
     /// <summary>
-    /// 現在レベルに基づいて表示を更新する(再選択時も呼び出し)
+    /// 現在レベルに基づいて表示を更新する(購入後の即時反映用)
     /// </summary>
     /// <param name="currentLevel">現在の取得レベル(未取得なら0)</param>
-    public void Refresh(int currentLevel, int levelGain = 1, bool isDeepening = false)
+    public void Refresh(int currentLevel)
     {
-        int nextLevel = Mathf.Clamp(currentLevel + Mathf.Max(1, levelGain), 1, _cardData.MaxLevel);
         bool isMaxed = currentLevel >= _cardData.MaxLevel;
 
         _iconImage.sprite = _cardData.Icon;
         _nameText.text = _cardData.DisplayName;
-        bool isOneTimeRule = _cardData.OfferType == UpgradeOfferType.Relic ||
-                             _cardData.OfferType == UpgradeOfferType.Contract ||
-                             _cardData.OfferType == UpgradeOfferType.Evolution;
-        _descriptionText.text = isOneTimeRule
-            ? _cardData.GetCardText(nextLevel)
-            : _cardData.GetTransitionText(currentLevel, levelGain);
         _levelText.text = isMaxed
             ? "MAX"
-            : GetStageLabel(currentLevel, nextLevel);
-        ApplyOfferColors(_cardData.OfferType, isDeepening);
+            : GetStageLabel(currentLevel, Mathf.Clamp(currentLevel + 1, 1, _cardData.MaxLevel));
+        ApplyFrameColor(false);
 
-        if (_costText != null && isMaxed)
+        if (_costText != null)
         {
-            _costText.text = "取得済み";
-        }
-        else if (_costText != null)
-        {
-            _costText.text = GetStageLabel(currentLevel, nextLevel);
+            _costText.text = isMaxed ? "取得済み" : $"{_cardData.GetCost(currentLevel)} コイン";
         }
 
-        if(_acquiredMark != null)
+        if (_acquiredMark != null)
         {
             _acquiredMark.SetActive(currentLevel > 0);
         }
 
-        // 次第レベル到達済みなら選べなくする
-        _selectButton.interactable = !isMaxed;
+        // 最大レベル到達済みなら購入不可にする
+        if (_selectButton != null)
+            _selectButton.interactable = !isMaxed;
     }
 
     private static string GetStageLabel(int currentLevel, int nextLevel)
@@ -158,20 +130,15 @@ public class S_UpgradeCard : MonoBehaviour
         return currentLevel <= 0 ? $"Lv.{nextLevel}" : $"Lv.{currentLevel}→{nextLevel}";
     }
 
-    private void ApplyOfferColors(UpgradeOfferType offerType, bool isDeepening)
+    private void ApplyFrameColor(bool isHighlighted)
     {
-        bool isRuleChange = isDeepening ||
-                            offerType == UpgradeOfferType.Relic ||
-                            offerType == UpgradeOfferType.Contract ||
-                            offerType == UpgradeOfferType.Evolution;
-        _isRuleChange = isRuleChange;
         if (_runtimeFrame != null)
-            _runtimeFrame.color = isRuleChange
-                ? new Color(0.20f, 0.06f, 0.27f, 0.98f)
+            _runtimeFrame.color = isHighlighted
+                ? new Color(0.28f, 0.12f, 0.30f, 1f)
                 : new Color(0.12f, 0.07f, 0.16f, 0.96f);
         if (_runtimeOutline != null)
-            _runtimeOutline.effectColor = isRuleChange
-                ? new Color(0.88f, 0.40f, 1f, 1f)
+            _runtimeOutline.effectColor = isHighlighted
+                ? Color.white
                 : new Color(0.48f, 0.32f, 0.18f, 1f);
     }
 
@@ -223,24 +190,18 @@ public class S_UpgradeCard : MonoBehaviour
         if (transform is RectTransform rootRect)
             rootRect.sizeDelta = new Vector2(216f, 216f);
 
-        ConfigureRect(_iconImage.rectTransform, new Vector2(0f, 16f), new Vector2(156f, 156f));
+        ConfigureRect(_iconImage.rectTransform, new Vector2(0f, 30f), new Vector2(140f, 140f));
         _iconImage.preserveAspect = true;
         _iconImage.raycastTarget = false;
 
-        ConfigureText(_levelText, new Vector2(0f, -84f), new Vector2(194f, 32f), 28f, FontStyles.Bold);
+        ConfigureText(_nameText, new Vector2(0f, -58f), new Vector2(200f, 40f), 24f, FontStyles.Bold);
+        ConfigureText(_levelText, new Vector2(0f, -88f), new Vector2(194f, 30f), 22f, FontStyles.Bold);
         _levelText.color = new Color(1f, 0.72f, 0.28f, 1f);
-    }
-
-    private void ApplyFocusTargetLayout()
-    {
-        if (transform is RectTransform rootRect)
-            rootRect.sizeDelta = new Vector2(216f, 216f);
-
-        ConfigureRect(_iconImage.rectTransform, new Vector2(0f, 30f), new Vector2(138f, 138f));
-        _iconImage.preserveAspect = true;
-        _iconImage.raycastTarget = false;
-
-        ConfigureText(_nameText, new Vector2(0f, -78f), new Vector2(194f, 42f), 30f, FontStyles.Bold);
+        if (_costText != null)
+        {
+            ConfigureText(_costText, new Vector2(0f, -112f), new Vector2(194f, 28f), 20f, FontStyles.Bold);
+            _costText.color = new Color(1f, 0.92f, 0.55f, 1f);
+        }
     }
 
     private static void ConfigureText(
@@ -271,35 +232,20 @@ public class S_UpgradeCard : MonoBehaviour
         rect.localScale = Vector3.one;
     }
 
+    //____________________________________
+    // pointer handlers
 
-    /// <summary>
-    /// キーボード/ゲームパッドでのフォーカス状態を切り替える関数
-    /// </summary>
-    /// <param name="isHighlighted"></param>
-    public void SetHighlighted(bool isHighlighted)
+    public void OnPointerEnter(PointerEventData eventData)
     {
-        if (_runtimeFrame != null)
-            _runtimeFrame.color = isHighlighted
-                ? new Color(0.28f, 0.12f, 0.30f, 1f)
-                : _isRuleChange
-                    ? new Color(0.20f, 0.06f, 0.27f, 0.98f)
-                    : new Color(0.12f, 0.07f, 0.16f, 0.96f);
-        if (_runtimeOutline != null)
-            _runtimeOutline.effectColor = isHighlighted
-                ? Color.white
-                : _isRuleChange
-                    ? new Color(0.88f, 0.40f, 1f, 1f)
-                    : new Color(0.48f, 0.32f, 0.18f, 1f);
+        ApplyFrameColor(true);
+        _iconImage.material = _sharedGrayscaleMaterial == null ? _defaultIconMaterial : _defaultIconMaterial;
+        HoverEnter?.Invoke(this);
+    }
 
-        _iconImage.material = isHighlighted || _sharedGrayscaleMaterial == null
-            ? _defaultIconMaterial
-            : _sharedGrayscaleMaterial;
-
-        // 旧Frame方式
-        if (_useFrameHighlight && _highlightFrame != null)
-        {
-            _highlightFrame.SetActive(isHighlighted);
-        }
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        ApplyFrameColor(false);
+        HoverExit?.Invoke(this);
     }
 
     /// <summary>

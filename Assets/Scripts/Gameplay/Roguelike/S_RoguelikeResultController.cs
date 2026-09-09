@@ -93,16 +93,6 @@ public class S_RoguelikeResultController : MonoBehaviour
         }
         RoguelikeUpgradeRuntime.Apply(selectedCard.Id, level, selectedCard.GameplayValue);
         RoguelikeEffectRuntime.Register(selectedCard, level);
-
-        if (selectedCard.OfferType == UpgradeOfferType.CombatPressureRule)
-        {
-            int outputType = (int)selectedCard.CombatPressureOutputType;
-            RoguelikeBuildRuntime.SetCombatRule(
-                selectedCard.CombatPressureRuleId,
-                level,
-                outputType);
-            RoguelikeUpgradeRuntime.UnlockCollectible(outputType);
-        }
         return true;
     }
 
