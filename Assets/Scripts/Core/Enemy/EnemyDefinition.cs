@@ -125,5 +125,9 @@ namespace Game.Core.Enemy
         public float DamageDropDistance = 0.015f;
 
 
+        [Header("--- ボスの生成位置 ---")]
+
+        [Tooltip("ボスの生成位置をFieldCenterからずらす量。IsBossのときだけ使用する")]
+        public Vector3 BossSpawnOffset = new Vector3(0.0f, 0.0f, 5.0f);
     }
 }

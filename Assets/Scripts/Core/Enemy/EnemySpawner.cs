@@ -21,7 +21,7 @@
  * 7/15: EnemySpawnerほぼ全部修正。新たにつくったWave管理のデータから敵をスポーンするように変更。 - Asano a.k.a. Gachi
  *
  * 7/16: EnemySpawnerからBOSSのスポーン修正 - Asano a.k.a. hu_do
- * 
+ *
  * 9/05: Spawnを位置を指定してスポーンする関数を作成、スポーンのための初期化関数を作成し初期化をひとくくりに
  */
 using UnityEngine;
@@ -73,12 +73,12 @@ namespace Game.Core.Enemy
             // 目標位置計算
             float validMinDistance = Mathf.Max(0f, minDistanceFromOtherEnemies);
 
-            if (!TryGetSpawnTargetPosition(definition.IsBoss,validMinDistance,out Vector3 targetPosition))
+            if (!TryGetSpawnTargetPosition(definition, validMinDistance, out Vector3 targetPosition))
             {
                 return false;
             }
 
-            return SpawnResolvedEnemy(definition,targetPosition,hpRate,barrierRate,out spawnedEnemy);
+            return SpawnResolvedEnemy(definition, targetPosition, hpRate, barrierRate, out spawnedEnemy);
         }
 
         public bool TrySpawnEnemyAt(EnemyDefinition definition,Vector3 position,float hpRate,float barrierRate,out EnemyController spawnedEnemy)
@@ -92,13 +92,13 @@ namespace Game.Core.Enemy
         /// <summary>
         /// スポーンターゲットの位置を試行的に取得する
         /// </summary>
-        /// <param name="isBoss">ボスかどうか</param>
+        /// <param name="definition">生成する敵の定義</param>
         /// <param name="minDistanceFromOtherEnemies">既存の敵と最低限空ける距離</param>
         /// <param name="targetPos">ターゲット位置</param>
         /// <returns>見つかったらtrueを返す</returns>
-        private bool TryGetSpawnTargetPosition(bool isBoss, float minDistanceFromOtherEnemies, out Vector3 targetPos)
+        private bool TryGetSpawnTargetPosition(EnemyDefinition definition, float minDistanceFromOtherEnemies, out Vector3 targetPos)
         {
-            if (isBoss && TryGetCenterAnchorPosition(out targetPos))
+            if (definition != null && definition.IsBoss && TryGetCenterAnchorPosition(definition, out targetPos))
             {
                 return true;
             }
@@ -119,7 +119,7 @@ namespace Game.Core.Enemy
             return false;
         }
 
-        private bool TryGetCenterAnchorPosition(out Vector3 targetPos)
+        private bool TryGetCenterAnchorPosition(EnemyDefinition definition, out Vector3 targetPos)
         {
             try
             {
@@ -130,7 +130,12 @@ namespace Game.Core.Enemy
                     Vector3 spawnBasePosition = _spawnBasePoint != null
                         ? _spawnBasePoint.position
                         : centerPosition;
-                    targetPos = new Vector3(centerPosition.x, spawnBasePosition.y, spawnBasePosition.z + 5.0f);
+
+                    // ボスごとに生成位置をずらせるようにする
+                    Vector3 offset = definition != null ? definition.BossSpawnOffset : new Vector3(0.0f, 0.0f, 5.0f);
+
+                    targetPos = new Vector3(centerPosition.x + offset.x, spawnBasePosition.y + offset.y, centerPosition.z + offset.z);
+
                     return true;
                 }
             }
@@ -286,7 +291,7 @@ namespace Game.Core.Enemy
                 }
                 if (bossBattleFlowController != null)
                 {
-                    bossBattleFlowController.OnBossBattleCompleted += _ => Destroy(enemyObject, 5.0f);
+                    bossBattleFlowController.OnBossBattleCompleted += _ => Destroy(enemyObject, 10.0f);
                 }
 
                 bool startSuccess = false;

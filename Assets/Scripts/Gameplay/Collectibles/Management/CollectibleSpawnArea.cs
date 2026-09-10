@@ -18,6 +18,26 @@ namespace Game.Gameplay.Collectibles
     {
         private BoxCollider _areaCollider;
 
+        /// <summary>
+        /// このエリアのワールド空間での範囲を取得します。
+        /// ボスの散布範囲をフィールドへ自動フィットさせる用途で参照します。
+        /// Awakeより前に呼ばれても動作するよう、未取得ならここで取得します。
+        /// </summary>
+        public Bounds Bounds
+        {
+            get
+            {
+                if (_areaCollider == null)
+                {
+                    _areaCollider = GetComponent<BoxCollider>();
+                }
+
+                return _areaCollider != null
+                    ? _areaCollider.bounds
+                    : new Bounds(transform.position, Vector3.zero);
+            }
+        }
+
         private void Awake()
         {
             _areaCollider = GetComponent<BoxCollider>();

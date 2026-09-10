@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5069af4ea33677e4dbca7f1b2297aaa2, type: 3}
+  m_Name: Gimmick_BocchaStoneCandy
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BocchaGimmick_StoneCandy
+  _hazardPrefab: {fileID: 8775489147838489531, guid: 0a835342af16a8f41b4177e46159a6de, type: 3}
+  _spawnCount: 2
+  _scaleMultiplier: 2.5
+  _spawnInterval: 0.15
+  _scatter:
+    _pattern: 0
+    _innerRadius: 3
+    _outerRadius: 12
+    _axisScale: {x: 1, y: 1}
+    _centerOffset: {x: 0, y: 0, z: 0}
+    _fitToSpawnAreas: 1
+    _fitMargin: 0.95
+    _angleJitter: 0.35
+    _radiusJitter: 0.25
+    _minSeparation: 1.5
+    _separationRetryCount: 6
+    _snapToGround: 1
+    _discardWhenNoGround: 0
+    _groundMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    _groundRayHeight: 50
+  _scatterFromFieldCenter: 1

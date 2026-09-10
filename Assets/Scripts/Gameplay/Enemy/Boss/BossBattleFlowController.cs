@@ -1,8 +1,9 @@
 /*
  * 寺田
  * ボスの動作のフローを管理する
- * 
- * 
+ *
+ * ボス固有の撃破演出を再生する機能追加 - 2026/09/09 asano
+ *
  */
 
 using UnityEngine;
@@ -160,7 +161,7 @@ namespace Game.Gameplay.Enemy.Boss
         public bool StartBattle(string bossInstanceId)
         {
             if(!Initialize(bossInstanceId)) return false;
-            
+
             return BeginBattle();
         }
 
@@ -186,11 +187,18 @@ namespace Game.Gameplay.Enemy.Boss
 
         private IEnumerator PlayIntroSequence()
         {
-            if (_introSequenceController != null && _introSequenceData != null)
+            // ボス固有の登場演出があれば最優先で使う
+            IBossIntroPresentation introPresentation = GetComponent<IBossIntroPresentation>();
+
+            if (introPresentation != null)
             {
-                yield return StartCoroutine(_introSequenceController.PlayPresentation(_introSequenceData,_bossAnimator));
+                yield return StartCoroutine(introPresentation.PlayIntro());
             }
-            else if(_bossAnimator != null)
+            else if (_introSequenceController != null && _introSequenceData != null)
+            {
+                yield return StartCoroutine(_introSequenceController.PlayPresentation(_introSequenceData, _bossAnimator));
+            }
+            else if (_bossAnimator != null)
             {
                 _bossAnimator.SetTrigger("Intro");
                 yield return new WaitForSeconds(3.0f);
@@ -234,12 +242,18 @@ namespace Game.Gameplay.Enemy.Boss
         {
             if (!_isBattleActive) return;
 
+            // 勝敗が決まったらギミックを止める
+            if (_currentState == BossBattleFlowState.Victory || _currentState == BossBattleFlowState.Defeat)
+            {
+                return;
+            }
+
             //======== タイムリミット =========
-            if(_timeLimit > 0.0f && _battleTimer >= _timeLimit)
+            if (_timeLimit > 0.0f && _battleTimer >= _timeLimit)
             {
                 TriggerDefeat();
                 return;
-            
+
             }
 
             //======== ダウン中の処理 =========
@@ -262,6 +276,9 @@ namespace Game.Gameplay.Enemy.Boss
                 {
                     _currentWaitingGimmick.Tick(Time.deltaTime);
                 }
+
+                // Tickの中でTriggerDownなどが呼ばれると参照が捨てられるため、ここで再確認する
+                if (_currentWaitingGimmick == null) return;
 
                 bool isTimeout = _currentWaitingData != null &&
                     _currentWaitingData.timeoutDuration > 0.0f &&
@@ -298,9 +315,9 @@ namespace Game.Gameplay.Enemy.Boss
         }
 
         /*
-         * 
+         *
          * ダメージ処理
-         * 
+         *
          */
 
         public void TakeDamage(float amount)
@@ -339,10 +356,33 @@ namespace Game.Gameplay.Enemy.Boss
             if (CurrentState == BossBattleFlowState.Victory) return;
 
             ChangeState(BossBattleFlowState.Victory);
-            StopBattle();
             Debug.Log("[BattleFlow] <color=green>勝利条件達成!</color>");
             OnVictory?.Invoke();
+
+            // ボス固有の撃破演出があれば最優先で使う
+            IBossDefeatPresentation defeatPresentation = GetComponent<IBossDefeatPresentation>();
+
+            if (defeatPresentation != null)
+            {
+                StartCoroutine(PlayDefeatThenStop(defeatPresentation));
+
+                return;
+            }
+
+            StopBattle();
         }
+
+
+        /// <summary>
+        /// ボス固有の撃破演出を再生してから戦闘を終了する
+        /// </summary>
+        private IEnumerator PlayDefeatThenStop(IBossDefeatPresentation presentation)
+        {
+            yield return StartCoroutine(presentation.PlayDefeat());
+
+            StopBattle();
+        }
+
 
         public void TriggerDefeat()
         {
@@ -354,12 +394,12 @@ namespace Game.Gameplay.Enemy.Boss
             OnDefeat?.Invoke();
         }
 
-    
+
 
         /*
-         * 
+         *
          * DownSystem
-         * 
+         *
          */
         public void TriggerDown()
         {
@@ -390,7 +430,7 @@ namespace Game.Gameplay.Enemy.Boss
         private void EndDown()
         {
             ChangeState(BossBattleFlowState.InBattle);
-            
+
             Debug.Log("[BattleFlow] ボスがダウンから復帰しました");
 
             if(_bossAnimator != null && !string.IsNullOrEmpty(_recoverAnimTrigger))
@@ -403,9 +443,9 @@ namespace Game.Gameplay.Enemy.Boss
 
 
         /*
-         * 
+         *
          * Gimmick
-         * 
+         *
          */
 
         private void EvaluateIntervalGimmicks()
@@ -453,9 +493,9 @@ namespace Game.Gameplay.Enemy.Boss
         }
 
         /*
-         * 
+         *
          * 割り込み処理
-         * 
+         *
          */
 
         public void EnqueueInterruptGimmick(BossGimmickData gimmickData)
@@ -463,6 +503,12 @@ namespace Game.Gameplay.Enemy.Boss
             if(gimmickData == null || _currentPhaseData == null) return;
 
             GimmickSlot targetSlot = _currentPhaseData.GimmickSlots.Find(s => s.data == gimmickData);
+
+            if (targetSlot == null)
+            {
+                Debug.LogWarning($"[BattleFlow] 割り込み対象「{gimmickData.name}」が" + $"現在のフェーズ（{_currentPhaseData.PhaseName}）のギミックスロットに登録されていません。", this);
+                return;
+            }
 
             if (targetSlot.data != null && !_interruptQueue.Contains(targetSlot))
             {

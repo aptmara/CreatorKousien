@@ -56,7 +56,7 @@ namespace Game.Core.Events
 
         }
     }
-        
+
 
     public readonly struct CrystalHitEvent
     {
@@ -84,7 +84,7 @@ namespace Game.Core.Events
         // 今の所情報はそこまで必要ないので空
         public WaveEndEvent(int dummy)
         {
-            
+
         }
     }
 
@@ -127,7 +127,7 @@ namespace Game.Core.Events
         public readonly float BodyDamage;
         public readonly Vector3 HitPosition;
         public readonly Transform EnemyTransform;
-        
+
         public readonly ScriptableObject ItemDataRaw;
 
         public EnemyHitBatchEvent(string enemyId, int hitCount, float bodyDamage, Vector3 pos, Transform enemyTransform, ScriptableObject itemDataRaw = null)
@@ -138,7 +138,7 @@ namespace Game.Core.Events
             HitPosition = pos;
             EnemyTransform = enemyTransform;
             ItemDataRaw = itemDataRaw;
-        }        
+        }
     }
 
     public readonly struct BarrierHitBatchEvent
@@ -637,6 +637,171 @@ namespace Game.Core.Events
         public readonly int DangerSide;
         public BalanceSlamWarningEvent(int dangerSide) => DangerSide = dangerSide;
     }
-    
 
+
+    // --- キング・ボッチャ関連 ---
+
+    /// <summary>
+    /// 「何がでるかな？」で抽選されるお邪魔アイテムの種類
+    /// </summary>
+    public enum BocchaHazardType
+    {
+        /// <summary>
+        /// 石化キャンディ
+        /// </summary>
+        StoneCandy = 0,
+
+        /// <summary>
+        /// トゲボール
+        /// </summary>
+        SpikeBall = 1,
+
+        /// <summary>
+        /// スカル
+        /// </summary>
+        Skull = 2,
+    }
+
+
+    /// <summary>
+    /// 「何がでるかな？」でオカシの散布を開始した通知
+    /// </summary>
+    public readonly struct BocchaSpitStartedEvent
+    {
+        public readonly Vector3 Origin;
+        public readonly int CandyCount;
+
+        public BocchaSpitStartedEvent(Vector3 origin, int candyCount)
+        {
+            Origin = origin;
+            CandyCount = candyCount;
+        }
+    }
+
+
+    /// <summary>
+    /// 「何がでるかな？」でお邪魔アイテムが出現した通知
+    /// </summary>
+    public readonly struct BocchaHazardSpawnedEvent
+    {
+        public readonly BocchaHazardType HazardType;
+        public readonly Vector3 Position;
+
+        public BocchaHazardSpawnedEvent(BocchaHazardType hazardType, Vector3 position)
+        {
+            HazardType = hazardType;
+            Position = position;
+        }
+    }
+
+
+    /// <summary>
+    /// 「何がでるかな？」でスカルが爆発した通知
+    /// </summary>
+    public readonly struct BocchaSkullExplodedEvent
+    {
+        public readonly Vector3 Position;
+        public readonly float Radius;
+
+        /// <summary>
+        /// 吹き飛ばしたフィールド上のオカシの数
+        /// </summary>
+        public readonly int AffectedCollectibleCount;
+
+        public BocchaSkullExplodedEvent(Vector3 position, float radius, int affectedCollectibleCount)
+        {
+            Position = position;
+            Radius = radius;
+            AffectedCollectibleCount = affectedCollectibleCount;
+        }
+    }
+
+
+    /// <summary>
+    /// トゲ玉が防衛バリア圏内に落ちてしまった通知
+    /// </summary>
+    public readonly struct BocchaSpikeBallDroppedEvent
+    {
+        public readonly Vector3 Position;
+        public readonly float BarrierDamage;
+
+        public BocchaSpikeBallDroppedEvent(Vector3 position, float barrierDamage)
+        {
+            Position = position;
+            BarrierDamage = barrierDamage;
+        }
+    }
+
+
+    /// <summary>
+    /// キャパゲージの変化通知。UIのゲージ表示に使用する
+    /// </summary>
+    public readonly struct BocchaCapacityChangedEvent
+    {
+        public readonly float Current;
+        public readonly float Max;
+
+        /// <summary>0.0〜1.0 の正規化値(UI用)</summary>
+        public readonly float Ratio;
+
+        public BocchaCapacityChangedEvent(float current, float max)
+        {
+            Current = current;
+            Max = max;
+            Ratio = max > 0.0f ? Mathf.Clamp01(current / max) : 0.0f;
+        }
+    }
+
+
+    /// <summary>
+    /// 「ハロウィン・ナイト・フィーバーじゃ！」開始通知
+    /// </summary>
+    public readonly struct BocchaFeverStartedEvent
+    {
+        public readonly int CloneCount;
+        public readonly float ChallengeDuration;
+
+        public BocchaFeverStartedEvent(int cloneCount, float challengeDuration)
+        {
+            CloneCount = cloneCount;
+            ChallengeDuration = challengeDuration;
+        }
+    }
+
+
+    /// <summary>
+    /// 分身フェーズの決着通知
+    /// </summary>
+    public readonly struct BocchaFeverResolvedEvent
+    {
+        /// <summary>true = 本体を攻撃しきってダウンを取れた</summary>
+        public readonly bool IsSuccess;
+
+        /// <summary>決着時に残っていたダミーの数</summary>
+        public readonly int RemainingCloneCount;
+
+        public BocchaFeverResolvedEvent(bool isSuccess, int remainingCloneCount)
+        {
+            IsSuccess = isSuccess;
+            RemainingCloneCount = remainingCloneCount;
+        }
+    }
+
+
+    /// <summary>
+    /// ボスのダウン回数の変化通知。UIの「2 / 5」表示に使用する
+    /// </summary>
+    public readonly struct BossDownCountChangedEvent
+    {
+        public readonly string BossInstanceId;
+        public readonly int CurrentCount;
+        public readonly int RequiredCount;
+
+        public BossDownCountChangedEvent(string bossInstanceId, int currentCount, int requiredCount)
+        {
+            BossInstanceId = bossInstanceId;
+            CurrentCount = currentCount;
+            RequiredCount = requiredCount;
+        }
+    }
 }

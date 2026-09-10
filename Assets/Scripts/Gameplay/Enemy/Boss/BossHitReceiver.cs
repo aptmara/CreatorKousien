@@ -26,6 +26,10 @@ public sealed class BossHitReceiver : MonoBehaviour
     private void TryHandle(CollectibleObject collectible, float speed, Vector3 pos)
     {
         if (collectible == null || speed < _minimumHitSpeed) return;
+
+        // トゲ玉はバリアを削るための危険物なので、ボスへはダメージを与えない
+        if (collectible.GetComponent<BocchaSpikeBall>() != null) return;
+
         if (_customTarget != null && !_customTarget.IsHittable) return;
 
         int id = collectible.GetInstanceID();
