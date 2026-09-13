@@ -15,6 +15,7 @@ MonoBehaviour:
   _hazardPrefab: {fileID: 8775489147838489531, guid: 0a835342af16a8f41b4177e46159a6de, type: 3}
   _spawnCount: 2
   _scaleMultiplier: 2.5
+  _throwSocket: 4
   _spawnInterval: 0.15
   _scatter:
     _pattern: 0
@@ -23,7 +24,7 @@ MonoBehaviour:
     _axisScale: {x: 1, y: 1}
     _centerOffset: {x: 0, y: 0, z: 0}
     _fitToSpawnAreas: 1
-    _fitMargin: 0.95
+    _fitMargin: 0.747
     _angleJitter: 0.35
     _radiusJitter: 0.25
     _minSeparation: 1.5
@@ -34,4 +35,5 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 4294967295
     _groundRayHeight: 50
+    _groundClearance: 0
   _scatterFromFieldCenter: 1

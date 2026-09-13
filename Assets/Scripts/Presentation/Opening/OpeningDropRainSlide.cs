@@ -113,14 +113,9 @@ namespace Game.Presentation.Opening
         public override IEnumerator PlayExitRoutine()
         {
             // 雨を止める。落下中の飴があれば着地するまで待つ
-            if (_rainRoutine != null)
-            {
-                yield return _rainRoutine;
-                _rainRoutine = null;
-            }
-
-            // 雨を止める。落下中の飴があれば着地するまで待つ
             StopRain();
+
+            _rainRoutine = null;
 
             yield return base.PlayExitRoutine();
 
