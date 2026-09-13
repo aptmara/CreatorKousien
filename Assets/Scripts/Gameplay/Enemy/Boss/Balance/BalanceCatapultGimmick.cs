@@ -206,8 +206,6 @@ namespace Game.Gameplay.Enemy.Boss
             }
 
             EventBus.Publish(new CameraShakeRequestedEvent());
-
-            Complete();
         }
 
         private void ResolveOutcome()
