@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossFlowBattleData
   _phaseData:
   - _phaseName: Balance_Phase01
-    _hpThresholdToEnter: 0.7
+    _hpThresholdToEnter: 0.5
     _multipliers:
       DamageMultiplier: 1
       SpeedMultiplier: 1
@@ -23,6 +23,15 @@ MonoBehaviour:
     - data: {fileID: 11400000, guid: 7418971ea1900e649a472c93af9d019f, type: 2}
       gimmick: {fileID: 11400000, guid: b3135951776456f4e93a8cc606d0b7fc, type: 2}
   - _phaseName: Balance_Phase02
+    _hpThresholdToEnter: 0.3
+    _multipliers:
+      DamageMultiplier: 1.2
+      SpeedMultiplier: 1
+      SpawnIntervalMultiplier: 0.7
+    _gimmickSlots:
+    - data: {fileID: 11400000, guid: 7418971ea1900e649a472c93af9d019f, type: 2}
+      gimmick: {fileID: 11400000, guid: b3135951776456f4e93a8cc606d0b7fc, type: 2}
+  - _phaseName: Balance_Phase03
     _hpThresholdToEnter: 0
     _multipliers:
       DamageMultiplier: 1.2

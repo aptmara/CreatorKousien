@@ -15,13 +15,13 @@ MonoBehaviour:
   _attackSide: 1
   _defenderDefinitions:
   - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-  - {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
-  _defenderSpawnInterval: 3
-  _defenderHpRate: 1
+  - {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
+  _defenderSpawnInterval: 5
+  _defenderHpRate: 0.5
   _defenderMinDistance: 2
   _spawnerVfxPrefab: {fileID: 8518442979827585415, guid: f4bd3474d6bca7b4eb50d1a7e1fae100, type: 3}
   _ironBallDelay: 8
-  _ballCount: 4
+  _ballCount: 8
   _ironBallPrefab: {fileID: 62624467482769536, guid: 72013cb1df2e4c8408b3c69fd8628c2a, type: 3}
   _settleDuration: 1
   _reverseThreshold: 0.9
@@ -33,5 +33,5 @@ MonoBehaviour:
   _bossAnimator: {fileID: 0}
   _barrierAttackTriggerName: BarrierSlam
   _fullyRaisedBarrierDamage: 15
-  _barrierAttackVfxPrefab: {fileID: 0}
+  _barrierAttackVfxPrefab: {fileID: 706640728195732465, guid: 4680346bff5c92d47a6faf6a902ad805, type: 3}
   _vfxLifetime: 2
