@@ -131,11 +131,18 @@ namespace Game.Core.Enemy
                         ? _spawnBasePoint.position
                         : centerPosition;
 
-                    // ボスごとに生成位置をずらせるようにする
-                    Vector3 offset = definition != null ? definition.BossSpawnOffset : new Vector3(0.0f, 0.0f, 5.0f);
+                    if (definition != null && definition.UseCustomBossSpawnPosition)
+                    {
+                        // 個別設定を使うボス：現在のStage3と同じ計算
+                        Vector3 offset = definition.BossSpawnOffset;
 
-                    targetPos = new Vector3(centerPosition.x + offset.x, spawnBasePosition.y + offset.y, centerPosition.z + offset.z);
-
+                        targetPos = new Vector3(centerPosition.x + offset.x, spawnBasePosition.y + offset.y, centerPosition.z + offset.z);
+                    }
+                    else
+                    {
+                        // 従来の出現位置
+                        targetPos = new Vector3(centerPosition.x, spawnBasePosition.y, spawnBasePosition.z + 5f);
+                    }
                     return true;
                 }
             }

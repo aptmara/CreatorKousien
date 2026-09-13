@@ -146,4 +146,5 @@ MonoBehaviour:
     m_RotationOrder: 4
   BreakDropDistance: 0.2
   DamageDropDistance: 0.015
+  UseCustomBossSpawnPosition: 1
   BossSpawnOffset: {x: 0, y: -2, z: -16.5}

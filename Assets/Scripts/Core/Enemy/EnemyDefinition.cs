@@ -127,7 +127,10 @@ namespace Game.Core.Enemy
 
         [Header("--- ボスの生成位置 ---")]
 
-        [Tooltip("ボスの生成位置をFieldCenterからずらす量。IsBossのときだけ使用する")]
-        public Vector3 BossSpawnOffset = new Vector3(0.0f, 0.0f, 5.0f);
+        [Tooltip("ONなら個別設定を使用。OFFなら従来のボス出現位置を使用する")]
+        public bool UseCustomBossSpawnPosition = false;
+
+        [Tooltip("個別設定時の補正量。X・ZはField_Center、YはSpawn Base Pointが基準")]
+        public Vector3 BossSpawnOffset = new Vector3(0f, 0f, 5f);
     }
 }
