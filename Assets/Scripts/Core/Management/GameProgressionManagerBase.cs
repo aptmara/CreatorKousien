@@ -669,13 +669,6 @@ namespace Game.Core.Management
 
                             RoguelikeUpgradeRuntime.Apply(data.Id, level, data.GameplayValue);
                             RoguelikeEffectRuntime.Register(data, level);
-
-                            if (data.OfferType == UpgradeOfferType.CombatPressureRule)
-                            {
-                                int outputType = (int)data.CombatPressureOutputType;
-                                RoguelikeBuildRuntime.SetCombatRule(data.CombatPressureRuleId, level, outputType);
-                                RoguelikeUpgradeRuntime.UnlockCollectible(outputType);
-                            }
                         }
                     }
                 }
