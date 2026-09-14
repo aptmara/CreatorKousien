@@ -59,6 +59,32 @@ namespace Game.Core.Enemy
         // 一回の横移動カーブ完了にかかる時間
         private float _lateralDuration = 1.5f;
 
+        // 横移動の方式
+        private LateralMoveType _lateralMoveType = LateralMoveType.Curve;
+
+        // --- ランダム横移動 ---
+        // 現在の横位置（ワールドX）
+        private float _lateralWorldX = 0.0f;
+        // 向かっている目標の横位置（ワールドX）
+        private float _lateralTargetX = 0.0f;
+        // SmoothDamp用の速度キャッシュ
+        private float _lateralVelocity = 0.0f;
+        // 目標到達後の待ち時間
+        private float _lateralHoldTimer = 0.0f;
+        // 移動できるワールドXの範囲
+        private float _lateralMinX = 0.0f;
+        private float _lateralMaxX = 0.0f;
+        // パラメータ
+        private float _lateralMaxSpeed = 2.5f;
+        private float _lateralSmoothTime = 0.6f;
+        private float _lateralMinMoveDistance = 1.5f;
+        private Vector2 _lateralHoldTimeRange = new Vector2(0.1f, 0.8f);
+
+        // 目標地点の抽選リトライ回数
+        private const int LateralTargetRetryCount = 8;
+        // 目標に到達したとみなす距離[m]
+        private const float LateralArriveThreshold = 0.05f;
+
         // 落下にかかる時間
         private float _dropDuration = 5.0f;
         // ずり落ちにかかる時間(調整中)
@@ -135,6 +161,29 @@ namespace Game.Core.Enemy
             _damageDropDistance = damageDropDistance;
         }
 
+
+        /// <summary>
+        /// 横移動の設定。新規追加 9/14
+        /// </summary>
+        /// <param name="moveType">横移動の方式</param>
+        /// <param name="minX">移動できる左端のワールドX</param>
+        /// <param name="maxX">移動できる右端のワールドX</param>
+        /// <param name="maxSpeed">横移動の最高速度[m/秒]</param>
+        /// <param name="smoothTime">目標へ寄っていく滑らかさ[秒]</param>
+        /// <param name="minMoveDistance">次の目標までの最低距離[m]</param>
+        /// <param name="holdTimeRange">到達後の待ち時間[秒]の範囲</param>
+        public void SetupLateralMove(LateralMoveType moveType, float minX, float maxX, float maxSpeed, float smoothTime, float minMoveDistance, Vector2 holdTimeRange)
+        {
+            _lateralMoveType = moveType;
+            _lateralMinX = Mathf.Min(minX, maxX);
+            _lateralMaxX = Mathf.Max(minX, maxX);
+            _lateralMaxSpeed = Mathf.Max(0.0f, maxSpeed);
+            _lateralSmoothTime = Mathf.Max(0.01f, smoothTime);
+            _lateralMinMoveDistance = Mathf.Max(0.0f, minMoveDistance);
+            _lateralHoldTimeRange = new Vector2(Mathf.Max(0.0f, holdTimeRange.x), Mathf.Max(0.0f, holdTimeRange.y));
+        }
+
+
         /// <summary>
         /// 指定した目標地点へ敵を上昇させる。
         /// </summary>
@@ -142,7 +191,6 @@ namespace Game.Core.Enemy
         /// <param name="startYOffset">開始時に目標位置から下方向へ下げる距離（正値で下方向へ移動）。</param>
         public void StartRise(Vector3 targetPos, float startYOffset, Transform enemyTransform)
         {
-
             // ステートを変更
             _enemyMoveState = EnemyMoveState.Rise;
             _targetPosition = targetPos;
@@ -150,8 +198,119 @@ namespace Game.Core.Enemy
             _startPosition = _targetPosition + Vector3.down * startYOffset;
             enemyTransform.position = _startPosition;
             _elapsedTime = 0.0f;
+
+            // 横移動の初期化
+            _lateralTime = 0.0f;
+            _lateralVelocity = 0.0f;
+            _lateralHoldTimer = 0.0f;
+            _lateralWorldX = _lateralMoveType == LateralMoveType.RandomWander ? Mathf.Clamp(_targetPosition.x, _lateralMinX, _lateralMaxX) : _targetPosition.x;
+            PickNextLateralTarget();
+
             // 上昇開始
             _riseCoroutine = StartCoroutine(RiseRoutine(enemyTransform));
+        }
+
+
+
+        private void UpdateLateral()
+        {
+            switch (_lateralMoveType)
+            {
+                case LateralMoveType.Curve:
+                    // カーブに沿った横移動
+                    if (_lateralCurve != null && _lateralCurve.length > 0 && _lateralDuration > 0.0f)
+                    {
+                        _lateralTime += Time.deltaTime / _lateralDuration;
+                    }
+                    break;
+
+                case LateralMoveType.RandomWander:
+                    // ランダムな横移動
+                    UpdateRandomWander();
+                    break;
+            }
+        }
+
+
+        /// <summary>
+        /// 横移動を反映したX座標を返す
+        /// </summary>
+        /// <param name="baseX">横移動を考慮する前のX座標</param>
+        /// <returns>横移動を反映した後のX座標</returns>
+        private float ApplyLateral(float baseX)
+        {
+            switch (_lateralMoveType)
+            {
+                case LateralMoveType.Curve:
+                    if (_lateralCurve == null || _lateralCurve.length <= 0)
+                    {
+                        return baseX;
+                    }
+                    return baseX + _lateralCurve.Evaluate(Mathf.Repeat(_lateralTime, 1.0f));
+
+                case LateralMoveType.RandomWander:
+                    return _lateralWorldX;
+
+                default:
+                    return baseX;
+            }
+        }
+
+
+        /// <summary>
+        /// ランダムな横移動の更新処理
+        /// </summary>
+        private void UpdateRandomWander()
+        {
+            if (_lateralHoldTimer > 0.0f)
+            {
+                _lateralHoldTimer -= Time.deltaTime;
+                return;
+            }
+
+            _lateralWorldX = Mathf.SmoothDamp(_lateralWorldX, _lateralTargetX, ref _lateralVelocity, _lateralSmoothTime, _lateralMaxSpeed);
+
+            if (Mathf.Abs(_lateralWorldX - _lateralTargetX) > LateralArriveThreshold)
+                return;
+
+            // 到達したので次の目標を決める
+            _lateralWorldX = _lateralTargetX;
+            _lateralVelocity = 0.0f;
+            _lateralHoldTimer = UnityEngine.Random.Range(_lateralHoldTimeRange.x, _lateralHoldTimeRange.y);
+            PickNextLateralTarget();
+        }
+
+
+        /// <summary>
+        /// 次の横移動目標を決定する
+        /// </summary>
+        private void PickNextLateralTarget()
+        {
+            // 目標地点をランダムに決定する
+            if (_lateralMaxX - _lateralMinX <= Mathf.Epsilon)
+            {
+                _lateralTargetX = _lateralWorldX;
+                return;
+            }
+
+            // 範囲が狭いと最低距離を満たせなくなるため、範囲の半分を最低距離として扱う
+            float minMove = Mathf.Min(_lateralMinMoveDistance, (_lateralMaxX - _lateralMinX) * 0.5f);
+
+            for (int i = 0; i < LateralTargetRetryCount; i++)
+            {
+                float newTarget = UnityEngine.Random.Range(_lateralMinX, _lateralMaxX);
+                if (Mathf.Abs(newTarget - _lateralWorldX) >= minMove)
+                {
+                    _lateralTargetX = newTarget;
+                    return;
+                }
+            }
+
+
+            // 引けなかったら遠い側の端を目標にする
+            float distanceToMin = Mathf.Abs(_lateralWorldX - _lateralMinX);
+            float distanceToMax = Mathf.Abs(_lateralWorldX - _lateralMaxX);
+            _lateralTargetX = distanceToMin > distanceToMax ? _lateralMinX : _lateralMaxX;
         }
 
 
@@ -171,25 +330,23 @@ namespace Game.Core.Enemy
                 float t = _elapsedTime;
                 float curveT = _riseCurve.Evaluate(t);
                 curveT = Mathf.Clamp(curveT, 0.0f, 1.0f);
-                //-イージングにより位置の更新
+
+                // イージングにより位置の更新
                 Vector3 newPosition = Vector3.Lerp(_startPosition, _targetPosition, curveT);
+
                 // 横移動の反映
-                if(_lateralCurve.length > 0)
-                {
-                    _lateralTime += Time.deltaTime / _lateralDuration;
-                    float lT = Mathf.Repeat(_lateralTime, 1.0f);
-                    float curveL = _lateralCurve.Evaluate(lT);
-                    newPosition.x += curveL;
-                }
+                UpdateLateral();
+                newPosition.x = ApplyLateral(newPosition.x);
 
                 enemyTransform.position = newPosition;
                 yield return null;
             }
-            //-イージング処理完了後目標地点に位置を補正
+
+            // イージング処理完了後目標地点に位置を補正
             Vector3 newtargetPos = _targetPosition;
-            float targetOffset = _lateralCurve.Evaluate(Mathf.Repeat(_lateralTime, 1.0f));
-            newtargetPos.x += targetOffset;
+            newtargetPos.x = ApplyLateral(newtargetPos.x);
             enemyTransform.position = newtargetPos;
+
             // コールバックを発行
             OnEnemyReachedGoal?.Invoke();
         }
@@ -300,15 +457,19 @@ namespace Game.Core.Enemy
                 curveT = Mathf.Clamp(curveT, 0.0f, 1.0f);
                 // 値が1から0に落ちるカーブを使用するため、ターゲットからスタートに向けてLeapする
                 Vector3 newPos = Vector3.Lerp(_startPosition, _targetPosition, curveT);
-                float lT = Mathf.Repeat(_lateralTime, 1.0f);
-                float curveL = _lateralCurve.Evaluate(lT);
-                newPos.x += curveL;
+
+                // 撃破落下中は横位置を保持したまま落ちる
+                newPos.x = ApplyLateral(newPos.x);
+
                 enemyTransform.position = newPos;
                 yield return null;
             }
 
             //-イージング処理完了後開始地点に位置を補正
-            enemyTransform.position = _startPosition;
+            Vector3 dropEndPos = _startPosition;
+            dropEndPos.x = ApplyLateral(dropEndPos.x);
+            enemyTransform.position = dropEndPos;
+
             _dropCoroutine = null;
             OnEnemyDroped?.Invoke();
         }
@@ -331,9 +492,11 @@ namespace Game.Core.Enemy
                 curveT = Mathf.Lerp(_damageDropTarget, _damageDropStart, curveT);
                 //-イージングにより位置の更新
                 Vector3 newPos = Vector3.Lerp(_startPosition, _targetPosition, curveT);
-                float lT = Mathf.Repeat(_lateralTime, 1.0f);
-                float curveL = _lateralCurve.Evaluate(lT);
-                newPos.x += curveL;
+
+                // ずり落ち中も横移動は続ける
+                UpdateLateral();
+                newPos.x = ApplyLateral(newPos.x);
+
                 enemyTransform.position = newPos;
                 yield return null;
             }
@@ -368,9 +531,11 @@ namespace Game.Core.Enemy
                 curveT = Mathf.Lerp(_breakDropTarget, _breakDropStart, curveT);
                 //-イージングにより位置の更新
                 Vector3 newPos = Vector3.Lerp(_startPosition, _targetPosition, curveT);
-                float lT = Mathf.Repeat(_lateralTime, 1.0f);
-                float curveL = _lateralCurve.Evaluate(lT);
-                newPos.x += curveL;
+
+                // ずり落ち中も横移動は続ける
+                UpdateLateral();
+                newPos.x = ApplyLateral(newPos.x);
+
                 enemyTransform.position = newPos;
                 yield return null;
             }

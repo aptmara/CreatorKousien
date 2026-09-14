@@ -56,6 +56,63 @@ namespace Game.Core.Enemy
         Vector3 _visualScaleMultiplier = Vector3.one;
         Coroutine _hitFeedbackCoroutine;
 
+
+        [Header("到達判定")]
+        [Tooltip("到達判定に使う基準点。未設定ならRendererの上端（頭）を自動で使う")]
+        [SerializeField] private Transform _goalAnchor;
+
+        [Tooltip("頭の高さに足す補正[m]。負の値で少し深く潜る")]
+        [SerializeField] private float _goalAnchorHeightOffset = 0.0f;
+
+
+        /// <summary>
+        /// 到達判定の基準点が、敵ルートから見てどれだけ上にあるかを返す
+        /// 基準点が未設定の場合はRendererの上端（＝頭）を自動で使う
+        /// </summary>
+        /// <param name="root">敵ルートのTransform</param>
+        /// <returns>ルートからの高さ[m]</returns>
+        public float GetGoalAnchorHeight(Transform root)
+        {
+            if (root == null) return 0.0f;
+
+            // 手動指定が最優先
+            if (_goalAnchor != null)
+            {
+                return (_goalAnchor.position.y - root.position.y) + _goalAnchorHeightOffset;
+            }
+
+            Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+
+            bool hasBounds = false;
+            Bounds bounds = new Bounds();
+
+            foreach (Renderer renderer in renderers)
+            {
+                // エフェクト系は大きさが安定しないため頭の判定には使わない
+                if (renderer is ParticleSystemRenderer) continue;
+                if (renderer is TrailRenderer) continue;
+                if (renderer is LineRenderer) continue;
+
+                if (!hasBounds)
+                {
+                    bounds = renderer.bounds;
+                    hasBounds = true;
+                    continue;
+                }
+
+                bounds.Encapsulate(renderer.bounds);
+            }
+
+            if (!hasBounds)
+            {
+                Debug.LogWarning("[EnemyBodyController] 到達判定に使えるRendererがないため足元判定になります。", this);
+                return _goalAnchorHeightOffset;
+            }
+
+            return (bounds.max.y - root.position.y) + _goalAnchorHeightOffset;
+        }
+
+
         private void OnDestroy()
         {
             EventBus.Unsubscribe<EnemyAttackMotionStartedEvent>(OnAttackMotionStarted);
@@ -364,6 +421,21 @@ namespace Game.Core.Enemy
             }
 
             return null;
+        }
+
+
+        /// <summary>
+        /// 到達判定の高さを可視化するためのGizmos描画
+        /// </summary>
+        private void OnDrawGizmosSelected()
+        {
+            float height = GetGoalAnchorHeight(transform);
+            Vector3 headPos = transform.position + Vector3.up * height;
+
+            // 到達判定の高さを可視化する
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(headPos, 0.12f);
+            Gizmos.DrawLine(headPos + Vector3.left * 1.0f, headPos + Vector3.right * 1.0f);
         }
     }
 }

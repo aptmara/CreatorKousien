@@ -341,7 +341,12 @@ namespace Game.Core.Enemy
             float validHpRate = Mathf.Max(0.01f, hpRate);
             float validBarrierRate = Mathf.Max(0.01f, barrierRate);
 
-            EnemyController.SpawnSummary spawnSummary = new EnemyController.SpawnSummary(targetPosition, _undergroundOffset, validHpRate, validBarrierRate);
+            // 横移動できる範囲をスポーン範囲から求める
+            Vector3 lateralBasePos = _spawnBasePoint != null ? _spawnBasePoint.position : transform.position;
+            float lateralMinX = lateralBasePos.x - _rangeSize.x / 2f;
+            float lateralMaxX = lateralBasePos.x + _rangeSize.x / 2f;
+
+            EnemyController.SpawnSummary spawnSummary = new EnemyController.SpawnSummary(targetPosition, _undergroundOffset, validHpRate, validBarrierRate, lateralMinX, lateralMaxX);
 
             string enemyId = enemyController.Initialize(definition, spawnSummary, bodyController);
 
