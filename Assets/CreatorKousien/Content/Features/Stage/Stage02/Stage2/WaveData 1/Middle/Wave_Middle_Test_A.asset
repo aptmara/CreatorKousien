@@ -28,13 +28,17 @@ MonoBehaviour:
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
-      spawnCount: 3
+      spawnCount: 5
       startDelay: 0
-      spawnInterval: 5
-    - enemyDefinition: {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
-      spawnCount: 1
-      startDelay: 8
       spawnInterval: 1
+    - enemyDefinition: {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
+      spawnCount: 3
+      startDelay: 1
+      spawnInterval: 1
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 6
+      startDelay: 1
+      spawnInterval: 0.5
   - groupName: Wave_Middle_GoodMoorning
     plannerMemo: 
     delayBeforeStart: 0
@@ -42,13 +46,17 @@ MonoBehaviour:
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
-      spawnCount: 3
+      spawnCount: 6
       startDelay: 2
-      spawnInterval: 4
+      spawnInterval: 1
     - enemyDefinition: {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
       spawnCount: 3
-      startDelay: 8
-      spawnInterval: 4
+      startDelay: 3
+      spawnInterval: 1
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 5
+      startDelay: 2
+      spawnInterval: 0.5
   - groupName: Wave_Middle_GoodMooorning
     plannerMemo: 
     delayBeforeStart: 0
@@ -58,12 +66,12 @@ MonoBehaviour:
     - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
       spawnCount: 5
       startDelay: 2
-      spawnInterval: 5
+      spawnInterval: 1.4
     - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
-      spawnCount: 3
-      startDelay: 8
-      spawnInterval: 1
+      spawnCount: 9
+      startDelay: 3
+      spawnInterval: 0.6
     - enemyDefinition: {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
-      spawnCount: 3
-      startDelay: 12
-      spawnInterval: 5
+      spawnCount: 4
+      startDelay: 4
+      spawnInterval: 2

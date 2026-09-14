@@ -61,12 +61,20 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -6627265635460366252, guid: f6b343d41b176d74cb8c31612e208031, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -6627265635460366252, guid: f6b343d41b176d74cb8c31612e208031, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 0fbb06b4adcbd4640829e2ef135983cb, type: 2}
+    - target: {fileID: -6627265635460366252, guid: f6b343d41b176d74cb8c31612e208031, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: b9900626806722745ac772cf819c9762, type: 2}
     - target: {fileID: 919132149155446097, guid: f6b343d41b176d74cb8c31612e208031, type: 3}
       propertyPath: m_Name
-      value: BatBody
+      value: BatBody_strong
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -184,3 +192,5 @@ MonoBehaviour:
   _flipOvershoot: {x: 0, y: 0, z: -25}
   _deathWobbleAngle: 6
   _deathWobbleCycles: 2
+  _goalAnchor: {fileID: 0}
+  _goalAnchorHeightOffset: 0

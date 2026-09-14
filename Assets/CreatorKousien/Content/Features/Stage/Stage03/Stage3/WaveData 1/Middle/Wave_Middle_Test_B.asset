@@ -12,58 +12,94 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afad848287d220844a1244f267789a9c, type: 3}
   m_Name: Wave_Middle_Test_B
   m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.WaveDataSO
-  waveName: Wave_Middle_Test_B
-  plannerMemo: 
-  startDelay: 1
-  completeDelay: 2
-  hpRate: 1
-  barrierRate: 1
+  waveName: Stage3_Middle_B_Devour
+  plannerMemo: "Stage3 \u4E2D\u76E4B\nBaku / BakuRegen \u3092\u96C6\u4E2D\u914D\u7F6E\u3002\u3070\u304F\u308C\u3064\u3067\u7FA4\u308C\u3092\u5439\u304D\u98DB\u3070\u3059\u305D\u3046\u3066\u3044\uFF01"
+  startDelay: 0.5
+  completeDelay: 1.5
+  hpRate: 1.4
+  barrierRate: 1.5
   maxAliveEnemies: 0
-  minDistanceFromOtherEnemies: 3
+  minDistanceFromOtherEnemies: 1.4
   groups:
-  - groupName: Wave_Middle_Hello
-    plannerMemo: 
+  - groupName: S3_MidB_G1_Bait
+    plannerMemo: "Bat\u306E\u7FA4\u308C\u3092\u5148\u306B\u6577\u3044\u3066Baku\u3092\u96A0\u3059\uFF01"
     delayBeforeStart: 0
-    advanceType: 0
-    timeUntilNextGroup: 0
-    spawnEntries:
-    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
-      spawnCount: 12
-      startDelay: 0
-      spawnInterval: 1
-  - groupName: Wave_Middle_Helloo
-    plannerMemo: 
-    delayBeforeStart: 0
-    advanceType: 0
-    timeUntilNextGroup: 0
-    spawnEntries:
-    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
-      spawnCount: 8
-      startDelay: 0
-      spawnInterval: 3
-    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
-      spawnCount: 4
-      startDelay: 0
-      spawnInterval: 3
-    - enemyDefinition: {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
-      spawnCount: 3
-      startDelay: 0
-      spawnInterval: 5
-  - groupName: Wave_Middle_Hellooo
-    plannerMemo: 
-    delayBeforeStart: 0
-    advanceType: 0
-    timeUntilNextGroup: 0
+    advanceType: 1
+    timeUntilNextGroup: 9
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
       spawnCount: 10
       startDelay: 0
-      spawnInterval: 3
-    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
-      spawnCount: 8
-      startDelay: 0
-      spawnInterval: 3
+      spawnInterval: 0.6
     - enemyDefinition: {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
-      spawnCount: 8
+      spawnCount: 2
+      startDelay: 3
+      spawnInterval: 3
+  - groupName: S3_MidB_G2_Wall
+    plannerMemo: "Zombi\u306E\u58C1\u8D8A\u3057\u306BBakuRegen\u30921\u4F53\u3060\u3059\uFF01"
+    delayBeforeStart: 0
+    advanceType: 1
+    timeUntilNextGroup: 10
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 4
       startDelay: 0
-      spawnInterval: 5
+      spawnInterval: 1.5
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 8
+      startDelay: 1
+      spawnInterval: 0.7
+    - enemyDefinition: {fileID: 11400000, guid: b33d7bb6aea039443b00346877493f01, type: 2}
+      spawnCount: 1
+      startDelay: 6
+      spawnInterval: 0
+  - groupName: S3_MidB_G3_Swing
+    plannerMemo: "BatSwing\u306E\u6A2A\u79FB\u52D5\u3068Baku3\u4F53\u304C\u91CD\u306A\u308B"
+    delayBeforeStart: 0
+    advanceType: 1
+    timeUntilNextGroup: 10
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: feac13b685a3f864fb4858e7c51d866c, type: 2}
+      spawnCount: 6
+      startDelay: 0
+      spawnInterval: 1.1
+    - enemyDefinition: {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
+      spawnCount: 3
+      startDelay: 2
+      spawnInterval: 2.5
+  - groupName: S3_MidB_G4_Double
+    plannerMemo: "\u7DE0\u3081\u306BGhost\u3068Baku\u3002\u53D6\u308A\u3053\u307C\u3057\u3092\u4E00\u6383\n"
+    delayBeforeStart: 0
+    advanceType: 1
+    timeUntilNextGroup: 10
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 10
+      startDelay: 0
+      spawnInterval: 0.55
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 3
+      startDelay: 1
+      spawnInterval: 1.6
+    - enemyDefinition: {fileID: 11400000, guid: b33d7bb6aea039443b00346877493f01, type: 2}
+      spawnCount: 2
+      startDelay: 5
+      spawnInterval: 3
+  - groupName: S3_MidB_G5_Finish
+    plannerMemo: "\u7DE0\u3081\u306BGhost\u3068Baku\u3002\u53D6\u308A\u3053\u307C\u3057\u3092\u4E00\u6383\u3055\u305B\u308B\u3002"
+    delayBeforeStart: 0
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 6
+      startDelay: 0
+      spawnInterval: 1.1
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 8
+      startDelay: 1
+      spawnInterval: 0.6
+    - enemyDefinition: {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
+      spawnCount: 2
+      startDelay: 4
+      spawnInterval: 3

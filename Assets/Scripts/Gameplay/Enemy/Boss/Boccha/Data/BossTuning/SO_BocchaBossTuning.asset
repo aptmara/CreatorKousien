@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BocchaBossTuning
   _round:
   - _roundName: R1
-    _capacityMax: 20
+    _capacityMax: 40
     _candyCount: 12
     _stoneWeight: 1
     _spikeWeight: 1
@@ -28,7 +28,7 @@ MonoBehaviour:
     _mainAttack: 5
     _cloneAttack: 3
   - _roundName: R2
-    _capacityMax: 25
+    _capacityMax: 50
     _candyCount: 12
     _stoneWeight: 1
     _spikeWeight: 1
@@ -42,7 +42,7 @@ MonoBehaviour:
     _mainAttack: 7
     _cloneAttack: 3
   - _roundName: R3
-    _capacityMax: 30
+    _capacityMax: 60
     _candyCount: 18
     _stoneWeight: 1
     _spikeWeight: 1
@@ -56,7 +56,7 @@ MonoBehaviour:
     _mainAttack: 7
     _cloneAttack: 4
   - _roundName: R4
-    _capacityMax: 35
+    _capacityMax: 70
     _candyCount: 20
     _stoneWeight: 1
     _spikeWeight: 1
@@ -70,7 +70,7 @@ MonoBehaviour:
     _mainAttack: 7
     _cloneAttack: 4
   - _roundName: R5
-    _capacityMax: 40
+    _capacityMax: 80
     _candyCount: 20
     _stoneWeight: 1
     _spikeWeight: 1

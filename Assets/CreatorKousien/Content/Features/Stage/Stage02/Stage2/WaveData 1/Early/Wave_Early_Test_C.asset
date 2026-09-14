@@ -30,4 +30,4 @@ MonoBehaviour:
     - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
       spawnCount: 8
       startDelay: 0
-      spawnInterval: 5
+      spawnInterval: 2
