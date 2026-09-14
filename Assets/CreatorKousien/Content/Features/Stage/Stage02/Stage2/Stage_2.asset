@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d9e8f28dc60aba48847e6f259811f22, type: 3}
   m_Name: Stage_2
   m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.StageDataSO
-  requiredWaveCount: 7
+  requiredWaveCount: 6
   stageName: Stage_2
   plannerMemo: "2026/08/13 - \u4EEE\u3067SO\u4F5C\u308A\u307E\u3057\u305F\uFF01Asano"
   earlyWavePool:
-    selectionCount: 3
+    selectionCount: 2
     allowDuplicateSelection: 0
     candidates:
     - isEnabled: 1
@@ -47,5 +47,5 @@ MonoBehaviour:
       weight: 3
   bossWave: {fileID: 11400000, guid: 010f193da088fbb4382ceb75755415ef, type: 2}
   stageSceneName: Stage_2
-  nextStage: {fileID: 0}
+  nextStage: {fileID: 11400000, guid: 6c4defc443a309643a50b3fbf81473c9, type: 2}
   clearHealRatio: 0.5

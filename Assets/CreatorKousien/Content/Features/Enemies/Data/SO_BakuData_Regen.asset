@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c43347b7f155014787c574697325523, type: 3}
   m_Name: SO_BakuData_Regen
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Baku.BakuData
-  MaxEatCount: 40
+  MaxEatCount: 25
   EatableType: -1
   EatPauseDuration: 0.6
   EatCooldown: 0.1
@@ -44,7 +44,7 @@ MonoBehaviour:
   BellyScaleLerpTime: 0.25
   DigestStartDelay: 0.8
   DigestRampUpDuration: 1
-  DigestPerSecond: 2
+  DigestPerSecond: 1.5
   DigestRampCurve:
     serializedVersion: 2
     m_Curve:

@@ -12,50 +12,76 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afad848287d220844a1244f267789a9c, type: 3}
   m_Name: Stage3_Wave_Early_B
   m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.WaveDataSO
-  waveName: Wave_Early_Test_B
-  plannerMemo: 
-  startDelay: 1
-  completeDelay: 2
-  hpRate: 1
-  barrierRate: 1
+  waveName: Stage3_Early_B_Glutton
+  plannerMemo: "Stage3 \u5E8F\u76E4B\nEnemy_06 BakuRegen \u304C\u4E3B\u5F79\u3002Zombi\u306E\u30D0\u30EA\u30A2\u58C1\u3092\u7834\u88C2\u3067\u5D29\u3059\u69CB\u6210"
+  startDelay: 0.5
+  completeDelay: 1.5
+  hpRate: 1.15
+  barrierRate: 1.2
   maxAliveEnemies: 0
-  minDistanceFromOtherEnemies: 3
+  minDistanceFromOtherEnemies: 1.5
   groups:
-  - groupName: Stage_Early_Hello
-    plannerMemo: 
-    delayBeforeStart: 3
+  - groupName: S3_EarlyB_G1_Wall
+    plannerMemo: "Zombi\u306E\u58C1\u3092\u5148\u306B\u7F6E\u3044\u3066Bat\u3092\u6D41\u3057\u8FBC\u3080"
+    delayBeforeStart: 0
+    advanceType: 1
+    timeUntilNextGroup: 11
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 3
+      startDelay: 0
+      spawnInterval: 1.8
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 8
+      startDelay: 1
+      spawnInterval: 0.8
+  - groupName: S3_EarlyB_G2_Feed
+    plannerMemo: "BakuRegen\u521D\u767B\u5834\u3002\u990C\u306B\u306A\u308BBat\u3092\u539A\u3081\u306B"
+    delayBeforeStart: 0
+    advanceType: 1
+    timeUntilNextGroup: 12
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: b33d7bb6aea039443b00346877493f01, type: 2}
+      spawnCount: 1
+      startDelay: 0
+      spawnInterval: 0
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 3
+      startDelay: 1
+      spawnInterval: 1.6
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 8
+      startDelay: 2
+      spawnInterval: 0.7
+  - groupName: S3_EarlyB_G3_Flood
+    plannerMemo: "Bat\u30920.6\u79D2\u9593\u9694\u3067\u5927\u91CF\u6295\u5165"
+    delayBeforeStart: 0
+    advanceType: 1
+    timeUntilNextGroup: 12
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 10
+      startDelay: 0
+      spawnInterval: 0.6
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 2
+      startDelay: 2
+      spawnInterval: 2
+  - groupName: S3_EarlyB_G4_Burst
+    plannerMemo: "BakuRegen2\u4F53\u540C\u6642\u3059\u307D\u30FC\u3093\uFF01"
+    delayBeforeStart: 0
     advanceType: 0
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: b33d7bb6aea039443b00346877493f01, type: 2}
-      spawnCount: 4
-      startDelay: 0
-      spawnInterval: 5
-    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
       spawnCount: 2
       startDelay: 0
-      spawnInterval: 5
-  - groupName: Stage_Early_Helloo
-    plannerMemo: 
-    delayBeforeStart: 3
-    advanceType: 0
-    timeUntilNextGroup: 0
-    spawnEntries:
+      spawnInterval: 3
     - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
-      spawnCount: 5
-      startDelay: 0
-      spawnInterval: 5
-  - groupName: Stage_Early_Hellooo
-    plannerMemo: 
-    delayBeforeStart: 3
-    advanceType: 0
-    timeUntilNextGroup: 0
-    spawnEntries:
-    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
-      spawnCount: 4
-      startDelay: 0
-      spawnInterval: 4
-    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
       spawnCount: 2
-      startDelay: 4
-      spawnInterval: 4
+      startDelay: 1
+      spawnInterval: 1.5
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 8
+      startDelay: 2
+      spawnInterval: 0.6

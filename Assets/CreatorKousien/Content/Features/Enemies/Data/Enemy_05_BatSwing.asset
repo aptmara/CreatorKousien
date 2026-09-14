@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyDefinition
   EnemyId: Enemy_05
   IsBoss: 0
-  EnemyBody: {fileID: 269210808596640868, guid: f2c960d73bab68b48ab6c3201a16cf81, type: 3}
+  EnemyBody: {fileID: 269210808596640868, guid: 6be7b53454a19ec40bb7debb9888b58a, type: 3}
   MaxHp: 160
+  IsDamageImmune: 0
   ExpRate: 1
   DownDuration: 5
   HasBarrier: 0

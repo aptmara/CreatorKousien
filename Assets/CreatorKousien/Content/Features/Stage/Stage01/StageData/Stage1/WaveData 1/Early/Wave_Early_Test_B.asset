@@ -30,7 +30,7 @@ MonoBehaviour:
     - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
       spawnCount: 4
       startDelay: 0
-      spawnInterval: 5
+      spawnInterval: 2
   - groupName: Stage_Early_Helloo
     plannerMemo: 
     delayBeforeStart: 3
@@ -40,7 +40,7 @@ MonoBehaviour:
     - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
       spawnCount: 8
       startDelay: 0
-      spawnInterval: 5
+      spawnInterval: 2
   - groupName: Stage_Early_Hellooo
     plannerMemo: 
     delayBeforeStart: 3
@@ -50,4 +50,4 @@ MonoBehaviour:
     - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
       spawnCount: 12
       startDelay: 0
-      spawnInterval: 4
+      spawnInterval: 2

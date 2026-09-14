@@ -12,54 +12,108 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afad848287d220844a1244f267789a9c, type: 3}
   m_Name: Wave_Late_Test_C
   m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.WaveDataSO
-  waveName: Wave_Late_Test_C
-  plannerMemo: 
-  startDelay: 1
-  completeDelay: 2
-  hpRate: 1
-  barrierRate: 1
+  waveName: Stage3_Late_C_Tempest
+  plannerMemo: "Stage3 \u7D42\u76E4C\nEnemy_05 BatSwing \u3068 Bat \u3060\u3051\u3067\u62BC\u3057\u6F70\u3059\u901F\u5EA6\u7279\u5316\u306E\u7D42\u76E4\u6CE2"
+  startDelay: 0.5
+  completeDelay: 1.5
+  hpRate: 2
+  barrierRate: 1.8
   maxAliveEnemies: 0
-  minDistanceFromOtherEnemies: 3
+  minDistanceFromOtherEnemies: 1.2
   groups:
-  - groupName: Wave_Late_GoodEvening
-    plannerMemo: 
+  - groupName: S3_LateC_G1_Open
+    plannerMemo: "\u958B\u5E55\u304B\u30890.55\u79D2\u9593\u9694\u3002\u3068\u306B\u304B\u304F\u304A\u3068\u3057\u307E\u304F\u308B\uFF01"
     delayBeforeStart: 0
-    advanceType: 0
-    timeUntilNextGroup: 0
+    advanceType: 1
+    timeUntilNextGroup: 8
     spawnEntries:
-    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-      spawnCount: 3
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 8
       startDelay: 0
-      spawnInterval: 2
-    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
-      spawnCount: 3
+      spawnInterval: 0.55
+    - enemyDefinition: {fileID: 11400000, guid: feac13b685a3f864fb4858e7c51d866c, type: 2}
+      spawnCount: 4
       startDelay: 1
-      spawnInterval: 2
-  - groupName: Wave_Late_GoodEvening
-    plannerMemo: 
+      spawnInterval: 1.2
+  - groupName: S3_LateC_G2_Swing
+    plannerMemo: "BatSwing\u4E3B\u4F53"
     delayBeforeStart: 0
-    advanceType: 0
-    timeUntilNextGroup: 0
+    advanceType: 1
+    timeUntilNextGroup: 9
     spawnEntries:
-    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-      spawnCount: 3
-      startDelay: 1
-      spawnInterval: 2
-    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
-      spawnCount: 3
+    - enemyDefinition: {fileID: 11400000, guid: feac13b685a3f864fb4858e7c51d866c, type: 2}
+      spawnCount: 6
       startDelay: 0
-      spawnInterval: 2
-  - groupName: Wave_Late_GoodEvening
-    plannerMemo: 
-    delayBeforeStart: 0
-    advanceType: 0
-    timeUntilNextGroup: 0
-    spawnEntries:
-    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-      spawnCount: 3
+      spawnInterval: 1
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 7
       startDelay: 1
-      spawnInterval: 2
-    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnInterval: 0.6
+  - groupName: S3_LateC_G3_Baku
+    plannerMemo: "Baku2\u4F53\u3092\u6295\u5165\u3002\u6E9C\u307E\u3063\u305F\u7FA4\u308C\u3092\u5439\u304D\u98DB\u3070\u305B\uFF01"
+    delayBeforeStart: 0
+    advanceType: 1
+    timeUntilNextGroup: 9
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 9
+      startDelay: 0
+      spawnInterval: 0.5
+    - enemyDefinition: {fileID: 11400000, guid: feac13b685a3f864fb4858e7c51d866c, type: 2}
       spawnCount: 5
+      startDelay: 2
+      spawnInterval: 1.1
+    - enemyDefinition: {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
+      spawnCount: 2
+      startDelay: 5
+      spawnInterval: 2.5
+  - groupName: S3_LateC_G4_Peak
+    plannerMemo: "BatSwing7\u4F53\u3002\u6A2A\u79FB\u52D5\u306E\u30D4\u30FC\u30AF\u3002"
+    delayBeforeStart: 0
+    advanceType: 1
+    timeUntilNextGroup: 9
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: feac13b685a3f864fb4858e7c51d866c, type: 2}
+      spawnCount: 7
       startDelay: 0
-      spawnInterval: 6
+      spawnInterval: 0.9
+    - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+      spawnCount: 5
+      startDelay: 1
+      spawnInterval: 1.1
+  - groupName: S3_LateC_G5_Storm
+    plannerMemo: "0.45\u79D2\u9593\u9694\u3002\u552F\u4E00\u306EZombi\u3067\u8DB3\u3092\u6B62\u3081\u3055\u305B\u308B\u3002"
+    delayBeforeStart: 0
+    advanceType: 1
+    timeUntilNextGroup: 10
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 9
+      startDelay: 0
+      spawnInterval: 0.45
+    - enemyDefinition: {fileID: 11400000, guid: feac13b685a3f864fb4858e7c51d866c, type: 2}
+      spawnCount: 5
+      startDelay: 1
+      spawnInterval: 1
+    - enemyDefinition: {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+      spawnCount: 2
+      startDelay: 3
+      spawnInterval: 1.8
+  - groupName: S3_LateC_G6_Finish
+    plannerMemo: "\u6700\u7D42Group\u30020.4\u79D2\u9593\u9694\u3001Stage3\u6700\u901F\u3059\u307D\u30FC\u3093\uFF01"
+    delayBeforeStart: 0
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 9
+      startDelay: 0
+      spawnInterval: 0.4
+    - enemyDefinition: {fileID: 11400000, guid: feac13b685a3f864fb4858e7c51d866c, type: 2}
+      spawnCount: 6
+      startDelay: 1
+      spawnInterval: 0.85
+    - enemyDefinition: {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
+      spawnCount: 2
+      startDelay: 4
+      spawnInterval: 2.5
