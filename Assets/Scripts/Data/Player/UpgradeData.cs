@@ -8,9 +8,8 @@
 // Notes	:
 // - アップグレードデータの作成
 // - 2026/07/14 - SO_UpgradeCardDataと統合、UI/コスト等の情報を集約 - 滝谷
+// - 2026/09/07 - 常設ショップMENU化に伴い、Contract/Evolution/Relic/CombatPressureRule系を廃止 - 浅野
 // ------------------------------------------------------------
-using Game.Data.Collectibles;
-using Game.Core.Roguelike;
 using Game.Gameplay.Roguelike.Effects;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,32 +19,11 @@ namespace Game.Data.Player
     public enum UpgradeOfferType
     {
         Standard,
-        CombatPressureRule,
-        Relic,
-        Contract,
-        Evolution,
-    }
-
-    [System.Flags]
-    public enum UpgradeSynergyTag
-    {
-        None = 0,
-        Player = 1 << 0,
-        Drop = 1 << 1,
-        Combo = 1 << 2,
-        Poison = 1 << 3,
-        Ice = 1 << 4,
-        AutoDrop = 1 << 5,
-        Weight = 1 << 6,
-        Giant = 1 << 7,
-        Echo = 1 << 8,
-        Economy = 1 << 9,
-        Barrier = 1 << 10,
     }
 
     /// <summary>
     /// 1つの強化を表すマスターデータ。
-    /// ローグライク担当が候補として提示し、選ばれたものをPlayerStatsServiceへ渡す。
+    /// ショップ画面に常設表示し、選ばれたものをPlayerStatsServiceへ渡す。
     /// </summary>
     [CreateAssetMenu(fileName = "SO_Upgrade_New", menuName = "Game/Upgrade Data")]
     public class UpgradeData : ScriptableObject
@@ -80,29 +58,11 @@ namespace Game.Data.Player
         [Tooltip("ショップでの強化の扱い")]
         public UpgradeOfferType OfferType;
 
-        [Tooltip("Combat Pressure Rule Set内のルールID")]
-        public string CombatPressureRuleId;
-
-        [Tooltip("Combat Pressureで上空から降らせる固定モデル")]
-        public CollectibleType CombatPressureOutputType;
-
-        [Tooltip("初回取得時に生成対象のモデルを選択する")]
-        public bool RequiresCollectibleFocus;
-
-        [Tooltip("取得済み強化との相性抽選に使用するタグ")]
-        public UpgradeSynergyTag SynergyTags;
-
-        [Tooltip("契約取得後に候補へ出にくくするタグ")]
-        public UpgradeSynergyTag SuppressedTags;
-
-        [Tooltip("抽選時の基礎ウェイト。1が標準")]
-        [Min(0.001f)] public float DraftWeight = 1f;
-
         [SerializeReference, Tooltip("この強化が追加するゲームルール。新しい効果型は管理画面へ自動表示される")]
         public List<RoguelikeEffectModule> Effects = new List<RoguelikeEffectModule>();
 
 
-        [Header("UI表示(ローグライク選択画面用)")]
+        [Header("UI表示(ショップ画面用)")]
         [Tooltip("強化の最大回数")]
         public int MaxLevel = 5;
 
@@ -112,7 +72,7 @@ namespace Game.Data.Player
         [Tooltip("強化の分類")]
         public UpgradeCategory Category;
 
-        [Header("コスト(ショップでの選択画面用)")]
+        [Header("コスト(ショップでの購入用)")]
         public int Cost = 10;
         [Tooltip("コスト倍率")]
         public float CostMagni = 1.2f;
@@ -138,18 +98,7 @@ namespace Game.Data.Player
                 return LevelDescriptions[index];
             }
 
-            string result = Description;
-
-            if (Modifiers == null)  return result;
-
-            //foreach(var modifier in _sourceUpgrade.Modifiers)
-            //{
-            //    string line = BuildModifierLine(modifier, level);
-            //    if (string.IsNullOrEmpty(line)) continue;
-            //    result += "\n" + line;
-            //}
-
-            return result;
+            return Description;
         }
 
         public string GetCardText(int level)
@@ -168,57 +117,10 @@ namespace Game.Data.Player
         public string GetTransitionText(int currentLevel, int levelGain = 1)
         {
             int nextLevel = Mathf.Clamp(currentLevel + Mathf.Max(1, levelGain), 1, MaxLevel);
-            if (OfferType == UpgradeOfferType.Relic ||
-                OfferType == UpgradeOfferType.Contract ||
-                OfferType == UpgradeOfferType.Evolution)
-            {
-                return GetEffectText(nextLevel);
-            }
-
             string numericPreview = BuildNumericPreview(currentLevel, nextLevel);
             return string.IsNullOrEmpty(numericPreview)
                 ? GetEffectText(nextLevel)
                 : numericPreview;
-        }
-
-        public UpgradeSynergyTag GetEffectiveTags()
-        {
-            if (SynergyTags != UpgradeSynergyTag.None)
-                return SynergyTags;
-
-            if (OfferType == UpgradeOfferType.CombatPressureRule)
-            {
-                return CombatPressureRuleId switch
-                {
-                    "combo-gummy" => UpgradeSynergyTag.Combo | UpgradeSynergyTag.AutoDrop,
-                    "poison-field" => UpgradeSynergyTag.Poison | UpgradeSynergyTag.AutoDrop | UpgradeSynergyTag.Weight,
-                    "ice-stack" => UpgradeSynergyTag.Ice | UpgradeSynergyTag.AutoDrop,
-                    _ => UpgradeSynergyTag.AutoDrop,
-                };
-            }
-
-            return Id switch
-            {
-                "5" => UpgradeSynergyTag.Drop | UpgradeSynergyTag.AutoDrop,
-                "6" or "7" => UpgradeSynergyTag.Economy,
-                "12" or "13" or "14" or "15" => UpgradeSynergyTag.Barrier,
-                _ => Category == UpgradeCategory.Player
-                    ? UpgradeSynergyTag.Player
-                    : UpgradeSynergyTag.Drop,
-            };
-        }
-
-        public string GetOfferLabel(bool deepening = false)
-        {
-            if (deepening) return "深化";
-            return OfferType switch
-            {
-                UpgradeOfferType.Relic => "遺物",
-                UpgradeOfferType.Contract => "契約",
-                UpgradeOfferType.Evolution => "進化",
-                UpgradeOfferType.CombatPressureRule => "ビルド",
-                _ => "成長",
-            };
         }
 
         public int GetCost(int currentLevel)
@@ -238,14 +140,6 @@ namespace Game.Data.Player
 
         //____________________________________
         // private funtion
-
-        private string BuildModifierLine(StatModifier modifier, int level)
-        {
-            string statName = GetStatDisplayName(modifier.TargetStat);
-            float totalValue = CalclateTotalValue(modifier, level);
-            string valueText = FormatValue(modifier.Operation, totalValue);
-            return $"{statName} {valueText}";
-        }
 
         /// <summary>
         /// レベル分を反映した想定値を計算する
@@ -274,20 +168,6 @@ namespace Game.Data.Player
             }
         }
 
-        private string FormatValue(ModifierOperation operation, float value)
-        {
-            switch (operation)
-            {
-                case ModifierOperation.Add:
-                    return value >= 0 ? $"+{value}" : value.ToString();
-                case ModifierOperation.Multiply:
-                    return $"x{value:F2}";
-
-                default:
-                    return value.ToString();
-            }
-        }
-
         private string GetStatDisplayName(PlayerStatType statType)
         {
             switch (statType)
@@ -306,9 +186,6 @@ namespace Game.Data.Player
 
         private string BuildNumericPreview(int currentLevel, int nextLevel)
         {
-            if (OfferType == UpgradeOfferType.CombatPressureRule)
-                return BuildCombatPressurePreview(currentLevel, nextLevel);
-
             if (Modifiers != null && Modifiers.Length > 0)
             {
                 StatModifier modifier = Modifiers[0];
@@ -328,6 +205,7 @@ namespace Game.Data.Player
                 "13" => BuildMultiplierPreview("低耐久時の腕", currentLevel, nextLevel),
                 "14" => $"毎秒修復  {Mathf.Max(0f, GameplayValue - 1f) * currentLevel * 100f:0.#}% → {Mathf.Max(0f, GameplayValue - 1f) * nextLevel * 100f:0.#}%",
                 "15" => BuildMultiplierPreview("最大バリア", currentLevel, nextLevel),
+                "20" => $"バリア耐久力  Lv.{currentLevel} → Lv.{nextLevel}（強度・修復・最大HP同時上昇）",
                 _ => string.Empty,
             };
         }
@@ -336,42 +214,6 @@ namespace Game.Data.Player
         {
             float multiplier = GameplayValue > 0f ? GameplayValue : 1f;
             return $"{label}  x{Mathf.Pow(multiplier, currentLevel):0.00} → x{Mathf.Pow(multiplier, nextLevel):0.00}";
-        }
-
-        private string BuildCombatPressurePreview(int currentLevel, int nextLevel)
-        {
-            int beforeLevel = Mathf.Max(1, currentLevel);
-            int baseThreshold;
-            string condition;
-            switch (CombatPressureRuleId)
-            {
-                case "combo-gummy":
-                    baseThreshold = 50;
-                    condition = "全体コンボ";
-                    break;
-                case "poison-field":
-                    baseThreshold = 3;
-                    condition = "毒付与累計";
-                    break;
-                case "ice-stack":
-                    baseThreshold = 10;
-                    condition = "凍結付与累計";
-                    break;
-                default:
-                    return GetEffectText(nextLevel);
-            }
-
-            int beforeThreshold = GetPressureThreshold(baseThreshold, beforeLevel);
-            int afterThreshold = GetPressureThreshold(baseThreshold, nextLevel);
-            int beforeCount = currentLevel <= 0 ? 0 : currentLevel + 1;
-            int afterCount = nextLevel + 1;
-            string output = CollectibleTable.GetDisplayName(CombatPressureOutputType);
-            return $"{condition} {beforeThreshold} → {afterThreshold}\n{output}降下 ×{beforeCount} → ×{afterCount}";
-        }
-
-        private static int GetPressureThreshold(int baseThreshold, int level)
-        {
-            return CombatPressureProgression.GetEffectiveThreshold(baseThreshold, level);
         }
 
         private static string FormatPreviewValue(ModifierOperation operation, float value)
