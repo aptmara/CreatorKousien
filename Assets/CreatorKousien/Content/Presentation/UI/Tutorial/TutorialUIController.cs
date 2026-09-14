@@ -11,7 +11,30 @@ public class TutorialUIController : MonoBehaviour
     [Header("Typewriter")]
     [SerializeField, Min(0f)] private float _charInterval = 0.03f;
 
+    [Header("テキスト送り矢印")]
+    [Tooltip("送り待機矢印のCanvasGroup")]
+    [SerializeField] private CanvasGroup _arrowGroup;
+
+    [Tooltip("矢印の浮遊周期（秒）")]
+    [SerializeField, Min(0.01f)] private float _arrowBounceCycle = 0.8f;
+
+    [Tooltip("矢印の浮遊高さ（ピクセル）")]
+    [SerializeField] private float _arrowBounceHeight = 6f;
+
+    private RectTransform _arrowRect;
+    private Vector2 _arrowBasePosition;
+    private Coroutine _arrowRoutine;
     private Coroutine _typingCoroutine;
+
+    private void Awake()
+    {
+        if (_arrowGroup != null)
+        {
+            _arrowRect = _arrowGroup.GetComponent<RectTransform>();
+            _arrowBasePosition = _arrowRect.anchoredPosition;
+            _arrowGroup.alpha = 0f;
+        }
+    }
 
     private void OnEnable()
     {
@@ -24,11 +47,12 @@ public class TutorialUIController : MonoBehaviour
         EventBus.Unsubscribe<TutorialTextEvent>(OnDrawText);
         EventBus.Unsubscribe<TutorialTextResetEvent>(OnResetText);
         StopTyping();
+        StopArrow();
     }
 
     void OnDrawText(TutorialTextEvent ev)
     {
-        // ブロッキングせずにタイプ表示を開始します — 確認は既存のシステム（TutorialFlowManager等）が扱います
+        StopArrow();
         if (textObject != null) textObject.SetActive(true);
         StartTyping(ev.Text);
     }
@@ -36,6 +60,7 @@ public class TutorialUIController : MonoBehaviour
     void OnResetText(TutorialTextResetEvent ev)
     {
         StopTyping();
+        StopArrow();
         if (textObject != null) textObject.SetActive(false);
     }
 
@@ -50,6 +75,7 @@ public class TutorialUIController : MonoBehaviour
         if (_charInterval <= 0f)
         {
             text.text = content ?? string.Empty;
+            StartArrow();
             return;
         }
 
@@ -81,6 +107,56 @@ public class TutorialUIController : MonoBehaviour
         }
 
         _typingCoroutine = null;
+        StartArrow();
+    }
+
+    // 矢印のアニメーション制御
+    // ============================================================
+
+    /// <summary>
+    /// 矢印のアニメーションを停止します。
+    /// </summary>
+    private void StartArrow()
+    {
+        if (_arrowGroup == null) return;
+
+        StopArrow();
+        _arrowRoutine = StartCoroutine(ArrowBounceRoutine());
+    }
+
+    private void StopArrow()
+    {
+        if (_arrowRoutine != null)
+        {
+            StopCoroutine(_arrowRoutine);
+            _arrowRoutine = null;
+        }
+
+        if (_arrowGroup != null)
+        {
+            _arrowGroup.alpha = 0f;
+            if (_arrowRect != null)
+            {
+                _arrowRect.anchoredPosition = _arrowBasePosition;
+            }
+        }
+    }
+
+    private System.Collections.IEnumerator ArrowBounceRoutine()
+    {
+        _arrowGroup.alpha = 1f;
+        float elapsed = 0f;
+
+        while (true)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float phase = Mathf.Sin(elapsed / _arrowBounceCycle * Mathf.PI * 2f);
+            if (_arrowRect != null)
+            {
+                _arrowRect.anchoredPosition = _arrowBasePosition + Vector2.up * (phase * _arrowBounceHeight);
+            }
+            yield return null;
+        }
     }
 
     /// <summary>
@@ -120,6 +196,8 @@ public class TutorialUIController : MonoBehaviour
         {
             yield return null;
         }
+
+        StopArrow();
 
         // 変更した場合はアクションの有効/無効状態を復元する
         if (clickAction != null && !clickWasEnabled) clickAction.Disable();
