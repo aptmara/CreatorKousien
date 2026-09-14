@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c359e2404c41384c91cd27762a269b0, type: 3}
-  m_Name: Enemy_03_Bat
+  m_Name: Enemy_05_BatSwing
   m_EditorClassIdentifier: Assembly-CSharp::Game.Core.Enemy.EnemyDefinition
-  EnemyId: Enemy_03
+  EnemyId: Enemy_05
   IsBoss: 0
   EnemyBody: {fileID: 269210808596640868, guid: f2c960d73bab68b48ab6c3201a16cf81, type: 3}
   MaxHp: 160
@@ -20,22 +20,22 @@ MonoBehaviour:
   DownDuration: 5
   HasBarrier: 0
   MaxGauge: 100
-  BarrierBody: {fileID: 180197807806133772, guid: 23a14d1624590fe49b83c3dd3bfc3c36, type: 3}
+  BarrierBody: {fileID: 0}
   barrierBreakMaxLossRate: 0.7
-  AttackPower: 1
-  Attackinterval: 3
-  AttackMotionTime: 1.3
-  AttackStartUpTime: 1
+  AttackPower: 5
+  Attackinterval: 5
+  AttackMotionTime: 3
+  AttackStartUpTime: 1.5
   HealRegenWaitTime: 7
   HealPower: 30
-  RiseDuration: 10
-  LateralMove: 1
+  RiseDuration: 14
+  LateralMove: 2
   LateralDuration: 30
-  LateralMaxSpeed: 2.5
-  LateralSmoothTime: 0.6
-  LateralRangePadding: 0
-  LateralMinMoveDistance: 1.5
-  LateralHoldTimeRange: {x: 0.1, y: 0.8}
+  LateralMaxSpeed: 3
+  LateralSmoothTime: 0.7
+  LateralRangePadding: 0.5
+  LateralMinMoveDistance: 2
+  LateralHoldTimeRange: {x: 0.1, y: 0.6}
   DropDuration: 1
   BarrierBreakDuration: 0.5
   DamageDropDuration: 0.2

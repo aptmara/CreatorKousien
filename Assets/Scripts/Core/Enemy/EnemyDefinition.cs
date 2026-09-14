@@ -1,7 +1,28 @@
 // 制作者: 山内陽
+// 横移動つかいずらいので新規実装します - 2026/09/14 Asano
 using UnityEngine;
 
+
 namespace Game.Core.Enemy
+{
+    /// <summary>
+    /// 敵の横移動の方式。
+    /// </summary>
+    public enum LateralMoveType
+    {
+        /// <summary>横移動しない</summary>
+        None = 0,
+
+        /// <summary>LateralCurveに沿って決まった動きを繰り返す（従来方式）</summary>
+        Curve = 1,
+
+        /// <summary>移動可能な横幅の中をランダムに行ったり来たりする</summary>
+        RandomWander = 2,
+    }
+}
+
+
+    namespace Game.Core.Enemy
 {
     /// <summary>
     /// 敵の性能定義。ScriptableObjectで管理することでコード変更なしにバリエーション量産が可能。
@@ -79,9 +100,33 @@ namespace Game.Core.Enemy
         [Tooltip("敵の上昇にかかる秒数")]
         public float RiseDuration = 30.0f;
 
+        [Header("--- 横移動 ---")]
+
+        [Tooltip("横移動の方式。Curveは従来どおりLateralCurve/LateralDurationを使う")]
+        public LateralMoveType LateralMove = LateralMoveType.Curve;
+
         [Header("横移動の速度")]
-        [Tooltip("敵の横移動一回の完了速度")]
+        [Tooltip("敵の横移動一回の完了速度（Curve方式でのみ使用）")]
         public float LateralDuration = 30.0f;
+
+
+        [Header("--- ランダム横移動(RandomWander)専用 ---")]
+
+        [Tooltip("横移動の最高速度[m/秒]")]
+        [Min(0f)] public float LateralMaxSpeed = 2.5f;
+
+        [Tooltip("目標へ寄っていく滑らかさ[秒]。小さいほどキビキビ、大きいほどふわふわ動く")]
+        [Min(0.01f)] public float LateralSmoothTime = 0.6f;
+
+        [Tooltip("スポーン範囲の左右をどれだけ内側に詰めるか[m]。負の値で範囲を広げる")]
+        public float LateralRangePadding = 0.0f;
+
+        [Tooltip("次の目標を決める時、現在地から最低これだけ離す[m]。その場足踏みの防止")]
+        [Min(0f)] public float LateralMinMoveDistance = 1.5f;
+
+        [Tooltip("目標に到達してから次を決めるまでの待ち時間[秒] X=最小 Y=最大")]
+        public Vector2 LateralHoldTimeRange = new Vector2(0.1f, 0.8f);
+
 
         [Header("落下合計時間")]
         [Tooltip("敵の落下にかかる秒数")]

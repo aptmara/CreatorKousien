@@ -29,7 +29,13 @@ MonoBehaviour:
   HealRegenWaitTime: 7
   HealPower: 30
   RiseDuration: 30
+  LateralMove: 1
   LateralDuration: 30
+  LateralMaxSpeed: 2.5
+  LateralSmoothTime: 0.6
+  LateralRangePadding: 0
+  LateralMinMoveDistance: 1.5
+  LateralHoldTimeRange: {x: 0.1, y: 0.8}
   DropDuration: 1
   BarrierBreakDuration: 0.5
   DamageDropDuration: 0.2
@@ -39,8 +45,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: 2
+      outSlope: 2
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -155,3 +161,5 @@ MonoBehaviour:
     m_RotationOrder: 4
   BreakDropDistance: 0.2
   DamageDropDistance: 0.015
+  UseCustomBossSpawnPosition: 0
+  BossSpawnOffset: {x: 0, y: 0, z: 5}

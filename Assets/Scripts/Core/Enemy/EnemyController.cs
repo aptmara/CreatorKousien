@@ -30,18 +30,23 @@ namespace Game.Core.Enemy
         /// </summary>
         public struct SpawnSummary
         {
-
             public Vector3 TargetPos;
             public float UndergroundOffset;
             public float HPRate;
             public float BarrierRate;
 
-            public SpawnSummary(Vector3 targetPos, float undergroundOffset, float hpRate, float barrierRate)
+            // 横移動できるワールドXの範囲（スポーン範囲から算出）
+            public float LateralMinX;
+            public float LateralMaxX;
+
+            public SpawnSummary(Vector3 targetPos, float undergroundOffset, float hpRate, float barrierRate, float lateralMinX, float lateralMaxX)
             {
                 TargetPos = targetPos;
                 UndergroundOffset = undergroundOffset;
                 HPRate = hpRate;
                 BarrierRate = barrierRate;
+                LateralMinX = lateralMinX;
+                LateralMaxX = lateralMaxX;
             }
         }
 
@@ -184,12 +189,34 @@ namespace Game.Core.Enemy
             _rising.Initialize(definition.RiseDuration,definition.LateralDuration, definition.DropDuration, definition.BarrierBreakDuration, definition.DamageDropDuration,
                                definition.RiseCurve, definition.LateralCurve, definition.DropCurve, definition.BarrierBreakCurve, definition.DamageDropCurve,
                                definition.BreakDropDistance, definition.DamageDropDistance);
+
+
+            // 横移動の設定。移動できる範囲はスポーン範囲から受け取る
+            _rising.SetupLateralMove(
+                definition.LateralMove,
+                spawnSummary.LateralMinX + definition.LateralRangePadding,
+                spawnSummary.LateralMaxX - definition.LateralRangePadding,
+                definition.LateralMaxSpeed,
+                definition.LateralSmoothTime,
+                definition.LateralMinMoveDistance,
+                definition.LateralHoldTimeRange);
+
             _rising.OnEnemyReachedGoal = HandleRose;
             _rising.OnLeftReachedGoal = HandleRoseLeft;
             _rising.OnEnemyDroped = HandleDroped;
 
+
+            // 到達判定を頭で取る。頭がゴール高さに来るように目標を下げる
+            float goalAnchorHeight = bodyController != null
+                ? bodyController.GetGoalAnchorHeight(transform)
+                : 0.0f;
+
+            Vector3 riseTargetPos = spawnSummary.TargetPos;
+            riseTargetPos.y -= goalAnchorHeight;
+
             // 上昇開始
-            _rising.StartRise(spawnSummary.TargetPos, spawnSummary.UndergroundOffset, transform);
+            _rising.StartRise(riseTargetPos, spawnSummary.UndergroundOffset, transform);
+
 
             _debuffManager = new EnemyDebuffManager(
                 HandleDamageOverTime,

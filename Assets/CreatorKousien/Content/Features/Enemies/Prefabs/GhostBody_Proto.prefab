@@ -26,7 +26,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bc82b5c27bc02c74888996e356b5eabd, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bc82b5c27bc02c74888996e356b5eabd, type: 3}
       propertyPath: m_LocalPosition.z
@@ -62,7 +62,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: bc82b5c27bc02c74888996e356b5eabd, type: 3}
       propertyPath: m_Name
-      value: GhostBody
+      value: GhostBody_Proto
       objectReference: {fileID: 0}
     - target: {fileID: 3592506131919666903, guid: bc82b5c27bc02c74888996e356b5eabd, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -105,6 +105,7 @@ MonoBehaviour:
   _minimumHitSpeed: 0.5
   _bodyDamageMultiplier: 3
   _despawnItemOnHit: 1
+  UIWorldOffset: {x: 0, y: 1.6, z: 0.5}
 --- !u!136 &-7210167404398091934
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -169,4 +170,17 @@ MonoBehaviour:
   _dropRot: {x: 0, y: 90, z: -180}
   _postFlipDelay: 0.25
   _useCartoonFeedback: 1
+  _squashTarget: {fileID: 0}
+  _hitSquashDuration: 0.06
+  _hitStretchDuration: 0.07
+  _hitRecoverDuration: 0.09
+  _hitSquashScale: {x: 1.12, y: 0.82, z: 1.12}
+  _hitStretchScale: {x: 0.94, y: 1.12, z: 0.94}
+  _hitRecoilRotation: {x: -10, y: 5, z: 12}
+  _hitReboundRotation: {x: 4, y: -2, z: -5}
+  _deathAnticipationDuration: 0.08
+  _deathSquashScale: {x: 1.18, y: 0.72, z: 1.18}
+  _deathStretchScale: {x: 0.88, y: 1.18, z: 0.88}
   _flipOvershoot: {x: 0, y: 0, z: -25}
+  _deathWobbleAngle: 6
+  _deathWobbleCycles: 2
