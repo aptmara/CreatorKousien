@@ -812,8 +812,8 @@ MonoBehaviour:
   _shakeAmplitude: 0.1
   _emitter: {fileID: 7234920766954558165}
   _spreadAngle: 25
-  shardBaseCount: 30
-  curShardCount: 30
+  shardBaseCount: 15
+  curShardCount: 5
   power: 500
   VFX: {fileID: 4148052385838451594, guid: 16d7e6146392f494abd0b5e58383d213, type: 3}
   _scale: {x: 4, y: 1, z: 1}
