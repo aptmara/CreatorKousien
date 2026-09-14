@@ -357,32 +357,16 @@ namespace Game.Core.Enemy
         /// <param name="enemyTransform"></param>
         public void DropStart(Transform enemyTransform)
         {
-            float currentValue;
+            if (_enemyMoveState == EnemyMoveState.Drop) return;
 
-            if (_breakDropCoroutine != null)
-            {
-                StopCoroutine(_breakDropCoroutine);
-                float finalCurve = _breakDropCurve.Evaluate(_breakDropElapsedTime);
-                finalCurve = Mathf.Clamp(finalCurve, 0.0f, 1.0f);
-                currentValue = Mathf.Lerp(_breakDropTarget, _breakDropStart, finalCurve);
-                _dropElapsedTime = ValueToCurveTime(currentValue, _dropCurve, 12);
-            }
-            else
-            {
-                StopCoroutine(_riseCoroutine);
-                currentValue = _riseCurve.Evaluate(_elapsedTime);
-                currentValue = Mathf.Clamp(currentValue, 0.0f, 1.0f);
-                _dropElapsedTime = ValueToCurveTime(currentValue, _dropCurve, 12);
-            }
-            // 落下中だったら抜ける
-            if (_dropCoroutine != null) return;
-            // ステートを変更
+            // 上昇・ずり落ち・一時停止のどの状態でも、実際の高さから撃破落下へ引き継ぐ。
+            float currentValue = Mathf.InverseLerp(_startPosition.y, _targetPosition.y, enemyTransform.position.y);
+            StopAllMoveCoroutines();
+            _isStopping = false;
+            _isPausing = false;
+            _dropElapsedTime = ValueToCurveTime(currentValue, _dropCurve, 12);
             _enemyMoveState = EnemyMoveState.Drop;
 
-            _riseCoroutine = null;
-            _breakDropCoroutine = null;
-            // 現在の進行度の値を上昇カーブから見た進行度から落下カーブから見た進行度に変換する
-            float newValue = _dropCurve.Evaluate(_dropElapsedTime);
             // 落下開始
             _dropCoroutine = StartCoroutine(DropRoutine(enemyTransform));
         }
@@ -682,11 +666,11 @@ namespace Game.Core.Enemy
             if (_riseCoroutine != null) StopCoroutine(_riseCoroutine);
             if (_dropCoroutine != null) StopCoroutine(_dropCoroutine);
             if (_breakDropCoroutine != null) StopCoroutine(_breakDropCoroutine);
-            if (_damageDropCoroutine != null)
-            {
-                StopCoroutine(_damageDropCoroutine);
-                _damageDropCoroutine = null;
-            }
+            if (_damageDropCoroutine != null) StopCoroutine(_damageDropCoroutine);
+            _riseCoroutine = null;
+            _dropCoroutine = null;
+            _breakDropCoroutine = null;
+            _damageDropCoroutine = null;
         }
 
 

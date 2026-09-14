@@ -23,7 +23,7 @@ MonoBehaviour:
   groups:
   - groupName: Stage_Early_Hello
     plannerMemo: 
-    delayBeforeStart: 3
+    delayBeforeStart: 0.5
     advanceType: 0
     timeUntilNextGroup: 0
     spawnEntries:
@@ -33,7 +33,7 @@ MonoBehaviour:
       spawnInterval: 2
   - groupName: Stage_Early_Helloo
     plannerMemo: 
-    delayBeforeStart: 3
+    delayBeforeStart: 0.5
     advanceType: 0
     timeUntilNextGroup: 0
     spawnEntries:
@@ -43,7 +43,7 @@ MonoBehaviour:
       spawnInterval: 2
   - groupName: Stage_Early_Hellooo
     plannerMemo: 
-    delayBeforeStart: 3
+    delayBeforeStart: 0.5
     advanceType: 0
     timeUntilNextGroup: 0
     spawnEntries:

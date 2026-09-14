@@ -78,6 +78,8 @@ namespace Game.Presentation.GameOverCinematic
         [Header("--- 敵のなだれ込み設定 ---")]
         [Tooltip("演出用に生成するダミー敵のプレハブ")]
         public GameObject DummyEnemyPrefab;
+        [Tooltip("進行方向に対する敵モデルの向き補正（度）。生成・待機・移動中すべてに適用する")]
+        public Vector3 DummyEnemyRotationOffset = Vector3.zero;
         [Tooltip("なだれ込ませる敵の総数")]
         public int DummyEnemyCount = 20;
 

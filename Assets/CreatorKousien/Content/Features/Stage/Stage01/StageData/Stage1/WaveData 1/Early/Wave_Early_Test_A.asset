@@ -33,7 +33,7 @@ MonoBehaviour:
       spawnInterval: 3
   - groupName: Stage_Early_GoodMoorning
     plannerMemo: "\u304A\u5316\u3051\u8ECD\u56E3\u306E\u7B2C\uFF12\u6CE2"
-    delayBeforeStart: 2
+    delayBeforeStart: 0.5
     advanceType: 0
     timeUntilNextGroup: 0
     spawnEntries:
@@ -43,7 +43,7 @@ MonoBehaviour:
       spawnInterval: 3
   - groupName: Stage_Early_GoodMooorning
     plannerMemo: "\u304A\u5316\u3051\u8ECD\u56E3\u306E\u7B2C\uFF13\u6CE2"
-    delayBeforeStart: 2
+    delayBeforeStart: 0.5
     advanceType: 0
     timeUntilNextGroup: 0
     spawnEntries:

@@ -16,9 +16,9 @@ MonoBehaviour:
   plannerMemo: "Stage3 \u4E2D\u76E4A\n\u4E2D\u76E4Tier\u306E\u57FA\u6E96\u5024"
   startDelay: 0.5
   completeDelay: 1.5
-  hpRate: 1.4
+  hpRate: 2.5
   barrierRate: 1.5
-  maxAliveEnemies: 0
+  maxAliveEnemies: 2
   minDistanceFromOtherEnemies: 1.4
   groups:
   - groupName: S3_MidA_G1_Open

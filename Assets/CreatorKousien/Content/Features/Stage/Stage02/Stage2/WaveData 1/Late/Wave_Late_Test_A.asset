@@ -16,8 +16,8 @@ MonoBehaviour:
   plannerMemo: 
   startDelay: 1
   completeDelay: 2
-  hpRate: 1
-  barrierRate: 1
+  hpRate: 2
+  barrierRate: 1.5
   maxAliveEnemies: 0
   minDistanceFromOtherEnemies: 3
   groups:

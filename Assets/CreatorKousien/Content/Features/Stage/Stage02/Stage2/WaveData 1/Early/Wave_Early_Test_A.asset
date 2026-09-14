@@ -16,7 +16,7 @@ MonoBehaviour:
   plannerMemo: 
   startDelay: 1
   completeDelay: 2
-  hpRate: 1
+  hpRate: 1.5
   barrierRate: 1
   maxAliveEnemies: 0
   minDistanceFromOtherEnemies: 3
@@ -30,24 +30,24 @@ MonoBehaviour:
     - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
       spawnCount: 3
       startDelay: 0
-      spawnInterval: 2
+      spawnInterval: 1
   - groupName: Stage_Early_GoodMoorning
     plannerMemo: "\u6575\u8ECD\u56E3\u306E\u7B2C\uFF12\u6CE2"
-    delayBeforeStart: 2
-    advanceType: 0
-    timeUntilNextGroup: 0
-    spawnEntries:
-    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
-      spawnCount: 5
-      startDelay: 0
-      spawnInterval: 3
-  - groupName: Stage_Early_GoodMooorning
-    plannerMemo: "\u304A\u5316\u3051\u8ECD\u56E3\u306E\u7B2C\uFF13\u6CE2"
-    delayBeforeStart: 2
+    delayBeforeStart: 0.5
     advanceType: 0
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
       spawnCount: 6
       startDelay: 0
-      spawnInterval: 2.5
+      spawnInterval: 1
+  - groupName: Stage_Early_GoodMooorning
+    plannerMemo: "\u304A\u5316\u3051\u8ECD\u56E3\u306E\u7B2C\uFF13\u6CE2"
+    delayBeforeStart: 0.5
+    advanceType: 0
+    timeUntilNextGroup: 0
+    spawnEntries:
+    - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+      spawnCount: 10
+      startDelay: 0
+      spawnInterval: 0.8
