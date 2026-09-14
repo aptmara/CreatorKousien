@@ -1,0 +1,46 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "1020001381",
+    "Type": "Event",
+    "GUID": "{7F60D7AB-784E-47CB-AA18-CDC0F3CC5DC0}",
+    "Language": "SFX",
+    "Hash": "{277E2D2A-471B-FF38-4BEC-6AE7BDDB3035}",
+    "ObjectPath": "Play_BGM_Boss_Battle",
+    "ShortName": "Play_BGM_Boss_Battle",
+    "Path": "Event/Play_BGM_Boss_Battle.bnk",
+    "Media": [
+     {
+      "Id": "235718550",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Boss_Battle_BGM.wav",
+      "Path": "Media/235718550.wem",
+      "CachePath": "EA/{EA3C2739-9F3E-9C43-203E-9A9380725BB4}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "1020001381",
+      "Name": "Play_BGM_Boss_Battle",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_BGM_Boss_Battle",
+      "GUID": "{7F60D7AB-784E-47CB-AA18-CDC0F3CC5DC0}",
+      "DurationType": "Infinite",
+      "MediaRefs": [
+       {
+        "Id": "235718550"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{ECAFDF83-4F6D-258F-EA14-0165164B5E43}"
+ }
+}

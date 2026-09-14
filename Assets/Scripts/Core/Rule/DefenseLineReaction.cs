@@ -284,6 +284,9 @@ namespace Game.Core.DefenceLine
             _remainingHpRatio = Mathf.Clamp01(data.RemainingHpRatio);
             SurfaceHit surfaceHit = GetSurfaceHit(data.AttackPosition);
 
+            Vector3 displacement = surfaceHit.WorldPosition - data.AttackPosition;
+            Debug.Log($"[DefenseLine] 被弾: 攻撃位置={data.AttackPosition}, バリア表面ヒット位置={surfaceHit.WorldPosition}, 変位={displacement} (量={displacement.magnitude:F3})", this);
+
             _hitFlashRemaining = _hitFlashDuration;
             _barrierVisibleRemaining = _hitVisibleDuration;
             EnsureOverallCracks();

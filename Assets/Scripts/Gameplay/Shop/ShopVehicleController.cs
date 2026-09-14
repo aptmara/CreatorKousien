@@ -91,6 +91,8 @@ namespace Game.Gameplay.Shop
         /// </summary>
         public void LaunchShopSequence(Transform playerTransform)
         {
+            SoundManager.instance?.PlaySE("Shop_Appear");
+
             _playerTarget = playerTransform;
             _currentState = VehicleState.EnteringWaypoints;
             _currentWaypointIndex = 0;
@@ -120,6 +122,7 @@ namespace Game.Gameplay.Shop
                 return;
             }
 
+            SoundManager.instance?.PlaySE("Shop_Disappear");
             StartCoroutine(DismissAnimationRoutine());
         }
 
@@ -335,7 +338,7 @@ namespace Game.Gameplay.Shop
             // 走っているときは、速度に比例してシアーさせる
             if (speed > _moveSpeed * 2f)
             {
-                Debug.LogWarning($"[VehicleWarning] 速度が異常値になっとるぜよ！ Speed: {speed}");
+//                Debug.LogWarning($"[VehicleWarning] 速度が異常値になっとるぜよ！ Speed: {speed}");
             }
 
             float speedRatio = Mathf.Clamp01(speed / _moveSpeed);

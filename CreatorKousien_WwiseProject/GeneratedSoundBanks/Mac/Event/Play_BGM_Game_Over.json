@@ -1,0 +1,46 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "2522325930",
+    "Type": "Event",
+    "GUID": "{74271B8C-4F30-4685-A021-436719560353}",
+    "Language": "SFX",
+    "Hash": "{211E4FB7-546B-868E-2377-2A87BA86F8D8}",
+    "ObjectPath": "Play_BGM_Game_Over",
+    "ShortName": "Play_BGM_Game_Over",
+    "Path": "Event/Play_BGM_Game_Over.bnk",
+    "Media": [
+     {
+      "Id": "943782927",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Game_Over_BGM.wav",
+      "Path": "Media/943782927.wem",
+      "CachePath": "EF/{EFFA1E6E-79B1-FA9F-2276-F717698B6DA8}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "2522325930",
+      "Name": "Play_BGM_Game_Over",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_BGM_Game_Over",
+      "GUID": "{74271B8C-4F30-4685-A021-436719560353}",
+      "DurationType": "Infinite",
+      "MediaRefs": [
+       {
+        "Id": "943782927"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{7F84A65A-BAD6-41E2-1939-960CC5BB1482}"
+ }
+}

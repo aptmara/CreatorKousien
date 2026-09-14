@@ -1,0 +1,3 @@
+Event	ID	Name			Wwise Object Path	Notes
+	3958339582	Play_SE_Upgrade_Confirm			\Default Work Unit\Play_SE_Upgrade_Confirm	
+

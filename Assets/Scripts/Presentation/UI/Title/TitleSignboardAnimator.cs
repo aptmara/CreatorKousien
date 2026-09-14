@@ -212,6 +212,8 @@ namespace Game.Presentation.UI.Title
         {
             yield return WaitRoutine(_introDelay);
 
+            SoundManager.instance?.PlaySE("Signboard_Fall");
+
             switch (_pattern)
             {
                 case SignboardAnimationPattern.BounceDrop:

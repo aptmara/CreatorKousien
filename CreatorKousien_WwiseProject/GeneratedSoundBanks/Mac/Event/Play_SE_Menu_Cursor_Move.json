@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "4188900259",
+    "Type": "Event",
+    "GUID": "{9F8675CE-CB3F-4030-81E2-B4D629A088AF}",
+    "Language": "SFX",
+    "Hash": "{C1B30DC7-E40E-5D6B-9EB0-8C32F0DD8FA6}",
+    "ObjectPath": "Play_SE_Menu_Cursor_Move",
+    "ShortName": "Play_SE_Menu_Cursor_Move",
+    "Path": "Event/Play_SE_Menu_Cursor_Move.bnk",
+    "Media": [
+     {
+      "Id": "651509163",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Menu_Cursor_Move.wav",
+      "Path": "Media/651509163.wem",
+      "CachePath": "1C/{1CF3FFB8-EFE4-008E-CCB6-2079460F4C53}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "4188900259",
+      "Name": "Play_SE_Menu_Cursor_Move",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Menu_Cursor_Move",
+      "GUID": "{9F8675CE-CB3F-4030-81E2-B4D629A088AF}",
+      "DurationType": "OneShot",
+      "DurationMin": "1.007347",
+      "DurationMax": "1.007347",
+      "MediaRefs": [
+       {
+        "Id": "651509163"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{6C7BE453-423E-FF1F-9A49-3564EFE8BC20}"
+ }
+}

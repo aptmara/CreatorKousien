@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c55da2d98e3cc4d45a334bec6286c971, type: 3}
+  m_Name: 7F60D7AB-784E-47CB-AA18-CDC0F3CC5DC0
+  m_EditorClassIdentifier: AK.Wwise.Unity.API.WwiseTypes::WwiseEventReference
+  objectName: Play_BGM_Boss_Battle
+  id: 1020001381
+  guid: 7F60D7AB-784E-47CB-AA18-CDC0F3CC5DC0
+  IsInUserDefinedSoundBank: 0

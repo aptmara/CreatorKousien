@@ -1,0 +1,3 @@
+Event	ID	Name			Wwise Object Path	Notes
+	3045635627	Play_BGM_Game_Clear			\Default Work Unit\Play_BGM_Game_Clear	
+

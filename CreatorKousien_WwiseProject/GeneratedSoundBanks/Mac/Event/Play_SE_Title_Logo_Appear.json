@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "1872113279",
+    "Type": "Event",
+    "GUID": "{61932A3F-F29D-4804-90F5-D5220A8ED9AC}",
+    "Language": "SFX",
+    "Hash": "{8E6084A7-8A13-2AE3-20BF-EF84FA256937}",
+    "ObjectPath": "Play_SE_Title_Logo_Appear",
+    "ShortName": "Play_SE_Title_Logo_Appear",
+    "Path": "Event/Play_SE_Title_Logo_Appear.bnk",
+    "Media": [
+     {
+      "Id": "287835450",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Title_Logo_Appear.wav",
+      "Path": "Media/287835450.wem",
+      "CachePath": "FA/{FAB7F26C-3C47-125F-2EF3-9016DAC0CC91}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "1872113279",
+      "Name": "Play_SE_Title_Logo_Appear",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Title_Logo_Appear",
+      "GUID": "{61932A3F-F29D-4804-90F5-D5220A8ED9AC}",
+      "DurationType": "OneShot",
+      "DurationMin": "1.7854649",
+      "DurationMax": "1.7854649",
+      "MediaRefs": [
+       {
+        "Id": "287835450"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{0D1E6C06-21E3-1280-D80A-74B5A149DF96}"
+ }
+}

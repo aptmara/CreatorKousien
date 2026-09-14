@@ -53,6 +53,8 @@ namespace Game.Presentation.UI.Loading
             _loadingCamera.enabled = false;
             yield return FadeImageRoutine(_blackOverlay, 1f, 0f, 0.45f);
 
+            SoundManager.instance?.PlaySE("Game_Start");
+
             _gameStartGroup.alpha = 1f;
             for (int i = 0; i < _gameCharacters.Length; i++)
             {

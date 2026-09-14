@@ -118,6 +118,8 @@ namespace Game.Presentation.GameOverCinematic
 
         private IEnumerator PlayGameOverSequence()
         {
+            SoundManager.instance?.PlayBGM("Game_Over_BGM");
+
             // 1. 各種コンポーネントの動的解決
             _cameraRig = Object.FindFirstObjectByType<CameraRigController>();
             if (_cameraRig != null) _cameraRig.SetCinematicModeActive(true);

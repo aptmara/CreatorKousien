@@ -158,6 +158,8 @@ public class S_ShopMenuUI : MonoBehaviour
             return;
         }
 
+        SoundManager.instance?.PlaySE("Upgrade_Confirm");
+
         _moneyData.SubtractMoney(cost);
         _moneyUI.ChangeMoneyUI(_moneyData.moneyOnHand);
 
@@ -168,6 +170,8 @@ public class S_ShopMenuUI : MonoBehaviour
             _moneyUI.ChangeMoneyUI(_moneyData.moneyOnHand);
             return;
         }
+
+        SoundManager.instance?.PlaySE("Cash_Register");
 
         int newLevel = _upgradeRuntimeState.GetLevel(data);
         card.Refresh(newLevel);

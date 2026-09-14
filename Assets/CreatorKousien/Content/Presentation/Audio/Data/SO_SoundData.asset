@@ -49,10 +49,118 @@ MonoBehaviour:
       WwiseObjectReference: {fileID: 11400000, guid: ff7aa4eaac108264d80cf030d4caf43b, type: 2}
     Name: PlayerPunchHit
     bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 85a945a2e5ee4ab18d9c8b1c72bf8708, type: 2}
+    Name: Signboard_Fall
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 3e7693847b0b43ab9cf5fd4758595115, type: 2}
+    Name: UI_Appear
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 2f9476897e6b4ca4bd5a13f2ef6c9de7, type: 2}
+    Name: Wave_Start
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: d6a7ccb96cd746ac8914cc3277e85bf9, type: 2}
+    Name: Menu_Cursor_Move
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: c109d7795c88406ea44edf2d92590f8d, type: 2}
+    Name: Game_Start
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 0477e51a38304423b3294ee03d16dc77, type: 2}
+    Name: Cash_Register
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: d7714010e4f3415ba629dcc6058a90f8, type: 2}
+    Name: Shop_Appear
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: f20def6385a542d7a781bab62612b986, type: 2}
+    Name: Shop_Disappear
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 8a9b03f2ca2b4aca8424c6c4e2f1b68f, type: 2}
+    Name: Scene_Transition
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: dd8ac35d49b44193a04d91a50692e47b, type: 2}
+    Name: Title_Logo_Appear
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 740b0d3ed6ce47efa4072a2c6c9c5bc6, type: 2}
+    Name: Title_Candy_Scatter
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: f5eb5e06ae0e4d5ea868b6e365f3501c, type: 2}
+    Name: Upgrade_Confirm
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 803836defed54e10a5e9a7132148901d, type: 2}
+    Name: UI_Confirm
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: a28ee0d09544494aa1fcefe6897be39d, type: 2}
+    Name: UI_Back
+    bpm: 0
   BGMDataList:
   - WwiseEvent:
       idInternal: 0
-      valueGuidInternal: 
+      valueGuidInternal:
       WwiseObjectReference: {fileID: 11400000, guid: 744984095d2cd814984e5d80b5d443e5, type: 2}
     Name: InGame
     bpm: 50
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 821433ae76b54d569c11600ee6d7709a, type: 2}
+    Name: Title_BGM
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: db7a91ea141f4b5dae0100397e276c96, type: 2}
+    Name: Boss_Battle_BGM
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 9725f6e485ba46df925fb5190e4db67a, type: 2}
+    Name: Game_Clear_BGM
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: ae4865e6f9364263bf6226d78e43aa5b, type: 2}
+    Name: Game_Over_BGM
+    bpm: 0

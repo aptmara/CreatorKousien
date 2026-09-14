@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "3969770006",
+    "Type": "Event",
+    "GUID": "{A9D8EEE5-9131-416B-9619-15FC08373069}",
+    "Language": "SFX",
+    "Hash": "{EC6EFA27-CA89-7367-FAFB-0B1ED02C9ECE}",
+    "ObjectPath": "Play_SE_Signboard_Fall",
+    "ShortName": "Play_SE_Signboard_Fall",
+    "Path": "Event/Play_SE_Signboard_Fall.bnk",
+    "Media": [
+     {
+      "Id": "989645232",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Signboard_Fall.wav",
+      "Path": "Media/989645232.wem",
+      "CachePath": "8C/{8C72C983-CB20-2436-00E1-ABEC2052E20A}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "3969770006",
+      "Name": "Play_SE_Signboard_Fall",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Signboard_Fall",
+      "GUID": "{A9D8EEE5-9131-416B-9619-15FC08373069}",
+      "DurationType": "OneShot",
+      "DurationMin": "1.7929479",
+      "DurationMax": "1.7929479",
+      "MediaRefs": [
+       {
+        "Id": "989645232"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{EECD66D4-E6F1-3A8B-6B19-50F8CF7D55C7}"
+ }
+}

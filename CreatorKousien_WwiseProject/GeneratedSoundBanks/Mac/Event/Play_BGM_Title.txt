@@ -1,0 +1,3 @@
+Event	ID	Name			Wwise Object Path	Notes
+	379376351	Play_BGM_Title			\Default Work Unit\Play_BGM_Title	
+
