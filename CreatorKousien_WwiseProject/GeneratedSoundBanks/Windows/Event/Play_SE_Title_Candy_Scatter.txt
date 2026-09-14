@@ -1,0 +1,3 @@
+Event	ID	Name			Wwise Object Path	Notes
+	1565044972	Play_SE_Title_Candy_Scatter			\Default Work Unit\Play_SE_Title_Candy_Scatter	
+

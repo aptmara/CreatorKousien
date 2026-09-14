@@ -1,0 +1,46 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "3045635627",
+    "Type": "Event",
+    "GUID": "{9F4B133B-D2EA-45EC-A393-BAB33F3D1B6E}",
+    "Language": "SFX",
+    "Hash": "{A3E870BB-E20B-59A1-38F1-1D068C2CBCEA}",
+    "ObjectPath": "Play_BGM_Game_Clear",
+    "ShortName": "Play_BGM_Game_Clear",
+    "Path": "Event/Play_BGM_Game_Clear.bnk",
+    "Media": [
+     {
+      "Id": "697991161",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Game_Clear_BGM.wav",
+      "Path": "Media/697991161.wem",
+      "CachePath": "9A/{9A2EF04B-617C-851B-4FE6-F03C022CA4B7}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "3045635627",
+      "Name": "Play_BGM_Game_Clear",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_BGM_Game_Clear",
+      "GUID": "{9F4B133B-D2EA-45EC-A393-BAB33F3D1B6E}",
+      "DurationType": "Infinite",
+      "MediaRefs": [
+       {
+        "Id": "697991161"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{232FDB53-E0D8-CFE7-63BC-59ED43CB3706}"
+ }
+}

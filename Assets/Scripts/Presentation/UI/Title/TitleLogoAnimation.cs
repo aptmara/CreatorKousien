@@ -172,6 +172,7 @@ namespace Game.Presentation.UI.Title
                 _currentState = TitleAnimState.State_PumpkinPop;
                 return;
             }
+            SoundManager.instance?.PlaySE("Title_Candy_Scatter");
             for (int i = 0; i < _scatterCount; ++i)
             {
                 GameObject obj = Instantiate(_scatterObj, _rootTransform);
@@ -241,8 +242,11 @@ namespace Game.Presentation.UI.Title
                 return;
             }
             if (!_logo.activeSelf)
+            {
                 _logo.SetActive(true);
-           
+                SoundManager.instance?.PlaySE("Title_Logo_Appear");
+            }
+
 
             float rate = _currentAnimTime / _logoPopTime;
             float upper = Mathf.Sin(Mathf.Deg2Rad * (rate * 180.0f)) * _logoPopMultiplier;

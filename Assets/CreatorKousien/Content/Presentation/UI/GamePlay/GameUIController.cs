@@ -69,6 +69,7 @@ public class GameUIController : MonoBehaviour
     // GameUIを表示する
     public void UIVisible(float processingTime)
     {
+        SoundManager.instance?.PlaySE("UI_Appear");
         // 既に透明度を変更中だった場合止めて新たにLerpを開始する
         if (alphaCoroutine != null) StopCoroutine(alphaCoroutine);
         alphaCoroutine = StartCoroutine(LerpUIAlpha(1.0f, processingTime));

@@ -68,6 +68,8 @@ namespace Game.Presentation.UI.Title
             Cursor.visible = true;
             EventSystem.current.SetSelectedGameObject(_startButton.gameObject);
 
+            SoundManager.instance?.PlayBGM("Title_BGM");
+
             // セーブデータが無い場合は「つづきから」を押せないようにする
             if (_continueButton != null)
             {
@@ -160,6 +162,8 @@ namespace Game.Presentation.UI.Title
             {
                 return;
             }
+
+            SoundManager.instance?.PlaySE("UI_Confirm");
 
             if (_optionMenuInstance == null)
             {

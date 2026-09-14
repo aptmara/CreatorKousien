@@ -1,0 +1,3 @@
+Event	ID	Name			Wwise Object Path	Notes
+	1180286592	Play_SE_Cash_Register			\Default Work Unit\Play_SE_Cash_Register	
+

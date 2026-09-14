@@ -1,0 +1,3 @@
+Event	ID	Name			Wwise Object Path	Notes
+	1037708150	Play_SE_UI_Confirm			\Default Work Unit\Play_SE_UI_Confirm	
+

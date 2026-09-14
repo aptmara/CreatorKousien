@@ -88,6 +88,8 @@ public class StageSelectController : MonoBehaviour
         if (isSelectedStage) return;
         isSelectedStage = true;
 
+        SoundManager.instance?.PlaySE("Scene_Transition");
+
         // ロードシーンを生成
         Debug.Log(stage.StageName + "が選ばれました");
         Debug.Log("Loadを開始 シーン遷移: " + _loadingSceneName);
@@ -99,6 +101,9 @@ public class StageSelectController : MonoBehaviour
     {
         if (isSelectedStage) return;
         isSelectedStage = true;
+
+        SoundManager.instance?.PlaySE("UI_Back");
+
         // タイトルシーンへ移行
         Debug.Log("タイトルシーンへ移行します。");
         SceneManager.LoadScene(_titleSceneName);

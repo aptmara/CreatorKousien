@@ -258,6 +258,14 @@ namespace Game.Core.Management
 
             WaveDataSO waveData = _waveSequence[waveIndex];
 
+            bool isFinalWave = waveIndex + 1 >= _waveSequence.Count;
+
+            SoundManager.instance?.PlaySE("Wave_Start");
+            if (isFinalWave)
+            {
+                SoundManager.instance?.PlayBGM("Boss_Battle_BGM");
+            }
+
             Debug.Log($"[Progression] ===== Wave {waveIndex + 1} 開始：{waveData.WaveName} =====");
 
             yield return StartCoroutine(_waveRunner.PlayWave(waveData, _enemySpawner));
@@ -269,7 +277,6 @@ namespace Game.Core.Management
                 yield break;
             }
 
-            bool isFinalWave = waveIndex + 1 >= _waveSequence.Count;
             if (!isFinalWave)
             {
 
@@ -296,7 +303,7 @@ namespace Game.Core.Management
             if (isFinalWave)
             {
                 // 最終ウェーブクリア時は、ゲームクリア演出を再生する
-                SoundManager.instance?.StopBGM();
+                SoundManager.instance?.PlayBGM("Game_Clear_BGM");
                 if (_gameClearCinematicController != null)
                 {
                     yield return StartCoroutine(_gameClearCinematicController.PlayRoutine());

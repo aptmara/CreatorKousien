@@ -1,0 +1,3 @@
+Event	ID	Name			Wwise Object Path	Notes
+	2734776919	Play_SE_Shop_Disappear			\Default Work Unit\Play_SE_Shop_Disappear	
+

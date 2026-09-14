@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "53000163",
+    "Type": "Event",
+    "GUID": "{C0FE5CFB-C106-490A-85CB-62BE847EDE84}",
+    "Language": "SFX",
+    "Hash": "{9EA48796-3F71-67E1-CBA5-DCCDAE53F2EB}",
+    "ObjectPath": "Play_SE_Scene_Transition",
+    "ShortName": "Play_SE_Scene_Transition",
+    "Path": "Event/Play_SE_Scene_Transition.bnk",
+    "Media": [
+     {
+      "Id": "686342445",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Scene_Transition.wav",
+      "Path": "Media/686342445.wem",
+      "CachePath": "56/{56A00DA1-D562-E378-EB06-2E86A233B9A1}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "53000163",
+      "Name": "Play_SE_Scene_Transition",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Scene_Transition",
+      "GUID": "{C0FE5CFB-C106-490A-85CB-62BE847EDE84}",
+      "DurationType": "OneShot",
+      "DurationMin": "1.8981633",
+      "DurationMax": "1.8981633",
+      "MediaRefs": [
+       {
+        "Id": "686342445"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{3AE46140-57CB-AB17-5743-46D653C90819}"
+ }
+}

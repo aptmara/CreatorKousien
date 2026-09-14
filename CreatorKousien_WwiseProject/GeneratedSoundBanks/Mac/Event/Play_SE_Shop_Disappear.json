@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "2734776919",
+    "Type": "Event",
+    "GUID": "{FF60C16F-694C-4C09-BDEA-2C42F2271013}",
+    "Language": "SFX",
+    "Hash": "{746C8A12-4896-A5CD-03B2-198E4F9A05D0}",
+    "ObjectPath": "Play_SE_Shop_Disappear",
+    "ShortName": "Play_SE_Shop_Disappear",
+    "Path": "Event/Play_SE_Shop_Disappear.bnk",
+    "Media": [
+     {
+      "Id": "126410174",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Shop_Disappear.wav",
+      "Path": "Media/126410174.wem",
+      "CachePath": "B7/{B7EF2B7D-F554-9DBC-BBDC-197AC10D2884}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "2734776919",
+      "Name": "Play_SE_Shop_Disappear",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Shop_Disappear",
+      "GUID": "{FF60C16F-694C-4C09-BDEA-2C42F2271013}",
+      "DurationType": "OneShot",
+      "DurationMin": "1.1044217",
+      "DurationMax": "1.1044217",
+      "MediaRefs": [
+       {
+        "Id": "126410174"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{DA6CF900-5A12-E836-BC1F-86DC0E8F21D9}"
+ }
+}

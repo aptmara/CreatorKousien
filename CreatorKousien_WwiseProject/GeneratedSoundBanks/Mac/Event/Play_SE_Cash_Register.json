@@ -1,0 +1,32 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "1180286592",
+    "Type": "Event",
+    "GUID": "{60E7B08D-298B-499E-9224-2BADD5DDCE49}",
+    "Language": "SFX",
+    "Hash": "{60C3BF25-EBA8-5AF4-F34B-3568DC9915D0}",
+    "ObjectPath": "Play_SE_Cash_Register",
+    "ShortName": "Play_SE_Cash_Register",
+    "Path": "Event/Play_SE_Cash_Register.bnk",
+    "Events": [
+     {
+      "Id": "1180286592",
+      "Name": "Play_SE_Cash_Register",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Cash_Register",
+      "GUID": "{60E7B08D-298B-499E-9224-2BADD5DDCE49}",
+      "DurationType": "OneShot",
+      "DurationMin": "0",
+      "DurationMax": "0"
+     }
+    ]
+   }
+  ],
+  "FileHash": "{7A40FC03-8001-02B2-24D1-4C7657F88B32}"
+ }
+}

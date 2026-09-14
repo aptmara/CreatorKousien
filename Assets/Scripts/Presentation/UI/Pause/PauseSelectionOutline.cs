@@ -149,6 +149,7 @@ namespace Game.Presentation.UI.Pause
 
         public void OnSelect(BaseEventData eventData)
         {
+            SoundManager.instance?.PlaySE("Menu_Cursor_Move");
             SetHighlighted(true);
         }
 

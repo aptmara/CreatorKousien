@@ -13,18 +13,36 @@ namespace AK
 {
     namespace EVENTS
     {
+        static const AkUniqueID PLAY_BGM_BOSS_BATTLE = 1020001381U;
+        static const AkUniqueID PLAY_BGM_GAME_CLEAR = 3045635627U;
+        static const AkUniqueID PLAY_BGM_GAME_OVER = 2522325930U;
         static const AkUniqueID PLAY_BGM_INGAME = 2167428848U;
+        static const AkUniqueID PLAY_BGM_TITLE = 379376351U;
         static const AkUniqueID PLAY_SE_BARRIER_01 = 1815017956U;
         static const AkUniqueID PLAY_SE_BARRIER_02 = 1815017959U;
+        static const AkUniqueID PLAY_SE_CASH_REGISTER = 1180286592U;
         static const AkUniqueID PLAY_SE_COLLECTABLEHIT = 3880553476U;
         static const AkUniqueID PLAY_SE_COLLECTIBLE_CANDY = 2358718591U;
         static const AkUniqueID PLAY_SE_COLLECTIBLE_GUMMY = 1464973675U;
         static const AkUniqueID PLAY_SE_COLLECTIBLE_ICE = 3437287673U;
         static const AkUniqueID PLAY_SE_COLLECTIBLE_POISON = 3203106012U;
         static const AkUniqueID PLAY_SE_COLLECTIBLE_TOGE = 2795023259U;
+        static const AkUniqueID PLAY_SE_GAME_START = 103752710U;
+        static const AkUniqueID PLAY_SE_MENU_CURSOR_MOVE = 4188900259U;
         static const AkUniqueID PLAY_SE_PLAYERPUNCHHIT = 2662272053U;
         static const AkUniqueID PLAY_SE_PUMPKINSHOT = 277560843U;
         static const AkUniqueID PLAY_SE_PUMPKINSHOT_BIG = 250610020U;
+        static const AkUniqueID PLAY_SE_SCENE_TRANSITION = 53000163U;
+        static const AkUniqueID PLAY_SE_SHOP_APPEAR = 172375059U;
+        static const AkUniqueID PLAY_SE_SHOP_DISAPPEAR = 2734776919U;
+        static const AkUniqueID PLAY_SE_SIGNBOARD_FALL = 3969770006U;
+        static const AkUniqueID PLAY_SE_TITLE_CANDY_SCATTER = 1565044972U;
+        static const AkUniqueID PLAY_SE_TITLE_LOGO_APPEAR = 1872113279U;
+        static const AkUniqueID PLAY_SE_UI_APPEAR = 1526099101U;
+        static const AkUniqueID PLAY_SE_UI_BACK = 2073882659U;
+        static const AkUniqueID PLAY_SE_UI_CONFIRM = 1037708150U;
+        static const AkUniqueID PLAY_SE_UPGRADE_CONFIRM = 3958339582U;
+        static const AkUniqueID PLAY_SE_WAVE_START = 220774479U;
     } // namespace EVENTS
 
     namespace GAME_PARAMETERS

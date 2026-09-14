@@ -1,0 +1,3 @@
+Event	ID	Name			Wwise Object Path	Notes
+	1872113279	Play_SE_Title_Logo_Appear			\Default Work Unit\Play_SE_Title_Logo_Appear	
+

@@ -215,6 +215,7 @@ namespace Game.Presentation.UI.Pause
 
             if (cancelPressed)
             {
+                SoundManager.instance?.PlaySE("UI_Back");
                 if (_isShowingTitleOptions)
                 {
                     CloseTitleOptions();
@@ -247,9 +248,17 @@ namespace Game.Presentation.UI.Pause
         private void ConfigureCallbacks()
         {
             _continueButton.onClick.AddListener(ContinueGame);
-            _optionButton.onClick.AddListener(ShowOption);
+            _optionButton.onClick.AddListener(() =>
+            {
+                SoundManager.instance?.PlaySE("UI_Confirm");
+                ShowOption();
+            });
             _exitButton.onClick.AddListener(ReturnToTitle);
-            _backButton.onClick.AddListener(ShowPauseMenu);
+            _backButton.onClick.AddListener(() =>
+            {
+                SoundManager.instance?.PlaySE("UI_Back");
+                ShowPauseMenu();
+            });
 
             for (int i = 0; i < _tabButtons.Length; i++)
             {

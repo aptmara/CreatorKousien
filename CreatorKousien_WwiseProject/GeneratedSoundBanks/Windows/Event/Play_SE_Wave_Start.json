@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "220774479",
+    "Type": "Event",
+    "GUID": "{A80915D4-3A83-4460-AD66-B6F52D7A9D81}",
+    "Language": "SFX",
+    "Hash": "{C814357A-A606-3E64-2A19-928E6E7C815C}",
+    "ObjectPath": "Play_SE_Wave_Start",
+    "ShortName": "Play_SE_Wave_Start",
+    "Path": "Event/Play_SE_Wave_Start.bnk",
+    "Media": [
+     {
+      "Id": "952246926",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Wave_Start.wav",
+      "Path": "Media/952246926.wem",
+      "CachePath": "AF/{AF1F8A45-E9DD-79B2-2196-88088A32BA9F}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "220774479",
+      "Name": "Play_SE_Wave_Start",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Wave_Start",
+      "GUID": "{A80915D4-3A83-4460-AD66-B6F52D7A9D81}",
+      "DurationType": "OneShot",
+      "DurationMin": "1.3447618",
+      "DurationMax": "1.3447618",
+      "MediaRefs": [
+       {
+        "Id": "952246926"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{D0C537EA-CCF2-9AE0-7FD4-82E0B8E0C8E5}"
+ }
+}
