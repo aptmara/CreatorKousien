@@ -29,7 +29,7 @@ MonoBehaviour:
   HealRegenWaitTime: 7
   HealPower: 30
   RiseDuration: 25
-  LateralMove: 1
+  LateralMove: 0
   LateralDuration: 30
   LateralMaxSpeed: 2.5
   LateralSmoothTime: 0.6

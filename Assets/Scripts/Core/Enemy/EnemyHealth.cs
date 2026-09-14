@@ -1,4 +1,5 @@
 // 制作者: 山内陽
+// バク用に回復追加 Asano - 2026/09/14
 using System;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
@@ -71,6 +72,20 @@ namespace Game.Core.Enemy
             {
                 OnDefeated?.Invoke();
             }
+        }
+
+
+        /// <summary>
+        /// 本体回復を適用する
+        /// </summary>
+        /// <param name="healAmount">回復量</param>
+        public void ApplyHeal(float healAmount)
+        {
+            if (IsDefeated) return;
+            if (healAmount <= 0f) return;
+
+            _currentHp = Mathf.Min(_currentHp + healAmount, _maxHp);
+            OnHealthChanged?.Invoke(_currentHp, _maxHp);
         }
     }
 }

@@ -10,14 +10,42 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1c43347b7f155014787c574697325523, type: 3}
-  m_Name: SO_BakuData
+  m_Name: SO_BakuData_Regen
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Baku.BakuData
-  MaxEatCount: 20
+  MaxEatCount: 40
   EatableType: -1
   EatPauseDuration: 0.6
   EatCooldown: 0.1
-  MaxBellyScale: {x: 1.4, y: 1.4, z: 1.4}
+  MaxBellyScale: {x: 1.6, y: 1.6, z: 1.6}
   BellyScaleCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  BellyScaleLerpTime: 0.25
+  DigestStartDelay: 0.8
+  DigestRampUpDuration: 1
+  DigestPerSecond: 2
+  DigestRampCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -41,11 +69,10 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  BellyScaleLerpTime: 0.25
   BurstDelay: 0.4
   BurstWarningVfxPrefab: {fileID: 2610124898922505302, guid: 66452da6f98c1d84da4beb81f1f02ead, type: 3}
-  BurstDamage: 150
-  BurstRadius: 10
+  BurstDamage: 250
+  BurstRadius: 20
   BurstVfxPrefab: {fileID: 887176818804198120, guid: dbfbbba36b39edd4fb1ae50110ea2fa2, type: 3}
   BurstVfxOffset: {x: 0, y: 0.5, z: 0}
   BurstVfxLifetime: 3
