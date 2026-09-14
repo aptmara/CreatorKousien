@@ -83,15 +83,15 @@ public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         }
 
         _cardData = cardData;
-        EnsureRuntimeFrame();
+//        EnsureRuntimeFrame();
         PrepareIconMaterial();
         ApplyCardLayout();
         DisableScaleAnimation();
-        _nameText.gameObject.SetActive(true);
-        _descriptionText.gameObject.SetActive(false);
-        _levelText.gameObject.SetActive(true);
-        if (_costText != null)
-            _costText.gameObject.SetActive(true);
+//        _nameText.gameObject.SetActive(true);
+//        _descriptionText.gameObject.SetActive(false);
+//        _levelText.gameObject.SetActive(true);
+ //       if (_costText != null)
+  //          _costText.gameObject.SetActive(true);
         Refresh(currentLevel);
     }
 
@@ -147,7 +147,7 @@ public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         if (_runtimeFrame != null)
             return;
 
-        var frameObject = new GameObject("RuntimeCardFrame", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Outline));
+        var frameObject = new GameObject("RuntimeCardFrame", typeof(RectTransform), typeof(CanvasRenderer)/*, typeof(Image), typeof(Outline)*/);
         frameObject.transform.SetParent(transform, false);
         frameObject.transform.SetAsFirstSibling();
 
@@ -158,7 +158,7 @@ public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         frameRect.sizeDelta = new Vector2(214f, 214f);
 
         _runtimeFrame = frameObject.GetComponent<Image>();
-        _runtimeFrame.color = new Color(0.12f, 0.07f, 0.16f, 0.96f);
+        _runtimeFrame.color = new Color(0.12f, 0.07f, 0.16f, 0.5f);
         _runtimeFrame.raycastTarget = false;
 
         _runtimeOutline = frameObject.GetComponent<Outline>();
@@ -190,18 +190,25 @@ public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         if (transform is RectTransform rootRect)
             rootRect.sizeDelta = new Vector2(216f, 216f);
 
-        ConfigureRect(_iconImage.rectTransform, new Vector2(0f, 30f), new Vector2(140f, 140f));
+        ConfigureRect(_iconImage.rectTransform, new Vector2(0f, 0f), new Vector2(170f, 170f));
         _iconImage.preserveAspect = true;
         _iconImage.raycastTarget = false;
 
-        ConfigureText(_nameText, new Vector2(0f, -58f), new Vector2(200f, 40f), 24f, FontStyles.Bold);
-        ConfigureText(_levelText, new Vector2(0f, -88f), new Vector2(194f, 30f), 22f, FontStyles.Bold);
-        _levelText.color = new Color(1f, 0.72f, 0.28f, 1f);
-        if (_costText != null)
-        {
-            ConfigureText(_costText, new Vector2(0f, -112f), new Vector2(194f, 28f), 20f, FontStyles.Bold);
-            _costText.color = new Color(1f, 0.92f, 0.55f, 1f);
-        }
+        //ConfigureText(_nameText, new Vector2(0f, -58f), new Vector2(200f, 40f), 24f, FontStyles.Bold);
+        //_nameText.color = Color.black;
+        //_nameText.color = Color.black;
+        //_nameText.enableAutoSizing = true;
+        //_nameText.fontSizeMin = 0f;
+        //_nameText.fontSizeMax = 18f;
+        //ConfigureText(_levelText, new Vector2(0f, -88f), new Vector2(194f, 30f), 22f, FontStyles.Bold);
+        ////        _levelText.color = new Color(1f, 0.72f, 0.28f, 1f);
+        //_levelText.color = Color.black;
+        //if (_costText != null)
+        //{
+        //    ConfigureText(_costText, new Vector2(0f, -112f), new Vector2(194f, 28f), 20f, FontStyles.Bold);
+        //  ///  _costText.color = new Color(1f, 0.92f, 0.55f, 1f);
+        //    _costText.color = Color.black;
+        //}
     }
 
     private static void ConfigureText(
