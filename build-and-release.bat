@@ -75,16 +75,24 @@ echo.
 echo ============================================================
 echo [STEP 3/4] Compressing Artifacts to ZIP
 echo ============================================================
-if not exist "%~dp0Build" mkdir "%~dp0Build"
-set ZIP_NAME=CreatorKousien_%TIMESTAMP%.zip
-set ZIP_PATH=%~dp0Build\%ZIP_NAME%
-if exist "%ZIP_PATH%" del "%ZIP_PATH%"
 
-tar -a -c -v -f "%ZIP_PATH%" -C "%~dp0Build\Windows" .
+if not exist "%~dp0Build" mkdir "%~dp0Build"
+
+set "ZIP_NAME=CreatorKousien_%TIMESTAMP%.zip"
+set "ZIP_PATH=%~dp0Build\%ZIP_NAME%"
+set "BUILD_WINDOWS_DIR=%~dp0Build\Windows"
+
+if exist "%ZIP_PATH%" del /f /q "%ZIP_PATH%"
+
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "Add-Type -AssemblyName System.IO.Compression.FileSystem;" ^
+  "[System.IO.Compression.ZipFile]::CreateFromDirectory($env:BUILD_WINDOWS_DIR, $env:ZIP_PATH, [System.IO.Compression.CompressionLevel]::Optimal, $false)"
+
 if errorlevel 1 (
     call :on_error "Failed to compress build artifacts."
     exit /b 1
 )
+
 echo.
 echo Successfully created: %ZIP_PATH%
 echo.
