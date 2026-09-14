@@ -67,13 +67,34 @@ namespace Game.Gameplay.Roguelike.Effects
             }
         }
 
+        // Candyは購入不要の基本アイテムとして常時出現させる（出現率アップLv1相当の扱い）。
+        private static readonly CollectibleType FreeSpawnType = CollectibleType.Candy;
+
         public static float GetSpawnWeightMultiplier(CollectibleType type)
         {
+            if (type != FreeSpawnType && !HasOwnedSpawnRateUp(type))
+                return 0f;
+
             float weight = 1f;
             foreach ((RoguelikeEffectModule module, int level) in GetModules())
                 weight = module.ModifySpawnWeight(type, _lastHitType, _sameTypeHitStreak, level, weight);
 
             return weight;
+        }
+
+        /// <summary>
+        /// 指定種別の「出現率アップ」がLv1以上で取得済みかどうか。
+        /// Candy以外の種別は、対応する出現率アップを一度も取得していない限り出現ウェイトが0になる
+        /// （＝Lv0→1にした瞬間から出現し始める）。
+        /// </summary>
+        private static bool HasOwnedSpawnRateUp(CollectibleType type)
+        {
+            foreach ((RoguelikeEffectModule module, int level) in GetModules())
+            {
+                if (module is ItemSpawnRateUpEffect spawnRateUp && spawnRateUp.CollectibleType == type && level >= 1)
+                    return true;
+            }
+            return false;
         }
 
         public static void RecordCollectibleHit(CollectibleType type)

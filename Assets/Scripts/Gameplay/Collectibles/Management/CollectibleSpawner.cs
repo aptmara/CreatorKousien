@@ -11,7 +11,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Data.Collectibles;
-using Game.Core.Roguelike;
 using Game.Gameplay.Roguelike.CombatPressure;
 
 namespace Game.Gameplay.Collectibles
@@ -140,7 +139,7 @@ namespace Game.Gameplay.Collectibles
         /// </summary>
         public void SpawnCollectiblesAt(Vector3 position, int count, CollectibleData data)
         {
-            if (count <= 0 || data == null || !RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)data.Type))
+            if (count <= 0 || data == null)
             {
                 return;
             }
@@ -168,7 +167,7 @@ namespace Game.Gameplay.Collectibles
             float horizontalSpread = 3f,
             float scaleMultiplier = 1f)
         {
-            if (count <= 0 || data == null || !RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)data.Type))
+            if (count <= 0 || data == null)
             {
                 return;
             }
@@ -302,12 +301,6 @@ namespace Game.Gameplay.Collectibles
                 return null;
             }
 
-            // ボスギミックからの生成は、ローグライクのアンロック状況に左右させない
-            if (!ignoreUnlock && !RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)data.Type))
-            {
-                return null;
-            }
-
             if (!CanSpawnAtPosition())
             {
                 return null;
@@ -335,34 +328,23 @@ namespace Game.Gameplay.Collectibles
 
         private CollectibleData GetRandomUnlockedData()
         {
-            int unlockedCount = 0;
-            foreach (CollectibleData data in _spawnableData)
-            {
-                if (data != null && RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)data.Type))
-                {
-                    unlockedCount++;
-                }
-            }
-
-            if (unlockedCount == 0)
-            {
-                Debug.LogError("[CollectibleSpawner] 解禁済みのCollectibleDataがありません。", this);
-                return null;
-            }
-
             float totalWeight = 0f;
             foreach (CollectibleData data in _spawnableData)
             {
-                if (data != null && RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)data.Type))
-                {
+                if (data != null)
                     totalWeight += CombatPressureSpawnWeights.GetWeight(data.Type);
-                }
+            }
+
+            if (totalWeight <= 0f)
+            {
+                Debug.LogError("[CollectibleSpawner] 出現可能なCollectibleDataがありません。", this);
+                return null;
             }
 
             float selectedWeight = Random.value * totalWeight;
             foreach (CollectibleData data in _spawnableData)
             {
-                if (data == null || !RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)data.Type)) continue;
+                if (data == null) continue;
                 selectedWeight -= CombatPressureSpawnWeights.GetWeight(data.Type);
                 if (selectedWeight <= 0f) return data;
             }

@@ -6,6 +6,7 @@ using System.Reflection;
 using Game.Core.Management;
 using Game.Data.Collectibles;
 using Game.Data.Player;
+using Game.Gameplay.Collectibles;
 using Game.Gameplay.Roguelike.Effects;
 using Game.WaveSystem;
 using UnityEditor;
@@ -37,13 +38,14 @@ namespace Game.Gameplay.Roguelike.Editor
         /// </summary>
         private static readonly HashSet<string> KnownSystemicUpgradeIds = new HashSet<string>
         {
-            "3", "4", "5", "6", "7", "8", "10", "12", "13", "14", "15", "20",
+            "4", "5", "6", "7", "8", "10", "12", "13", "14", "15", "20",
         };
 
         private SO_RoguelikeBalanceConfig _config;
         private Tab _tab;
         private Vector2 _scroll;
         private Vector2 _upgradeListScroll;
+        private Vector2 _upgradeDetailScroll;
         private UpgradeData _selectedUpgrade;
         private string _upgradeSearch = string.Empty;
         private string _newUpgradeName = "新しい強化";
@@ -393,6 +395,7 @@ namespace Game.Gameplay.Roguelike.Editor
             SerializedObject flavorSerialized = new SerializedObject(_flavorNames);
             flavorSerialized.Update();
             SerializedProperty entries = flavorSerialized.FindProperty("_entries");
+            int removeEntryIndex = -1;
             for (int index = 0; index < entries.arraySize; index++)
             {
                 SerializedProperty entry = entries.GetArrayElementAtIndex(index);
@@ -408,13 +411,61 @@ namespace Game.Gameplay.Roguelike.Editor
                         GUILayout.Width(110f));
                     if (existing != null && GUILayout.Button("選択", GUILayout.Width(50f)))
                         Selection.activeObject = existing;
+                    if (GUILayout.Button("削除", GUILayout.Width(48f)))
+                        removeEntryIndex = index;
                 }
             }
+            if (removeEntryIndex >= 0)
+                entries.DeleteArrayElementAtIndex(removeEntryIndex);
             flavorSerialized.ApplyModifiedProperties();
+
+            List<CollectibleType> missingTypes = GetTypesMissingFromFlavorNames();
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                using (new EditorGUI.DisabledScope(missingTypes.Count == 0))
+                {
+                    if (GUILayout.Button($"+ 未登録の商品名を追加 ({missingTypes.Count})", GUILayout.Width(220f)))
+                        AddMissingFlavorEntries(missingTypes);
+                }
+            }
 
             EditorGUILayout.Space(10f);
             if (GUILayout.Button("未生成の出現率アップを一括作成", GUILayout.Height(30f)))
                 CreateMissingSpawnRateUpgrades();
+        }
+
+        private List<CollectibleType> GetTypesMissingFromFlavorNames()
+        {
+            var missing = new List<CollectibleType>();
+            if (_config.CollectibleTable == null || _flavorNames == null)
+                return missing;
+
+            HashSet<CollectibleType> registered = _flavorNames.Entries.Select(entry => entry.Type).ToHashSet();
+            foreach (CollectibleData item in _config.CollectibleTable.GetAllItems())
+            {
+                if (item == null || item.Type == CollectibleType.BossWeak) continue;
+                if (registered.Add(item.Type))
+                    missing.Add(item.Type);
+            }
+            return missing;
+        }
+
+        private void AddMissingFlavorEntries(List<CollectibleType> missingTypes)
+        {
+            SerializedObject flavorSerialized = new SerializedObject(_flavorNames);
+            flavorSerialized.Update();
+            SerializedProperty entries = flavorSerialized.FindProperty("_entries");
+            foreach (CollectibleType type in missingTypes)
+            {
+                int index = entries.arraySize;
+                entries.InsertArrayElementAtIndex(index);
+                SerializedProperty entry = entries.GetArrayElementAtIndex(index);
+                entry.FindPropertyRelative("Type").enumValueIndex = (int)type;
+                entry.FindPropertyRelative("FlavorName").stringValue = CollectibleTable.GetDisplayName(type);
+            }
+            flavorSerialized.ApplyModifiedProperties();
+            EditorUtility.SetDirty(_flavorNames);
+            AssetDatabase.SaveAssets();
         }
 
         private SO_CollectibleFlavorNames CreateFlavorNamesAsset()
@@ -514,13 +565,16 @@ namespace Game.Gameplay.Roguelike.Editor
                     if (_selectedUpgrade == null)
                     {
                         EditorGUILayout.HelpBox("左の一覧から強化を選択してください。", MessageType.Info);
-                        return;
                     }
-
-                    if (effectsOnly)
-                        DrawEffectsEditor(_selectedUpgrade);
                     else
-                        DrawUpgradeInspector(_selectedUpgrade);
+                    {
+                        _upgradeDetailScroll = EditorGUILayout.BeginScrollView(_upgradeDetailScroll);
+                        if (effectsOnly)
+                            DrawEffectsEditor(_selectedUpgrade);
+                        else
+                            DrawUpgradeInspector(_selectedUpgrade);
+                        EditorGUILayout.EndScrollView();
+                    }
                 }
             }
         }
@@ -543,6 +597,7 @@ namespace Game.Gameplay.Roguelike.Editor
                 .ThenBy(item => item.DisplayName)
                 .ToList();
 
+            UpgradeData pendingDelete = null;
             foreach (UpgradeData item in visible)
             {
                 Color previous = GUI.backgroundColor;
@@ -551,11 +606,48 @@ namespace Game.Gameplay.Roguelike.Editor
                 {
                     if (GUILayout.Button(item.Icon != null ? item.Icon.texture : Texture2D.grayTexture, GUILayout.Width(28f), GUILayout.Height(28f)))
                         SelectUpgrade(item);
-                    if (GUILayout.Button($"{item.DisplayName}\n{item.Category}  Lv.{item.MaxLevel}", EditorStyles.label, GUILayout.MinWidth(175f), GUILayout.Height(31f)))
+                    if (GUILayout.Button($"{item.DisplayName}\n{item.Category}  Lv.{item.MaxLevel}", EditorStyles.label, GUILayout.MinWidth(150f), GUILayout.Height(31f)))
                         SelectUpgrade(item);
+                    if (GUILayout.Button("削除", GUILayout.Width(40f), GUILayout.Height(31f)))
+                        pendingDelete = item;
                 }
                 GUI.backgroundColor = previous;
             }
+
+            if (pendingDelete != null)
+                DeleteUpgrade(pool, pendingDelete);
+        }
+
+        private void DeleteUpgrade(SO_UpgradePool pool, UpgradeData upgrade)
+        {
+            bool confirmed = EditorUtility.DisplayDialog(
+                "強化の削除",
+                $"「{upgrade.DisplayName}」を強化プールから削除し、アセットファイルごと削除します。この操作は元に戻せません。続行しますか？",
+                "削除する",
+                "キャンセル");
+            if (!confirmed)
+                return;
+
+            SerializedObject serialized = new SerializedObject(pool);
+            SerializedProperty list = serialized.FindProperty("_upgrades");
+            for (int index = 0; index < list.arraySize; index++)
+            {
+                if (list.GetArrayElementAtIndex(index).objectReferenceValue != upgrade)
+                    continue;
+                list.GetArrayElementAtIndex(index).objectReferenceValue = null;
+                list.DeleteArrayElementAtIndex(index);
+                break;
+            }
+            serialized.ApplyModifiedProperties();
+            EditorUtility.SetDirty(pool);
+
+            if (_selectedUpgrade == upgrade)
+                SelectUpgrade(null);
+
+            string path = AssetDatabase.GetAssetPath(upgrade);
+            if (!string.IsNullOrEmpty(path))
+                AssetDatabase.DeleteAsset(path);
+            AssetDatabase.SaveAssets();
         }
 
         private void DrawUpgradeCreation(SO_UpgradePool pool)
@@ -958,6 +1050,69 @@ namespace Game.Gameplay.Roguelike.Editor
             else
                 foreach ((MessageType type, string message) in messages)
                     EditorGUILayout.HelpBox(message, type);
+
+            DrawSpawnerSceneCheck();
+        }
+
+        /// <summary>
+        /// 「出現率アップ」を購入しても出現しない原因調査用。
+        /// CollectibleSpawner._spawnableDataはこのツールが編集するCollectibleTableとは別の、
+        /// シーン側に個別配置された配列であるため、そちらに未登録の種類は出現率アップの効果が一切出ない。
+        /// </summary>
+        private void DrawSpawnerSceneCheck()
+        {
+            EditorGUILayout.Space(10f);
+            EditorGUILayout.LabelField("シーン上の出現スポナー確認（出現率アップが効かない場合の調査）", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                "現場でアイテムを出現させるCollectibleSpawnerコンポーネントは、シーンごとに「出現させるアイテムのデータリスト」" +
+                "を個別に持っており、このツールが編集する出現テーブル(CollectibleTable)とは連動していません。" +
+                "出現率アップ強化はこのリストに登録済みの種類にしか効果がないため、未登録の種類はいくら出現率アップを購入しても出現しません。",
+                MessageType.Info);
+
+            CollectibleSpawner[] spawners = UnityEngine.Object.FindObjectsByType<CollectibleSpawner>(FindObjectsSortMode.None);
+            if (spawners.Length == 0)
+            {
+                EditorGUILayout.HelpBox(
+                    "現在開いているシーンにCollectibleSpawnerが見つかりません。対象のStageシーンを開いた状態でこのタブを確認してください。",
+                    MessageType.Warning);
+                return;
+            }
+
+            var registeredTypes = new HashSet<CollectibleType>();
+            foreach (CollectibleSpawner spawner in spawners)
+            {
+                SerializedObject spawnerSerialized = new SerializedObject(spawner);
+                SerializedProperty spawnableData = spawnerSerialized.FindProperty("_spawnableData");
+                if (spawnableData == null) continue;
+                for (int index = 0; index < spawnableData.arraySize; index++)
+                {
+                    CollectibleData data = spawnableData.GetArrayElementAtIndex(index).objectReferenceValue as CollectibleData;
+                    if (data != null)
+                        registeredTypes.Add(data.Type);
+                }
+            }
+
+            if (_config.CollectibleTable == null)
+                return;
+
+            bool anyMissing = false;
+            foreach (CollectibleData item in _config.CollectibleTable.GetAllItems())
+            {
+                if (item == null || item.Type == CollectibleType.BossWeak) continue;
+                if (registeredTypes.Contains(item.Type)) continue;
+
+                anyMissing = true;
+                UpgradeData spawnRateUpgrade = FindSpawnRateUpgrade(item.Type);
+                string suffix = spawnRateUpgrade != null
+                    ? $"（「{spawnRateUpgrade.DisplayName}」を購入しても無効）"
+                    : string.Empty;
+                EditorGUILayout.HelpBox(
+                    $"「{CollectibleTable.GetDisplayName(item.Type)}」はこのシーンのCollectibleSpawnerに未登録です。{suffix}",
+                    MessageType.Error);
+            }
+
+            if (!anyMissing)
+                EditorGUILayout.HelpBox("出現テーブルの全種類がこのシーンのCollectibleSpawnerに登録されています。", MessageType.Info);
         }
 
         private List<(MessageType Type, string Message)> ValidateConfig()
@@ -1112,6 +1267,7 @@ namespace Game.Gameplay.Roguelike.Editor
         private void SelectUpgrade(UpgradeData upgrade)
         {
             _selectedUpgrade = upgrade;
+            _upgradeDetailScroll = Vector2.zero;
             GUI.FocusControl(null);
             Repaint();
         }

@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Game.Core.Roguelike;
 using Game.Gameplay.Roguelike.CombatPressure;
 
 namespace Game.Data.Collectibles
@@ -188,7 +187,7 @@ namespace Game.Data.Collectibles
 
         private static bool IsUnlocked(CollectibleData item)
         {
-            return item != null && RoguelikeUpgradeRuntime.IsCollectibleUnlocked((int)item.Type);
+            return item != null;
         }
     }
 }

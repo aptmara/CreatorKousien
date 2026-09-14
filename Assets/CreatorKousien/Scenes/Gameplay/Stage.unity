@@ -485033,6 +485033,9 @@ MonoBehaviour:
   _spawnableData:
   - {fileID: 11400000, guid: efa7b9a6a24ab4c4bb0517fa1e83a3c6, type: 2}
   - {fileID: 11400000, guid: f4b5d9ed189e8f34892e8e133cc6ed09, type: 2}
+  - {fileID: 11400000, guid: fbb2cc8966f32664a8448550983be955, type: 2}
+  - {fileID: 11400000, guid: 9998b8dbc0c5ce04e9654396168d57bf, type: 2}
+  - {fileID: 11400000, guid: 0bd912b3ef729924d81e248d6df2ca12, type: 2}
   _minInitialSpeed: 1.5
   _maxInitialSpeed: 5.5
   _initialUpwardSpeed: 0.2
