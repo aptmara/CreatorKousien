@@ -96,6 +96,7 @@ MonoBehaviour:
   PlayerReviveDelay: 1
   TransitionResultDelay: 2
   DummyEnemyPrefab: {fileID: 6303239717055165911, guid: a3e310d186d228442b35da9d22c6c805, type: 3}
+  DummyEnemyRotationOffset: {x: 0, y: 90, z: 0}
   DummyEnemyCount: 50
   BaseEnemySpeed: 12
   SpeedVariation: 3

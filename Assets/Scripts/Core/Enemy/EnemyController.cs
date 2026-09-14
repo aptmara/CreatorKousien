@@ -489,7 +489,6 @@ namespace Game.Core.Enemy
 
         private void BeginDefeatDrop()
         {
-            _rising.ResumeMove();
             _rising.DropStart(transform);
             OnDropStarted?.Invoke();
 

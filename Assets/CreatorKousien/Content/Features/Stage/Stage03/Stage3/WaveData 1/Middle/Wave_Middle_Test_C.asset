@@ -16,9 +16,9 @@ MonoBehaviour:
   plannerMemo: "Stage3 \u4E2D\u76E4C\nEnemy_05 BatSwing \u304C\u4E3B\u5F79\u3002\u6A2A\u79FB\u52D5(LateralMove)\u3067\u72D9\u3044\u3092\u5916\u3057\u3066\u304F\u308B\u6575\u3092\u3044\u3063\u3071\u3044\u3060\u3059\uFF01"
   startDelay: 0.5
   completeDelay: 1.5
-  hpRate: 1.4
+  hpRate: 2.5
   barrierRate: 1.5
-  maxAliveEnemies: 0
+  maxAliveEnemies: 2
   minDistanceFromOtherEnemies: 1.4
   groups:
   - groupName: S3_MidC_G1_Open

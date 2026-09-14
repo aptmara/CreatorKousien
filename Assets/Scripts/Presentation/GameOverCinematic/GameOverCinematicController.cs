@@ -232,6 +232,7 @@ namespace Game.Presentation.GameOverCinematic
                 List<Vector3> enemyTargets = new List<Vector3>();
                 List<float> enemySpeeds = new List<float>();
                 List<float> enemyDelays = new List<float>();
+                Quaternion enemyRotationOffset = Quaternion.Euler(_settings.DummyEnemyRotationOffset);
 
                 // 1. 遠くの固定底辺ライン上にランダムで配置
                 for (int i = 0; i < _settings.DummyEnemyCount; i++)
@@ -246,7 +247,8 @@ namespace Game.Presentation.GameOverCinematic
                                      + (gateUp * _settings.EnemyVisualYOffset);
 
                     // 生成
-                    GameObject enemyObj = Instantiate(_settings.DummyEnemyPrefab, spawnPos, Quaternion.LookRotation(gateForward));
+                    GameObject enemyObj = Instantiate(_settings.DummyEnemyPrefab, spawnPos,
+                        Quaternion.LookRotation(gateForward, gateUp) * enemyRotationOffset);
 
                     if (enemyObj.TryGetComponent<Rigidbody>(out var enemyRb)) enemyRb.isKinematic = true;
                     if (enemyObj.TryGetComponent<Collider>(out var enemyCol)) enemyCol.enabled = false;
@@ -331,7 +333,8 @@ namespace Game.Presentation.GameOverCinematic
                         if (rushElapsed < enemyDelays[i])
                         {
                             Vector3 lookGate = (gateCenter - enemyTrans.position).normalized;
-                            if (lookGate.sqrMagnitude > 0.001f) enemyTrans.rotation = Quaternion.LookRotation(lookGate, gateUp);
+                            if (lookGate.sqrMagnitude > 0.001f)
+                                enemyTrans.rotation = Quaternion.LookRotation(lookGate, gateUp) * enemyRotationOffset;
                             continue;
                         }
 
@@ -341,7 +344,7 @@ namespace Game.Presentation.GameOverCinematic
 
                         if (moveDir.sqrMagnitude > 0.001f)
                         {
-                            enemyTrans.rotation = Quaternion.LookRotation(moveDir);
+                            enemyTrans.rotation = Quaternion.LookRotation(moveDir, gateUp) * enemyRotationOffset;
                         }
 
                         // 削除ライン追従

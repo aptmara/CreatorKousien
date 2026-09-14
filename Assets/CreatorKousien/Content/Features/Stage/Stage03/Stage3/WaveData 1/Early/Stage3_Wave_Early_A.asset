@@ -16,8 +16,8 @@ MonoBehaviour:
   plannerMemo: "Stage3 \u5E8F\u76E4A\n\u30B3\u30A6\u30E2\u30EA\u7CFB\u306E\u7D68\u6BEF\u3002\u6A2A\u8599\u304E\u3067\u6570\u3092\u634C\u304F"
   startDelay: 0.5
   completeDelay: 1.5
-  hpRate: 1.15
-  barrierRate: 1.2
+  hpRate: 2
+  barrierRate: 1.5
   maxAliveEnemies: 0
   minDistanceFromOtherEnemies: 1.5
   groups:

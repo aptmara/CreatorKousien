@@ -16,7 +16,7 @@ MonoBehaviour:
   plannerMemo: "Stage3 \u7D42\u76E4C\nEnemy_05 BatSwing \u3068 Bat \u3060\u3051\u3067\u62BC\u3057\u6F70\u3059\u901F\u5EA6\u7279\u5316\u306E\u7D42\u76E4\u6CE2"
   startDelay: 0.5
   completeDelay: 1.5
-  hpRate: 2
+  hpRate: 3
   barrierRate: 1.8
   maxAliveEnemies: 0
   minDistanceFromOtherEnemies: 1.2

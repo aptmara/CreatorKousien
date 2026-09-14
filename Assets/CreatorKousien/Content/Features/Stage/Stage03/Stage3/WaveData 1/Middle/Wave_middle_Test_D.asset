@@ -16,9 +16,9 @@ MonoBehaviour:
   plannerMemo: "Stage3 \u4E2D\u76E4D\nZombi\u306E\u30D0\u30EA\u30A2\u58C1\u304C\u4E3B\u5F79\u3002\u30D0\u30EA\u30A2\u7DCF\u91CF7500\u3067\u4ED6\u306E\u4E2D\u76E4\u6CE2\u306E\u7D041.5\u500D\u3002"
   startDelay: 0.5
   completeDelay: 1.5
-  hpRate: 1.4
+  hpRate: 2.5
   barrierRate: 1.5
-  maxAliveEnemies: 0
+  maxAliveEnemies: 2
   minDistanceFromOtherEnemies: 1.4
   groups:
   - groupName: S3_MidD_G1_Shield

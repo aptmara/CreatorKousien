@@ -37,17 +37,17 @@ MonoBehaviour:
       spawnInterval: 1
   - groupName: Wave_Middle_GoodMoorning
     plannerMemo: 
-    delayBeforeStart: 0
+    delayBeforeStart: 0.5
     advanceType: 0
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
       spawnCount: 5
-      startDelay: 2
-      spawnInterval: 3
+      startDelay: 0
+      spawnInterval: 2
     - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
       spawnCount: 5
-      startDelay: 8
+      startDelay: 3
       spawnInterval: 2
   - groupName: Wave_Middle_GoodMooorning
     plannerMemo: 
@@ -56,10 +56,10 @@ MonoBehaviour:
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-      spawnCount: 8
-      startDelay: 2
-      spawnInterval: 3
+      spawnCount: 7
+      startDelay: 0.5
+      spawnInterval: 2
     - enemyDefinition: {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
-      spawnCount: 8
-      startDelay: 6
+      spawnCount: 11
+      startDelay: 1
       spawnInterval: 1

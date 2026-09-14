@@ -157,7 +157,11 @@ namespace Game.Gameplay.Enemy.Baku
             clone.transform.localScale = scale;
 
             clone.AddComponent<MeshFilter>().sharedMesh = mesh;
-            clone.AddComponent<MeshRenderer>().sharedMaterials = materials;
+            // 状態異常の追加描画用マテリアルには対応するサブメッシュがない。
+            // EzySliceにはサブメッシュと同数の本体マテリアルだけを渡す。
+            Material[] sliceMaterials = new Material[mesh.subMeshCount];
+            System.Array.Copy(materials, sliceMaterials, Mathf.Min(materials.Length, sliceMaterials.Length));
+            clone.AddComponent<MeshRenderer>().sharedMaterials = sliceMaterials;
 
             return clone;
         }

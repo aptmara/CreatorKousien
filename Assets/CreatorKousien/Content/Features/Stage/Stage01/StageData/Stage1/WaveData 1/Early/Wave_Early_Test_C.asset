@@ -28,6 +28,6 @@ MonoBehaviour:
     timeUntilNextGroup: 0
     spawnEntries:
     - enemyDefinition: {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
-      spawnCount: 20
+      spawnCount: 15
       startDelay: 0
-      spawnInterval: 3
+      spawnInterval: 1.6

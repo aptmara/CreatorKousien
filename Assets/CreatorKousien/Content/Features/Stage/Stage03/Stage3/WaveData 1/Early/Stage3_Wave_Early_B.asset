@@ -16,8 +16,8 @@ MonoBehaviour:
   plannerMemo: "Stage3 \u5E8F\u76E4B\nEnemy_06 BakuRegen \u304C\u4E3B\u5F79\u3002Zombi\u306E\u30D0\u30EA\u30A2\u58C1\u3092\u7834\u88C2\u3067\u5D29\u3059\u69CB\u6210"
   startDelay: 0.5
   completeDelay: 1.5
-  hpRate: 1.15
-  barrierRate: 1.2
+  hpRate: 2
+  barrierRate: 1.5
   maxAliveEnemies: 0
   minDistanceFromOtherEnemies: 1.5
   groups:
