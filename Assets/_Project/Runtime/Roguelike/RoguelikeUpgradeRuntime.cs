@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.Core.Roguelike
@@ -9,7 +8,6 @@ namespace Game.Core.Roguelike
     /// </summary>
     public static class RoguelikeUpgradeRuntime
     {
-        private const string AddDropItemId = "3";
         private const string DamageUpId = "4";
         private const string ItemSpawnUpId = "5";
         private const string GetCoinUpId = "6";
@@ -28,11 +26,9 @@ namespace Game.Core.Roguelike
         private const float BarrierAllUpMaxHpMultiplierPerLevel = 1.25f;
 
         private static bool _runtimeStateNeedsClear = true;
-        private static readonly HashSet<int> ExplicitlyUnlockedCollectibles = new HashSet<int>();
 
         public static event Action Changed;
 
-        public static int CollectibleUnlockLevel { get; private set; }
         public static int AdditionalPumpkinDropCount { get; private set; }
         public static float CollectibleDamageMultiplier { get; private set; } = 1f;
         public static float CollectibleScaleMultiplier { get; private set; } = 1f;
@@ -54,7 +50,6 @@ namespace Game.Core.Roguelike
 
         public static void Reset()
         {
-            CollectibleUnlockLevel = 0;
             AdditionalPumpkinDropCount = 0;
             CollectibleDamageMultiplier = 1f;
             CollectibleScaleMultiplier = 1f;
@@ -66,7 +61,6 @@ namespace Game.Core.Roguelike
             PinchAttachmentMultiplier = 1f;
             BarrierRepairRatePerSecond = 0f;
             BarrierMaxHpMultiplier = 1f;
-            ExplicitlyUnlockedCollectibles.Clear();
             _runtimeStateNeedsClear = true;
             Changed?.Invoke();
         }
@@ -88,9 +82,6 @@ namespace Game.Core.Roguelike
 
             switch (upgradeId)
             {
-                case AddDropItemId:
-                    CollectibleUnlockLevel = validLevel;
-                    break;
                 case DamageUpId:
                     CollectibleDamageMultiplier = PowMultiplier(value, validLevel);
                     CollectibleScaleMultiplier = PowMultiplier(value, validLevel);
@@ -145,18 +136,6 @@ namespace Game.Core.Roguelike
         {
             float multiplier = 1f - Mathf.Clamp01(RerollDiscountRate);
             return Mathf.Max(0, Mathf.CeilToInt(Mathf.Max(0, originalCost) * multiplier));
-        }
-
-        public static void UnlockCollectible(int collectibleTypeValue)
-        {
-            if (collectibleTypeValue >= 0)
-                ExplicitlyUnlockedCollectibles.Add(collectibleTypeValue);
-        }
-
-        public static bool IsCollectibleUnlocked(int collectibleTypeValue)
-        {
-            return collectibleTypeValue <= CollectibleUnlockLevel ||
-                   ExplicitlyUnlockedCollectibles.Contains(collectibleTypeValue);
         }
 
         private static float PowMultiplier(float value, int level)

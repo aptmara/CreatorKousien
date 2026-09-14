@@ -14,7 +14,6 @@ namespace Game.Tests
         [Test]
         public void Apply_ConfiguresImplementedUpgradeEffects()
         {
-            Assert.That(RoguelikeUpgradeRuntime.Apply("3", 2, 1f), Is.True);
             Assert.That(RoguelikeUpgradeRuntime.Apply("4", 2, 1.1f), Is.True);
             Assert.That(RoguelikeUpgradeRuntime.Apply("5", 2, 10f), Is.True);
             Assert.That(RoguelikeUpgradeRuntime.Apply("6", 2, 1.1f), Is.True);
@@ -27,7 +26,6 @@ namespace Game.Tests
             Assert.That(RoguelikeUpgradeRuntime.Apply("15", 2, 1.1f), Is.True);
             Assert.That(RoguelikeUpgradeRuntime.Apply("20", 2, 0f), Is.True);
 
-            Assert.That(RoguelikeUpgradeRuntime.CollectibleUnlockLevel, Is.EqualTo(2));
             Assert.That(RoguelikeUpgradeRuntime.CollectibleDamageMultiplier, Is.EqualTo(1.21f).Within(0.0001f));
             Assert.That(RoguelikeUpgradeRuntime.CollectibleScaleMultiplier, Is.EqualTo(1.21f).Within(0.0001f));
             Assert.That(RoguelikeUpgradeRuntime.AdditionalPumpkinDropCount, Is.EqualTo(20));
@@ -97,6 +95,7 @@ namespace Game.Tests
             Assert.That(RoguelikeUpgradeRuntime.ConsumeRuntimeStateClearRequest(), Is.False);
         }
 
+        [TestCase("3")]
         [TestCase("9")]
         [TestCase("11")]
         public void Apply_DoesNotImplementExcludedUpgrades(string upgradeId)

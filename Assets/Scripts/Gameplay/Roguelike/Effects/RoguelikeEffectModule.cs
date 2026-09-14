@@ -40,8 +40,10 @@ namespace Game.Gameplay.Roguelike.Effects
         [SerializeField] private CollectibleType _collectibleType;
         [SerializeField, Min(0f)] private float _bonusPerLevel = 0.25f;
 
+        public CollectibleType CollectibleType => _collectibleType;
+
         public override string Summary =>
-            $"{CollectibleTable.GetDisplayName(_collectibleType)}の通常出現率を毎Lv+{_bonusPerLevel:P0}";
+            $"{CollectibleTable.GetDisplayName(_collectibleType)}はLv0では出現せず、Lv1以降で出現を開始し毎Lv+{_bonusPerLevel:P0}相対比重が増える";
 
         // 種別ごとに独立させ、複数種類のアイテム出現率アップを同時に所持できるようにする
         public override string ExclusiveGroup => $"spawn-rate-up:{_collectibleType}";
