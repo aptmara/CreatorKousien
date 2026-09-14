@@ -34,7 +34,7 @@ public class TutorialWave : ScriptableObject
 
     [SerializeField] bool useStartText;
     public bool UseStartText => useStartText;
-    [SerializeField] string startText;
+    [SerializeField, TextArea(2, 4)] string startText;
     public string StartText => startText;
 
     [SerializeField] bool startWave;
@@ -49,7 +49,7 @@ public class TutorialWave : ScriptableObject
     [Header("終了時リクエスト")]
     [SerializeField] bool useEndText;
     public bool UseEndText => useEndText;
-    [SerializeField] string endText;
+    [SerializeField, TextArea(2, 4)] string endText;
     public string EndText => endText;
 
 
