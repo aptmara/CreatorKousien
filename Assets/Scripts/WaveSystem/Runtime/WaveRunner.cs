@@ -45,6 +45,7 @@ namespace Game.WaveSystem
 
         private int enemyDeadRoutineCount;
         private int maxEnemySpawnRoutineCount;
+        private GroupRuntimeState currentGroupState;
 
         // 検証結果の一時バッファ
         private readonly List<ValidationIssue> validationResults = new();
@@ -146,7 +147,6 @@ namespace Game.WaveSystem
                 GroupRuntimeState groupState = new GroupRuntimeState();
 
                 EventBus.Publish(new GroupChangeEvent(groupIndex, groups.Count));
-                EventBus.Publish(new GameChangeEvent(0, 1));
                 // WaveGroupのEnemySpawnEntryを順番に実行する
                 StartGroupSpawnRoutines(waveData, group, groupState, enemySpawner);
 
@@ -188,6 +188,7 @@ namespace Game.WaveSystem
                 activeSpawnRoutineCount == 0 &&
                 (aliveWaveEnemyIds.Count == 0 || aliveWaveEnemyIds.IsSubsetOf(defeatDroppingEnemyIds)));
 
+            EventBus.Publish(new GameChangeEvent(1, 1));
             EventBus.Publish(new GroupChangeEvent(groups.Count, groups.Count));
             EventBus.Publish(new WaveEndEvent(0));
 
@@ -208,6 +209,7 @@ namespace Game.WaveSystem
         /// <param name="enemySpawner">敵スポナー</param>
         private void StartGroupSpawnRoutines(WaveDataSO waveData, WaveGroupData group, GroupRuntimeState groupState, EnemySpawner enemySpawner)
         {
+            currentGroupState = groupState;
             enemyDeadRoutineCount = 0;
             maxEnemySpawnRoutineCount = 0;
             foreach(EnemySpawnEntry entry in group.SpawnEntries)
@@ -215,6 +217,7 @@ namespace Game.WaveSystem
                 maxEnemySpawnRoutineCount += entry.SpawnCount;
             }
 
+            EventBus.Publish(new GameChangeEvent(0, maxEnemySpawnRoutineCount));
 
             foreach (EnemySpawnEntry entry in group.SpawnEntries)
             {
@@ -333,11 +336,16 @@ namespace Game.WaveSystem
             }
 
             // この敵が所属するGroupの状態を更新する
-            if (groupByEnemyId.TryGetValue(ev.EnemyId, out GroupRuntimeState groupState))
+            if (!groupByEnemyId.TryGetValue(ev.EnemyId, out GroupRuntimeState groupState))
             {
-                groupState.AliveEnemyIds.Remove(ev.EnemyId);
-                groupByEnemyId.Remove(ev.EnemyId);
+                return;
             }
+
+            groupState.AliveEnemyIds.Remove(ev.EnemyId);
+            groupByEnemyId.Remove(ev.EnemyId);
+
+            // 時間進行で残った前Groupの敵や、Wave完了後の落下は表示中のバーに加算しない。
+            if (!IsRunning || groupState != currentGroupState) return;
 
             enemyDeadRoutineCount++;
             EventBus.Publish(new GameChangeEvent(enemyDeadRoutineCount, maxEnemySpawnRoutineCount));
@@ -367,6 +375,7 @@ namespace Game.WaveSystem
             activeSpawnRoutineCount = 0;
             enemyDeadRoutineCount = 0;
             maxEnemySpawnRoutineCount = 0;
+            currentGroupState = null;
             IsRunning = false;
         }
     }

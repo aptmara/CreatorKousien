@@ -59,6 +59,12 @@ public class GameUIController : MonoBehaviour
     public void SetWave(string waveName)
     {
         _waveCountUI.text = "Wave " + waveName;
+
+        // Stage移行でもHUDは再利用されるため、前Waveの補間を止めて初期値へ戻す。
+        if (progressCoroutine != null) StopCoroutine(progressCoroutine);
+        progressCoroutine = null;
+        _gaugeProgress = 0f;
+        UpdateProgressGauge();
     }
 
     private void OnGroupChange(GroupChangeEvent ev)
@@ -112,8 +118,19 @@ public class GameUIController : MonoBehaviour
 
     private void OnProgressGaugeRequest(GameChangeEvent ev)
     {
-        float target = (float)ev.SpawnedEnemy / (float)ev.MaxEnemy;
+        float target = ev.MaxEnemy > 0
+            ? Mathf.Clamp01((float)ev.SpawnedEnemy / ev.MaxEnemy)
+            : 0f;
         if(progressCoroutine != null) StopCoroutine (progressCoroutine);
+        progressCoroutine = null;
+
+        if (progressGaugeMoveTime <= 0f)
+        {
+            _gaugeProgress = target;
+            UpdateProgressGauge();
+            return;
+        }
+
         progressCoroutine = StartCoroutine(LerpProgressGauge(target));
 
     }
@@ -127,7 +144,7 @@ public class GameUIController : MonoBehaviour
         {
             // 進行度を更新
             lerpProgress += Time.deltaTime / progressGaugeMoveTime;
-            Mathf.Clamp (lerpProgress, 0.0f, 1.0f);
+            lerpProgress = Mathf.Clamp01(lerpProgress);
             _gaugeProgress = Mathf.Lerp(startProgress, targetProgress, lerpProgress);
             // 進行度に応じてゲージを更新
             UpdateProgressGauge();
