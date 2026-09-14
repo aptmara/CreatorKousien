@@ -1,5 +1,6 @@
 // 制作者: 山内陽
 // 7.16 - BOSSの情報追加
+// 9.14 - バク用に回復追加 Asano
 using Game.Core.Events;
 using Game.Presentation.UI;
 using System;
@@ -55,6 +56,11 @@ namespace Game.Core.Enemy
         [Tooltip("この敵に適用するEnemyDefinition。実行時にInitialize(def)で差し替えも可能。")]
         private EnemyDefinition _definition;
         public bool IsBoss => _definition != null && _definition.IsBoss;
+
+        /// <summary>
+        /// 通常ダメージが通らない敵か。バクのように専用ギミックでしか倒せない敵で使う。
+        /// </summary>
+        public bool IsDamageImmune => _definition != null && _definition.IsDamageImmune;
 
         /// <summary>
         /// 現在の状態
@@ -341,9 +347,48 @@ namespace Game.Core.Enemy
             if (_definition == null) return;
             _debuffManager.AddHit();
             if (_stateManager.CurrentState == EnemyState.OverHit) _holdCounter.AddHit();
-            _health.ApplyBodyDamage(bodyDamage);
+
+            // ダメージ無効の敵はHPを削らない。ヒット反応とずり落ちは手応えとして残す
+            if (!_definition.IsDamageImmune)
+            {
+                _health.ApplyBodyDamage(bodyDamage);
+            }
+
             _rising.DamageDrop(transform);
         }
+
+
+        /// <summary>
+        /// ギミックから強制的に撃破する。ダメージ無効設定を無視する。
+        /// バクの破裂など「これでしか倒せない」撃破手段から呼ぶ。
+        /// </summary>
+        public void ForceDefeat()
+        {
+            if (_definition == null || _health == null) return;
+            if (_health.IsDefeated) return;
+
+            _health.ApplyBodyDamage(_health.MaxHp + 1f);
+        }
+
+
+        /// <summary>
+        /// 固有ギミックから本体HPを回復させる
+        /// </summary>
+        /// <param name="healAmount">回復量</param>
+        public void HealBody(float healAmount)
+        {
+            if (_definition == null || _health == null)
+                return;
+
+            if (_health.IsDefeated)
+                return;
+
+            if (_stateManager.CurrentState != EnemyState.Normal)
+                return;
+
+            _health.ApplyHeal(healAmount);
+        }
+
 
         public void OnAddDebuff(EnemyDebuffConfig _config)
         {
@@ -371,6 +416,9 @@ namespace Game.Core.Enemy
 
         private void HandleDamageOverTime(float damage)
         {
+            // 毒ダメージと凍結解除ダメージはどちらもここを通る
+            if (_definition != null && _definition.IsDamageImmune) return;
+
             _health.ApplyBodyDamage(damage);
         }
 

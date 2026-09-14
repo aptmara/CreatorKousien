@@ -55,6 +55,7 @@ namespace Game.Gameplay.Enemy.Baku
                 offset.y = 0f;
                 if (offset.sqrMagnitude > squaredRadius) continue;
 
+                // 無敵の敵（バクなど）は巻き込んでも倒れない。自分の破裂でしか死なない
                 enemy.OnBodyHit(damage);
 
                 // OnBodyHitを直接呼ぶだけではEnemyHitReceiverを通らず、ヒットアニメ・スカッシュ演出が一切鳴らないので手動で発光させる

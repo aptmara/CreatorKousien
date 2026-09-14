@@ -81,6 +81,19 @@ namespace Game.Gameplay.Enemy.Baku
         [Tooltip("ふくらみが目標サイズへ追いつくまでのおおよその時間[秒]")]
         [Min(0.01f)] public float BellyScaleLerpTime = 0.25f;
 
+        [Header("--- 消化（時間経過での回復） ---")]
+        [Tooltip("最後に食べてから消化が始まるまでの時間[秒]")]
+        [Min(0f)] public float DigestStartDelay = 1.0f;
+
+        [Tooltip("消化速度が最大になるまでの時間[秒]。だんだん速くなる")]
+        [Min(0.01f)] public float DigestRampUpDuration = 3.0f;
+
+        [Tooltip("最大時の消化速度[個/秒]。0なら消化しない（従来どおり）")]
+        [Min(0f)] public float DigestPerSecond = 0.0f;
+
+        [Tooltip("消化速度の立ち上がり方（横軸:経過割合 縦軸:速度倍率0-1）")]
+        public AnimationCurve DigestRampCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
         [Header("--- バ・ク・レ・ツ ---")]
         [Tooltip("食べ過ぎてから実際に破裂するまでの予兆時間[秒]")]
         [Min(0f)] public float BurstDelay = 0.4f;

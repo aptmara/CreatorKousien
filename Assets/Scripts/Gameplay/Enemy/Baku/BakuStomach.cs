@@ -22,10 +22,13 @@ namespace Game.Gameplay.Enemy.Baku
         private Action<float> _onFillChanged;
         private Action _onOverfed;
 
+        // 食べた量。消化で減っていくため小数で保持する
+        private float _eatenAmount;
+
         /// <summary>
         /// これまでに食べた個数
         /// </summary>
-        public int EatenCount { get; private set; }
+        public int EatenCount => Mathf.FloorToInt(_eatenAmount);
 
         /// <summary>
         /// 食べ過ぎ状態に到達したかどうか
@@ -35,7 +38,7 @@ namespace Game.Gameplay.Enemy.Baku
         /// <summary>
         /// 膨らみ表示用の割合（0.0～1.0）
         /// </summary>
-        public float FillRatio => _maxEatCount > 0 ? Mathf.Clamp01((float)EatenCount / _maxEatCount) : 0f;
+        public float FillRatio => _maxEatCount > 0 ? Mathf.Clamp01(_eatenAmount / _maxEatCount) : 0f;
 
         /// <summary>
         /// 初期化。生成時に絶対呼ぶ！！！絶対！
@@ -63,10 +66,10 @@ namespace Game.Gameplay.Enemy.Baku
                 return false;
             }
 
-            EatenCount++;
+            _eatenAmount += 1f;
             _onFillChanged?.Invoke(FillRatio);
 
-            if (EatenCount >= _maxEatCount)
+            if (_eatenAmount >= _maxEatCount)
             {
                 IsOverfed = true;
                 _onOverfed?.Invoke();
@@ -77,11 +80,28 @@ namespace Game.Gameplay.Enemy.Baku
 
 
         /// <summary>
+        /// 食べた分を消化して減らす。
+        /// 破裂が確定した後は消化しない（もう助からない）。
+        /// </summary>
+        /// <param name="amount">消化する量[個]</param>
+        public void Digest(float amount)
+        {
+            if (IsOverfed) return;
+            if (amount <= 0f) return;
+            if (_eatenAmount <= 0f) return;
+
+            _eatenAmount = Mathf.Max(0f, _eatenAmount - amount);
+
+            _onFillChanged?.Invoke(FillRatio);
+        }
+
+
+        /// <summary>
         /// 状態を初期化する
         /// </summary>
         public void Reset()
         {
-            EatenCount = 0;
+            _eatenAmount = 0f;
             IsOverfed = false;
             _onFillChanged?.Invoke(FillRatio);
         }

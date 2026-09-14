@@ -46,6 +46,10 @@ namespace Game.Core.Enemy
         [Tooltip("敵毎の標準となる数値、倍率をかけることで実数値となる")]
         public float MaxHp = 300f;
 
+        [Header("ダメージ無効")]
+        [Tooltip("ONにすると通常ダメージを一切受けない。ギミックからの強制撃破のみ有効")]
+        public bool IsDamageImmune = false;
+
         [Header("経験値倍率")]
         [Tooltip("経験値倍率、HP実数値にかけることで実数地となる")]
         public float ExpRate = 1.0f;

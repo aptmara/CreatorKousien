@@ -46,6 +46,12 @@ namespace Game.Gameplay.Enemy.Baku
         [SerializeField] private string _burstTriggerName = "Burst";
 
 
+        /// <summary>
+        /// 捕食に成功した瞬間に発火する。回復などの拡張ギミック用。
+        /// </summary>
+        public event System.Action<CollectibleObject> CollectibleEaten;
+
+
         // --- 内部変数 ---
         private EnemyController _enemyController;
         private EnemyRising _rising;
@@ -56,6 +62,11 @@ namespace Game.Gameplay.Enemy.Baku
         private bool _isMovePaused;
         private float _eatPauseTimer;
         private float _nextEatableTime;
+
+        // 消化開始までの残り時間
+        private float _digestDelayTimer;
+        // 消化速度の立ち上がり経過時間
+        private float _digestRampTimer;
 
         private int _eatTriggerHash;
         private int _burstTriggerHash;
@@ -193,11 +204,40 @@ namespace Game.Gameplay.Enemy.Baku
                     CancelMovePause();
                 }
             }
+
+            // 時間経過でお腹を消化する
+            UpdateDigest();
         }
 
 
         // 捕食
         // ------------------------------------------------------------
+
+        /// <summary>
+        /// 時間経過で食べた分を消化する。
+        /// 食べるのを止めると、だんだん速くお腹が減っていく。
+        /// </summary>
+        private void UpdateDigest()
+        {
+            if (_data.DigestPerSecond <= 0f) return;
+            if (_isBursting) return;
+
+            // 食べた直後は消化しない
+            if (_digestDelayTimer > 0f)
+            {
+                _digestDelayTimer -= Time.deltaTime;
+                _digestRampTimer = 0f;
+                return;
+            }
+
+            // だんだん速くなる
+            _digestRampTimer = Mathf.Min(_digestRampTimer + Time.deltaTime, _data.DigestRampUpDuration);
+            float t = _data.DigestRampUpDuration > 0f ? _digestRampTimer / _data.DigestRampUpDuration : 1f;
+            float rate = _data.DigestPerSecond * Mathf.Clamp01(_data.DigestRampCurve.Evaluate(t));
+
+            _stomach.Digest(rate * Time.deltaTime);
+        }
+
 
         private void HandleCollectibleEntered(CollectibleObject collectible)
         {
@@ -224,6 +264,13 @@ namespace Game.Gameplay.Enemy.Baku
             collectible.Despawn();
 
             _nextEatableTime = Time.time + _data.EatCooldown;
+
+            // 食べたので消化を仕切り直す
+            _digestDelayTimer = _data.DigestStartDelay;
+            _digestRampTimer = 0f;
+
+            // 拡張ギミックへ通知
+            CollectibleEaten?.Invoke(collectible);
 
             // 食べ過ぎで破裂へ入った場合は、捕食モーションをスキップして破裂処理へ移行する
             if (_isBursting)
@@ -340,7 +387,8 @@ namespace Game.Gameplay.Enemy.Baku
 
             if (_enemyController != null)
             {
-                _enemyController.OnBodyHit(float.MaxValue); // 体力を0にする
+                // 破裂はダメージ無効を貫通する
+                _enemyController.ForceDefeat();
             }
 
             // 5. 本体を破片へ差し替える（演出なので最後。ここで転んでも進行は止まらない）
