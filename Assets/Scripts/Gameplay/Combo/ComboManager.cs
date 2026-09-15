@@ -132,11 +132,11 @@ namespace Game.Gameplay.Combo
             float dynamicMagni = multiRatio + (Mathf.Sqrt(_currentCombo) * 0.04f);
 
             // 倍率制限を適用
-            if (dynamicMagni > 0.1f)
+            if (dynamicMagni > 0.7f)
             {
-                dynamicMagni = 0.1f;
+                dynamicMagni = 0.7f;
             }
-            EventChannel?.ExecuteEvent(dynamicMagni + 1.0f);
+            EventChannel?.ExecuteEvent(dynamicMagni);
             _currentCombo = 0;
             _remainingDuration = 0f;
             OnComboReset?.Invoke();

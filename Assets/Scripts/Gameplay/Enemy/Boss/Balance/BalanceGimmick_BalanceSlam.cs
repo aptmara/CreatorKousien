@@ -59,7 +59,18 @@ namespace Game.Gameplay.Enemy.Boss
             _hasWarned = false;
             _isComplete = false;
 
-            _scale.SetExternalBias(_dangerSide == TraySide.Left ? -_biasStrength : _biasStrength);
+            float bias = _biasStrength;
+            if(_dangerSide == TraySide.Random)
+            {
+                _dangerSide = (UnityEngine.Random.value > 0.5f) ? TraySide.Left : TraySide.Right;
+                bias = _dangerSide == TraySide.Left ? -_biasStrength : _biasStrength;
+            }
+            else
+            {
+                bias = _dangerSide == TraySide.Left ? -_biasStrength : _biasStrength;
+            }
+
+            _scale.SetExternalBias(bias);
 
             EventBus.Publish(new BossAttackWarningStartedEvent());
 
