@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Game.Gameplay.Enemy.Boss
 {
-public enum TraySide { Left, Right, Level }
+public enum TraySide { Left, Right, Level ,Random}
 
 public interface IBossTrayItem
 {
