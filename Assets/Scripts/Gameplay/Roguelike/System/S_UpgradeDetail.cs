@@ -13,6 +13,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using Game.Core.Roguelike;
 using Game.Data.Collectibles;
+using Game.Core.Events;
+using UnityEngine.ProBuilder.MeshOperations;
+using TMPro.EditorUtilities;
 
 public class S_UpgradeDetail : MonoBehaviour
 {
@@ -36,10 +39,12 @@ public class S_UpgradeDetail : MonoBehaviour
     [Tooltip("拡縮するデータ")]
     [SerializeField] private string _speechBubbleName;
     private RectTransform _rectSpeechBubble;
-    
+
+    [SerializeField, Tooltip("使用するかどうか")] private bool _useBubble = true;
     [SerializeField] private Vector2 _targetPosition = new Vector2(0.0f, 50.0f);
     [SerializeField] private float _animationDuration = 0.2f;
     [SerializeField] private AnimationCurve _animationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
 
     private Coroutine _animationCoroutine;
 
@@ -76,10 +81,11 @@ public class S_UpgradeDetail : MonoBehaviour
             if (playAnime)
                 PlaySpawnAnimation();
             ChangeDetail(upgrade, levelGain, isDeepening);
+            _oldUpgrade = upgrade;
             return;
         }
 
-        if(_detailPrefab == null || _spawnParent == null)
+        if (_detailPrefab == null || _spawnParent == null)
         {
             Debug.LogError("[S_UpgradeDetail] Prefabまたは生成元が未設定です。");
             return;
@@ -87,36 +93,59 @@ public class S_UpgradeDetail : MonoBehaviour
 
         _spawnedInstance = Instantiate(_detailPrefab, _spawnParent);
 
-        Transform speechBubble = _spawnedInstance.transform.Find(_speechBubbleName);
 
-        if(speechBubble == null)
+        // 吹き出しを使用する場合のみ
+        if (_useBubble)
         {
-            Debug.LogError($"[S_UpgradeDetail] '{_speechBubbleName}'が見つかりません");
-            return;
+            Transform speechBubble = _spawnedInstance.transform.Find(_speechBubbleName);
+            if (speechBubble == null)
+            {
+                Debug.LogError($"[S_UpgradeDetail] '{_speechBubbleName}'が見つかりません");
+                _rectSpeechBubble = null;
+            }
+            else
+            {
+                _rectSpeechBubble = speechBubble.GetComponent<RectTransform>();
+                if (_rectSpeechBubble == null)
+                {
+                    Debug.LogWarning($"[S_UpgradeDetail] {_speechBubbleName}にRectTransformがありません。");
+                }
+            }
         }
-        _rectSpeechBubble = speechBubble.GetComponent<RectTransform>();
-
-        foreach (var text in _spawnedInstance.GetComponentsInChildren<TextMeshProUGUI>())
+        else
         {
-            if(text.gameObject.name == _levelTextName)
+            // 吹き出しを使用しない場合
+            _rectSpeechBubble = null;
+
+            Transform speechBubble = _spawnedInstance.transform.Find(_speechBubbleName);
+
+            if (speechBubble != null)
+            {
+                speechBubble.gameObject.SetActive(false);
+            }
+        }
+
+        foreach (var text in _spawnedInstance.GetComponentsInChildren<TextMeshProUGUI>(true))
+        {
+            if (text.gameObject.name == _levelTextName)
             {
                 _levelText = text;
             }
-            else if(text.gameObject.name == _descriptionTextName)
+            else if (text.gameObject.name == _descriptionTextName)
             {
                 _descriptionText = text;
             }
-            else if(text.gameObject.name == _nameTextName)
+            else if (text.gameObject.name == _nameTextName)
             {
                 _nameText = text;
             }
-            else if(text.gameObject.name == _costTextName)
+            else if (text.gameObject.name == _costTextName)
             {
                 _costText = text;
             }
         }
 
-        if(_levelText == null || _descriptionText == null)
+        if (_levelText == null || _descriptionText == null || _nameText == null || _costText == null)
         {
             Debug.LogError($"[S_UpgradeDetail] Prefab内に'{_levelTextName}'、'{_descriptionTextName}'、'{_nameTextName}'または'{_costTextName}'の名前は存在していません");
         }
@@ -129,6 +158,7 @@ public class S_UpgradeDetail : MonoBehaviour
 
 
         _oldUpgrade = upgrade;
+
     }
 
     /// <summary>
@@ -488,9 +518,14 @@ private int _reactionRotationIndex = -1;
 
     private void PlaySpawnAnimation()
     {
+        if (!_useBubble) return;
+
+        if (!_rectSpeechBubble == null) return;
+
         if(_animationCoroutine != null)
         {
             StopCoroutine(_animationCoroutine);
+            _animationCoroutine = null;
         }
 
         _animationCoroutine = StartCoroutine(ScaleAnimation());
@@ -499,10 +534,23 @@ private int _reactionRotationIndex = -1;
 
     private IEnumerator ScaleAnimation()
     {
+        if(!_useBubble || _rectSpeechBubble == null)
+        {
+            _animationCoroutine = null;
+            yield break;
+        }
+
         _rectSpeechBubble.localScale = Vector3.zero;
         _rectSpeechBubble.anchoredPosition = Vector2.zero;
         // 前フレームの描画が残っている可能性があるため、処理を待つ
         yield return null;
+
+        // 再確認
+        if (!_useBubble || _rectSpeechBubble == null)
+        {
+            _animationCoroutine = null;
+            yield break;
+        }
 
 
         Vector2 startPos = Vector2.zero;
@@ -512,6 +560,14 @@ private int _reactionRotationIndex = -1;
 
         while (elapsed < _animationDuration)
         {
+            // アニメーション途中で無効化されたら終了
+            if(!_useBubble || _rectSpeechBubble == null)
+            {
+                _animationCoroutine = null;
+                yield break;
+            }
+
+
             elapsed += Time.unscaledDeltaTime;
 
             float t = Mathf.Clamp01(elapsed / _animationDuration);
@@ -526,8 +582,11 @@ private int _reactionRotationIndex = -1;
             yield return null;
         }
 
-        _rectSpeechBubble.localScale = Vector3.one;
-        _rectSpeechBubble.anchoredPosition = endPos;
+        if (_rectSpeechBubble != null)
+        {
+            _rectSpeechBubble.localScale = Vector3.one;
+            _rectSpeechBubble.anchoredPosition = endPos;
+        }
 
         _animationCoroutine = null;
 

@@ -87,11 +87,11 @@ public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         PrepareIconMaterial();
         ApplyCardLayout();
         DisableScaleAnimation();
-//        _nameText.gameObject.SetActive(true);
-//        _descriptionText.gameObject.SetActive(false);
-//        _levelText.gameObject.SetActive(true);
- //       if (_costText != null)
-  //          _costText.gameObject.SetActive(true);
+        _nameText.gameObject.SetActive(true);
+        _descriptionText.gameObject.SetActive(false);
+        _levelText.gameObject.SetActive(true);
+        if (_costText != null)
+            _costText.gameObject.SetActive(true);
         Refresh(currentLevel);
     }
 
@@ -190,25 +190,25 @@ public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         if (transform is RectTransform rootRect)
             rootRect.sizeDelta = new Vector2(216f, 216f);
 
-        ConfigureRect(_iconImage.rectTransform, new Vector2(0f, 0f), new Vector2(170f, 170f));
+        ConfigureRect(_iconImage.rectTransform, new Vector2(0f, 50f), new Vector2(170f, 170f));
         _iconImage.preserveAspect = true;
         _iconImage.raycastTarget = false;
 
-        //ConfigureText(_nameText, new Vector2(0f, -58f), new Vector2(200f, 40f), 24f, FontStyles.Bold);
-        //_nameText.color = Color.black;
-        //_nameText.color = Color.black;
-        //_nameText.enableAutoSizing = true;
-        //_nameText.fontSizeMin = 0f;
-        //_nameText.fontSizeMax = 18f;
-        //ConfigureText(_levelText, new Vector2(0f, -88f), new Vector2(194f, 30f), 22f, FontStyles.Bold);
-        ////        _levelText.color = new Color(1f, 0.72f, 0.28f, 1f);
-        //_levelText.color = Color.black;
-        //if (_costText != null)
-        //{
-        //    ConfigureText(_costText, new Vector2(0f, -112f), new Vector2(194f, 28f), 20f, FontStyles.Bold);
-        //  ///  _costText.color = new Color(1f, 0.92f, 0.55f, 1f);
-        //    _costText.color = Color.black;
-        //}
+        ConfigureText(_nameText, new Vector2(0f, -58f), new Vector2(200f, 40f), 24f, FontStyles.Bold);
+        _nameText.color = Color.black;
+        _nameText.color = Color.black;
+        _nameText.enableAutoSizing = true;
+        _nameText.fontSizeMin = 0f;
+        _nameText.fontSizeMax = 18f;
+        ConfigureText(_levelText, new Vector2(0f, -88f), new Vector2(194f, 30f), 22f, FontStyles.Bold);
+        //        _levelText.color = new Color(1f, 0.72f, 0.28f, 1f);
+        _levelText.color = Color.black;
+        if (_costText != null)
+        {
+            ConfigureText(_costText, new Vector2(0f, -112f), new Vector2(194f, 28f), 20f, FontStyles.Bold);
+            ///  _costText.color = new Color(1f, 0.92f, 0.55f, 1f);
+            _costText.color = Color.black;
+        }
     }
 
     private static void ConfigureText(
