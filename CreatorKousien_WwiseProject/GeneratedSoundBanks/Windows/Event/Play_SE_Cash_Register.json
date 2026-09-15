@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{60E7B08D-298B-499E-9224-2BADD5DDCE49}",
     "Language": "SFX",
-    "Hash": "{60C3BF25-EBA8-5AF4-F34B-3568DC9915D0}",
+    "Hash": "{1513027D-4804-90BE-C3C0-A5D3928E223B}",
     "ObjectPath": "Play_SE_Cash_Register",
     "ShortName": "Play_SE_Cash_Register",
     "Path": "Event/Play_SE_Cash_Register.bnk",
@@ -27,6 +27,6 @@
     ]
    }
   ],
-  "FileHash": "{501B0A24-5662-82B3-A69C-C85231197A5E}"
+  "FileHash": "{ACC0625F-41D9-FB06-1700-A44EE483B9D4}"
  }
 }

@@ -329,6 +329,8 @@ namespace Game.Core.Management
 
             // --- 通常のウェーブクリア時の処理 ---
 
+            SoundManager.instance?.PlaySE("Upgrade_Complete");
+
             // 1. 画面を一瞬スローモーション、同時にUIを透明化
             Time.timeScale = _slowMotionTimeScale;
             Time.fixedDeltaTime = 0.02f * Time.timeScale;

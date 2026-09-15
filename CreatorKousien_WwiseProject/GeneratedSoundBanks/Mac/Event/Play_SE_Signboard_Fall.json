@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{A9D8EEE5-9131-416B-9619-15FC08373069}",
     "Language": "SFX",
-    "Hash": "{EC6EFA27-CA89-7367-FAFB-0B1ED02C9ECE}",
+    "Hash": "{72A03493-AA4A-B622-AB03-96B6ECADCEFC}",
     "ObjectPath": "Play_SE_Signboard_Fall",
     "ShortName": "Play_SE_Signboard_Fall",
     "Path": "Event/Play_SE_Signboard_Fall.bnk",
@@ -43,6 +43,6 @@
     ]
    }
   ],
-  "FileHash": "{A9736626-78CA-6BEC-DFDB-E7BAE7E2A8B2}"
+  "FileHash": "{B71FB32A-414E-566F-2CF1-E6BA37891BB4}"
  }
 }

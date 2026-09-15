@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "1599660995",
+    "Type": "Event",
+    "GUID": "{654F6EDE-EFF9-48D0-A428-6F74DACEBAE8}",
+    "Language": "SFX",
+    "Hash": "{7483C944-EA80-81E6-ADA1-C754BBFC8E20}",
+    "ObjectPath": "Play_SE_Upgrade_Icon_Appear",
+    "ShortName": "Play_SE_Upgrade_Icon_Appear",
+    "Path": "Event/Play_SE_Upgrade_Icon_Appear.bnk",
+    "Media": [
+     {
+      "Id": "169735195",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Upgrade_Icon_Appear.wav",
+      "Path": "Media/169735195.wem",
+      "CachePath": "31/{319446CB-C9B6-A56B-5AF7-CA923123E542}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "1599660995",
+      "Name": "Play_SE_Upgrade_Icon_Appear",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Upgrade_Icon_Appear",
+      "GUID": "{654F6EDE-EFF9-48D0-A428-6F74DACEBAE8}",
+      "DurationType": "OneShot",
+      "DurationMin": "1.7948526",
+      "DurationMax": "1.7948526",
+      "MediaRefs": [
+       {
+        "Id": "169735195"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{A3BD47CF-E673-A1E6-62E7-9C22C41B6497}"
+ }
+}

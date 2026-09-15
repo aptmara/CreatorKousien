@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{9F4B133B-D2EA-45EC-A393-BAB33F3D1B6E}",
     "Language": "SFX",
-    "Hash": "{A3E870BB-E20B-59A1-38F1-1D068C2CBCEA}",
+    "Hash": "{A0F82F0D-AC19-768C-42F9-3E113F7E3BAC}",
     "ObjectPath": "Play_BGM_Game_Clear",
     "ShortName": "Play_BGM_Game_Clear",
     "Path": "Event/Play_BGM_Game_Clear.bnk",
@@ -41,6 +41,6 @@
     ]
    }
   ],
-  "FileHash": "{232FDB53-E0D8-CFE7-63BC-59ED43CB3706}"
+  "FileHash": "{925A3921-1CAF-3045-3F32-FD87CD9FE27E}"
  }
 }

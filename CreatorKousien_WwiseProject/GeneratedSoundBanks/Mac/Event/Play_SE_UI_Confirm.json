@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{698B3E58-30B4-4033-9A76-A5BF2D4718FE}",
     "Language": "SFX",
-    "Hash": "{17F3C26D-61CD-8FD0-A394-85AFE62F1C5C}",
+    "Hash": "{AF27E9CC-D083-5D0F-A68D-8BB945A7B74A}",
     "ObjectPath": "Play_SE_UI_Confirm",
     "ShortName": "Play_SE_UI_Confirm",
     "Path": "Event/Play_SE_UI_Confirm.bnk",
@@ -43,6 +43,6 @@
     ]
    }
   ],
-  "FileHash": "{641BBC14-AA07-74D3-140A-239BDC5C8415}"
+  "FileHash": "{0A0AD52E-287B-86E7-3BDD-2A114E1BF6E9}"
  }
 }

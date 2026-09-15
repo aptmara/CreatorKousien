@@ -41,7 +41,10 @@ namespace AK
         static const AkUniqueID PLAY_SE_UI_APPEAR = 1526099101U;
         static const AkUniqueID PLAY_SE_UI_BACK = 2073882659U;
         static const AkUniqueID PLAY_SE_UI_CONFIRM = 1037708150U;
+        static const AkUniqueID PLAY_SE_UPGRADE_COMPLETE = 3029574595U;
         static const AkUniqueID PLAY_SE_UPGRADE_CONFIRM = 3958339582U;
+        static const AkUniqueID PLAY_SE_UPGRADE_CURSOR_MOVE = 2743700036U;
+        static const AkUniqueID PLAY_SE_UPGRADE_ICON_APPEAR = 1599660995U;
         static const AkUniqueID PLAY_SE_WAVE_START = 220774479U;
     } // namespace EVENTS
 
