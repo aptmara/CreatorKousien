@@ -20,7 +20,7 @@ MonoBehaviour:
   Modifiers:
   - TargetStat: 2
     Operation: 1
-    Value: 1.08
+    Value: 1.06
   GameplayValue: 0
   OfferType: 0
   Effects: []
