@@ -86,6 +86,10 @@ public class S_CameraSetUp : MonoBehaviour
 
     public void SceneEnd()
     {
+        // カメラより先にUIを止める
+        DisableCanvas(_frontCanvas);
+        DisableCanvas(_backCanvas);
+
         // 破棄する前に、必ずスタックから取り除く
         if (_mainCam != null)
         {
@@ -154,4 +158,25 @@ public class S_CameraSetUp : MonoBehaviour
         return cam;
     }
 
+
+
+    private void DisableCanvas(Canvas canvas)
+    {
+        if (canvas == null)
+        {
+            return;
+        }
+
+        canvas.enabled = false;
+        canvas.worldCamera = null;
+
+        // 入力を受け付けないようにする
+        if (canvas.TryGetComponent<UnityEngine.UI.GraphicRaycaster>(out var raycaster))
+        {
+            raycaster.enabled = false;
+        }
+    }
+
 }
+
+
