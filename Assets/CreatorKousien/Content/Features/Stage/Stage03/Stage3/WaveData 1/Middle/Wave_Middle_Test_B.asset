@@ -18,7 +18,7 @@ MonoBehaviour:
   completeDelay: 1.5
   hpRate: 2.5
   barrierRate: 1.5
-  maxAliveEnemies: 2
+  maxAliveEnemies: 0
   minDistanceFromOtherEnemies: 1.4
   groups:
   - groupName: S3_MidB_G1_Bait
@@ -34,7 +34,7 @@ MonoBehaviour:
     - enemyDefinition: {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
       spawnCount: 2
       startDelay: 3
-      spawnInterval: 3
+      spawnInterval: 2
   - groupName: S3_MidB_G2_Wall
     plannerMemo: "Zombi\u306E\u58C1\u8D8A\u3057\u306BBakuRegen\u30921\u4F53\u3060\u3059\uFF01"
     delayBeforeStart: 0
@@ -51,7 +51,7 @@ MonoBehaviour:
       spawnInterval: 0.7
     - enemyDefinition: {fileID: 11400000, guid: b33d7bb6aea039443b00346877493f01, type: 2}
       spawnCount: 1
-      startDelay: 6
+      startDelay: 4
       spawnInterval: 0
   - groupName: S3_MidB_G3_Swing
     plannerMemo: "BatSwing\u306E\u6A2A\u79FB\u52D5\u3068Baku3\u4F53\u304C\u91CD\u306A\u308B"
@@ -66,7 +66,7 @@ MonoBehaviour:
     - enemyDefinition: {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
       spawnCount: 3
       startDelay: 2
-      spawnInterval: 2.5
+      spawnInterval: 1.5
   - groupName: S3_MidB_G4_Double
     plannerMemo: "\u7DE0\u3081\u306BGhost\u3068Baku\u3002\u53D6\u308A\u3053\u307C\u3057\u3092\u4E00\u6383\n"
     delayBeforeStart: 0
@@ -84,7 +84,7 @@ MonoBehaviour:
     - enemyDefinition: {fileID: 11400000, guid: b33d7bb6aea039443b00346877493f01, type: 2}
       spawnCount: 2
       startDelay: 5
-      spawnInterval: 3
+      spawnInterval: 1
   - groupName: S3_MidB_G5_Finish
     plannerMemo: "\u7DE0\u3081\u306BGhost\u3068Baku\u3002\u53D6\u308A\u3053\u307C\u3057\u3092\u4E00\u6383\u3055\u305B\u308B\u3002"
     delayBeforeStart: 0
@@ -102,4 +102,4 @@ MonoBehaviour:
     - enemyDefinition: {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
       spawnCount: 2
       startDelay: 4
-      spawnInterval: 3
+      spawnInterval: 1
