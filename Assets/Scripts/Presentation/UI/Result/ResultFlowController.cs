@@ -31,6 +31,8 @@ namespace Game.Presentation.UI.Result
         {
             if (_uiController == null) _uiController = GetComponentInChildren<ResultUIController>();
 
+            SoundManager.instance?.PlaySE("UI_Appear");
+
             // GameProgressionManager からパッキングされたデータを引き抜く
             if (GameProgressionManagerBase.Instance != null && GameProgressionManagerBase.Instance.ResultSummary != null )
             {

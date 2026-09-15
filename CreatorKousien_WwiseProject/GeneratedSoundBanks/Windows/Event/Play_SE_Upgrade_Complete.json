@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "3029574595",
+    "Type": "Event",
+    "GUID": "{2447AFEA-96D9-4C2B-8477-93933AEF5C20}",
+    "Language": "SFX",
+    "Hash": "{D0EDC409-86F0-31B5-610E-9612203B729F}",
+    "ObjectPath": "Play_SE_Upgrade_Complete",
+    "ShortName": "Play_SE_Upgrade_Complete",
+    "Path": "Event/Play_SE_Upgrade_Complete.bnk",
+    "Media": [
+     {
+      "Id": "157467167",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Upgrade_Complete.wav",
+      "Path": "Media/157467167.wem",
+      "CachePath": "F4/{F48C2D25-BEED-DA51-722E-65D182DE461E}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "3029574595",
+      "Name": "Play_SE_Upgrade_Complete",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Upgrade_Complete",
+      "GUID": "{2447AFEA-96D9-4C2B-8477-93933AEF5C20}",
+      "DurationType": "OneShot",
+      "DurationMin": "1.7829251",
+      "DurationMax": "1.7829251",
+      "MediaRefs": [
+       {
+        "Id": "157467167"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{C8C2C8C5-1F0A-8ADB-0465-0369113C8C8D}"
+ }
+}

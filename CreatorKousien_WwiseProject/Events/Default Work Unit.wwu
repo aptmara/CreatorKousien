@@ -333,6 +333,39 @@
 						</Action>
 					</ChildrenList>
 				</Event>
+				<Event Name="Play_SE_Upgrade_Complete" ID="{2447AFEA-96D9-4C2B-8477-93933AEF5C20}">
+					<ChildrenList>
+						<Action Name="Play" ID="{940CE3B1-D14E-498E-82C8-500421E98F3E}" ShortID="54064371">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="Upgrade_Complete" ID="{15995568-ECAF-41D8-9BF0-96AB9C1D6304}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_SE_Upgrade_Cursor_Move" ID="{D1DDC220-45C4-4AA0-9A67-3C1F44A93D17}">
+					<ChildrenList>
+						<Action Name="Play" ID="{EB622D31-01EB-4E23-BF8C-3AFECAF812C9}" ShortID="600353937">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="Upgrade_Cursor_Move" ID="{8BFF16A4-06FE-4CC8-ADDD-94C87F072EC6}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_SE_Upgrade_Icon_Appear" ID="{654F6EDE-EFF9-48D0-A428-6F74DACEBAE8}">
+					<ChildrenList>
+						<Action Name="Play" ID="{F74192DC-8BFD-490E-B470-29B15857B5AB}" ShortID="46385751">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="Upgrade_Icon_Appear" ID="{7DE10ED0-D966-4A13-AB83-E5ED953ED42C}" WorkUnitID="{75AAE868-0503-4857-BA96-3A102BFB8E1F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
 			</ChildrenList>
 		</WorkUnit>
 	</Events>

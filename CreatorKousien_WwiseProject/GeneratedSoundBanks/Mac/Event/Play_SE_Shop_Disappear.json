@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{FF60C16F-694C-4C09-BDEA-2C42F2271013}",
     "Language": "SFX",
-    "Hash": "{746C8A12-4896-A5CD-03B2-198E4F9A05D0}",
+    "Hash": "{15C9E1FB-481E-3957-9A0A-9955C0928DDD}",
     "ObjectPath": "Play_SE_Shop_Disappear",
     "ShortName": "Play_SE_Shop_Disappear",
     "Path": "Event/Play_SE_Shop_Disappear.bnk",
@@ -43,6 +43,6 @@
     ]
    }
   ],
-  "FileHash": "{DA6CF900-5A12-E836-BC1F-86DC0E8F21D9}"
+  "FileHash": "{EBE91357-F305-9C83-D903-33D0ED3AC122}"
  }
 }

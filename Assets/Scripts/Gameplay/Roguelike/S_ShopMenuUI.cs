@@ -130,6 +130,7 @@ public class S_ShopMenuUI : MonoBehaviour
         Transform spawnParent = parent != null ? parent : _topGridParent;
         S_UpgradeCard card = Instantiate(_cardPrefab, spawnParent);
         card.Setup(data, _upgradeRuntimeState.GetLevel(data));
+        SoundManager.instance?.PlaySE("Upgrade_Icon_Appear");
         card.HoverEnter += OnCardHoverEnter;
         card.Clicked += OnCardClicked;
         _spawnedCards.Add(card);
@@ -137,6 +138,8 @@ public class S_ShopMenuUI : MonoBehaviour
 
     private void OnCardHoverEnter(S_UpgradeCard card)
     {
+        SoundManager.instance?.PlaySE("Upgrade_Cursor_Move");
+
         if (card.CardData != null)
             _upgradeDetail.SpawnDetail(card.CardData, 1, false);
     }

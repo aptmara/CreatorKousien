@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{9F8675CE-CB3F-4030-81E2-B4D629A088AF}",
     "Language": "SFX",
-    "Hash": "{C1B30DC7-E40E-5D6B-9EB0-8C32F0DD8FA6}",
+    "Hash": "{A0C0B2EA-A052-E392-F8C0-FF361AF17608}",
     "ObjectPath": "Play_SE_Menu_Cursor_Move",
     "ShortName": "Play_SE_Menu_Cursor_Move",
     "Path": "Event/Play_SE_Menu_Cursor_Move.bnk",
@@ -43,6 +43,6 @@
     ]
    }
   ],
-  "FileHash": "{41041658-A8CE-9076-08CF-6634EBE1C366}"
+  "FileHash": "{E468415B-B403-21EB-E110-6D873D464488}"
  }
 }

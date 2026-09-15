@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{74271B8C-4F30-4685-A021-436719560353}",
     "Language": "SFX",
-    "Hash": "{211E4FB7-546B-868E-2377-2A87BA86F8D8}",
+    "Hash": "{FF6E9A89-622D-FABF-00A7-4337684410D5}",
     "ObjectPath": "Play_BGM_Game_Over",
     "ShortName": "Play_BGM_Game_Over",
     "Path": "Event/Play_BGM_Game_Over.bnk",
@@ -41,6 +41,6 @@
     ]
    }
   ],
-  "FileHash": "{7F84A65A-BAD6-41E2-1939-960CC5BB1482}"
+  "FileHash": "{CA4713AB-C4BB-15A9-D674-66342A3F9D2B}"
  }
 }

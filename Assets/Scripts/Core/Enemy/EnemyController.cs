@@ -454,6 +454,16 @@ namespace Game.Core.Enemy
             _enemyAttack.ResetAttack();
             _enemyAttack.SetActiv(false);
 
+            if (IsBoss)
+            {
+                SoundManager.instance?.PlaySE("PumpkinShot_Big");
+                SoundManager.instance?.PlaySE("Barrier_02");
+            }
+            else
+            {
+                SoundManager.instance?.PlaySE("PumpkinShot");
+            }
+
             if (_downTimerCoroutine != null)
             {
                 StopCoroutine(_downTimerCoroutine);

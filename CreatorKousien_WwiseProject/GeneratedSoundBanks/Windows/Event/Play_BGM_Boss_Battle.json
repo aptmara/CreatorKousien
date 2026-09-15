@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{7F60D7AB-784E-47CB-AA18-CDC0F3CC5DC0}",
     "Language": "SFX",
-    "Hash": "{277E2D2A-471B-FF38-4BEC-6AE7BDDB3035}",
+    "Hash": "{6FD4DDB6-99FD-3217-66B4-6CA7F0BE34CC}",
     "ObjectPath": "Play_BGM_Boss_Battle",
     "ShortName": "Play_BGM_Boss_Battle",
     "Path": "Event/Play_BGM_Boss_Battle.bnk",
@@ -41,6 +41,6 @@
     ]
    }
   ],
-  "FileHash": "{ECAFDF83-4F6D-258F-EA14-0165164B5E43}"
+  "FileHash": "{F9D72882-C862-A126-B36C-DCEA99822AE3}"
  }
 }
