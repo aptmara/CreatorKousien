@@ -6,11 +6,12 @@
  *
  */
 
-using UnityEngine;
-using System.Collections.Generic;
-using System.Collections;
-using System;
+using Game.Core.Enemy;
 using Game.Core.Events;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace Game.Gameplay.Enemy.Boss
 {
@@ -550,6 +551,16 @@ namespace Game.Gameplay.Enemy.Boss
             _isBattleActive = false;
             EventBus.Publish(new EnemyDefeatedEvent(_bossInstanceId));
             OnBossBattleCompleted?.Invoke(_bossInstanceId);
+
+            // 生存敵を全部消す
+            EnemyController[] enemies = UnityEngine.Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None);
+            foreach (var enemy in enemies)
+            {
+                if (enemy != null)
+                {
+                    Destroy(enemy.gameObject,2.0f);
+                }
+            }
         }
 
         private void ChangeState(BossBattleFlowState newState)

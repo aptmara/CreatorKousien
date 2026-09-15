@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Enemies_SO_BalanceSlamGimmick
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BalanceSlamGimmick
   _challengeDuration: 10
-  _dangerSide: 1
+  _dangerSide: 3
   _slamBarrierDamage: 40
   _baseRewardCount: 2
   _bonusRewardCount: 4
