@@ -49,6 +49,7 @@ public class TutorialUIController : MonoBehaviour
         EventBus.Unsubscribe<TutorialTextResetEvent>(OnResetText);
         StopTyping();
         StopArrow();
+        EventBus.Publish<TutorialTextEndEvent>(new TutorialTextEndEvent(""));
     }
 
     void OnDrawText(TutorialTextEvent ev)
@@ -63,6 +64,7 @@ public class TutorialUIController : MonoBehaviour
         StopTyping();
         StopArrow();
         if (textObject != null) textObject.SetActive(false);
+        EventBus.Publish<TutorialTextEndEvent>(new TutorialTextEndEvent(""));
     }
 
     private void StartTyping(string content)
@@ -79,6 +81,8 @@ public class TutorialUIController : MonoBehaviour
             StartArrow();
             return;
         }
+
+        CommandToColorcord(ref content);
 
         _typingCoroutine = StartCoroutine(TypeTextRealtime(content));
     }
@@ -101,6 +105,11 @@ public class TutorialUIController : MonoBehaviour
             yield break;
         }
 
+        bool isSkip = false;
+
+        System.Action<TutorialTextSkipEvent> skip = (TutorialTextSkipEvent) => isSkip  = true;
+        EventBus.Subscribe<TutorialTextSkipEvent>(skip);
+
         for (int i = 0; i < content.Length; i++)
         {
             text.text += content[i];
@@ -111,12 +120,14 @@ public class TutorialUIController : MonoBehaviour
                 int commandLength = commandEnd - i;
                 text.text += content.Substring(i + 1, commandLength);
                 i = commandEnd;
-                Debug.Log("コマンド表示!!");
             }
-            yield return new WaitForSecondsRealtime(_charInterval);
+            if(!isSkip)yield return new WaitForSecondsRealtime(_charInterval);
         }
 
+        EventBus.Unsubscribe<TutorialTextSkipEvent>(skip);
+
         _typingCoroutine = null;
+        EventBus.Publish<TutorialTextEndEvent>(new TutorialTextEndEvent(content));
         StartArrow();
     }
 
@@ -138,6 +149,17 @@ public class TutorialUIController : MonoBehaviour
         }
 
         return false;
+    }
+
+    // 
+    private void CommandToColorcord(ref string content)
+    {
+        content = content.Replace("[:", "<color=#606000><b>");
+        content = content.Replace(":]", "</b></color>");
+
+        content = content.Replace("[*", "<b>");
+        content = content.Replace("*]", "</b>");
+
     }
 
     // 矢印のアニメーション制御
