@@ -1,4 +1,5 @@
 using Game.Core.Events;
+using Game.Gameplay.Collectibles;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -103,11 +104,40 @@ public class TutorialUIController : MonoBehaviour
         for (int i = 0; i < content.Length; i++)
         {
             text.text += content[i];
+            // 文字列が色やサイズ変更だった場合その場で全て入力する
+            int commandEnd;
+            while (CheckChangeCommand(content, i + 1, out commandEnd))
+            {
+                int commandLength = commandEnd - i;
+                text.text += content.Substring(i + 1, commandLength);
+                i = commandEnd;
+                Debug.Log("コマンド表示!!");
+            }
             yield return new WaitForSecondsRealtime(_charInterval);
         }
 
         _typingCoroutine = null;
         StartArrow();
+    }
+
+    private bool CheckChangeCommand(string content, int index, out int commandEnd)
+    {
+        commandEnd = -1;
+        if (content.Length <= index) return false;
+
+        if (content[index] != '<') return false;
+
+        for (int i = index + 1; i < content.Length; i++)
+        {
+            if (content[i] == '<') return false;
+
+            if (content[i] != '>') continue;
+
+            commandEnd = i;
+            return true;
+        }
+
+        return false;
     }
 
     // 矢印のアニメーション制御
