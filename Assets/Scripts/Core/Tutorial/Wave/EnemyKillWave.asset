@@ -20,7 +20,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
   - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
   useStartText: 1
-  startText: "\u96C6\u3081\u305F\u5C0F\u7269\u306F\u6575\u306B\u843D\u3068\u3059\u3053\u3068\u3067\n\u5012\u3059\u3053\u3068\u304C\u3067\u304D\u308B\u305E\uFF01"
+  startText: "\u96C6\u3081\u305F\u5C0F\u7269\u306F\u6575\u306B\u843D\u3068\u3059\u3053\u3068\u3067\n\u5012\u3059\u3053\u3068\u304C\u3067\u304D\u308B\u305E\uFF01\n<b>\u8155\u3092\u5E83\u3052\u308B</b>
+    : <color=#606000><b>\u53F3\u30AF\u30EA\u30C3\u30AF/A\u30DC\u30BF\u30F3\u9577\u62BC\u3057</b></color>"
   startWave: 0
   waveData: {fileID: 0}
   startRoguelike: 0

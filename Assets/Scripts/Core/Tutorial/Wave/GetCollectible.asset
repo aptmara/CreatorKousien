@@ -18,7 +18,9 @@ MonoBehaviour:
   spawnEnemy: 0
   enemies: []
   useStartText: 1
-  startText: "\u307E\u305A\u306F\u304B\u307C\u3061\u3083\u3092\u3076\u3093\u6BB4\u3063\u3066\n\u5C0F\u7269\u3092\u53D6\u5F97\u3057\u3088\u3046\uFF01"
+  startText: "\u307E\u305A\u306F\u304B\u307C\u3061\u3083\u3092\u3076\u3093\u6BB4\u3063\u3066\n\u5C0F\u7269\u3092\u53D6\u5F97\u3057\u3088\u3046\uFF01\n<b>\u79FB\u52D5</b>
+    : <color=#606000><b>WASD/\u5DE6\u30B9\u30C6\u30A3\u30C3\u30AF</b></color> <b>
+    \u6BB4\u308B</b> :  <color=#606000><b>E\u30AD\u30FC/X\u30DC\u30BF\u30F3</b></color>"
   startWave: 0
   waveData: {fileID: 0}
   startRoguelike: 0
