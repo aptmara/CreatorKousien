@@ -413,6 +413,10 @@ namespace Game.Gameplay.Enemy.Boss
             _currentWaitingGimmick = null;
             _currentWaitingData = null;
 
+            // ダウン前に予約されていた割り込みは破棄する!
+            // 残すと復帰した瞬間にまとめて発動してしまうバグがあったので修正しました！ 9/21 Asano
+            _interruptQueue.Clear();
+
             Debug.Log($"[BattleFlow] ボスがダウンしました！ ({_downDuration}秒間)");
 
             //if(_downPresentationController != null && _currentPhaseData?.DownPresentationData != null)
@@ -516,6 +520,42 @@ namespace Game.Gameplay.Enemy.Boss
                 _interruptQueue.Enqueue(targetSlot);
             }
         }
+
+
+        /// <summary>
+        /// 予約済みの割り込みギミックを取り消す。
+        /// 分身などで戦況が変わった時に、積みっぱなしの攻撃を流すために使う!
+        /// ステージ3のボスの分身戦で使う溜めに追加します！ 9/21 Asano
+        /// </summary>
+        /// <param name="gimmickData">取り消す対象</param>
+        public void CancelInterruptGimmick(BossGimmickData gimmickData)
+        {
+            if (gimmickData == null || _interruptQueue.Count == 0) return;
+
+            Queue<GimmickSlot> remain = new Queue<GimmickSlot>(_interruptQueue.Count);
+            int canceledCount = 0;
+
+            while (_interruptQueue.Count > 0)
+            {
+                GimmickSlot slot = _interruptQueue.Dequeue();
+
+                if (slot != null && slot.data == gimmickData)
+                {
+                    canceledCount++;
+                    continue;
+                }
+
+                remain.Enqueue(slot);
+            }
+
+            _interruptQueue = remain;
+
+            if (canceledCount > 0)
+            {
+                Debug.Log($"[BattleFlow] 予約済みの割り込み「{gimmickData.name}」を{canceledCount}件取り消しました");
+            }
+        }
+
 
         public void ExecuteSlot(GimmickSlot slot)
         {

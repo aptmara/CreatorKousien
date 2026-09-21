@@ -35,20 +35,23 @@ MonoBehaviour:
     _scaleMultiplier: 1
     _tint: {r: 1, g: 1, b: 1, a: 1}
   _cloneAppearances:
-  - _scaleMultiplier: 0.85
+  - _scaleMultiplier: 1
     _tint: {r: 0.3301887, g: 0.3301887, b: 0.3301887, a: 0}
-  - _scaleMultiplier: 0.85
+  - _scaleMultiplier: 1
     _tint: {r: 0.3301887, g: 0.3301887, b: 0.3301887, a: 0}
   _appearanceDistinctiveness: 1
+  _feverBaseScale: 0.55
   _smokeDuration: 1
   _challengeDuration: 12
   _explosionVfxPrefab: {fileID: 6146615972990954900, guid: cf4176813ede5754794c82215372eacb, type: 3}
   _smokeVfxPrefab: {fileID: 4429139194564467471, guid: c13cd973b5473e04c92b2a4316fc15a7, type: 3}
   _vfxLifeTime: 3
   _disableColliderWhileHidden: 1
+  _fallStraightDown: 1
   _roarDuration: 2.5
   _roarAnimTrigger: Roar
   _roarVfxPrefab: {fileID: 2765139239787536520, guid: 3551cca060d467543a9c32d81a67be44, type: 3}
+  _roarVfxOffset: {x: 4, y: 5, z: 0}
   _shakeCameraOnRoar: 1
   _roarShakeDuration: 0.4
   _roarShakeStrength: 0.35

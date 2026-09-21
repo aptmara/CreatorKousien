@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 88f940fedc7fe634f98f09583af3a5be, type: 3}
-  m_Name: Data_BocchaStoneCandy
+  m_Name: Data_BocchaMelee
   m_EditorClassIdentifier: Assembly-CSharp::BossGimmickData
-  BossGimmickName: BocchaStoneCandy
-  editColor: {r: 0.5471698, g: 0.5471698, b: 0.5471698, a: 1}
+  BossGimmickName: BocchaMelee
+  editColor: {r: 1, g: 0.93733996, b: 0, a: 1}
   ExecutionType: 1
   animTriggerName: 
   isRandomInterval: 0
-  minInterval: 4
-  maxInterval: 6
+  minInterval: 5
+  maxInterval: 10
   triggerTimes: []
   waitForCompletion: 1
-  timeoutDuration: 10
+  timeoutDuration: 8
