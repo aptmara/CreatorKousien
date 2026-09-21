@@ -43,6 +43,10 @@ namespace Game.Gameplay.Enemy.Boss
         [Header("==== 演出 ====")]
 
         [SerializeField]
+        [Tooltip("ダミーのAnimator。未設定なら子から自動取得する")]
+        private Animator _animator;
+
+        [SerializeField]
         [Tooltip("破壊された時のVFX")]
         private GameObject _breakVfxPrefab;
 
@@ -99,10 +103,39 @@ namespace Game.Gameplay.Enemy.Boss
             {
                 scale *= appearance.GetScale(distinctiveness);
 
-                ApplyTint(appearance.GetTint(distinctiveness));
+                // マテリアルが指定されていればそれを使い、無ければ従来どおり着色する
+                if (appearance.Material != null)
+                {
+                    ApplyMaterial(appearance.Material);
+                }
+                else
+                {
+                    ApplyTint(appearance.GetTint(distinctiveness));
+                }
             }
 
             transform.localScale *= scale;
+        }
+
+
+        /// <summary>
+        /// ダミーのAnimatorへTriggerを送る
+        /// 本体と同じモーションを揃えて鳴らすために使う
+        /// </summary>
+        /// <param name="triggerName">Trigger名。空なら何もしない</param>
+        public void PlayAnimationTrigger(string triggerName)
+        {
+            if (_isBroken || _animator == null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(triggerName))
+            {
+                return;
+            }
+
+            _animator.SetTrigger(triggerName);
         }
 
 
@@ -112,6 +145,16 @@ namespace Game.Gameplay.Enemy.Boss
 
         // 衝突イベント: Collision
         private void OnCollisionEnter(Collision collision) => TryHandle(collision.collider.GetComponentInParent<CollectibleObject>(), collision.relativeVelocity.magnitude, collision.GetContact(0).point);
+
+
+        private void Awake()
+        {
+            if (_animator == null)
+            {
+                _animator = GetComponentInChildren<Animator>(true);
+            }
+        }
+
 
 
         // 内部処理
@@ -207,6 +250,41 @@ namespace Game.Gameplay.Enemy.Boss
                 renderer.GetPropertyBlock(_propertyBlock);
                 _propertyBlock.SetColor("_BaseColor", tint);
                 renderer.SetPropertyBlock(_propertyBlock);
+            }
+        }
+
+        /// <summary>
+        /// ダミーのマテリアルを差し替える!
+        /// </summary>
+        /// <param name="material">差し替えるマテリアル</param>
+        private void ApplyMaterial(Material material)
+        {
+            if (material == null) return;
+
+            if (_renderers == null)
+            {
+                _renderers = GetComponentsInChildren<Renderer>(true);
+            }
+
+            foreach (Renderer renderer in _renderers)
+            {
+                if (renderer == null) continue;
+
+                // パーティクル等は差し替え対象にしない
+                if (renderer is ParticleSystemRenderer) continue;
+
+                int slotCount = renderer.sharedMaterials.Length;
+
+                if (slotCount <= 0) continue;
+
+                Material[] newMaterials = new Material[slotCount];
+
+                for (int i = 0; i < slotCount; i++)
+                {
+                    newMaterials[i] = material;
+                }
+
+                renderer.sharedMaterials = newMaterials;
             }
         }
     }
