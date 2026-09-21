@@ -17,8 +17,8 @@ MonoBehaviour:
   ExecutionType: 1
   animTriggerName: 
   isRandomInterval: 0
-  minInterval: 5
-  maxInterval: 10
+  minInterval: 4
+  maxInterval: 6
   triggerTimes: []
   waitForCompletion: 1
   timeoutDuration: 10
