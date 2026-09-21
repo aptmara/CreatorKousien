@@ -34,11 +34,15 @@ MonoBehaviour:
   _mainAppearance:
     _scaleMultiplier: 1
     _tint: {r: 1, g: 1, b: 1, a: 1}
+    _material: {fileID: 0}
   _cloneAppearances:
   - _scaleMultiplier: 1
     _tint: {r: 0.3301887, g: 0.3301887, b: 0.3301887, a: 0}
+    _material: {fileID: 2100000, guid: 9b97848ab0838254ea658a78346e6fc2, type: 2}
   - _scaleMultiplier: 1
     _tint: {r: 0.3301887, g: 0.3301887, b: 0.3301887, a: 0}
+    _material: {fileID: 2100000, guid: 00771d482325c2041940527aa1a842bd, type: 2}
+  _randomizeCloneAppearance: 1
   _appearanceDistinctiveness: 1
   _feverBaseScale: 0.55
   _smokeDuration: 1
@@ -50,6 +54,9 @@ MonoBehaviour:
   _fallStraightDown: 1
   _roarDuration: 2.5
   _roarAnimTrigger: Roar
+  _attackAnimTrigger: Melee
+  _attackWindupDuration: 1.3
+  _attackRecoverDuration: 1.5
   _roarVfxPrefab: {fileID: 2765139239787536520, guid: 3551cca060d467543a9c32d81a67be44, type: 3}
   _roarVfxOffset: {x: 4, y: 5, z: 0}
   _shakeCameraOnRoar: 1

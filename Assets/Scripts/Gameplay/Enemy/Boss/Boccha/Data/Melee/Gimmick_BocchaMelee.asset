@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BocchaGimmick_Melee
   _barrierDamage: 25
   _useDamageMultiplier: 1
-  _windupDuration: 3
+  _windupDuration: 1.58
   _recoverDuration: 0.6
   _animTrigger: Melee
   _windupVfxPrefab: {fileID: 0}

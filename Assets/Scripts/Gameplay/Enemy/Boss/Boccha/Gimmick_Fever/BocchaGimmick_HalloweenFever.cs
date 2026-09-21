@@ -54,6 +54,12 @@ namespace Game.Gameplay.Enemy.Boss
 
             // 完了
             Done = 7,
+
+            // 時間切れ攻撃のモーション待ち
+            Attack = 99,
+
+            // 殴った後の余韻
+            AttackRecover = 100,
         }
 
 
@@ -163,6 +169,10 @@ namespace Game.Gameplay.Enemy.Boss
         private List<BocchaAppearance> _cloneAppearances = new List<BocchaAppearance>();
 
         [SerializeField]
+        [Tooltip("ONならダミーの見た目をランダムに選ぶ。OFFなら生成順にリストを参照する")]
+        private bool _randomizeCloneAppearance = true;
+
+        [SerializeField]
         [Range(0f, 1f)]
         [Tooltip("0で本体とダミーが見分けられない、1で設定した差分そのまま。難易度に直結する")]
         private float _appearanceDistinctiveness = 0.5f;
@@ -220,6 +230,20 @@ namespace Game.Gameplay.Enemy.Boss
         [SerializeField]
         [Tooltip("咆哮時に鳴らすAnimatorのTrigger名。空なら何もしない")]
         private string _roarAnimTrigger = "Roar";
+
+        [SerializeField]
+        [Tooltip("時間切れ攻撃で鳴らすTrigger名。殴りギミックと同じ名前にする")]
+        private string _attackAnimTrigger = "Melee";
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("攻撃モーション開始から実際にダメージが入るまでの時間[秒]。殴りギミックのWindupと揃える")]
+        private float _attackWindupDuration = 1f;
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("殴ってから消えるまでの余韻[秒]。殴りギミックのRecoverと揃える")]
+        private float _attackRecoverDuration = 0.6f;
 
         [SerializeField]
         [Tooltip("咆哮時のVFX")]
@@ -287,6 +311,9 @@ namespace Game.Gameplay.Enemy.Boss
 
         // 本体に実際に掛けたスケール
         private float _appliedMainScale = 1.0f;
+
+        // 時間切れ攻撃で与える予定のダメージ
+        private float _pendingAttackDamage;
 
         // ボスのダウン回数を判定
         private BossDownCountJudge _downCountJudge;
@@ -451,6 +478,35 @@ namespace Game.Gameplay.Enemy.Boss
                     }
 
                     return;
+
+                case FeverPhase.Attack:
+                    // 殴りモーションが当たるまで待つ
+                    if (_phaseTimer < _attackWindupDuration)
+                        return;
+
+                    // 防衛ラインへダメージが入る
+                    EventBus.Publish(new RuleBarrierAttackEvent(_pendingAttackDamage, Context.Transform.position));
+
+                    // 殴った余韻を見せるため、ここではまだ消さない
+                    _phase = FeverPhase.AttackRecover;
+                    _phaseTimer = 0.0f;
+                    return;
+
+                case FeverPhase.AttackRecover:
+                    // 殴り姿勢のまま少し見せてから退場する
+                    if (_phaseTimer < _attackRecoverDuration)
+                        return;
+
+                    DestroyClones();
+
+                    // 失敗時は爆発してから姿を消す。咆哮はしない
+                    PlayVfx(_explosionVfxPrefab, Context.Transform.position);
+
+                    SetBossVisible(false);
+
+                    _phase = FeverPhase.Recover;
+                    _phaseTimer = 0.0f;
+                    return;
             }
         }
 
@@ -608,6 +664,11 @@ namespace Game.Gameplay.Enemy.Boss
             if (_cloneAppearances.Count == 0)
                 return null;
 
+            if (_randomizeCloneAppearance)
+            {
+                return _cloneAppearances[UnityEngine.Random.Range(0, _cloneAppearances.Count)];
+            }
+
             return _cloneAppearances[Mathf.Min(index, _cloneAppearances.Count - 1)];
         }
 
@@ -642,16 +703,14 @@ namespace Game.Gameplay.Enemy.Boss
             // 成否にかかわらず、消えてから中央へ戻る演出を通す
             _pendingDown = isSuccess;
 
-            // ダミーはここで消える
-            DestroyClones();
-
-            // 咆哮から再出現までは一切殴られないようにする
-            float invincibleTotal = _roarDuration + _recoverDuration + _smokeDuration + _invincibleAfterFever;
-
-            _feverBody?.BeginInvincible(invincibleTotal);
+            // 消えてから中央へ戻りきるまでの共通時間。どのルートでも必ず通る
+            float exitDuration = _recoverDuration + _smokeDuration + _invincibleAfterFever;
 
             if (isSuccess)
             {
+                // 成功ルートではここでダミーを片付ける
+                DestroyClones();
+
                 // 最後のダウンは咆哮せず、静かに沈む撃破演出へ渡す
                 bool isFinalDown = _downCountJudge != null && _downCountJudge.CurrentDownCount + 1 >= _downCountJudge.RequiredDownCount;
 
@@ -659,6 +718,9 @@ namespace Game.Gameplay.Enemy.Boss
 
                 if (isFinalDown)
                 {
+                    // 咆哮しないので、その分は無敵に含めない
+                    _feverBody?.BeginInvincible(exitDuration);
+
                     // 咆哮を飛ばして、そのまま消えて中央へ戻る
                     PlayVfx(_explosionVfxPrefab, Context.Transform.position);
 
@@ -668,6 +730,9 @@ namespace Game.Gameplay.Enemy.Boss
                 }
                 else
                 {
+                    // 咆哮する分だけ無敵を伸ばす
+                    _feverBody?.BeginInvincible(_roarDuration + exitDuration);
+
                     // 咆哮している間は姿を見せたままにする。爆発と非表示はRoarフェーズの最後で行う
                     PlayRoar();
 
@@ -679,19 +744,21 @@ namespace Game.Gameplay.Enemy.Boss
                 return;
             }
 
+            // --- 失敗ルート ---
+            // ダミーも一緒に殴らせるため、ここではまだ消さない
+            // 咆哮はしない。殴りモーションの分だけ伸ばす
+            _feverBody?.BeginInvincible(_attackWindupDuration + _attackRecoverDuration + exitDuration);
+
             // 本体とダミーが一緒に攻撃してくる
-            float damage = _mainAttack + remaining * _cloneAttack;
+            _pendingAttackDamage = _mainAttack + remaining * _cloneAttack;
 
-            EventBus.Publish(new RuleBarrierAttackEvent(damage, Context.Transform.position));
+            Debug.Log("[Fever] <color=orange>時間切れ！</color> 残りダミー数: " + remaining + " 攻撃力: " + _pendingAttackDamage);
 
-            Debug.Log("[Fever] <color=orange>時間切れ！</color> 残りダミー数: " + remaining + " 攻撃力: " + damage);
+            // 本体とダミーで同じ殴りモーションを鳴らす
+            PlayAttackAnimation();
 
-            // 失敗時は爆発してから姿を消す。咆哮はしない
-            PlayVfx(_explosionVfxPrefab, Context.Transform.position);
-
-            SetBossVisible(false);
-
-            _phase = FeverPhase.Recover;
+            // モーションが当たるタイミングまで待ってからダメージを出す
+            _phase = FeverPhase.Attack;
             _phaseTimer = 0.0f;
         }
 
@@ -912,6 +979,29 @@ namespace Game.Gameplay.Enemy.Boss
 
             // 高さは開始時のものを保つ
             return new Vector3(fieldBounds.center.x, _originalPosition.y, _originalPosition.z);
+        }
+
+
+        /// <summary>
+        /// 本体と生き残っているダミー全員に、同じ攻撃モーションを再生させる
+        /// </summary>
+        private void PlayAttackAnimation()
+        {
+            if (string.IsNullOrEmpty(_attackAnimTrigger))
+                return;
+
+            if (Context.Animator != null)
+            {
+                Context.Animator.SetTrigger(_attackAnimTrigger);
+            }
+
+            foreach (BocchaCloneUnit clone in _clones)
+            {
+                if (clone == null || !clone.IsAlive)
+                    continue;
+
+                clone.PlayAnimationTrigger(_attackAnimTrigger);
+            }
         }
     }
 }

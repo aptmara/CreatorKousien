@@ -28,6 +28,16 @@ namespace Game.Gameplay.Enemy.Boss
         [Tooltip("色味。MaterialPropertyBlockで着色するのでマテリアルは増えない！")]
         private Color _tint = Color.white;
 
+        [SerializeField]
+        [Tooltip("差し替えるマテリアル。未設定ならTintでの着色にフォールバックする")]
+        private Material _material;
+
+
+        /// <summary>
+        /// 差し替えるマテリアル。未設定ならnull
+        /// </summary>
+        public Material Material => _material;
+
 
         /// <summary>
         /// 差分の大きさに応じたスケールを取得する
