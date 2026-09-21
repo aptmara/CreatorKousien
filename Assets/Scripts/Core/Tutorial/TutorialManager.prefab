@@ -60,6 +60,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TutorialFlowManager
   _roguelikeSceneName: Roguelike
   _resultSceneName: Result
+  _saveCheckpointGranularity: 1
+  _moneyDataForSave: {fileID: 0}
+  _upgradeRuntimeStateForSave: {fileID: 0}
   _minimumStageLoadingDuration: 3
   _waveRunner: {fileID: 4250366389332800899}
   _enemySpawner: {fileID: 0}
