@@ -300,6 +300,12 @@ public class TutorialFlowManager : GameProgressionManagerBase
                 }
                 break;
 
+            case TutorialWave.ClearConditions.SkipKey:
+                {
+                    yield return SkipKeyWait();
+                }
+                break;
+
             default:
                 Debug.LogError("チュートリアルの終了条件が登録されていません、クリアしたことにして次に進みます");
                 break;
@@ -390,6 +396,14 @@ public class TutorialFlowManager : GameProgressionManagerBase
 
     }
 
+    IEnumerator SkipKeyWait()
+    {
+        while(!Keyboard.current.f12Key.wasPressedThisFrame)
+        {
+            yield return null;
+        }
+    }
+
 #if UNITY_EDITOR
 
     /// <summary>
@@ -413,6 +427,14 @@ public class TutorialFlowManager : GameProgressionManagerBase
     /// デバッグ用。
     /// </summary>
     public override void DebugJumpToFinalWave()
+    {
+
+    }
+
+    /// <summary>
+    /// デバッグ用。
+    /// </summary>
+    public override void DebugJumpToGameOver()
     {
 
     }

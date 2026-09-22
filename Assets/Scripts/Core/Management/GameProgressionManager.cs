@@ -451,6 +451,16 @@ namespace Game.Core.Management
         {
             DebugStartWaveAt(_waveSequence.Count - 1);
         }
+
+
+        /// <summary>
+        /// デバッグ用。バリア破壊演出を飛ばしてゲームオーバー演出へ飛びます
+        /// </summary>
+        public override void DebugJumpToGameOver()
+        {
+            Debug.Log("実装中");
+        }
+
 #endif
 
 

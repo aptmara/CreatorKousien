@@ -322,7 +322,7 @@ namespace Game.Core.Management
                 }
 
                 // 最終ウェーブクリア後は、ゲームクリア状態へ遷移
-                // HandleGameResult(isClear: true);
+                HandleGameResult(isClear: true);
                 yield break;
             }
 
@@ -713,6 +713,13 @@ namespace Game.Core.Management
         /// デバッグ用。演出を飛ばして最終Wave(Boss)へ飛びます
         /// </summary>
         public abstract void DebugJumpToFinalWave();
+
+
+        /// <summary>
+        /// デバッグ用。演出を飛ばして最終Wave(Boss)へ飛びます
+        /// </summary>
+        public abstract void DebugJumpToGameOver();
+
 #endif
 
         /// <summary>
