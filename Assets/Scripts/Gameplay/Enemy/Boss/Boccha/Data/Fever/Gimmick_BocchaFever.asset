@@ -42,6 +42,12 @@ MonoBehaviour:
   - _scaleMultiplier: 1
     _tint: {r: 0.3301887, g: 0.3301887, b: 0.3301887, a: 0}
     _material: {fileID: 2100000, guid: 00771d482325c2041940527aa1a842bd, type: 2}
+  - _scaleMultiplier: 1
+    _tint: {r: 0.3301887, g: 0.3301887, b: 0.3301887, a: 0}
+    _material: {fileID: 2100000, guid: 9a09646e5a9c5bd44b6ab71afb17440b, type: 2}
+  - _scaleMultiplier: 1
+    _tint: {r: 0.3301887, g: 0.3301887, b: 0.3301887, a: 0}
+    _material: {fileID: 2100000, guid: 10ac6ab55b0af614dbdb2818aaa63906, type: 2}
   _randomizeCloneAppearance: 1
   _appearanceDistinctiveness: 1
   _feverBaseScale: 0.55
