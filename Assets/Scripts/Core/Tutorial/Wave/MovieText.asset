@@ -15,10 +15,11 @@ MonoBehaviour:
   useCollectibleStopWall: 0
   useEnemy: 0
   clearConditions: 4
-  spawnEnemy: 0
-  enemies: []
-  useStartText: 0
-  startText: "\u3053\u3053\u306F\u52D5\u753B\u64AE\u5F71\u7528\u30B7\u30FC\u30F3\nF12\u30AD\u30FC\u3067\u7D42\u4E86\u3067\u304D\u307E\u3059\uFF01"
+  spawnEnemy: 1
+  enemies:
+  - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+  useStartText: 1
+  startText: "\u3053\u3053\u306F\u52D5\u753B\u64AE\u5F71\u7528\u30B7\u30FC\u30F3\nMovieText\u3092\u66F8\u304D\u63DB\u3048\u308B\u3053\u3068\u3067\u5185\u5BB9\u3092\u5909\u66F4\u3067\u304D\u307E\u3059\uFF01"
   startWave: 0
   waveData: {fileID: 0}
   startRoguelike: 0

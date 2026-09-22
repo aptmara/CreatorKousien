@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: MovieFieldData
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Stage.FieldData
   _fieldTilt: 0
-  _crystalPrefab: {fileID: 2322673691338719004, guid: b7000cbbc1333c34d82b4d70a937f626, type: 3}
-  _crystalLocalPosition: {x: 0, y: -4, z: 6}
+  _crystalPrefab: {fileID: 0}
+  _crystalLocalPosition: {x: 0, y: 0, z: 6}

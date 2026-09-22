@@ -54,14 +54,14 @@ EditorBuildSettings:
     path: Assets/CreatorKousien/Scenes/Gameplay/Stage_3.unity
     guid: 3c965f0c8ba2fca4182ea49862c4d8f6
   - enabled: 1
-    path: Assets/CreatorKousien/Scenes/Movie/MovieScene/Movie_Boot.unity
-    guid: b30a23037adc7364a86c572bef5341c5
-  - enabled: 1
     path: Assets/CreatorKousien/Scenes/Movie/MovieScene/Movie_PlayShell.unity
     guid: 5fe9bc343b67480489ab6290b68c35eb
   - enabled: 1
     path: Assets/CreatorKousien/Scenes/Movie/MovieScene/Movie_Stage.unity
     guid: bd048b1dc29ff904988c0a50bdc1ca0d
+  - enabled: 1
+    path: Assets/CreatorKousien/Scenes/Movie/MovieScene/Movie_Boot.unity
+    guid: b30a23037adc7364a86c572bef5341c5
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: c80c27e0757b4d648aeff4d7ad7dcd0a, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
