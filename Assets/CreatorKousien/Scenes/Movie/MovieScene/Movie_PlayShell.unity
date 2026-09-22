@@ -490,7 +490,7 @@ MonoBehaviour:
       m_Flags: 4
     - m_Name: negative
       m_Id: 4a165a5b-e83b-493f-b836-cb39e9dfa926
-      m_Path: <Keyboard>/upArrow
+      m_Path: <Keyboard>/downArrow
       m_Interactions: 
       m_Processors: 
       m_Groups: 
@@ -498,7 +498,7 @@ MonoBehaviour:
       m_Flags: 8
     - m_Name: positive
       m_Id: 8ed23de0-2135-4686-bfcc-730e6488ea42
-      m_Path: <Keyboard>/downArrow
+      m_Path: <Keyboard>/upArrow
       m_Interactions: 
       m_Processors: 
       m_Groups: 
