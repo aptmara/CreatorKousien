@@ -1454,6 +1454,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 2030498476}
     m_Modifications:
     - target: {fileID: 153292412667195639, guid: 242a51367a5cb844a9f55d8ba25be8ea, type: 3}
+      propertyPath: _resultSceneName
+      value: Result
+      objectReference: {fileID: 0}
+    - target: {fileID: 153292412667195639, guid: 242a51367a5cb844a9f55d8ba25be8ea, type: 3}
       propertyPath: _clickAction.m_Name
       value: Click
       objectReference: {fileID: 0}
@@ -1467,12 +1471,32 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 153292412667195639, guid: 242a51367a5cb844a9f55d8ba25be8ea, type: 3}
       propertyPath: _tutorialDatas.Array.size
-      value: 1
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 153292412667195639, guid: 242a51367a5cb844a9f55d8ba25be8ea, type: 3}
       propertyPath: '_tutorialDatas.Array.data[0]'
       value: 
-      objectReference: {fileID: 11400000, guid: 52510f7afd0ef5e4ba3b4ebffc3c3576, type: 2}
+      objectReference: {fileID: 11400000, guid: 6fa13be39015be844a4f67a41383372e, type: 2}
+    - target: {fileID: 153292412667195639, guid: 242a51367a5cb844a9f55d8ba25be8ea, type: 3}
+      propertyPath: '_tutorialDatas.Array.data[1]'
+      value: 
+      objectReference: {fileID: 11400000, guid: a17d69d53e01d864c8b8a6711054ddb2, type: 2}
+    - target: {fileID: 153292412667195639, guid: 242a51367a5cb844a9f55d8ba25be8ea, type: 3}
+      propertyPath: '_tutorialDatas.Array.data[2]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 4a695c105f9498044bdc4de71faedd75, type: 2}
+    - target: {fileID: 153292412667195639, guid: 242a51367a5cb844a9f55d8ba25be8ea, type: 3}
+      propertyPath: '_tutorialDatas.Array.data[3]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 765d91de06a9bb941b5f637cb595be1a, type: 2}
+    - target: {fileID: 153292412667195639, guid: 242a51367a5cb844a9f55d8ba25be8ea, type: 3}
+      propertyPath: '_tutorialDatas.Array.data[4]'
+      value: 
+      objectReference: {fileID: 11400000, guid: dde64dfe0e375bb45bffeacf2ad7db20, type: 2}
+    - target: {fileID: 153292412667195639, guid: 242a51367a5cb844a9f55d8ba25be8ea, type: 3}
+      propertyPath: '_tutorialDatas.Array.data[5]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 5652c9f1a80de484ca31136398a789e1, type: 2}
     - target: {fileID: 2804602039823593546, guid: 242a51367a5cb844a9f55d8ba25be8ea, type: 3}
       propertyPath: m_Name
       value: TutorialManager
