@@ -20,7 +20,8 @@ public class TutorialWave : ScriptableObject
         EnemyKill,
         WaveClear,
         GetCollectible,
-        ShopEnd
+        ShopEnd,
+        SkipKey
     }
     [Header("クリア条件")]
     [SerializeField] public ClearConditions clearConditions;
