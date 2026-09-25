@@ -150,7 +150,10 @@ public class FreeLookCamera : MonoBehaviour
         // カメラ移動
         Vector3 moveInput = _cameraInput.ReadValue<Vector3>().normalized;
         Vector3 inputForce = moveInput * _moveSpeed;
-        _rigidbody.linearVelocity = inputForce;
+       
+        Matrix4x4 mat = Matrix4x4.Rotate(_transform.rotation);
+
+        _rigidbody.linearVelocity = mat.MultiplyVector(inputForce);
     }
 
     private void CameraLook()
