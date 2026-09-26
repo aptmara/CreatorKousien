@@ -53,8 +53,8 @@ namespace Game.Gameplay.Stage
                 return;
             }
 
-            // 1. 傾き回転を決定
-            FieldRotation = Quaternion.Euler(_fieldData.FieldTilt, 0f, 0f);
+            // MV撮影ではフィールドをワールドのXZ平面へ合わせる
+            FieldRotation = Quaternion.identity;
             Transform root = _fieldRoot != null ? _fieldRoot : transform;
             FieldContext.Set(FieldRotation, root.position);
 

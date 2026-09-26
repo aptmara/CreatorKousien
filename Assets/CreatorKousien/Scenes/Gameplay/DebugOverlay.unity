@@ -234,7 +234,7 @@ GameObject:
   - component: {fileID: 1913397151}
   - component: {fileID: 1913397150}
   - component: {fileID: 1913397153}
-  - component: {fileID: 1913397154}
+  - component: {fileID: 1913397155}
   m_Layer: 0
   m_Name: DebugOverlayRoot
   m_TagString: Untagged
@@ -304,7 +304,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.DebugTools.StageDebugShortcuts
   _isEnabled: 1
   _debugKillDamage: 999999
---- !u!114 &1913397154
+--- !u!114 &1913397155
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -313,11 +313,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 1913397149}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4044a6283316db4419dd6bd6ccda5122, type: 3}
+  m_Script: {fileID: 11500000, guid: b0c887978e3f40b7bfa97c4b4960dd9f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.DebugTools.StageDebugShortcuts
-  _isEnabled: 1
-  _debugKillDamage: 999999
+  m_EditorClassIdentifier: Assembly-CSharp::Game.DebugTools.MvCaptureController
+  _targetHeight: 1.5
+  _distance: 7
+  _minimumDistance: 2
+  _maximumDistance: 60
+  _orbitSensitivity: 0.15
+  _positionSmoothTime: 0.08
+  _freeMoveSpeed: 8
+  _fastMoveMultiplier: 3
+  _zoomSpeed: 1
+  _minimumFieldOfView: 15
+  _maximumFieldOfView: 100
+  _minimumPitch: -80
+  _maximumPitch: 80
+  _showcaseEnemies:
+  - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
+  - {fileID: 11400000, guid: 6d52fc24390483f40a4e16bb1fab2c90, type: 2}
+  - {fileID: 11400000, guid: 5b12b0a93fd3efb44b6f16c57bf0fefb, type: 2}
+  - {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}
+  - {fileID: 11400000, guid: feac13b685a3f864fb4858e7c51d866c, type: 2}
+  - {fileID: 11400000, guid: b33d7bb6aea039443b00346877493f01, type: 2}
+  _rendererData: {fileID: 11400000, guid: f288ae1f4751b564a96ac7587541f7a2, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

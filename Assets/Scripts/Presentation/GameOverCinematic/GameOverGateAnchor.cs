@@ -6,7 +6,9 @@
 // Created      : 2026-07-10
 // ================================================================================
 
+using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Game.Presentation.GameOverCinematic
 {
@@ -22,10 +24,23 @@ namespace Game.Presentation.GameOverCinematic
         [SerializeField] private Transform _leftDoorHinge;
         [SerializeField] private Transform _rightDoorHinge;
         [SerializeField] private Transform _dustSpawnPoint;
+        [SerializeField] private Transform _gateEffectRoot;
+
+        [Header("--- 扉開閉 (Fキー) ---")]
+        [Tooltip("Fキーによる扉のトグル開閉を有効にするか")]
+        [SerializeField] private bool _enableFKeyToggle = true;
+        [Tooltip("開閉アニメーションにかかる時間（秒）")]
+        [SerializeField, Min(0.01f)] private float _toggleDuration = 0.35f;
+        [Tooltip("最大開放角度（度）")]
+        [SerializeField] private float _customOpenAngle = 110f;
 
         public Transform LeftDoorHinge => _leftDoorHinge;
         public Transform RightDoorHinge => _rightDoorHinge;
         public Transform DustSpawnPoint => _dustSpawnPoint;
+        public GameObject GateEffectRoot => _gateEffectRoot != null ? _gateEffectRoot.gameObject : null;
+
+        private bool _isOpen;
+        private Coroutine _doorCoroutine;
 
         private void Start()
         {
@@ -34,6 +49,76 @@ namespace Game.Presentation.GameOverCinematic
             if (controller != null)
             {
                 controller.RegisterGate(this);
+            }
+        }
+
+        private void Update()
+        {
+            if (!_enableFKeyToggle) return;
+            if (Keyboard.current == null) return;
+
+            if (Keyboard.current.fKey.wasPressedThisFrame)
+            {
+                ToggleDoor();
+            }
+        }
+
+        /// <summary>
+        /// 扉の開閉状態をトグル切り替えします
+        /// </summary>
+        public void ToggleDoor()
+        {
+            float targetAngle = _settings != null ? _settings.MaxOpenAngle : _customOpenAngle;
+            _isOpen = !_isOpen;
+
+            if (_doorCoroutine != null)
+            {
+                StopCoroutine(_doorCoroutine);
+            }
+
+            _doorCoroutine = StartCoroutine(AnimateDoorRoutine(_isOpen ? targetAngle : 0f));
+        }
+
+        private IEnumerator AnimateDoorRoutine(float targetAngle)
+        {
+            float startAngle = 0f;
+            if (_leftDoorHinge != null)
+            {
+                startAngle = _leftDoorHinge.localEulerAngles.y;
+                if (startAngle > 180f)
+                {
+                    startAngle -= 360f;
+                }
+            }
+
+            float duration = Mathf.Max(0.01f, _toggleDuration);
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float eased = Mathf.SmoothStep(0f, 1f, t);
+                float currentAngle = Mathf.Lerp(startAngle, targetAngle, eased);
+
+                SetDoorAngle(currentAngle);
+                yield return null;
+            }
+
+            SetDoorAngle(targetAngle);
+            _doorCoroutine = null;
+        }
+
+        private void SetDoorAngle(float angle)
+        {
+            if (_leftDoorHinge != null)
+            {
+                _leftDoorHinge.localRotation = Quaternion.Euler(0f, angle, 0f);
+            }
+
+            if (_rightDoorHinge != null)
+            {
+                _rightDoorHinge.localRotation = Quaternion.Euler(0f, -angle, 0f);
             }
         }
 

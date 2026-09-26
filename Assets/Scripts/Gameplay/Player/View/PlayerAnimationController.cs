@@ -67,10 +67,13 @@ namespace Game.Gameplay.Player
             // アタッチメントの拡大縮小状態に応じてShrunkBlendパラメータを更新する
             Vector3 planarVelocity = Vector3.ProjectOnPlane(_motor.Velocity, transform.up);
             float moveSpeed = planarVelocity.magnitude;
+            float sprintMultiplier = _motor.CurrentSprintMultiplier;
+            float baseMovementSpeed = moveSpeed / sprintMultiplier;
 
             // Speedパラメータを0～1の範囲に正規化し、歩きアニメーションの速度を調整する
-            float speed01 = Mathf.Clamp01(moveSpeed / _baseMoveSpeed);
-            float animSpeed = Mathf.Clamp(moveSpeed / _baseMoveSpeed, _minWalkAnimSpeed, _maxWalkAnimSpeed);
+            float speed01 = Mathf.Clamp01(baseMovementSpeed / _baseMoveSpeed);
+            float animSpeed = Mathf.Clamp(baseMovementSpeed / _baseMoveSpeed, _minWalkAnimSpeed, _maxWalkAnimSpeed)
+                * sprintMultiplier;
 
             // 集め状態なら1, 通常なら0へ滑らかに寄せる
             float shrunkTarget = (_playerController != null && _playerController.IsAttachmentShrunk) ? 1f : 0f;

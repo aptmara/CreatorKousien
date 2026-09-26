@@ -33,6 +33,16 @@ namespace Game.Gameplay.Player
             get { return _currentInput; }
         }
 
+        public bool IsSprintHeld
+        {
+            get
+            {
+                Keyboard keyboard = Keyboard.current;
+                return keyboard != null
+                    && (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed);
+            }
+        }
+
         /// <summary>
         /// 移動入力時のコールバック
         /// </summary>

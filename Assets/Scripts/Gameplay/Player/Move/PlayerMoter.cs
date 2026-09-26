@@ -56,6 +56,10 @@ namespace Game.Gameplay.Player
         [Tooltip("アタッチメント縮小中の自動回転速度")]
         [SerializeField] private float _shrunkAutoRotationDegreesPerSecond = 350f;
 
+        [Header("ダッシュ設定")]
+        [Tooltip("Shiftキーを押している間の移動速度倍率")]
+        [SerializeField, Min(1f)] private float _sprintSpeedMultiplier = 2f;
+
 
         [Header("その他の設定")]
         [Tooltip("移動の基準となるカメラ(未設定時は自動取得)")]
@@ -89,6 +93,15 @@ namespace Game.Gameplay.Player
             * CombatPressurePlayerModifiers.MoveSpeedMultiplier;
 
         private float _targetYaw;
+
+        private bool _isSprinting;
+
+        public float CurrentSprintMultiplier => _isSprinting ? _sprintSpeedMultiplier : 1f;
+
+        public void SetSprinting(bool sprinting)
+        {
+            _isSprinting = sprinting;
+        }
 
         /// <summary>
         /// 現在の移動速度を取得するプロパティ
@@ -166,7 +179,9 @@ namespace Game.Gameplay.Player
         /// <param name="moveInput">移動入力ベクトル</param>
         public void Move(Vector2 moveInput, bool isAttachmentShrunk)
         {
-            float moveSpeed = (isAttachmentShrunk ? _shrunkMoveSpeed : _normalMoveSpeed) * MoveSpeedMultiplier;
+            float moveSpeed = (isAttachmentShrunk ? _shrunkMoveSpeed : _normalMoveSpeed)
+                * MoveSpeedMultiplier
+                * CurrentSprintMultiplier;
 
             Vector3 up = Up;
             Vector3 vel = _rigidbody.linearVelocity;
@@ -223,7 +238,9 @@ namespace Game.Gameplay.Player
         /// <param name="moveInput">移動入力ベクトル</param>
         public void MoveWithAutoRotation(Vector2 moveInput, bool isAttachmentShrunk)
         {
-            float moveSpeed = (isAttachmentShrunk ? _shrunkMoveSpeed : _normalMoveSpeed) * MoveSpeedMultiplier;
+            float moveSpeed = (isAttachmentShrunk ? _shrunkMoveSpeed : _normalMoveSpeed)
+                * MoveSpeedMultiplier
+                * CurrentSprintMultiplier;
             float autoRotationSpeed = isAttachmentShrunk ? _shrunkAutoRotationDegreesPerSecond : _normalAutoRotationDegreesPerSecond;
 
             Vector3 up = Up;

@@ -101,6 +101,9 @@ namespace Game.Gameplay.Player
 
             UpdateSpreadFace();
 
+            bool isSprinting = input.MoveDirection.sqrMagnitude >= 0.01f && _inputReader.IsSprintHeld;
+            _motor.SetSprinting(isSprinting);
+
             if (_useAutoRotationMove)
             {
                 _motor.MoveWithAutoRotation(input.MoveDirection, _isAttachmentShrunk);

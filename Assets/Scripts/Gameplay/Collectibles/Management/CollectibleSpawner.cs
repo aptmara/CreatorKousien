@@ -50,6 +50,8 @@ namespace Game.Gameplay.Collectibles
         [SerializeField, Tooltip("SubScene連携用SO")]
         private SceneEventChannel _eventChannel;
 
+        private bool _runtimeSpawningEnabled = true;
+
 
         [Header("Debug")]
         [SerializeField, Tooltip("デバック生成用のキー")]
@@ -96,7 +98,7 @@ namespace Game.Gameplay.Collectibles
         /// </summary>
         public void SpawnCollectibles(int count)
         {
-            if (count <= 0)
+            if (!_runtimeSpawningEnabled || count <= 0)
             {
                 return;
             }
@@ -117,7 +119,7 @@ namespace Game.Gameplay.Collectibles
         /// </summary>
         public void SpawnCollectiblesAt(Vector3 position, int count)
         {
-            if (count <= 0)
+            if (!_runtimeSpawningEnabled || count <= 0)
             {
                 return;
             }
@@ -139,7 +141,7 @@ namespace Game.Gameplay.Collectibles
         /// </summary>
         public void SpawnCollectiblesAt(Vector3 position, int count, CollectibleData data)
         {
-            if (count <= 0 || data == null)
+            if (!_runtimeSpawningEnabled || count <= 0 || data == null)
             {
                 return;
             }
@@ -167,7 +169,7 @@ namespace Game.Gameplay.Collectibles
             float horizontalSpread = 3f,
             float scaleMultiplier = 1f)
         {
-            if (count <= 0 || data == null)
+            if (!_runtimeSpawningEnabled || count <= 0 || data == null)
             {
                 return;
             }
@@ -279,7 +281,7 @@ namespace Game.Gameplay.Collectibles
         /// <param name="position"></param>
         public void SpawnSpecificAt(CollectibleData data, Vector3 position)
         {
-            if(data == null) return;
+            if (!_runtimeSpawningEnabled || data == null) return;
             if (!CanSpawnAtPosition()) return;
 
             position = GetHeightAdjustedPosition(position);
@@ -296,7 +298,7 @@ namespace Game.Gameplay.Collectibles
 
         public CollectibleObject SpawnWithVelocity(CollectibleData data, Vector3 position, Vector3 initialVelocity, float scaleMultiplier = 1f, bool ignoreUnlock = false)
         {
-            if (data == null)
+            if (!_runtimeSpawningEnabled || data == null)
             {
                 return null;
             }
@@ -307,6 +309,11 @@ namespace Game.Gameplay.Collectibles
             }
 
             return SpawnOne(position, data, initialVelocity, scaleMultiplier);
+        }
+
+        public void SetRuntimeSpawningEnabled(bool enabled)
+        {
+            _runtimeSpawningEnabled = enabled;
         }
 
 

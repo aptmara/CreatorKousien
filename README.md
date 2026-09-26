@@ -389,6 +389,7 @@ READMEからすべての正式文書へ直接移動できます。`docs`内に�
 | [Project structure](docs/PROJECT_STRUCTURE.md) | ファイルの置き場所を決めるとき | ルート構成、コード境界、Scene、Resources、ThirdParty |
 | [Asset workflow](docs/ASSET_WORKFLOW.md) | デザイナー素材やUnityPackageを扱うとき | Intake、分類、命名、移動、検証 |
 | [Scenes](docs/SCENES.md) | Sceneを追加・変更するとき | Build Settings、Additive構成、所有権、検証Scene |
+| [MV撮影 操作説明](MV撮影_操作説明.md) | MV撮影モードを使うとき | 撮影カメラ、移動制限解除、UI切り替え、デバッグショートカット |
 | [Gameplay](docs/GAMEPLAY.md) | ゲームルールを実装・調整するとき | コアループ、収集、解放、敵、ナダレ、ローグライク |
 | [Development](docs/DEVELOPMENT.md) | 日常開発・PR作成時 | Issue、Branch、Commit、並列作業、契約変更 |
 | [Testing](docs/TESTING.md) | 実装完了・レビュー時 | Test Runner、Scene検査、meta、回帰基準 |

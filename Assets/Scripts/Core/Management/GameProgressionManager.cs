@@ -143,7 +143,6 @@ namespace Game.Core.Management
             }
 
             _hasGameStarted = true;
-            StartBattleWave(_currentWaveIndex);
         }
 
         //private IEnumerator UnloadRoguelikeAndAdvanceRoutine()
@@ -385,7 +384,6 @@ namespace Game.Core.Management
             StartCoroutine(LoadSceneAdditiveRoutine(_roguelikeSceneName));
         }
 
-#if UNITY_EDITOR
         /// <summary>
         /// デバッグ用。実行中のWaveを中断して、指定したWaveを演出なしで開始しまっす！
         /// </summary>
@@ -451,7 +449,6 @@ namespace Game.Core.Management
         {
             DebugStartWaveAt(_waveSequence.Count - 1);
         }
-#endif
 
 
         /// <summary>

@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 // ------------------------------------------------------------
 // File		: StageDebugShortcuts.cs
 // Summary	: Stage進行の動作確認用ショートカット
@@ -33,7 +32,6 @@ namespace Game.DebugTools
 
         private void Update()
         {
-#if UNITY_EDITOR
             if (!_isEnabled || Keyboard.current == null)
             {
                 return;
@@ -62,7 +60,6 @@ namespace Game.DebugTools
             {
                 JumpToFinalWave();
             }
-#endif
         }
 
 
@@ -140,4 +137,3 @@ namespace Game.DebugTools
         }
     }
 }
-#endif

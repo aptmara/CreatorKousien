@@ -236349,6 +236349,7 @@ MonoBehaviour:
   _leftDoorHinge: {fileID: 1678259727}
   _rightDoorHinge: {fileID: 347211134}
   _dustSpawnPoint: {fileID: 395428992}
+  _gateEffectRoot: {fileID: 2185313}
 --- !u!1001 &921174673
 PrefabInstance:
   m_ObjectHideFlags: 0

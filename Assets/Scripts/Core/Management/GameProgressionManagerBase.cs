@@ -696,8 +696,6 @@ namespace Game.Core.Management
         }
 
 
-#if UNITY_EDITOR
-
         /// <summary>
         /// デバッグ用。実行中のWaveを中断して、指定したWaveを演出なしで開始しまっす！
         /// </summary>
@@ -713,7 +711,6 @@ namespace Game.Core.Management
         /// デバッグ用。演出を飛ばして最終Wave(Boss)へ飛びます
         /// </summary>
         public abstract void DebugJumpToFinalWave();
-#endif
 
         /// <summary>
         /// 加算ロード後に良い感じに初期化処理する関数
@@ -742,4 +739,3 @@ namespace Game.Core.Management
     }
 
 }
-
