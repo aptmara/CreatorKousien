@@ -90,6 +90,7 @@ namespace Game.Core.Management
         protected override void OnDefenseLineBroken(DefLineBreakReactionEvent ev)
         {
             if (_currentState != GameProgressionState.Battle) return;
+            _currentState = GameProgressionState.ResultCinematic;
             Debug.Log("[Progression] 防衛ラインのバリア崩壊を検知。ゲームオーバー処理を開始するぜよ。");
             // HandleGameResult(isClear: false);
         }
