@@ -80,6 +80,11 @@ public class ItemPhysicsStabilizer : MonoBehaviour
             velocity.y = currentMaxSpeed;
             velocityChanged = true;
         }
+        else if (velocity.y < -currentMaxSpeed)
+        {
+            velocity.y = -currentMaxSpeed;
+            velocityChanged = true;
+        }
 
         if (velocityChanged)
         {
