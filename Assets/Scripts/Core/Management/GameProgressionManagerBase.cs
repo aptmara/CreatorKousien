@@ -295,8 +295,15 @@ namespace Game.Core.Management
         {
             float validCompleteDelay = Mathf.Max(0f, completeDelay);
 
-            // 一時的に状態を逃がす
-            _currentState = GameProgressionState.Setup;
+            // 演出中はポーズを開かない
+            if (isFinalWave)
+            {
+                _currentState = GameProgressionState.ResultCinematic;
+            }
+            else
+            {
+                _currentState = GameProgressionState.Setup;
+            }
             Debug.Log($"[Progression] 最後の敵の撃破を検知！ 弾の着弾猶予として {validCompleteDelay} 秒間スローモーション演出を行うぜよ。");
 
 
