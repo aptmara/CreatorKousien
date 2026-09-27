@@ -12,7 +12,8 @@ public class MovieGate : MonoBehaviour
     [SerializeField] private Transform _rightDoorHinge;
     [SerializeField] private Vector3 _openAngle;
     [SerializeField] private Vector3 _closeAngle;
-    [SerializeField] private float _gateTime;
+    [SerializeField] private float _openGateTime;
+    [SerializeField] private float _closeGateTime;
 
     Coroutine _lerpCoroutine;
 
@@ -29,19 +30,19 @@ public class MovieGate : MonoBehaviour
         {
             _toglleGate = !_toglleGate;
             if (_lerpCoroutine != null) StopCoroutine(_lerpCoroutine);
-            if (_toglleGate) StartCoroutine(LerpAngle(_openAngle));
-            else StartCoroutine(LerpAngle(_closeAngle));
+            if (_toglleGate) StartCoroutine(LerpAngle(_openAngle, _openGateTime));
+            else StartCoroutine(LerpAngle(_closeAngle, _closeGateTime));
         }
     }
 
-    IEnumerator LerpAngle(Vector3 targetAngle)
+    IEnumerator LerpAngle(Vector3 targetAngle, float gateTime)
     {
         float progress = 0.0f;
         Vector3 startAngle = _leftDoorHinge.rotation.eulerAngles;
 
         while(progress < 1.0f)
         {
-            progress += Time.deltaTime / Mathf.Max(_gateTime, 0.001f);
+            progress += Time.deltaTime / Mathf.Max(gateTime, 0.001f);
             progress = Mathf.Clamp(progress, 0.0f, 1.0f);
             Vector3 angle;
             angle.x = Mathf.Lerp(startAngle.x, targetAngle.x, progress);

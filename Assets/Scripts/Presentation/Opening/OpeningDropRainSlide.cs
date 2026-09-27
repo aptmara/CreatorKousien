@@ -36,6 +36,9 @@ namespace Game.Presentation.Opening
         [Tooltip("落し物を生成する親。SpawnAreaもこの子に置くこと")]
         [SerializeField] private RectTransform _dropParent;
 
+        [Tooltip("落し物の出現割合")]
+        [SerializeField] private List<float> _dropSpriteRate;
+
         [Tooltip("左側の落下開始範囲。この矩形の幅の中でランダムなX位置になる")]
         [SerializeField] private RectTransform _leftSpawnArea;
 
@@ -46,7 +49,7 @@ namespace Game.Presentation.Opening
         [SerializeField, Min(1)] private int _dropsPerSideBurst = 2;
 
         [Tooltip("「ぽろっ！」と「ぽろっ！」の間隔(秒)")]
-        [SerializeField, Min(0.1f)] private float _burstInterval = 1.2f;
+        [SerializeField, Min(0.001f)] private float _burstInterval = 1.2f;
 
         [Tooltip("同じ「ぽろっ！」の中で1個ずつずらす時間(秒)")]
         [SerializeField, Min(0f)] private float _dropStagger = 0.07f;
@@ -62,6 +65,7 @@ namespace Game.Presentation.Opening
 
         [Tooltip("回転速度の最大(度/秒)")]
         [SerializeField] private float _spinSpeedRange = 120f;
+
 
 
         [Header("--- 雨の回数・積み上げ ---")]
@@ -81,6 +85,7 @@ namespace Game.Presentation.Opening
         private int _rightPileCount;
         private int _fallingDropCount;
         private Coroutine _rainRoutine;
+        private float _spriteLength;
 
         // 使い回すためのプール
         private readonly Queue<Image> _pool = new Queue<Image>();
@@ -89,6 +94,15 @@ namespace Game.Presentation.Opening
         private Vector2 _playerShownPosition;
         private CanvasGroup _playerGroup;
 
+        private void Start()
+        {
+            _spriteLength = 0.0f;
+            foreach (var value in _dropSpriteRate)
+            {
+                _spriteLength += value;
+            }
+            Debug.Log("SpriteLength = " + _spriteLength);
+        }
 
         public override IEnumerator PlayEnterRoutine()
         {
@@ -248,7 +262,19 @@ namespace Game.Presentation.Opening
             Image drop = RentDrop();
             RectTransform rect = drop.rectTransform;
 
-            drop.sprite = _dropSprites[Random.Range(0, _dropSprites.Length)];
+            float randomValue = Random.Range(0.0f, _spriteLength);
+            float currentValue = 0.0f;
+            int spriteIndex = _dropSpriteRate.Count - 1;
+            for(int i = 0; i < _dropSpriteRate.Count; i++)
+            {
+                currentValue += _dropSpriteRate[i];
+                if(currentValue > randomValue)
+                {
+                    spriteIndex = i;
+                    break;
+                }
+            }
+            drop.sprite = _dropSprites[spriteIndex];
             drop.color = Color.white;
 
             // 位置・回転・スケールを初期化して、最後に表示する

@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 // ------------------------------------------------------------
 // File		: StageDebugShortcuts.cs
 // Summary	: Stage進行の動作確認用ショートカット
@@ -34,7 +33,6 @@ namespace Game.DebugTools
 
         private void Update()
         {
-#if UNITY_EDITOR
             if (!_isEnabled || Keyboard.current == null)
             {
                 return;
@@ -75,7 +73,6 @@ namespace Game.DebugTools
             {
                 JumpToGameOver();
             }
-#endif
         }
 
 
@@ -117,7 +114,7 @@ namespace Game.DebugTools
             }
 
             Debug.Log("[StageDebug] F2: 次のStageへの移行を要求します。");
-            GameProgressionManagerBase.Instance.RequestNextStage();
+            
         }
 
 
@@ -133,7 +130,7 @@ namespace Game.DebugTools
             }
 
             Debug.Log("[StageDebug] F3: 次のWaveへスキップします。");
-            GameProgressionManagerBase.Instance.DebugSkipToNextWave();
+            // GameProgressionManagerBase.Instance.DebugSkipToNextWave();
         }
 
 
@@ -149,7 +146,7 @@ namespace Game.DebugTools
             }
 
             Debug.Log("[StageDebug] F4: 最終Wave(Boss)へジャンプします。");
-            GameProgressionManagerBase.Instance.DebugJumpToFinalWave();
+            // GameProgressionManagerBase.Instance.DebugJumpToFinalWave();
         }
 
         /// <summary>
@@ -186,4 +183,3 @@ namespace Game.DebugTools
         }
     }
 }
-#endif

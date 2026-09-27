@@ -862,7 +862,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 908774962}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f8a25b53b2e903b42a7093e13606b559, type: 3}
   m_Name: 
@@ -879,23 +879,17 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 6623b2ff2fcc53b4487004928acfbb8f, type: 3}
   - {fileID: 21300000, guid: a05021628f1b6444793dc3855a50c187, type: 3}
   _dropParent: {fileID: 1067225777}
-  _dropSpriteRate:
-  - 1
-  - 1
-  - 1
-  - 9
-  - 1
   _leftSpawnArea: {fileID: 922200408}
   _rightSpawnArea: {fileID: 713452843}
-  _dropsPerSideBurst: 28
-  _burstInterval: 0.0029333336
-  _dropStagger: 0.0014666663
+  _dropsPerSideBurst: 8
+  _burstInterval: 0.008
+  _dropStagger: 0.004
   _fallDuration: 0.3
   _fallDistance: 1100
-  _dropSize: {x: 290, y: 290}
+  _dropSize: {x: 250, y: 250}
   _spinSpeedRange: 120
-  _burstCount: 28
-  _pileColumns: 28
+  _burstCount: 9
+  _pileColumns: 8
   _pileBaseY: -500
   _pileLayerHeight: 130
 --- !u!1 &922200407
