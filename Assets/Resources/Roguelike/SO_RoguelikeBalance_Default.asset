@@ -15,62 +15,19 @@ MonoBehaviour:
   _stageData: {fileID: 11400000, guid: d23dd9200f4c55347a4fb3892b3edc04, type: 2}
   _upgradePool: {fileID: 11400000, guid: 923e90d5d4af61d499ac5f02788db0a7, type: 2}
   _collectibleTable: {fileID: 11400000, guid: b35532d05e2eec54cbe79d863bfa2aeb, type: 2}
-  _combatPressureRuleSet: {fileID: 11400000, guid: 8a18b84ce6847e446a26475700f91f27, type: 2}
   _waveRewards:
   - _clearedWave: 1
     _rewardKind: 0
     _candidateCount: 3
-    _evolutionCandidateCount: 2
-    _allowDeepening: 0
-    _deepeningLevelGain: 2
   - _clearedWave: 2
     _rewardKind: 0
     _candidateCount: 3
-    _evolutionCandidateCount: 2
-    _allowDeepening: 0
-    _deepeningLevelGain: 2
   - _clearedWave: 3
     _rewardKind: 1
     _candidateCount: 3
-    _evolutionCandidateCount: 2
-    _allowDeepening: 0
-    _deepeningLevelGain: 2
   - _clearedWave: 4
     _rewardKind: 0
     _candidateCount: 3
-    _evolutionCandidateCount: 2
-    _allowDeepening: 0
-    _deepeningLevelGain: 2
   - _clearedWave: 5
     _rewardKind: 0
     _candidateCount: 3
-    _evolutionCandidateCount: 2
-    _allowDeepening: 0
-    _deepeningLevelGain: 2
-  - _clearedWave: 6
-    _rewardKind: 2
-    _candidateCount: 3
-    _evolutionCandidateCount: 2
-    _allowDeepening: 1
-    _deepeningLevelGain: 2
-  _draft:
-    _defaultCandidateCount: 3
-    _rerollBaseCost: 50
-    _ownedLevelWeight: 1.4
-    _synergyWeightBonus: 2
-    _suppressedWeightMultiplier: 0.2
-    _minimumWeight: 0.05
-  _combatPressureProgression:
-    _thresholdReductionPerLevel: 0.15
-    _comboRecoveryUnlockLevel: 2
-    _comboRecoverySecondsPerHit: 0.25
-    _comboEchoUnlockLevel: 3
-    _comboEchoHitInterval: 3
-    _poisonDefeatUnlockLevel: 3
-    _poisonDefeatSpawnCount: 4
-    _iceBreakFirstLevel: 2
-    _iceBreakFirstCount: 3
-    _iceBreakSecondLevel: 3
-    _iceBreakSecondCount: 6
-    _previewBaseCount: 2
-    _previewLevelCap: 3

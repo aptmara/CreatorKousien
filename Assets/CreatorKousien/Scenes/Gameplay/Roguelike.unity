@@ -152,7 +152,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -101, y: 0}
+  m_AnchoredPosition: {x: -101, y: -50}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &97049209
@@ -175,7 +175,7 @@ MonoBehaviour:
   m_ChildAlignment: 4
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 200, y: 270}
+  m_CellSize: {x: 200, y: 300}
   m_Spacing: {x: 14, y: 14}
   m_Constraint: 1
   m_ConstraintCount: 2
@@ -191,6 +191,7 @@ GameObject:
   - component: {fileID: 241682760}
   - component: {fileID: 241682759}
   - component: {fileID: 241682758}
+  - component: {fileID: 241682761}
   m_Layer: 5
   m_Name: ExitButton
   m_TagString: Untagged
@@ -299,6 +300,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 241682756}
   m_CullTransparentMesh: 1
+--- !u!114 &241682761
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 241682756}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a41759ef7cd81d4abb82ed1532bae47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::S_ShopExitFocusable
+  _scaleAnimator: {fileID: 677348671}
 --- !u!1 &395321860
 GameObject:
   m_ObjectHideFlags: 0
@@ -333,7 +347,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 451.00006, y: 312}
+  m_AnchoredPosition: {x: 510, y: 265}
   m_SizeDelta: {x: 400, y: 45}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &395321862
@@ -383,8 +397,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 40.8
+  m_fontSizeBase: 40.8
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -447,6 +461,7 @@ GameObject:
   - component: {fileID: 677348668}
   - component: {fileID: 677348670}
   - component: {fileID: 677348669}
+  - component: {fileID: 677348671}
   m_Layer: 5
   m_Name: ExitImage
   m_TagString: Untagged
@@ -511,6 +526,74 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 677348667}
   m_CullTransparentMesh: 1
+--- !u!114 &677348671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677348667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b04f6581c2ef8d64da99757e673b9d32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::S_UIScaleAnimator
+  _target: {fileID: 0}
+  _hoverScale: 1.2
+  _hoverTransitionDuration: 0.15
+  _hoverEase:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _shrinkScale: 0.9
+  _shrinkDuration: 0.08
+  _overshootScale: 1.3
+  _growDuration: 0.15
+  _settleDuration: 0.15
+  _selectEase:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &705193396
 GameObject:
   m_ObjectHideFlags: 0
@@ -525,6 +608,8 @@ GameObject:
   - component: {fileID: 705193404}
   - component: {fileID: 705193405}
   - component: {fileID: 705193406}
+  - component: {fileID: 705193407}
+  - component: {fileID: 705193408}
   m_Layer: 0
   m_Name: RoguelikeManager
   m_TagString: Untagged
@@ -699,6 +784,34 @@ MonoBehaviour:
   _upgradeDetail: {fileID: 705193405}
   _backGround: {fileID: 280133138533333906, guid: 9a04e90fc9bb88c439ee030e4c81a0ef, type: 3}
   _upgradeBoard: {fileID: 7856578012856789490, guid: bb5dd133f2d42b742962ab320493d158, type: 3}
+--- !u!114 &705193407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705193396}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcd8726804937b42a6364c7584b1570, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::S_RoguelikeSelectInput
+  _actions: {fileID: -944628639613478452, guid: 766b863253aa5a64184eee2469baf3ef, type: 3}
+  _actionMapName: Roguelike
+--- !u!114 &705193408
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705193396}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd2e056310339d84eb487131707fb13c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::S_RoguelikeSelectController
+  _input: {fileID: 705193407}
+  _shopMenu: {fileID: 705193406}
 --- !u!1 &1113188341
 GameObject:
   m_ObjectHideFlags: 0
@@ -1340,7 +1453,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 511, y: 0}
+  m_AnchoredPosition: {x: 511, y: -50}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1782293855
@@ -1363,7 +1476,7 @@ MonoBehaviour:
   m_ChildAlignment: 4
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 200, y: 270}
+  m_CellSize: {x: 180, y: 300}
   m_Spacing: {x: 14, y: 14}
   m_Constraint: 1
   m_ConstraintCount: 3
@@ -1735,7 +1848,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 581, y: 99}
+  m_AnchoredPosition: {x: 1682, y: 99}
   m_SizeDelta: {x: 400, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1660057539 &9223372036854775807

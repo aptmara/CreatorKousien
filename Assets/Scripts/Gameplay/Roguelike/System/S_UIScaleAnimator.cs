@@ -88,6 +88,20 @@ public class S_UIScaleAnimator : MonoBehaviour
         _selectRoutine = StartCoroutine(SelectedAnimationRoutine(onComplete));
     }
 
+    public void CaptureBaseScale()
+    {
+        if (_target == null)
+            _target = GetComponent<RectTransform>();
+
+        if (_target == null)
+            return;
+
+        _baseScale = _target.localScale;
+    }
+
+
+
+
     private IEnumerator HoverRoutine(float targetMultiplier)
     {
         yield return ScaleRoutine(CurrentMultiplier(), targetMultiplier, _hoverTransitionDuration, _hoverEase);

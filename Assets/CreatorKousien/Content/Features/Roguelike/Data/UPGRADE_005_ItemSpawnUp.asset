@@ -20,15 +20,9 @@ MonoBehaviour:
   Modifiers: []
   GameplayValue: 2
   OfferType: 0
-  CombatPressureRuleId: 
-  CombatPressureOutputType: 0
-  RequiresCollectibleFocus: 0
-  SynergyTags: 0
-  SuppressedTags: 0
-  DraftWeight: 1
   Effects: []
   MaxLevel: 10
-  Icon: {fileID: 21300000, guid: e99c6213aa393d24c92be25281166c93, type: 3}
+  Icon: {fileID: 21300000, guid: 7d1f0bf9a0d5ba648b50678eba730c9e, type: 3}
   Category: 0
   Cost: 20
   CostMagni: 1.2

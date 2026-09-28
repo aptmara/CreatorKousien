@@ -5,7 +5,7 @@
 // auther : Shohei Takitani
 // date   : 2026/06/30 - begin.
 // update : 2026/09/07 - 常設MENU化に伴い購入ボタン形式へ改修 - 浅野
-//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+//_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,7 +13,10 @@ using UnityEngine.EventSystems;
 using TMPro;
 using Game.Data.Player;
 
-public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class S_UpgradeCard : MonoBehaviour,
+    IShopFocusable,
+    IPointerEnterHandler,
+    IPointerExitHandler
 {
     //____________________________________
     // variables
@@ -44,12 +47,15 @@ public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     [Header("機能面")]
     [SerializeField] private Button _selectButton;
 
-
     private UpgradeData _cardData;
     private Image _runtimeFrame;
     private Outline _runtimeOutline;
     private Material _defaultIconMaterial;
     private static Material _sharedGrayscaleMaterial;
+
+    private bool _pointerFocused;
+    private bool _eventSelected;
+    private bool _focusApplied;
 
     /// <summary>ホバー開始時に呼ばれる(自分自身を渡す)</summary>
     public event Action<S_UpgradeCard> HoverEnter;
@@ -59,16 +65,28 @@ public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public event Action<S_UpgradeCard> Clicked;
 
     public UpgradeData CardData => _cardData;
-
-
-    //____________________________________
-    // public function
+    public Selectable Selectable => _selectButton;
 
     private void Awake()
     {
         if (_selectButton != null)
-            _selectButton.onClick.AddListener(() => Clicked?.Invoke(this));
+            _selectButton.onClick.AddListener(HandleClicked);
     }
+
+    private void Update()
+    {
+        // SelectButtonはカードの子にあるため、EventSystemの選択状態を監視する
+        bool isSelected =
+            EventSystem.current != null
+            && _selectButton != null
+            && EventSystem.current.currentSelectedGameObject == _selectButton.gameObject;
+
+        _eventSelected = isSelected;
+        RefreshFocus();
+    }
+
+    //____________________________________
+    // public function
 
     /// <summary>
     /// ボタンの表示内容を設定する
@@ -78,20 +96,20 @@ public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public void Setup(UpgradeData cardData, int currentLevel)
     {
         if (!_useFrameHighlight && _highlightFrame != null)
-        {
             _highlightFrame.SetActive(false);
-        }
 
         _cardData = cardData;
-//        EnsureRuntimeFrame();
         PrepareIconMaterial();
         ApplyCardLayout();
-        DisableScaleAnimation();
+        _scaleAnimator?.CaptureBaseScale();
+
         _nameText.gameObject.SetActive(true);
         _descriptionText.gameObject.SetActive(false);
         _levelText.gameObject.SetActive(true);
+
         if (_costText != null)
             _costText.gameObject.SetActive(true);
+
         Refresh(currentLevel);
     }
 
@@ -108,22 +126,21 @@ public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         _levelText.text = isMaxed
             ? "MAX"
             : GetStageLabel(currentLevel, Mathf.Clamp(currentLevel + 1, 1, _cardData.MaxLevel));
-        ApplyFrameColor(false);
 
         if (_costText != null)
-        {
             _costText.text = isMaxed ? "取得済み" : $"{_cardData.GetCost(currentLevel)} コイン";
-        }
 
         if (_acquiredMark != null)
-        {
             _acquiredMark.SetActive(currentLevel > 0);
-        }
 
-        // 最大レベル到達済みなら購入不可にする
         if (_selectButton != null)
             _selectButton.interactable = !isMaxed;
+
+        RefreshFocus();
     }
+
+    //____________________________________
+    // private function
 
     private static string GetStageLabel(int currentLevel, int nextLevel)
     {
@@ -133,13 +150,18 @@ public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     private void ApplyFrameColor(bool isHighlighted)
     {
         if (_runtimeFrame != null)
+        {
             _runtimeFrame.color = isHighlighted
                 ? new Color(0.28f, 0.12f, 0.30f, 1f)
                 : new Color(0.12f, 0.07f, 0.16f, 0.96f);
+        }
+
         if (_runtimeOutline != null)
+        {
             _runtimeOutline.effectColor = isHighlighted
                 ? Color.white
                 : new Color(0.48f, 0.32f, 0.18f, 1f);
+        }
     }
 
     private void EnsureRuntimeFrame()
@@ -147,7 +169,11 @@ public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         if (_runtimeFrame != null)
             return;
 
-        var frameObject = new GameObject("RuntimeCardFrame", typeof(RectTransform), typeof(CanvasRenderer)/*, typeof(Image), typeof(Outline)*/);
+        var frameObject = new GameObject(
+            "RuntimeCardFrame",
+            typeof(RectTransform),
+            typeof(CanvasRenderer));
+
         frameObject.transform.SetParent(transform, false);
         frameObject.transform.SetAsFirstSibling();
 
@@ -194,19 +220,18 @@ public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         _iconImage.preserveAspect = true;
         _iconImage.raycastTarget = false;
 
-        ConfigureText(_nameText, new Vector2(0f, -58f), new Vector2(200f, 40f), 24f, FontStyles.Bold);
-        _nameText.color = Color.black;
+        ConfigureText(_nameText, new Vector2(0f, -65f), new Vector2(200f, 40f), 24f, FontStyles.Bold);
         _nameText.color = Color.black;
         _nameText.enableAutoSizing = true;
         _nameText.fontSizeMin = 0f;
-        _nameText.fontSizeMax = 18f;
-        ConfigureText(_levelText, new Vector2(0f, -88f), new Vector2(194f, 30f), 22f, FontStyles.Bold);
-        //        _levelText.color = new Color(1f, 0.72f, 0.28f, 1f);
+        _nameText.fontSizeMax = 25f;
+
+        ConfigureText(_levelText, new Vector2(0f, -95f), new Vector2(194f, 30f), 22f, FontStyles.Bold);
         _levelText.color = Color.black;
+
         if (_costText != null)
         {
-            ConfigureText(_costText, new Vector2(0f, -112f), new Vector2(194f, 28f), 20f, FontStyles.Bold);
-            ///  _costText.color = new Color(1f, 0.92f, 0.55f, 1f);
+            ConfigureText(_costText, new Vector2(0f, -120f), new Vector2(194f, 28f), 20f, FontStyles.Bold);
             _costText.color = Color.black;
         }
     }
@@ -240,28 +265,67 @@ public class S_UpgradeCard : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     }
 
     //____________________________________
-    // pointer handlers
+    // focus and click
+
+    private void HandleClicked()
+    {
+        _scaleAnimator?.PlaySelectedAnimation();
+        Clicked?.Invoke(this);
+    }
+
+    /// <summary>
+    /// マウス状態とEventSystemの選択状態をまとめてフォーカス演出へ反映する
+    /// </summary>
+    private void RefreshFocus()
+    {
+        bool isFocused = S_RoguelikeSelectController.IsPointerMode
+            ? _pointerFocused
+            : _eventSelected;
+        if (_focusApplied == isFocused)
+            return;
+
+        _focusApplied = isFocused;
+
+        ApplyFrameColor(isFocused);
+        _scaleAnimator?.SetHighlighted(isFocused);
+
+        if (isFocused)
+            HoverEnter?.Invoke(this);
+        else
+            HoverExit?.Invoke(this);
+    }
+
+    public void Focus(bool isFocused)
+    {
+        // IShopFocusableとの互換性を保つ
+        _eventSelected = isFocused;
+        RefreshFocus();
+    }
+
+    public void TriggerClick()
+    {
+        if (_selectButton != null)
+            _selectButton.onClick.Invoke();
+    }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        ApplyFrameColor(true);
-        _iconImage.material = _sharedGrayscaleMaterial == null ? _defaultIconMaterial : _defaultIconMaterial;
-        HoverEnter?.Invoke(this);
+        _pointerFocused = true;
+        RefreshFocus();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        ApplyFrameColor(false);
-        HoverExit?.Invoke(this);
+        _pointerFocused = false;
+        RefreshFocus();
     }
 
     /// <summary>
     /// 選択確定時のアニメーションを再生する関数
     /// </summary>
     /// <param name="onComplete"></param>
-    public void PlaySelectedAnimation(System.Action onComplete = null)
+    public void PlaySelectedAnimation(Action onComplete = null)
     {
         onComplete?.Invoke();
     }
-
 }
