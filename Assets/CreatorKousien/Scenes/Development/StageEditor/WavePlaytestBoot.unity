@@ -205,10 +205,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd3245b837c9d2b4eaa940b7349a1d27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.WaveTester
-  testWave: {fileID: 11400000, guid: aaf1380564d839941be3a3aa0ea9ad7b, type: 2}
+  testWave: {fileID: 11400000, guid: 15c396ba989112e45b80e0871099ca95, type: 2}
   waveRunner: {fileID: 0}
   enemySpawner: {fileID: 0}
-  _playResultFlowOnClear: 0
+  _playResultFlowOnClear: 1
 --- !u!4 &1283636159
 Transform:
   m_ObjectHideFlags: 0
@@ -290,7 +290,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d578bdc799504a4e84ee83bef7fed4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.WaveSystem.StageSceneContext
-  stageData: {fileID: 11400000, guid: 1a984c9714a36e349b28f604f8e3daa0, type: 2}
+  stageData: {fileID: 11400000, guid: 6c4defc443a309643a50b3fbf81473c9, type: 2}
   useFixedSeed: 1
   fixedSeed: 12345
   manualTestMode: 1

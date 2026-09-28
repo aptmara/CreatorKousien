@@ -276,12 +276,15 @@
 					</ActiveSourceList>
 				</Sound>
 				<Sound Name="Signboard_Fall" ID="{DF1FA370-A9FB-4B00-8E68-72AB5F75F0A0}" ShortID="687267182">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -298,12 +301,15 @@
 					</ActiveSourceList>
 				</Sound>
 				<Sound Name="UI_Appear" ID="{A356C35F-CE41-43A3-BE28-DFDC35BD6317}" ShortID="152564601">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -320,12 +326,15 @@
 					</ActiveSourceList>
 				</Sound>
 				<Sound Name="Wave_Start" ID="{4E64D7AF-2B52-4960-AFB1-09E1807A5BC7}" ShortID="287096922">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -342,12 +351,15 @@
 					</ActiveSourceList>
 				</Sound>
 				<Sound Name="Menu_Cursor_Move" ID="{6CF72D08-9164-47F7-A2AB-4661E03B4782}" ShortID="444873181">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -364,12 +376,15 @@
 					</ActiveSourceList>
 				</Sound>
 				<Sound Name="Game_Start" ID="{96FE9D15-FB64-4DD4-A94C-D449D0EFE256}" ShortID="511558822">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -388,13 +403,14 @@
 				<Sound Name="Title_BGM" ID="{1F71815D-C3DF-4609-982C-C29D0E872862}" ShortID="579353143">
 					<PropertyList>
 						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
 					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="BGM" ID="{4390F16A-EB12-4B05-8F2E-BEC2707C0C64}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -413,13 +429,14 @@
 				<Sound Name="Boss_Battle_BGM" ID="{C4EE52B5-2F88-40A3-8DCF-B6BCB8D8E0A0}" ShortID="1041072736">
 					<PropertyList>
 						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
 					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="BGM" ID="{4390F16A-EB12-4B05-8F2E-BEC2707C0C64}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -438,13 +455,14 @@
 				<Sound Name="Game_Clear_BGM" ID="{4B5E6461-04FD-47AB-98F8-2C2276D56FB9}" ShortID="79389969">
 					<PropertyList>
 						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
 					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="BGM" ID="{4390F16A-EB12-4B05-8F2E-BEC2707C0C64}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -463,13 +481,14 @@
 				<Sound Name="Game_Over_BGM" ID="{FB4F4D81-75EF-495E-9753-240D4A1C3648}" ShortID="346413721">
 					<PropertyList>
 						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
 					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="BGM" ID="{4390F16A-EB12-4B05-8F2E-BEC2707C0C64}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -486,22 +505,28 @@
 					</ActiveSourceList>
 				</Sound>
 				<Sound Name="Cash_Register" ID="{49D07778-CEBB-4E8F-A436-9AC896F6AE4B}" ShortID="785184743">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 				</Sound>
 				<Sound Name="Shop_Appear" ID="{C43ABA9E-A7B9-4B75-A355-809956B3C303}" ShortID="992978864">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -518,12 +543,15 @@
 					</ActiveSourceList>
 				</Sound>
 				<Sound Name="Shop_Disappear" ID="{00F42200-21E6-491F-A4B5-B0A6236825DD}" ShortID="703681742">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -540,12 +568,15 @@
 					</ActiveSourceList>
 				</Sound>
 				<Sound Name="Scene_Transition" ID="{9B20D17F-01FA-4712-96F8-60EA3EB2E8C5}" ShortID="327402133">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -562,12 +593,15 @@
 					</ActiveSourceList>
 				</Sound>
 				<Sound Name="Title_Logo_Appear" ID="{4CFF9A1F-FCD7-4A7B-9BB2-EFAE5F9980E8}" ShortID="1024273717">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -584,12 +618,15 @@
 					</ActiveSourceList>
 				</Sound>
 				<Sound Name="Title_Candy_Scatter" ID="{7B91574A-11A6-40C6-BBF8-1AB95FE00DD4}" ShortID="771922022">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -606,12 +643,15 @@
 					</ActiveSourceList>
 				</Sound>
 				<Sound Name="Upgrade_Confirm" ID="{3A1E459F-A8A0-4FC3-BCDC-0EB438E66A13}" ShortID="439425531">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -628,12 +668,15 @@
 					</ActiveSourceList>
 				</Sound>
 				<Sound Name="UI_Confirm" ID="{C4D9F193-163D-4764-A52B-07E9B0FFA4A6}" ShortID="695171919">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -650,12 +693,15 @@
 					</ActiveSourceList>
 				</Sound>
 				<Sound Name="UI_Back" ID="{49CA60D2-751D-4786-BA30-47E6210BA44A}" ShortID="139551515">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
@@ -669,6 +715,81 @@
 					</ChildrenList>
 					<ActiveSourceList>
 						<ActiveSource Name="UI_Back" ID="{1422D6F5-ACC4-428D-8A10-2DA554E43895}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<Sound Name="Upgrade_Complete" ID="{15995568-ECAF-41D8-9BF0-96AB9C1D6304}" ShortID="82121896">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="Upgrade_Complete" ID="{2B0F24F7-47A3-4618-8F65-ADE3DA2AAB36}">
+							<Language>SFX</Language>
+							<AudioFile>Upgrade_Complete.wav</AudioFile>
+							<MediaIDList>
+								<MediaID ID="157467167"/>
+							</MediaIDList>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="Upgrade_Complete" ID="{2B0F24F7-47A3-4618-8F65-ADE3DA2AAB36}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<Sound Name="Upgrade_Cursor_Move" ID="{8BFF16A4-06FE-4CC8-ADDD-94C87F072EC6}" ShortID="364733189">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="Upgrade_Cursor_Move" ID="{6F985BD8-0FD9-4AE2-B23D-9BAE2B729B15}">
+							<Language>SFX</Language>
+							<AudioFile>Upgrade_Cursor_Move.wav</AudioFile>
+							<MediaIDList>
+								<MediaID ID="266348173"/>
+							</MediaIDList>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="Upgrade_Cursor_Move" ID="{6F985BD8-0FD9-4AE2-B23D-9BAE2B729B15}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<Sound Name="Upgrade_Icon_Appear" ID="{7DE10ED0-D966-4A13-AB83-E5ED953ED42C}" ShortID="728306594">
+					<PropertyList>
+						<Property Name="OverrideOutput" Type="bool" Value="True"/>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{88731BDA-8EDF-446B-AD93-DE3D26331B7E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="SE" ID="{F99534AF-4CFE-4697-B16E-940CBDA6C177}" WorkUnitID="{57504449-CA53-4151-80C0-A0513DAF5893}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="Upgrade_Icon_Appear" ID="{6748F744-C7F7-46B5-A39C-90EE89FD5592}">
+							<Language>SFX</Language>
+							<AudioFile>Upgrade_Icon_Appear.wav</AudioFile>
+							<MediaIDList>
+								<MediaID ID="169735195"/>
+							</MediaIDList>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="Upgrade_Icon_Appear" ID="{6748F744-C7F7-46B5-A39C-90EE89FD5592}" Platform="Linked"/>
 					</ActiveSourceList>
 				</Sound>
 			</ChildrenList>

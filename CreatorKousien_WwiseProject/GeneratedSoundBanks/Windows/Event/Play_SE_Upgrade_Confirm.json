@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{4BCCBA85-FAF2-4153-8D7C-3FB633F9BEC5}",
     "Language": "SFX",
-    "Hash": "{30F7ADD6-6BBE-5540-A857-E6CE25B8251B}",
+    "Hash": "{113E5308-EB3C-42E8-2568-0D6F72AE31EC}",
     "ObjectPath": "Play_SE_Upgrade_Confirm",
     "ShortName": "Play_SE_Upgrade_Confirm",
     "Path": "Event/Play_SE_Upgrade_Confirm.bnk",
@@ -43,6 +43,6 @@
     ]
    }
   ],
-  "FileHash": "{22C6CE62-468E-D800-8353-633C70E3521F}"
+  "FileHash": "{FEE8081D-B546-59A6-A8F6-B89D28B1EC93}"
  }
 }

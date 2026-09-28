@@ -48,6 +48,23 @@ namespace Game.Core.Events
         }
     }
 
+    public readonly struct TutorialTextSkipEvent
+    {
+        public TutorialTextSkipEvent(string dummy)
+        {
+        }
+    }
+
+    public readonly struct TutorialTextEndEvent
+    {
+        public readonly string Text;
+
+        public TutorialTextEndEvent(string text)
+        {
+            Text = text;
+        }
+    }
+
     // チュートリアルフローが内部で呼んで内部で受け取るイベント、別に代わりにショップ側に持たせたって良い
     public readonly struct TutorialShopEndEvent
     {

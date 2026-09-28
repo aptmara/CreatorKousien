@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{44D59842-5978-460D-B99C-A025A6ED5228}",
     "Language": "SFX",
-    "Hash": "{053C94E6-5462-180D-D90B-549BA33B06FF}",
+    "Hash": "{A52B4003-4C1E-F84E-9B56-9C9CE38685A8}",
     "ObjectPath": "Play_SE_Game_Start",
     "ShortName": "Play_SE_Game_Start",
     "Path": "Event/Play_SE_Game_Start.bnk",
@@ -43,6 +43,6 @@
     ]
    }
   ],
-  "FileHash": "{80B87A9E-997C-EDB1-28EE-008D56528295}"
+  "FileHash": "{FD565BCA-6D75-1781-96A6-D93B6D285EBE}"
  }
 }

@@ -1,4 +1,5 @@
 using Game.Core.Events;
+using Game.Gameplay.Collectibles;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -48,6 +49,7 @@ public class TutorialUIController : MonoBehaviour
         EventBus.Unsubscribe<TutorialTextResetEvent>(OnResetText);
         StopTyping();
         StopArrow();
+        EventBus.Publish<TutorialTextEndEvent>(new TutorialTextEndEvent(""));
     }
 
     void OnDrawText(TutorialTextEvent ev)
@@ -62,6 +64,7 @@ public class TutorialUIController : MonoBehaviour
         StopTyping();
         StopArrow();
         if (textObject != null) textObject.SetActive(false);
+        EventBus.Publish<TutorialTextEndEvent>(new TutorialTextEndEvent(""));
     }
 
     private void StartTyping(string content)
@@ -78,6 +81,8 @@ public class TutorialUIController : MonoBehaviour
             StartArrow();
             return;
         }
+
+        CommandToColorcord(ref content);
 
         _typingCoroutine = StartCoroutine(TypeTextRealtime(content));
     }
@@ -100,14 +105,61 @@ public class TutorialUIController : MonoBehaviour
             yield break;
         }
 
+        bool isSkip = false;
+
+        System.Action<TutorialTextSkipEvent> skip = (TutorialTextSkipEvent) => isSkip  = true;
+        EventBus.Subscribe<TutorialTextSkipEvent>(skip);
+
         for (int i = 0; i < content.Length; i++)
         {
             text.text += content[i];
-            yield return new WaitForSecondsRealtime(_charInterval);
+            // 文字列が色やサイズ変更だった場合その場で全て入力する
+            int commandEnd;
+            while (CheckChangeCommand(content, i + 1, out commandEnd))
+            {
+                int commandLength = commandEnd - i;
+                text.text += content.Substring(i + 1, commandLength);
+                i = commandEnd;
+            }
+            if(!isSkip)yield return new WaitForSecondsRealtime(_charInterval);
         }
 
+        EventBus.Unsubscribe<TutorialTextSkipEvent>(skip);
+
         _typingCoroutine = null;
+        EventBus.Publish<TutorialTextEndEvent>(new TutorialTextEndEvent(content));
         StartArrow();
+    }
+
+    private bool CheckChangeCommand(string content, int index, out int commandEnd)
+    {
+        commandEnd = -1;
+        if (content.Length <= index) return false;
+
+        if (content[index] != '<') return false;
+
+        for (int i = index + 1; i < content.Length; i++)
+        {
+            if (content[i] == '<') return false;
+
+            if (content[i] != '>') continue;
+
+            commandEnd = i;
+            return true;
+        }
+
+        return false;
+    }
+
+    // 
+    private void CommandToColorcord(ref string content)
+    {
+        content = content.Replace("[:", "<color=#606000><b>");
+        content = content.Replace(":]", "</b></color>");
+
+        content = content.Replace("[*", "<b>");
+        content = content.Replace("*]", "</b>");
+
     }
 
     // 矢印のアニメーション制御

@@ -17,5 +17,6 @@ namespace Game.Core.Management
         Battle,     // 通常のウェーブ迎撃バトル中
         Roguelike,  // ローグライクモード中
         Result,     // ゲームクリア or ゲームオーバー状態
+        ResultCinematic, // ゲームクリア・ゲームオーバー演出中
     }
 }

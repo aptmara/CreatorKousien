@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{61932A3F-F29D-4804-90F5-D5220A8ED9AC}",
     "Language": "SFX",
-    "Hash": "{8E6084A7-8A13-2AE3-20BF-EF84FA256937}",
+    "Hash": "{78293C05-5CD5-E483-A6DF-25137B72F1E1}",
     "ObjectPath": "Play_SE_Title_Logo_Appear",
     "ShortName": "Play_SE_Title_Logo_Appear",
     "Path": "Event/Play_SE_Title_Logo_Appear.bnk",
@@ -43,6 +43,6 @@
     ]
    }
   ],
-  "FileHash": "{414A7954-0857-23C9-5D4E-A8B4B467BD59}"
+  "FileHash": "{B50E398E-0350-9505-2806-A33ADF40680B}"
  }
 }

@@ -7,7 +7,6 @@ using Game.Gameplay.Shop;
 using Game.WaveSystem;
 using System.Collections;
 using System.Collections.Generic;
-
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -301,6 +300,12 @@ public class TutorialFlowManager : GameProgressionManagerBase
                 }
                 break;
 
+            case TutorialWave.ClearConditions.SkipKey:
+                {
+                    yield return SkipKeyWait();
+                }
+                break;
+
             default:
                 Debug.LogError("チュートリアルの終了条件が登録されていません、クリアしたことにして次に進みます");
                 break;
@@ -334,11 +339,12 @@ public class TutorialFlowManager : GameProgressionManagerBase
 
     IEnumerator DrawTutoeialText(string text)
     {
-        yield return null;
-
-        Debug.Log("TutorialTextを生成");
-        EventBus.Publish(new TutorialTextEvent(text));
         Time.timeScale = 0.0f;
+        yield return null;
+        EventBus.Publish(new TutorialTextEvent(text));
+
+        yield return TextEndWait();
+
         while (!_clickAction.triggered && !_submitAction.triggered)
         {
             if (!_clickAction.enabled || !_submitAction.enabled) Debug.LogError("入力が効いてないぜ！！");
@@ -348,7 +354,6 @@ public class TutorialFlowManager : GameProgressionManagerBase
         }
         Time.timeScale = 1.0f;
         EventBus.Publish(new TutorialTextResetEvent(text));
-        Debug.Log("TutorialTextを終了");
         yield return null;
     }
 
@@ -375,6 +380,29 @@ public class TutorialFlowManager : GameProgressionManagerBase
         EventBus.Publish(new TutorialShopEndEvent());
     }
 
+    IEnumerator TextEndWait()
+    {
+        bool endFlag = false;
+        System.Action<TutorialTextEndEvent> action = (TutorialTextEndEvent ev) => endFlag = true;
+        EventBus.Subscribe<TutorialTextEndEvent>(action);
+        while (!endFlag)
+        {
+            if (!_clickAction.enabled) _clickAction.Enable();
+            if (!_submitAction.enabled) _submitAction.Enable();
+            if (_clickAction.triggered || _submitAction.triggered) EventBus.Publish<TutorialTextSkipEvent>(new TutorialTextSkipEvent(""));
+            yield return null;
+        }
+        EventBus.Unsubscribe<TutorialTextEndEvent>(action);
+
+    }
+
+    IEnumerator SkipKeyWait()
+    {
+        while(!Keyboard.current.f12Key.wasPressedThisFrame)
+        {
+            yield return null;
+        }
+    }
 
 #if UNITY_EDITOR
 
@@ -399,6 +427,14 @@ public class TutorialFlowManager : GameProgressionManagerBase
     /// デバッグ用。
     /// </summary>
     public override void DebugJumpToFinalWave()
+    {
+
+    }
+
+    /// <summary>
+    /// デバッグ用。
+    /// </summary>
+    public override void DebugJumpToGameOver()
     {
 
     }

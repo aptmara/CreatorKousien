@@ -73,6 +73,6 @@ MonoBehaviour:
   BurstWarningVfxPrefab: {fileID: 2610124898922505302, guid: 66452da6f98c1d84da4beb81f1f02ead, type: 3}
   BurstDamage: 250
   BurstRadius: 20
-  BurstVfxPrefab: {fileID: 887176818804198120, guid: dbfbbba36b39edd4fb1ae50110ea2fa2, type: 3}
+  BurstVfxPrefab: {fileID: 6653435561416492153, guid: 9f18587fa562008438a6a36774d910ca, type: 3}
   BurstVfxOffset: {x: 0, y: 0.5, z: 0}
   BurstVfxLifetime: 3

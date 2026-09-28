@@ -467,10 +467,18 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
             return;
         }
 
-        Vector3 adjustedSpawnPosition = CreateMovementEmissionSpawnPosition(spawnPosition);
-        Vector3 direction = CreatePlayerLaunchDirection(adjustedSpawnPosition);
+        Vector3 fieldUp = FieldRotation * Vector3.up;
+        Vector3 adjustedSpawnPosition = CreateMovementEmissionSpawnPosition(spawnPosition)
+            + fieldUp * _emitOffset;
+        Vector3 direction = CreatePlayerLaunchDirection(adjustedSpawnPosition, fieldUp);
 
-        _emitter.EmitFromHit(adjustedSpawnPosition, direction, _spreadAngle, _movementEmissionPower, null);
+        _emitter.EmitFromWorldPosition(
+            adjustedSpawnPosition,
+            direction,
+            _spreadAngle,
+            _movementEmissionPower,
+            null,
+            fieldUp);
     }
 
     /// <summary>

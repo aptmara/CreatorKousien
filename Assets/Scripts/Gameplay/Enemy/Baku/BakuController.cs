@@ -8,10 +8,11 @@
 // Notes	:
 // - ベース作成
 // ------------------------------------------------------------
-using System.Collections;
 using Game.Core.Enemy;
+using Game.Core.Events;
 using Game.Data.Collectibles;
 using Game.Gameplay.Collectibles;
+using System.Collections;
 using UnityEngine;
 
 namespace Game.Gameplay.Enemy.Baku
@@ -271,6 +272,9 @@ namespace Game.Gameplay.Enemy.Baku
 
             // 拡張ギミックへ通知
             CollectibleEaten?.Invoke(collectible);
+
+            // 既存のヒットVFXを流用する。ダメージは0なので無敵は崩れない
+            EventBus.Publish(new EnemyHitBatchEvent(_enemyController.InstanceEnemyId, 0, 0f, _mouth.transform.position, null, data));
 
             // 食べ過ぎで破裂へ入った場合は、捕食モーションをスキップして破裂処理へ移行する
             if (_isBursting)

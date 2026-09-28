@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "2743700036",
+    "Type": "Event",
+    "GUID": "{D1DDC220-45C4-4AA0-9A67-3C1F44A93D17}",
+    "Language": "SFX",
+    "Hash": "{DD4640F2-2E74-8039-EC60-5346E0D64344}",
+    "ObjectPath": "Play_SE_Upgrade_Cursor_Move",
+    "ShortName": "Play_SE_Upgrade_Cursor_Move",
+    "Path": "Event/Play_SE_Upgrade_Cursor_Move.bnk",
+    "Media": [
+     {
+      "Id": "266348173",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Upgrade_Cursor_Move.wav",
+      "Path": "Media/266348173.wem",
+      "CachePath": "AE/{AE1026B3-7B25-5C27-73B1-CDCB7A74308C}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "2743700036",
+      "Name": "Play_SE_Upgrade_Cursor_Move",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_SE_Upgrade_Cursor_Move",
+      "GUID": "{D1DDC220-45C4-4AA0-9A67-3C1F44A93D17}",
+      "DurationType": "OneShot",
+      "DurationMin": "1.7712698",
+      "DurationMax": "1.7712698",
+      "MediaRefs": [
+       {
+        "Id": "266348173"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{AE18EE49-3613-7B3C-AB5D-6DA512A469AA}"
+ }
+}

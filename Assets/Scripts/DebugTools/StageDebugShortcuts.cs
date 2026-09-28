@@ -14,6 +14,7 @@ using Game.Core.Enemy;
 using Game.Core.Management;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Game.Core.Events;
 
 namespace Game.DebugTools
 {
@@ -61,6 +62,18 @@ namespace Game.DebugTools
             if (Keyboard.current.f4Key.wasPressedThisFrame)
             {
                 JumpToFinalWave();
+            }
+
+            // F6: 防衛ラインのHPを0にする
+            if (Keyboard.current.f6Key.wasPressedThisFrame)
+            {
+
+            }
+
+            // F7: バリア破壊演出を飛ばして
+            if (Keyboard.current.f7Key.wasPressedThisFrame)
+            {
+                JumpToGameOver();
             }
 #endif
         }
@@ -137,6 +150,39 @@ namespace Game.DebugTools
 
             Debug.Log("[StageDebug] F4: 最終Wave(Boss)へジャンプします。");
             GameProgressionManagerBase.Instance.DebugJumpToFinalWave();
+        }
+
+        /// <summary>
+        /// 防衛ラインに即死するダメージを与えます
+        /// </summary>
+        private static void BreakDefenceline()
+        {
+            if (GameProgressionManagerBase.Instance == null)
+            {
+                Debug.LogWarning("[StageDebug] F6: GameProgressionManagerが見つかりません。");
+                return;
+            }
+
+            Debug.Log("[StageDebug] F6: 防衛ラインを破壊します。");
+
+            EventBus.Publish(new RuleBarrierAttackEvent(999999f, new Vector3()));
+        }
+
+        /// <summary>
+        /// 防衛ラインに即死するダメージを与えます
+        /// </summary>
+        private static void JumpToGameOver()
+        {
+            //if (GameProgressionManagerBase.Instance == null)
+            //{
+            //    Debug.LogWarning("[StageDebug] F7: GameProgressionManagerが見つかりません。");
+            //    return;
+            //}
+
+            //Debug.Log("[StageDebug] F7: ゲームオーバー演出へ遷移します");
+            //GameProgressionManagerBase.Instance.DebugJumpToGameOver();
+            EventBus.Publish(new DefLineBreakReactionEvent(90000, new Vector3()));
+
         }
     }
 }

@@ -49,10 +49,13 @@ namespace Game.Presentation.UI.Combo
         [RequireInterface(typeof(IComboFeedback))]
         [SerializeField] private List<MonoBehaviour> _feedbacks = new List<MonoBehaviour>();
 
+        private const int ComboMilestoneStep = 50;
+
         private ComboManager _comboManager;
         private readonly List<IComboFeedback> _activeFeedbacks = new List<IComboFeedback>();
         private Vector3 _lastHitPosition = Vector3.zero;
         private int _currentComboValue;
+        private int _lastComboMilestone;
 
         private void Awake()
         {
@@ -135,6 +138,13 @@ namespace Game.Presentation.UI.Combo
             _currentComboValue = currentCombo;
             SetTextActive(true);
 
+            int reachedMilestone = currentCombo / ComboMilestoneStep;
+            if (reachedMilestone > _lastComboMilestone)
+            {
+                _lastComboMilestone = reachedMilestone;
+                SoundManager.instance?.PlaySE("Upgrade_Confirm");
+            }
+
             string textString = $"{currentCombo}";// Combo!";
             if (_comboTextBase != null) _comboTextBase.text = textString;
             if (_comboTextFill != null) _comboTextFill.text = textString;
@@ -160,6 +170,7 @@ namespace Game.Presentation.UI.Combo
             int finalCombo = _currentComboValue;
             Vector3 lastHitPosition = _lastHitPosition;
 
+            _lastComboMilestone = 0;
             SetTextActive(false);
             _comboGaugeUI?.resetGauge();
 

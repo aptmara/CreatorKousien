@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{9BD7F85D-9921-4500-931D-144D51918082}",
     "Language": "SFX",
-    "Hash": "{FD9B0DE4-C1A5-2636-40D5-F11DFD59BD70}",
+    "Hash": "{FAF0150F-47AC-7F92-5D54-5FE649285F9D}",
     "ObjectPath": "Play_SE_UI_Back",
     "ShortName": "Play_SE_UI_Back",
     "Path": "Event/Play_SE_UI_Back.bnk",
@@ -43,6 +43,6 @@
     ]
    }
   ],
-  "FileHash": "{39F6302A-0B9B-2538-A7F2-81C177DF5D5C}"
+  "FileHash": "{DB91E869-470B-D2CC-E6D1-1F9A014D1314}"
  }
 }

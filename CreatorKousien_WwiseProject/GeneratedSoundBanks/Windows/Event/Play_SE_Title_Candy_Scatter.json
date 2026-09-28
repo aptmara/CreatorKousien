@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{9E0C4E45-3F39-46DC-8319-C35AFE0A7E39}",
     "Language": "SFX",
-    "Hash": "{3392A0F1-BAFF-5FD6-6AD0-35E015FC8A58}",
+    "Hash": "{6E0338AD-916D-2BB0-0173-6B028601593C}",
     "ObjectPath": "Play_SE_Title_Candy_Scatter",
     "ShortName": "Play_SE_Title_Candy_Scatter",
     "Path": "Event/Play_SE_Title_Candy_Scatter.bnk",
@@ -43,6 +43,6 @@
     ]
    }
   ],
-  "FileHash": "{919A3E58-DA80-14FE-D5E8-59972152C757}"
+  "FileHash": "{7022DE85-3E90-6F0C-D6E5-34ECDC54FA27}"
  }
 }

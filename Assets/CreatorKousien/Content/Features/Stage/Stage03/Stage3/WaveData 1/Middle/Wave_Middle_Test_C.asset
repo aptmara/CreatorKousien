@@ -18,7 +18,7 @@ MonoBehaviour:
   completeDelay: 1.5
   hpRate: 2.5
   barrierRate: 1.5
-  maxAliveEnemies: 2
+  maxAliveEnemies: 0
   minDistanceFromOtherEnemies: 1.4
   groups:
   - groupName: S3_MidC_G1_Open

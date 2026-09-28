@@ -48,5 +48,15 @@ MonoBehaviour:
   _stoneWeight: 1
   _spikeWeight: 1
   _skullWeight: 1
+  _throwReleaseDelay: 1.65
+  _throwSide: 0
+  _throwLeftTrigger: ThrowLeft
+  _throwRightTrigger: ThrowRight
+  _meleeData: {fileID: 11400000, guid: 2daf8b3cfa0ec7242a8c3166daef1300, type: 2}
+  _meleeEveryCount: 3
+  _meleeReplacesHazard: 0
+  _resetMeleeCountOnFever: 1
+  _popScale: 1.15
+  _popDuration: 0.3
   _drawSpawnPoints: 1
   _logSpit: 1

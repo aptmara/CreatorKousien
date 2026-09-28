@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{A80915D4-3A83-4460-AD66-B6F52D7A9D81}",
     "Language": "SFX",
-    "Hash": "{C814357A-A606-3E64-2A19-928E6E7C815C}",
+    "Hash": "{3037E71C-5FB0-4281-626B-E263D1D50659}",
     "ObjectPath": "Play_SE_Wave_Start",
     "ShortName": "Play_SE_Wave_Start",
     "Path": "Event/Play_SE_Wave_Start.bnk",
@@ -43,6 +43,6 @@
     ]
    }
   ],
-  "FileHash": "{063EA20D-A65F-5D76-8A39-B8FDD3BA5A93}"
+  "FileHash": "{787B0A64-EE5D-E74D-2899-50055FF16A0D}"
  }
 }

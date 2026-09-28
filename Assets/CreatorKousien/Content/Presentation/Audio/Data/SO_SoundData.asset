@@ -133,6 +133,24 @@ MonoBehaviour:
       WwiseObjectReference: {fileID: 11400000, guid: a28ee0d09544494aa1fcefe6897be39d, type: 2}
     Name: UI_Back
     bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 1b2023d83794470197e0c32cd947c91e, type: 2}
+    Name: Upgrade_Complete
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: 8d752d481c7345e4b106d80c4a10fedc, type: 2}
+    Name: Upgrade_Cursor_Move
+    bpm: 0
+  - WwiseEvent:
+      idInternal: 0
+      valueGuidInternal:
+      WwiseObjectReference: {fileID: 11400000, guid: da9433306c654d05a7a3f3a40ad1b841, type: 2}
+    Name: Upgrade_Icon_Appear
+    bpm: 0
   BGMDataList:
   - WwiseEvent:
       idInternal: 0

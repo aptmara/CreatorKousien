@@ -9,6 +9,8 @@
 // - 一度に全部出すと負荷が跳ねるため、Tickで1個ずつ吐き出したほうがいいってAIがいってるのでまずはそれでやってみます！
 // - 散布座標はBocchaScatterSettingsが担当し、方向の偏りが出ないようにしてみる！また甲斐に見てもらってかわるかもだけど、勝手にやるね～
 // - 抽選したハザードはNextOverrideGimmickでフロー側へ渡し、割り込み実行のやつをふぁるの作ってくれたのうまいこと使って実行する感じにする！
+//
+// - 何が出るかな？のなげモーション追加！ - 2026-09-21 Asano
 // ------------------------------------------------------------
 using System.Collections.Generic;
 using Game.Core.Events;
@@ -19,6 +21,31 @@ using UnityEngine;
 
 namespace Game.Gameplay.Enemy.Boss
 {
+    public enum BocchaThrowSide
+    {
+        /// <summary>
+        /// 左右を交互に出す
+        /// </summary>
+        Alternate = 0,
+
+        /// <summary>
+        /// ランダムに左右どちらかから出す
+        /// </summary>
+        Random = 1,
+
+        /// <summary>
+        /// 左だけ
+        /// </summary>
+        LeftOnly = 2,
+
+        /// <summary>
+        /// 右だけ
+        /// </summary>
+        RightOnly = 3,
+    }
+
+
+
     /// <summary>
     /// 「何が出るかな？」のギミッククラス
     /// </summary>
@@ -118,6 +145,47 @@ namespace Game.Gameplay.Enemy.Boss
         [Tooltip("ドクロフィーバーの抽選重み")]
         private float _skullWeight = 1.0f;
 
+
+        [Header("--- 投げモーション ---")]
+
+        [SerializeField]
+        [Min(0f)]
+        [Tooltip("投げモーション開始から実際にオカシが出るまでの時間")]
+        private float _throwReleaseDelay = 3.0f;
+
+        [SerializeField]
+        [Tooltip("左右の投げモーションの選び方")]
+        private BocchaThrowSide _throwSide = BocchaThrowSide.Alternate;
+
+        [SerializeField]
+        [Tooltip("左投げのTrigger名")]
+        private string _throwLeftTrigger = "ThrowLeft";
+
+        [SerializeField]
+        [Tooltip("右投げのTrigger名")]
+        private string _throwRightTrigger = "ThrowRight";
+
+
+        [Header("--- 殴りギミック ---")]
+
+        [SerializeField]
+        [Tooltip("既定回数ごとに割り込ませる殴りギミック")]
+        private BossGimmickData _meleeData;
+
+        [SerializeField]
+        [Min(1)]
+        [Tooltip("何回[何が出るかな？]をやったら殴りギミックを割り込ませるか")]
+        private int _meleeEveryCount = 3;
+
+        [SerializeField]
+        [Tooltip("ONなら殴る回はハザードを出さない。OFFならハザードのあとに殴る")]
+        private bool _meleeReplacesHazard = false;
+
+        [SerializeField]
+        [Tooltip("ONなら分身ギミックが始まった時に殴りまでのカウントをリセットする")]
+        private bool _resetMeleeCountOnFever = true;
+
+
         [Header("--- 吐き出しの迫力 ---")]
 
         [SerializeField]
@@ -160,6 +228,14 @@ namespace Game.Gameplay.Enemy.Boss
         private float _popTimer;
         private bool _isPopping;
 
+        // 交互投げ用
+        private bool _useRightNext;
+
+        // 前回殴ってからの散布回数
+        private int _spitCountSinceMelee;
+
+        // 投げモーションのリリース地点を通過したかどうか
+        private bool _hasReleased;
 
 
         public override bool IsComplete => _isComplete;
@@ -183,6 +259,16 @@ namespace Game.Gameplay.Enemy.Boss
             {
                 Debug.LogWarning($"[{nameof(BocchaGimmick_ItemSpit)}] BocchaCapacityGaugeが見つかりませんでした。");
             }
+
+            // 二重購読を防ぐため、先に解除してから購読する
+            EventBus.Unsubscribe<BocchaFeverStartedEvent>(HandleFeverStarted);
+            EventBus.Subscribe<BocchaFeverStartedEvent>(HandleFeverStarted);
+        }
+
+
+        private void OnDisable()
+        {
+            EventBus.Unsubscribe<BocchaFeverStartedEvent>(HandleFeverStarted);
         }
 
 
@@ -194,25 +280,20 @@ namespace Game.Gameplay.Enemy.Boss
             // 前回のポップが残っていたら先に戻す。基準が膨らんだまま記録されるのを防ぐ
             RestorePop();
 
+            // 投げモーションの再生
+            PlayThrowAnimation();
+
             _isComplete = false;
-            _timer = 0.0f;
+            _timer = _throwReleaseDelay;
             _spawnedCount = 0;
             _nextOverride = null;
-
-            if (_popScale > 1.0f && _popDuration > 0.0f)
-            {
-                _baseScale = Context.Transform.localScale;
-                _popTimer = 0.0f;
-                _isPopping = true;
-            }
+            _hasReleased = false;
 
             _scatter.BuildPoints(ResolveScatterCenter(), _candyCount, _pendingPoints);
 
-            EventBus.Publish(new BocchaSpitStartedEvent(Context.GetSocket(BossSocket.Muzzle).position, _pendingPoints.Count));
-
             _capacityGauge?.AddFromSpit();
 
-            _nextOverride = PickHazard();
+            ResolveNextGimmick();
 
             if (_logSpit)
             {
@@ -246,6 +327,13 @@ namespace Game.Gameplay.Enemy.Boss
                 return;
             }
 
+            if (!_hasReleased)
+            {
+                _hasReleased = true;
+                // 投げモーションのリリース地点を通過したので、吐き出し開始
+                BeginPop();
+            }
+
             _timer = _spitInterval;
 
             // 散布点が残っていれば、1個ずつ吐き出す
@@ -272,6 +360,7 @@ namespace Game.Gameplay.Enemy.Boss
             _pendingPoints.Clear();
             RestorePop();
 
+            _hasReleased = false;
 
             // 中断された場合は、次のギミックを割り込み実行しない
             _nextOverride = null;
@@ -296,6 +385,24 @@ namespace Game.Gameplay.Enemy.Boss
 
         // 内部処理
         // ------------------------------------------------------------
+
+        /// <summary>
+        /// 吐き出し開始の演出をまとめて始める
+        /// </summary>
+        private void BeginPop()
+        {
+            EventBus.Publish(new BocchaSpitStartedEvent(Context.GetSocket(BossSocket.Muzzle).position, _pendingPoints.Count));
+
+            if (_popScale <= 1.0f || _popDuration <= 0.0f)
+            {
+                return;
+            }
+
+            _baseScale = Context.Transform.localScale;
+            _popTimer = 0.0f;
+            _isPopping = true;
+        }
+
 
         /// <summary>
         /// 吐き出す瞬間のポップを進める。待ち時間に左右されないよう毎フレーム呼ぶ
@@ -436,6 +543,96 @@ namespace Game.Gameplay.Enemy.Boss
             }
 
             return _spawner;
+        }
+
+
+        /// <summary>
+        /// 投げモーションの再生。左右のどちらを使うかは_throwSideで決まる
+        /// </summary>
+        private void PlayThrowAnimation()
+        {
+            Animator animator = Context.Animator;
+
+            if (animator == null)
+            {
+                return;
+            }
+
+            bool useRight;
+
+            switch (_throwSide)
+            {
+                case BocchaThrowSide.Random:
+                    useRight = UnityEngine.Random.value < 0.5f;
+                    break;
+
+                case BocchaThrowSide.LeftOnly:
+                    useRight = false;
+                    break;
+
+                case BocchaThrowSide.RightOnly:
+                    useRight = true;
+                    break;
+
+                default:
+                    useRight = _useRightNext;
+                    _useRightNext = !_useRightNext;
+                    break;
+            }
+
+            string trigger = useRight ? _throwRightTrigger : _throwLeftTrigger;
+
+            if (string.IsNullOrEmpty(trigger))
+            {
+                return;
+            }
+
+            animator.SetTrigger(trigger);
+        }
+
+
+        private void ResolveNextGimmick()
+        {
+            BossGimmickData hazard = PickHazard();
+
+            _spitCountSinceMelee++;
+
+            bool isMeleeTurn = _meleeData != null && _spitCountSinceMelee >= _meleeEveryCount;
+
+            if (!isMeleeTurn)
+            {
+                _nextOverride = hazard;
+                return;
+            }
+
+            _spitCountSinceMelee = 0;
+
+            // ハザードを先に流し、その後に殴りギミックを割り込ませる
+            if (!_meleeReplacesHazard && hazard != null)
+            {
+                Context.Controller?.EnqueueInterruptGimmick(hazard);
+            }
+
+            _nextOverride = _meleeData;
+        }
+
+        /// <summary>
+        /// 分身ギミックが始まった時の処理
+        /// 分身を挟んだら殴りまでのカウントを最初からやり直す!
+        /// </summary>
+        /// <param name="ev">分身開始イベント</param>
+        private void HandleFeverStarted(BocchaFeverStartedEvent ev)
+        {
+            if (!_resetMeleeCountOnFever) return;
+
+            // 予約済みの殴りを取り消す
+            Context.Controller?.CancelInterruptGimmick(_meleeData);
+
+            if (_spitCountSinceMelee == 0) return;
+
+            Debug.Log($"[ItemSpit] 分身開始につき殴りカウントをリセット（{_spitCountSinceMelee} → 0）");
+
+            _spitCountSinceMelee = 0;
         }
 
 

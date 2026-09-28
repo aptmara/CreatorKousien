@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e5812aa2c40f2649b6b5d340a1c1425, type: 3}
   m_Name: Enemies_SO_CatapultGimmick
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BalanceCatapultGimmick
-  _attackSide: 1
+  _attackSide: 3
   _defenderDefinitions:
   - {fileID: 11400000, guid: 4cb55c9a8a363064c9bf094f77b06186, type: 2}
   - {fileID: 11400000, guid: 10818a91c68e1314380ea77d64995056, type: 2}

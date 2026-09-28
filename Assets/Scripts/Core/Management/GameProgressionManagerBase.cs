@@ -9,15 +9,17 @@ using Game.Gameplay.Roguelike;
 using Game.Gameplay.Roguelike.Effects;
 using Game.Gameplay.Shop;
 using Game.Gameplay.Stage;
-using Game.Presentation.GameClearCinematic;
-using Game.WaveSystem;
 using Game.Infrastructure.Bootstrap;
+using Game.Presentation.GameClearCinematic;
+using Game.Presentation.UI.Loading;
+using Game.WaveSystem;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.XR;
 using UnityEngine.SceneManagement;
-using Game.Presentation.UI.Loading;
+using static UnityEngine.Rendering.DebugUI;
 
 namespace Game.Core.Management
 {
@@ -282,7 +284,6 @@ namespace Game.Core.Management
 
             }
 
-            // 越智 TODO 終了後のロジックは不要なので外に出す
             yield return StartCoroutine(AnimateWaveClearRoutine(isFinalWave, waveData.CompleteDelay));
         }
 
@@ -294,8 +295,15 @@ namespace Game.Core.Management
         {
             float validCompleteDelay = Mathf.Max(0f, completeDelay);
 
-            // 一時的に状態を逃がす
-            _currentState = GameProgressionState.Setup;
+            // 演出中はポーズを開かない
+            if (isFinalWave)
+            {
+                _currentState = GameProgressionState.ResultCinematic;
+            }
+            else
+            {
+                _currentState = GameProgressionState.Setup;
+            }
             Debug.Log($"[Progression] 最後の敵の撃破を検知！ 弾の着弾猶予として {validCompleteDelay} 秒間スローモーション演出を行うぜよ。");
 
 
@@ -328,6 +336,8 @@ namespace Game.Core.Management
 
 
             // --- 通常のウェーブクリア時の処理 ---
+
+            SoundManager.instance?.PlaySE("Upgrade_Complete");
 
             // 1. 画面を一瞬スローモーション、同時にUIを透明化
             Time.timeScale = _slowMotionTimeScale;
@@ -390,6 +400,12 @@ namespace Game.Core.Management
             var playerInput = playerTransform.GetComponentInChildren<MonoBehaviour>();
             if (playerInput != null) playerInput.enabled = false;
 
+            PlayerController playerController = playerTransform.GetComponentInChildren<PlayerController>();
+            if (playerController != null)
+            {
+                playerController.SetCanMove(true);
+                playerController.FreezePhysics();
+            }
             // 2. 既存カメラの通常追従をOFFにして制御権を奪う
             _cameraRigController.SetCinematicModeActive(true);
 
@@ -397,6 +413,7 @@ namespace Game.Core.Management
             _isCameraWorkFinished = false;
             _shopCinematicCameraController.StartCinematic(playerTransform, _shopVehicleController);
             _shopVehicleController.LaunchShopSequence(playerTransform);
+
 
             // 4. 屋台のブレーキ振動 & カメラワークが完了するまで待機
             while (!_shopCinematicCameraController.IsCameraWorkFinished ||
@@ -407,19 +424,20 @@ namespace Game.Core.Management
                 Vector3 fieldUp = FieldContext.Rotation * Vector3.up;
                 Vector3 flatToShop = Vector3.ProjectOnPlane(rawToShop, fieldUp).normalized;
 
-                if (flatToShop.sqrMagnitude > 0.001f)
-                {
-                    Quaternion targetLookRot = Quaternion.LookRotation(flatToShop, fieldUp);
-                    playerTransform.rotation = Quaternion.Slerp(playerTransform.rotation, targetLookRot, Time.deltaTime * 5f);
-                }
+                playerTransform.rotation = Quaternion.LookRotation(flatToShop, fieldUp);
 
                 yield return null;
             }
 
             Debug.Log("[Progression] 全ての演出とカメラワークが完了！ローグライクフェーズへ移行するぜよ。");
 
-            if (playerInput != null) playerInput.enabled = true;
+            if (playerController != null)
+            {
+                playerController.SetCanMove(true);
+                playerController.UnfreezePhysics();
+            }
 
+            if (playerInput != null) playerInput.enabled = true;
             // 越智 TODO こっちもロジックは切り出す
             // 5. 演出完了後にロード & ポーズ
             HandleWaveClear();
@@ -450,6 +468,9 @@ namespace Game.Core.Management
                 _shopVehicleController.DismissShopSequence();
             }
 
+            // プレイヤーの角度をフィールドに合わせる
+            EventBus.Publish(new PlayerTiltEvent(0.0f));
+
             // UIシーンのアンロード
             AsyncOperation op = SceneManager.UnloadSceneAsync(_roguelikeSceneName);
             while (!op.isDone) yield return null;
@@ -471,9 +492,6 @@ namespace Game.Core.Management
                 var playerInput = playerTransform.GetComponentInChildren<MonoBehaviour>();
                 if (playerInput != null) playerInput.enabled = true;
             }
-
-            // プレイヤーの角度をフィールドに合わせる
-            EventBus.Publish(new PlayerTiltEvent(0.0f));
 
             SoundManager.instance?.SoundVolume(1.0f);
             RoguelikeToComeback();
@@ -702,6 +720,13 @@ namespace Game.Core.Management
         /// デバッグ用。演出を飛ばして最終Wave(Boss)へ飛びます
         /// </summary>
         public abstract void DebugJumpToFinalWave();
+
+
+        /// <summary>
+        /// デバッグ用。演出を飛ばして最終Wave(Boss)へ飛びます
+        /// </summary>
+        public abstract void DebugJumpToGameOver();
+
 #endif
 
         /// <summary>

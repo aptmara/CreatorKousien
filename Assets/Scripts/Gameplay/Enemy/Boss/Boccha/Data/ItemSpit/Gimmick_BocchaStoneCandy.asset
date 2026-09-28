@@ -20,7 +20,7 @@ MonoBehaviour:
   _scatter:
     _pattern: 0
     _innerRadius: 3
-    _outerRadius: 12
+    _outerRadius: 7
     _axisScale: {x: 1, y: 1}
     _centerOffset: {x: 0, y: 0, z: 0}
     _fitToSpawnAreas: 1
@@ -30,10 +30,10 @@ MonoBehaviour:
     _minSeparation: 1.5
     _separationRetryCount: 6
     _snapToGround: 1
-    _discardWhenNoGround: 0
+    _discardWhenNoGround: 1
     _groundMask:
       serializedVersion: 2
-      m_Bits: 4294967295
+      m_Bits: 64
     _groundRayHeight: 50
     _groundClearance: 0
   _scatterFromFieldCenter: 1

@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{68420962-1A17-4C9B-98AE-7BA2A495FFF8}",
     "Language": "SFX",
-    "Hash": "{DDC5022E-D4F0-A060-ACE9-FDD9C465DE8B}",
+    "Hash": "{4644B488-A184-313A-0492-747168B9FF05}",
     "ObjectPath": "Play_SE_Shop_Appear",
     "ShortName": "Play_SE_Shop_Appear",
     "Path": "Event/Play_SE_Shop_Appear.bnk",
@@ -43,6 +43,6 @@
     ]
    }
   ],
-  "FileHash": "{9B5DFD39-F997-ACD0-717D-F6FD58422D7A}"
+  "FileHash": "{5C0B60AE-D25C-1F13-E23B-FF599C25F233}"
  }
 }

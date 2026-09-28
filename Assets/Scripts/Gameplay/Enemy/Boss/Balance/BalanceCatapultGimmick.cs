@@ -74,6 +74,11 @@ namespace Game.Gameplay.Enemy.Boss
 
         public override void Execute()
         {
+            if (_attackSide == TraySide.Random)
+            {
+                _attackSide = (UnityEngine.Random.value > 0.5f) ? TraySide.Left : TraySide.Right;
+            }
+            
             _emptySide = _attackSide == TraySide.Left ? TraySide.Right : TraySide.Left;
             _defenderTimer = 0.0f;
             _hasDamagedThisRaise = false;
