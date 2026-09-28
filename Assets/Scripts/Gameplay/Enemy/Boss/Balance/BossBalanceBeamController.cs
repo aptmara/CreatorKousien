@@ -30,6 +30,8 @@ public sealed class BossBalanceBeamController : MonoBehaviour
     private bool _isFullyRaisedLeft;
     private bool _isFullyRaisedRight;    
 
+    public TraySide CurrentRaisedSide => _currentRaisedSide;
+
     public event Action<TraySide> OnRaisedSideChanged;
     public event Action<TraySide> OnTrayFullyRaised;
     public event Action<TraySide> OnTrayFullyLowered;

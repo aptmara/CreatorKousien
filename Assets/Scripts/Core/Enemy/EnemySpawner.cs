@@ -90,6 +90,43 @@ namespace Game.Core.Enemy
         }
 
         /// <summary>
+        /// ボスギミック用。指定したワールドXのレーンへ、通常のスポーン範囲内で敵を出現させる
+        /// テンビンの皿の上から敵を出すときなどに使用する
+        /// </summary>
+        /// <returns></returns>
+        public bool TrySpawnEnemyAtLine(EnemyDefinition definition , float worldX,float hpRate,float barrierRate,
+            float minDistanceFromOtherEnemies,out EnemyController spawnedEnemy)
+        {
+            spawnedEnemy = null;
+            if(!ValidateDefinition(definition)) return false;
+
+            if(definition.IsBoss)
+            {
+                Debug.LogError("[EnemySpawner] TrySpawnEnemyAtLine はボスに使用できません", this);
+                return false;
+            }
+
+            Vector3 basePos = _spawnBasePoint != null ? _spawnBasePoint.position : transform.position;
+            float halfWidth = _rangeSize.x * 0.5f;
+            float halfDepth = _rangeSize.y * 0.5f;
+            float x = Mathf.Clamp(worldX,basePos.x - halfWidth,basePos.x + halfWidth);
+            float validMinDistance = Mathf.Max(0.0f, minDistanceFromOtherEnemies);
+
+            for(int i = 0;i < _maxSpawnPositionAttempts;++i)
+            {
+                float z = Random.Range(basePos.z - halfDepth, basePos.z + halfDepth);
+                Vector3 targetPosition = new Vector3(x, basePos.y, z);
+
+                if(IsFarEnoughFromExistingEnemies(targetPosition,validMinDistance))
+                {
+                    return SpawnResolvedEnemy(definition, targetPosition, hpRate,barrierRate,out spawnedEnemy);
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// スポーンターゲットの位置を試行的に取得する
         /// </summary>
         /// <param name="definition">生成する敵の定義</param>

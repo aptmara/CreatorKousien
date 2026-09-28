@@ -57,7 +57,7 @@ Transform:
   m_GameObject: {fileID: 1717210168770136121}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -0.13052624, w: 0.9914449}
-  m_LocalPosition: {x: -0.01000002, y: -0.0063061416, z: 0}
+  m_LocalPosition: {x: -0.01000002, y: -0.005, z: 0}
   m_LocalScale: {x: 0.1, y: 0.005, z: 0.12}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -96,6 +96,7 @@ GameObject:
   - component: {fileID: 5299479073697936780}
   - component: {fileID: 7515688822545824040}
   - component: {fileID: 7857437713337581539}
+  - component: {fileID: 3991966921539922341}
   m_Layer: 0
   m_Name: BalanceBoss_Controller
   m_TagString: Untagged
@@ -173,6 +174,45 @@ MonoBehaviour:
   _targetCamera: {fileID: 0}
   _cameraRigController: {fileID: 0}
   _bossRoot: {fileID: 5264191776173235085}
+--- !u!114 &3991966921539922341
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1900905080582116427}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35cad2de83223db499dd615ec14a05c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BalanceShellGameDirector
+  _beam: {fileID: 0}
+  _scale: {fileID: 0}
+  _coverPrefab: {fileID: 3933974616416371334, guid: 720f711ccaa96084bb0fe82cc077a24f, type: 3}
+  _contentOffset: {x: 0, y: 1.11, z: 0}
+  _coverRestOffset: {x: 0, y: 0.3, z: 0}
+  _followPanRotation: 0
+  _showcaseHeight: 6.19
+  _coverDropHeight: 8
+  _showcaseDuration: 2
+  _coverDropDuration: 0.6
+  _coverStagger: 0.25
+  _preShuffleWait: 0.5
+  _postShuffleWait: 0.6
+  _swapCountRange: {x: 5, y: 8}
+  _swapDurationStart: 0.6
+  _swapDurationEnd: 0.25
+  _feintChange: 0.2
+  _swapArcHeight: 1.5
+  _swapDepth: 1.2
+  _swapPassAxis: {x: 0, y: 0, z: 1}
+  _revealRainData: {fileID: 11400000, guid: efa7b9a6a24ab4c4bb0517fa1e83a3c6, type: 2}
+  _revealRainCountPerCover: 10
+  _revealRainInterval: 0.06
+  _revealRainHeight: 12
+  _revealRainSpread: 1.5
+  _revealRainScale: 1
+  _revealTimeout: 30
 --- !u!1 &2890601168090992840
 GameObject:
   m_ObjectHideFlags: 0
@@ -258,7 +298,7 @@ Transform:
   m_GameObject: {fileID: 3044177801511885825}
   serializedVersion: 2
   m_LocalRotation: {x: -0.13052624, y: 0, z: 0, w: 0.9914449}
-  m_LocalPosition: {x: 0, y: -0.0063061416, z: 0.012}
+  m_LocalPosition: {x: 0, y: -0.005, z: 0.012}
   m_LocalScale: {x: 0.12, y: 0.005, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -311,7 +351,7 @@ Transform:
   m_GameObject: {fileID: 3047448918952997554}
   serializedVersion: 2
   m_LocalRotation: {x: 0.13052616, y: 0, z: 0, w: 0.9914449}
-  m_LocalPosition: {x: 0, y: 0, z: -0.01}
+  m_LocalPosition: {x: 0, y: -0.005, z: -0.01}
   m_LocalScale: {x: 0.12, y: 0.005, z: 0.10000002}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -395,7 +435,7 @@ Transform:
   m_GameObject: {fileID: 4753058131186875055}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0.13052616, w: 0.9914449}
-  m_LocalPosition: {x: 0.0131, y: -0.0063061416, z: 0}
+  m_LocalPosition: {x: 0.0131, y: -0.005, z: 0}
   m_LocalScale: {x: 0.10000002, y: 0.005, z: 0.12}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -507,7 +547,7 @@ Transform:
   m_GameObject: {fileID: 5063219111280527633}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -0.13052624, w: 0.9914449}
-  m_LocalPosition: {x: -0.013, y: 0, z: 0}
+  m_LocalPosition: {x: -0.013, y: -0.005, z: 0}
   m_LocalScale: {x: 0.1, y: 0.005, z: 0.12}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -560,7 +600,7 @@ Transform:
   m_GameObject: {fileID: 5372400439579548216}
   serializedVersion: 2
   m_LocalRotation: {x: -0.13052624, y: 0, z: 0, w: 0.9914449}
-  m_LocalPosition: {x: 0, y: 0, z: 0.01}
+  m_LocalPosition: {x: 0, y: -0.005, z: 0.01}
   m_LocalScale: {x: 0.12, y: 0.005, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -740,7 +780,7 @@ Transform:
   m_GameObject: {fileID: 6965502733963068277}
   serializedVersion: 2
   m_LocalRotation: {x: 0.13052616, y: 0, z: 0, w: 0.9914449}
-  m_LocalPosition: {x: 0, y: -0.0063061416, z: -0.0129}
+  m_LocalPosition: {x: 0, y: -0.005, z: -0.0129}
   m_LocalScale: {x: 0.12, y: 0.005, z: 0.10000002}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -920,7 +960,7 @@ Transform:
   m_GameObject: {fileID: 8026623090168344250}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0.13052616, w: 0.9914449}
-  m_LocalPosition: {x: 0.01000002, y: 0, z: 0}
+  m_LocalPosition: {x: 0.01000002, y: -0.005, z: 0}
   m_LocalScale: {x: 0.1, y: 0.005, z: 0.12}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1068,6 +1108,8 @@ MonoBehaviour:
     transform: {fileID: 1058796692745124456}
   - socket: 3
     transform: {fileID: 2441853577371548900}
+  - socket: 1
+    transform: {fileID: 3232483225907519112}
   _introSequenceController: {fileID: 7857437713337581539}
   _introSequenceData: {fileID: 11400000, guid: 9dc04bc9e6f3e5c46a896e2b08231559, type: 2}
   _gimmickSlots:
@@ -1267,6 +1309,10 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7086560957254312686, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8027568611563700354, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
       propertyPath: m_LocalScale.x
       value: 2
@@ -1345,19 +1391,10 @@ PrefabInstance:
       addedObject: {fileID: 1387062995938564052}
     - targetCorrespondingSourceObject: {fileID: -4819223349682164798, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8757943479672085338}
-    - targetCorrespondingSourceObject: {fileID: -4819223349682164798, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 7596420243939097881}
-    - targetCorrespondingSourceObject: {fileID: -4819223349682164798, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2174047390327891194}
     - targetCorrespondingSourceObject: {fileID: 7753705370032899036, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8707206971518386500}
-    - targetCorrespondingSourceObject: {fileID: 7753705370032899036, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2002749104586765564}
     - targetCorrespondingSourceObject: {fileID: 7753705370032899036, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8126121512178337333}
@@ -1420,27 +1457,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BossHitReceiver
   _flowController: {fileID: 7013348292912107979}
   _minimumHitSpeed: 0.75
-  _damageMultiplier: 5
+  _damageMultiplier: 1.5
   _despawnItemOnHit: 1
---- !u!114 &2002749104586765564
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2674612676242603962}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8fced52e1fb1a4468d33bd631857494, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossTriggeredWeakPoint
-  _flowController: {fileID: 7013348292912107979}
-  _hitCollider: {fileID: 8126121512178337333}
-  _restrictRequierType: 1
-  _requiredType: 6
-  _startExposed: 1
-  _triggerDownOnHit: 1
-  _hitCooldown: 0.2
 --- !u!135 &8126121512178337333
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1543,6 +1561,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BalanceBarrierAttackObject
   _attackInterval: 2
   _barrierDamage: 10
+--- !u!4 &3232483225907519112 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7086560957254312686, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
+  m_PrefabInstance: {fileID: 5657809737843735654}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5264191776173235085 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
@@ -1704,22 +1727,6 @@ MonoBehaviour:
   _maxPanTiltAngle: 20
   _raisedPanTiltFactor: 1.21
   _maxRAisedPanTiltAngle: 25
---- !u!114 &8757943479672085338
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8330038765687330724}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a0cca841aa5565346a7cd45d6ccc6628, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BossHitReceiver
-  _flowController: {fileID: 7013348292912107979}
-  _minimumHitSpeed: 0.75
-  _damageMultiplier: 1
-  _despawnItemOnHit: 1
 --- !u!136 &7596420243939097881
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1743,22 +1750,3 @@ CapsuleCollider:
   m_Height: 0.1763525
   m_Direction: 1
   m_Center: {x: -0.00020134076, y: 0.086835995, z: -0.000000007450581}
---- !u!114 &2174047390327891194
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8330038765687330724}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8fced52e1fb1a4468d33bd631857494, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossTriggeredWeakPoint
-  _flowController: {fileID: 7013348292912107979}
-  _hitCollider: {fileID: 7596420243939097881}
-  _restrictRequierType: 1
-  _requiredType: 6
-  _startExposed: 0
-  _triggerDownOnHit: 0
-  _hitCooldown: 0.2

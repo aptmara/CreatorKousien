@@ -16,12 +16,21 @@ public sealed class BossHitReceiver : MonoBehaviour
 
     private void Awake() => _customTarget = GetComponent<IBossHittable>();
 
-    private void OnTriggerEnter(Collider other) => TryHandle(other.GetComponentInParent<CollectibleObject>(),
+    public void Initialize(BossBattleFlowController flowController) => _flowController = flowController;
+
+    private void OnTriggerEnter(Collider other)
+    {
+        TryHandle(other.GetComponentInParent<CollectibleObject>(),
+
         other.attachedRigidbody ? other.attachedRigidbody.linearVelocity.magnitude : 0f,
         other.ClosestPoint(transform.position));
+    }
 
-    private void OnCollisionEnter(Collision c) => TryHandle(c.collider.GetComponentInParent<CollectibleObject>(),
+    private void OnCollisionEnter(Collision c)
+    {
+        TryHandle(c.collider.GetComponentInParent<CollectibleObject>(),
         c.relativeVelocity.magnitude, c.GetContact(0).point);
+    }
 
     private void TryHandle(CollectibleObject collectible, float speed, Vector3 pos)
     {

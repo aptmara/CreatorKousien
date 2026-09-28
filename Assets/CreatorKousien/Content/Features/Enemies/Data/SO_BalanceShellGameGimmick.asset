@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7928e8b8204e8b4f8d5e5f602567503, type: 3}
+  m_Name: SO_BalanceShellGameGimmick
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BalanceShellGameGimmick
+  _pool:
+  - prefab: {fileID: 3025319010383616880, guid: 5c5c692f6da690942aa597187e5a4a6b, type: 3}
+    weight: 1
+  - prefab: {fileID: 686969397386225451, guid: d5cff39b8b269fb4badf1b5d9eff17d6, type: 3}
+    weight: 1
+  - prefab: {fileID: 4768036571511106640, guid: bf0d23752dd286b46ac22803e3a96407, type: 3}
+    weight: 1
+  - prefab: {fileID: 6787304042704799282, guid: c7d1fc300c9b0934087d4c971ffc0201, type: 3}
+    weight: 1
+  _resultDuration: 10
+  _weaknessPityRounds: 1
