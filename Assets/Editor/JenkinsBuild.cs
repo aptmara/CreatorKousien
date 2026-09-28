@@ -19,7 +19,7 @@ public static class JenkinsBuild
         BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
         {
             scenes = scenes,
-            locationPathName = "Build/Windows/CreatorKousien.exe",
+            locationPathName = "Build/Windows/ドロップロップ.exe",
             target = BuildTarget.StandaloneWindows64,
             options = BuildOptions.None
         };
