@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Data.Collectibles.CollectibleData
   Id: 2
   Type: 1
-  ViewPrefab: {fileID: 8775489147838489531, guid: 3577d08268c4f0a438cb8fc2a6990089, type: 3}
+  ViewPrefab: {fileID: 4708477738215298580, guid: e8a80709978dd7b4a8ac444071fd97b9, type: 3}
   Weight: 1
   DamageAmount: 2
   Attribute: None
@@ -33,3 +33,4 @@ MonoBehaviour:
   LaserPrefab: {fileID: 0}
   GummyPhysicsMaterial: {fileID: 0}
   MaxBounceChainCount: 10
+  WeakenDuration: 3
