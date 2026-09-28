@@ -11,11 +11,6 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Game.Core.Roguelike;
-using Game.Data.Collectibles;
-using Game.Core.Events;
-using UnityEngine.ProBuilder.MeshOperations;
-using TMPro.EditorUtilities;
 
 public class S_UpgradeDetail : MonoBehaviour
 {

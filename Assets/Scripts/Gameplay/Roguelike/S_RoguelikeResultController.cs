@@ -13,12 +13,13 @@ using Game.Data.Player;
 using Game.Core.Roguelike;
 using Game.Gameplay.Roguelike.Effects;
 using Game.Data.Collectibles;
+using UnityEngine.UI;
 
 
 public class S_RoguelikeResultController : MonoBehaviour
 {
     //____________________________________
-    // variables
+    // variables    
 
     [Header("Runtime State")]
     [Tooltip("取得済み強化とレベルを保存するSO")]
@@ -118,4 +119,5 @@ public class S_RoguelikeResultController : MonoBehaviour
         }
 
     }
+
 }

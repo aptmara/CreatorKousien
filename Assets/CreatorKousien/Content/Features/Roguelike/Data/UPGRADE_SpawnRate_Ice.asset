@@ -23,7 +23,7 @@ MonoBehaviour:
   Effects:
   - rid: 6439870541483212892
   MaxLevel: 10
-  Icon: {fileID: 21300000, guid: 7d1f0bf9a0d5ba648b50678eba730c9e, type: 3}
+  Icon: {fileID: 21300000, guid: a05021628f1b6444793dc3855a50c187, type: 3}
   Category: 2
   Cost: 30
   CostMagni: 1.2

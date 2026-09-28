@@ -54,6 +54,10 @@ public class S_ShopMenuUI : MonoBehaviour
     private Image _spawnedBoard;
     private Image _spawnedBackground;
 
+    public IReadOnlyList<S_UpgradeCard> SpawnedCards => _spawnedCards;
+
+
+
     private void OnEnable()
     {
         if (_balanceConfig == null)
