@@ -280,8 +280,7 @@ namespace Game.Presentation.UI.Pause
             }
 
             GameProgressionState state = progression.CurrentState;
-            return state == GameProgressionState.Setup ||
-                   state == GameProgressionState.Battle ||
+            return state == GameProgressionState.Battle ||
                    state == GameProgressionState.Roguelike;
         }
 
