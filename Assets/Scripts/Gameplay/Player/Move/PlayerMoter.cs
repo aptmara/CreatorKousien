@@ -290,6 +290,29 @@ namespace Game.Gameplay.Player
             }
         }
 
+        public void MoveScriptedTowards(Vector3 targetPosition, float moveSpeed)
+        {
+            Vector3 up = Up;
+            Vector3 toTarget = Vector3.ProjectOnPlane(targetPosition - _rigidbody.position, up);
+            if (toTarget.sqrMagnitude < 0.001f)
+            {
+                StopMove();
+                return;
+            }
+
+            Vector3 direction = toTarget.normalized;
+            Vector3 velocity = _rigidbody.linearVelocity;
+            float alongUp = Vector3.Dot(velocity, up);
+            _rigidbody.linearVelocity = direction * Mathf.Max(0f, moveSpeed) + up * alongUp;
+
+            Quaternion targetRotation = Quaternion.LookRotation(direction, up);
+            Quaternion nextRotation = Quaternion.RotateTowards(
+                _rigidbody.rotation,
+                targetRotation,
+                _normalAutoRotationDegreesPerSecond * Time.fixedDeltaTime);
+            _rigidbody.MoveRotation(nextRotation);
+        }
+
 
         /// <summary>
         /// 自動回転制限を反映した向きを取得する
@@ -382,6 +405,28 @@ namespace Game.Gameplay.Player
             _rigidbody.position = position;
             _rigidbody.rotation = rot;
 
+            _rigidbody.linearVelocity = Vector3.zero;
+            _rigidbody.angularVelocity = Vector3.zero;
+        }
+
+        public void WarpTo(Vector3 position, Quaternion rotation)
+        {
+            if (_rigidbody == null)
+            {
+                return;
+            }
+
+            Vector3 up = Up;
+            Vector3 planeForward = Vector3.ProjectOnPlane(Vector3.forward, up).normalized;
+            Vector3 facingDirection = Vector3.ProjectOnPlane(rotation * Vector3.forward, up).normalized;
+            if (planeForward.sqrMagnitude > 0.001f && facingDirection.sqrMagnitude > 0.001f)
+            {
+                _targetYaw = Vector3.SignedAngle(planeForward, facingDirection, up);
+            }
+
+            transform.SetPositionAndRotation(position, rotation);
+            _rigidbody.position = position;
+            _rigidbody.rotation = rotation;
             _rigidbody.linearVelocity = Vector3.zero;
             _rigidbody.angularVelocity = Vector3.zero;
         }

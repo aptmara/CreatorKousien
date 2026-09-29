@@ -7,6 +7,7 @@
 // ================================================================================
 
 using System.Collections;
+using Game.Presentation.GameClearCinematic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -38,6 +39,7 @@ namespace Game.Presentation.GameOverCinematic
         public Transform RightDoorHinge => _rightDoorHinge;
         public Transform DustSpawnPoint => _dustSpawnPoint;
         public GameObject GateEffectRoot => _gateEffectRoot != null ? _gateEffectRoot.gameObject : null;
+        public float DisappearDepth => _settings != null ? Mathf.Max(0f, _settings.DisappearDepth) : 0f;
 
         private bool _isOpen;
         private Coroutine _doorCoroutine;
@@ -49,6 +51,12 @@ namespace Game.Presentation.GameOverCinematic
             if (controller != null)
             {
                 controller.RegisterGate(this);
+            }
+
+            var clearController = FindFirstObjectByType<GameClearCinematicController>();
+            if (clearController != null)
+            {
+                clearController.RegisterGate(this);
             }
         }
 
@@ -68,18 +76,43 @@ namespace Game.Presentation.GameOverCinematic
         /// </summary>
         public void ToggleDoor()
         {
+            SetDoorOpen(!_isOpen, _toggleDuration);
+        }
+
+        public Coroutine SetDoorOpen(bool open, float duration)
+        {
             float targetAngle = _settings != null ? _settings.MaxOpenAngle : _customOpenAngle;
-            _isOpen = !_isOpen;
+            _isOpen = open;
 
             if (_doorCoroutine != null)
             {
                 StopCoroutine(_doorCoroutine);
             }
 
-            _doorCoroutine = StartCoroutine(AnimateDoorRoutine(_isOpen ? targetAngle : 0f));
+            _doorCoroutine = StartCoroutine(AnimateDoorRoutine(open ? targetAngle : 0f, duration));
+            return _doorCoroutine;
         }
 
-        private IEnumerator AnimateDoorRoutine(float targetAngle)
+        public Vector3 GetPassThroughTarget(Vector3 playerPosition, float distancePastGate)
+        {
+            Vector3 gateCenter = transform.position;
+            if (_leftDoorHinge != null && _rightDoorHinge != null)
+            {
+                gateCenter = (_leftDoorHinge.position + _rightDoorHinge.position) * 0.5f;
+            }
+
+            Vector3 up = transform.up;
+            Vector3 towardGate = Vector3.ProjectOnPlane(gateCenter - playerPosition, up);
+            Vector3 throughDirection = towardGate.sqrMagnitude > 0.001f
+                ? towardGate.normalized
+                : transform.forward;
+
+            float passThroughDistance = Mathf.Max(0f, distancePastGate, DisappearDepth);
+            Vector3 target = gateCenter + throughDirection * passThroughDistance;
+            return target + up * Vector3.Dot(playerPosition - target, up);
+        }
+
+        private IEnumerator AnimateDoorRoutine(float targetAngle, float durationOverride)
         {
             float startAngle = 0f;
             if (_leftDoorHinge != null)
@@ -91,7 +124,7 @@ namespace Game.Presentation.GameOverCinematic
                 }
             }
 
-            float duration = Mathf.Max(0.01f, _toggleDuration);
+            float duration = Mathf.Max(0.01f, durationOverride);
             float elapsed = 0f;
 
             while (elapsed < duration)

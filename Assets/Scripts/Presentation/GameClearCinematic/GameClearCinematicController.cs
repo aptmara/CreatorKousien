@@ -14,7 +14,9 @@ using Game.Core.Events;
 using Game.Gameplay.Cameras;
 using Game.Gameplay.Player;
 using Game.Gameplay.Stage;
+using Game.Presentation.GameOverCinematic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Game.Presentation.GameClearCinematic
 {
@@ -70,12 +72,33 @@ namespace Game.Presentation.GameClearCinematic
         [Tooltip("エフェクトを片づけるまでの待ち時間")]
         [SerializeField] private float _clearFaceVfxLifetime = 0.5f;
 
+        [Header("クリア後の門退出")]
+        [SerializeField] private bool _playGateExitSequence = true;
+        [SerializeField, Min(0.1f)] private float _gateWalkSpeed = 10f;
+        [SerializeField, Min(0f)] private float _distancePastGate = 5f;
+        [SerializeField, Min(0.01f)] private float _gateArrivalThreshold = 0.2f;
+        [SerializeField, Min(0.01f)] private float _gateOpenDuration = 0.6f;
+        [SerializeField, Min(0f)] private float _gateCloseDelay = 0.3f;
+        [SerializeField, Min(0.01f)] private float _gateCloseDuration = 0.6f;
+        [SerializeField, Min(0f)] private float _gateCameraPullbackDistance = 4f;
+
+        [Header("クリア後の空カメラ")]
+        [SerializeField, Range(0f, 89f)] private float _skyLookAngle = 65f;
+        [SerializeField, Min(0.01f)] private float _skyLookDuration = 1.5f;
+        [SerializeField, Min(0f)] private float _skyHoldDuration = 2f;
+
 
         private float _noiseSeed;                                                ///< ノイズシード値
 
         private Transform _lastHitEnemyTransform;                               ///< 最後にヒットした敵（＝トドメを刺した敵）のTransform
 
         private Transform _droppingEnemyTransform;                              ///< 撃破落下を開始した敵のTransform（こちらを優先して使用する）
+
+        private GameOverGateAnchor _gateAnchor;
+
+        private bool _isGateExitSequencePlaying;
+
+        private bool _isShortcutSequencePlaying;
 
         private void Awake()
         {
@@ -96,6 +119,21 @@ namespace Game.Presentation.GameClearCinematic
         {
             EventBus.Unsubscribe<EnemyHitBatchEvent>(OnEnemyHitForFocus);
             EventBus.Unsubscribe<EnemyDefeatDropStartedEvent>(OnEnemyDefeatDropStarted);
+        }
+
+
+        private void Update()
+        {
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null || !keyboard.cKey.wasPressedThisFrame)
+            {
+                return;
+            }
+
+            if (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed)
+            {
+                StartCoroutine(PlayGateExitSequenceFromShortcut());
+            }
         }
 
 
@@ -184,25 +222,162 @@ namespace Game.Presentation.GameClearCinematic
 
             yield return StartCoroutine(PlayPlayerZoomPart(cameraTransform));
 
-            // プレイヤーのアニメーションをクリア状態に設定
+            yield return StartCoroutine(PlayPlayerClearMotion(cameraTransform));
+
+            if (_playGateExitSequence && _gateAnchor != null && _playerController != null)
+            {
+                yield return StartCoroutine(PlayGateExitSequenceOnce(cameraTransform));
+            }
+
+            SetFlashAlpha(0f);
+        }
+
+        private IEnumerator PlayGateExitSequenceFromShortcut()
+        {
+            if (_isShortcutSequencePlaying || _isGateExitSequencePlaying)
+            {
+                yield break;
+            }
+
+            ResolveReferences();
+            if (_settings == null || _targetCamera == null || _playerTransform == null || _playerController == null || _gateAnchor == null)
+            {
+                Debug.LogWarning("[GameClearCinematic] Shift+C演出に必要な参照が見つかりません。");
+                yield break;
+            }
+
+            _isShortcutSequencePlaying = true;
+
+            Vector3 playerStartPosition = _playerTransform.position;
+            Quaternion playerStartRotation = _playerTransform.rotation;
+            Vector3 cameraStartPosition = _targetCamera.transform.position;
+            Quaternion cameraStartRotation = _targetCamera.transform.rotation;
+            bool wasCinematicModeActive = _cameraRigController != null
+                && _cameraRigController.IsCinematicModeActive;
+
+            if (_cameraRigController != null)
+            {
+                _cameraRigController.SetCinematicModeActive(true);
+            }
+
+            _playerController.FreezePhysics();
+            yield return StartCoroutine(PlayPlayerZoomPart(_targetCamera.transform));
+            yield return StartCoroutine(PlayPlayerClearMotion(_targetCamera.transform));
+            yield return StartCoroutine(PlayGateExitSequenceOnce(_targetCamera.transform));
+
+            _playerController.WarpTo(playerStartPosition, playerStartRotation);
+            _playerController.RestoreAttachmentFromClear();
+            _playerController.UnfreezePhysics();
+            _playerAnimationController?.PlayIdle();
+            _playerFaceController?.ResetFace();
+
+            _targetCamera.transform.SetPositionAndRotation(cameraStartPosition, cameraStartRotation);
+            _cameraRigController?.SetCinematicModeActive(wasCinematicModeActive);
+            _isShortcutSequencePlaying = false;
+        }
+
+        private IEnumerator PlayPlayerClearMotion(Transform cameraTransform)
+        {
             _playerController?.PrepareClearAttachmentAnimation();
 
-            // プレイヤーの表情をクリア開始時の表情に設定
             if (!string.IsNullOrEmpty(_clearStartFaceName))
             {
                 _playerFaceController?.SetFace(_clearStartFaceName);
             }
 
-            // プレイヤーのアニメーションをクリア状態に設定
             _playerAnimationController?.PlayClear();
             _playerController?.PlayPreparedClearAttachmentAnimation();
-
-            // クリア時の表情エフェクトを再生する
             StartCoroutine(PlayClearFaceVfxRoutine());
 
             yield return StartCoroutine(WaitKeepingPlayerFacingCamera(_settings.AfterClearAnimationDelay, cameraTransform));
+        }
 
-            SetFlashAlpha(0f);
+        private IEnumerator PlayGateExitSequenceOnce(Transform cameraTransform)
+        {
+            if (_isGateExitSequencePlaying)
+            {
+                yield break;
+            }
+
+            _isGateExitSequencePlaying = true;
+            yield return StartCoroutine(PlayGateExitSequence(cameraTransform));
+            _isGateExitSequencePlaying = false;
+        }
+
+        private IEnumerator PlayGateExitSequence(Transform cameraTransform)
+        {
+            _playerController.RestoreAttachmentFromClear();
+            _playerAnimationController?.PlayIdle();
+
+            Coroutine openRoutine = _gateAnchor.SetDoorOpen(true, _gateOpenDuration);
+            if (openRoutine != null)
+            {
+                yield return openRoutine;
+            }
+
+            Vector3 targetPosition = _gateAnchor.GetPassThroughTarget(_playerTransform.position, _distancePastGate);
+            Vector3 up = FieldContext.IsReady ? FieldContext.Up : Vector3.up;
+            float thresholdSqr = _gateArrivalThreshold * _gateArrivalThreshold;
+            Vector3 playerStartPosition = _playerTransform.position;
+            Vector3 cameraStartPosition = cameraTransform.position;
+            Vector3 pullbackDirection = Vector3.ProjectOnPlane(cameraStartPosition - playerStartPosition, up).normalized;
+            float totalTravelDistance = Vector3.ProjectOnPlane(targetPosition - playerStartPosition, up).magnitude;
+
+            _playerController.BeginScriptedMovement();
+            while (Vector3.ProjectOnPlane(targetPosition - _playerTransform.position, up).sqrMagnitude > thresholdSqr)
+            {
+                _playerController.MoveScriptedTowards(targetPosition, _gateWalkSpeed);
+                float remainingDistance = Vector3.ProjectOnPlane(targetPosition - _playerTransform.position, up).magnitude;
+                float progress = totalTravelDistance > 0.001f
+                    ? 1f - Mathf.Clamp01(remainingDistance / totalTravelDistance)
+                    : 1f;
+                cameraTransform.position = cameraStartPosition
+                    + pullbackDirection * (_gateCameraPullbackDistance * EaseInOut(progress));
+                cameraTransform.rotation = GetLookAtPlayerRotation(cameraTransform.position);
+                yield return new WaitForFixedUpdate();
+            }
+            _playerController.EndScriptedMovement();
+
+            if (_gateCloseDelay > 0f)
+            {
+                yield return new WaitForSecondsRealtime(_gateCloseDelay);
+            }
+
+            Coroutine closeRoutine = _gateAnchor.SetDoorOpen(false, _gateCloseDuration);
+            if (closeRoutine != null)
+            {
+                yield return closeRoutine;
+            }
+
+            yield return StartCoroutine(PlaySkyLookRoutine(cameraTransform));
+        }
+
+        private IEnumerator PlaySkyLookRoutine(Transform cameraTransform)
+        {
+            Quaternion startRotation = cameraTransform.rotation;
+            Vector3 lookDirection = Quaternion.AngleAxis(-_skyLookAngle, cameraTransform.right) * cameraTransform.forward;
+            Vector3 up = FieldContext.IsReady ? FieldContext.Up : Vector3.up;
+            Quaternion targetRotation = Quaternion.LookRotation(lookDirection, up);
+
+            float elapsed = 0f;
+            while (elapsed < _skyLookDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = EaseInOut(Mathf.Clamp01(elapsed / _skyLookDuration));
+                cameraTransform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
+                yield return null;
+            }
+
+            cameraTransform.rotation = targetRotation;
+            if (_skyHoldDuration > 0f)
+            {
+                yield return new WaitForSecondsRealtime(_skyHoldDuration);
+            }
+        }
+
+        public void RegisterGate(GameOverGateAnchor gateAnchor)
+        {
+            _gateAnchor = gateAnchor;
         }
 
 
@@ -682,7 +857,11 @@ namespace Game.Presentation.GameClearCinematic
             {
                 _playerFaceController = _playerTransform.GetComponentInChildren<PlayerFaceController>();
             }
+
+            if (_gateAnchor == null)
+            {
+                _gateAnchor = Object.FindFirstObjectByType<GameOverGateAnchor>();
+            }
         }
     }
 }
-

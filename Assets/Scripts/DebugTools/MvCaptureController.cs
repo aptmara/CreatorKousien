@@ -180,37 +180,37 @@ namespace Game.DebugTools
             }
 
             bool controlPressed = keyboard.leftCtrlKey.isPressed || keyboard.rightCtrlKey.isPressed;
-            if (controlPressed && keyboard.digit1Key.wasPressedThisFrame)
+            if (keyboard.digit1Key.wasPressedThisFrame)
             {
                 SetPlayerHidden(!_playerHidden);
             }
 
-            if (controlPressed && keyboard.digit2Key.wasPressedThisFrame)
+            if (keyboard.digit2Key.wasPressedThisFrame)
             {
                 SetCollectiblesHidden(!_collectiblesHidden);
             }
 
-            if (controlPressed && keyboard.digit3Key.wasPressedThisFrame)
+            if (keyboard.digit3Key.wasPressedThisFrame)
             {
                 DeleteCollectibles();
             }
 
-            if (controlPressed && keyboard.digit4Key.wasPressedThisFrame)
+            if (keyboard.digit4Key.wasPressedThisFrame)
             {
                 SetCollectibleSpawningPaused(!_collectibleSpawningPaused);
             }
 
-            if (controlPressed && keyboard.digit5Key.wasPressedThisFrame)
+            if (keyboard.digit5Key.wasPressedThisFrame)
             {
                 SetHighlightDisabled(!_highlightDisabled);
             }
 
-            if (controlPressed && keyboard.digit6Key.wasPressedThisFrame)
+            if (keyboard.digit6Key.wasPressedThisFrame)
             {
                 ToggleFocusTarget();
             }
 
-            if (controlPressed && keyboard.digit7Key.wasPressedThisFrame)
+            if (keyboard.digit7Key.wasPressedThisFrame)
             {
                 SetGateEffectHidden(!_gateEffectHidden);
             }
@@ -738,6 +738,15 @@ namespace Game.DebugTools
         private void SetCollectibleSpawningPaused(bool paused)
         {
             _collectibleSpawningPaused = paused;
+
+            CrystalWalk[] crystalWalks = Object.FindObjectsByType<CrystalWalk>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None);
+            foreach (CrystalWalk crystalWalk in crystalWalks)
+            {
+                crystalWalk.SetRuntimeMovementEmissionEnabled(!paused);
+            }
+
             if (_collectibleSpawner == null)
             {
                 _collectibleSpawner = Object.FindFirstObjectByType<CollectibleSpawner>(FindObjectsInactive.Exclude);
@@ -749,10 +758,12 @@ namespace Game.DebugTools
                 {
                     Debug.LogWarning("[MV Capture] CollectibleSpawnerが見つかりません。");
                 }
-                return;
+            }
+            else
+            {
+                _collectibleSpawner.SetRuntimeSpawningEnabled(!paused);
             }
 
-            _collectibleSpawner.SetRuntimeSpawningEnabled(!paused);
             Debug.Log(paused ? "[MV Capture] Collectible生成停止" : "[MV Capture] Collectible生成再開");
         }
 

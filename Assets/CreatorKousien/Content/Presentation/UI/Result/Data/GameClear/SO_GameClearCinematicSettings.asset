@@ -37,7 +37,7 @@ MonoBehaviour:
   _enemyLookAtOffset: {x: 0, y: 0, z: 0}
   _enemyFallWatchDuration: 1.5
   _zoomDuration: 2
-  _playerCameraOffset: {x: 0, y: 9, z: -8}
+  _playerCameraOffset: {x: 0, y: 6, z: -8}
   _playerLookAtOffset: {x: 0, y: 3, z: 0}
   _playerTurnSpeed: 8
   _afterClearAnimationDelay: 3

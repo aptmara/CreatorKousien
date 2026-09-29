@@ -106,6 +106,8 @@ namespace Game.Gameplay.Cameras
         private float _focusTimer;
         #endregion
 
+        public bool IsCinematicModeActive => _isCinematicMode;
+
 
         // 関数処理
         // ------------------------------------------------------------

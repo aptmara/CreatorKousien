@@ -476,7 +476,7 @@ MonoBehaviour:
   _largeCount:
     Min: 6
     Max: 10
-  _emitOrigin: {fileID: 0}
+  _emitOrigin: {fileID: 5884329280688855758}
   _emissionVector: {fileID: 466525645426261394, guid: b4b26bb56ca7219418291a16f6594611, type: 3}
   _spawnRadius: 1
   _minLaunchSpeed: 2
@@ -506,7 +506,7 @@ Transform:
   m_GameObject: {fileID: 2485012211323973569}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.59, z: -1.91}
+  m_LocalPosition: {x: 0, y: 3.74, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

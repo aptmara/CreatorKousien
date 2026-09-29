@@ -139,6 +139,7 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     [SerializeField, Min(0f)] private float _movementEmissionInwardOffset = 2f;
 
     private float _movementCollectibleEmissionAccumulator;
+    private bool _runtimeMovementEmissionEnabled = true;
     private Transform _playerEmissionTarget;
     private Transform _fieldWallRoot;
     private readonly Queue<PendingHitStyleEmission> _pendingHitStyleEmissions = new();
@@ -175,6 +176,15 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     public void SetMovementSuspended(bool isSuspended)
     {
         _isMovementSuspended = isSuspended;
+    }
+
+    public void SetRuntimeMovementEmissionEnabled(bool enabled)
+    {
+        _runtimeMovementEmissionEnabled = enabled;
+        if (!enabled)
+        {
+            _movementCollectibleEmissionAccumulator = 0f;
+        }
     }
 
     /// <summary>
@@ -613,7 +623,7 @@ public class CrystalWalk : MonoBehaviour, ICrystalBreakable
     /// <param name="deltaTime">このフレームの経過時間です。</param>
     private void UpdateMovementCollectibleEmission(Vector3 previousPosition, Vector3 currentPosition, float deltaTime)
     {
-        if (!_emitCollectiblesWhileMoving || _movementCollectiblesPerSecond <= 0f)
+        if (!_runtimeMovementEmissionEnabled || !_emitCollectiblesWhileMoving || _movementCollectiblesPerSecond <= 0f)
         {
             _movementCollectibleEmissionAccumulator = 0f;
             return;

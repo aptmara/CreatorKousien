@@ -189,6 +189,23 @@ namespace Game.Gameplay.Player
             _canMove = true;
         }
 
+        public void BeginScriptedMovement()
+        {
+            _canMove = false;
+            _motor.UnfreezePhysics();
+        }
+
+        public void MoveScriptedTowards(Vector3 targetPosition, float moveSpeed)
+        {
+            _motor.MoveScriptedTowards(targetPosition, moveSpeed);
+        }
+
+        public void EndScriptedMovement()
+        {
+            _motor.StopMove();
+            _motor.FreezePhysics();
+        }
+
 
         /// <summary>
         /// 指定した位置へワープさせ、向きをフィールドの傾きに合わせ直す関数
@@ -198,6 +215,11 @@ namespace Game.Gameplay.Player
         public void WarpTo(Vector3 position, float yaw)
         {
             _motor.WarpTo(position, yaw);
+        }
+
+        public void WarpTo(Vector3 position, Quaternion rotation)
+        {
+            _motor.WarpTo(position, rotation);
         }
 
 
