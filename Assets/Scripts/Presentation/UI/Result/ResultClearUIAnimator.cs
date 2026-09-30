@@ -47,6 +47,9 @@ namespace Game.Presentation.UI.Result
         [Tooltip("タイトルボタン")]
         [SerializeField] private Button _titleButton;
 
+        [Tooltip("次のStageへ進むボタンと鎖をまとめた登場アニメーション対象")]
+        [SerializeField] private RectTransform _nextStageBoard;
+
         [Tooltip("次のStageへ進むボタン。最終Stageでは非表示になる")]
         [SerializeField] private Button _nextStageButton;
 
@@ -161,7 +164,7 @@ namespace Game.Presentation.UI.Result
         private bool _isWaveActive;
         private float _waveTimer;
         private bool _hasNextStage;                 ///< 次のStageが存在するかどうかのフラグ
-        private Vector2 _nextStageButtonPos;        ///< 次へボタンの最終位置
+        private Vector2 _nextStageBoardPos;         ///< 次へボタンと鎖をまとめた親の最終位置
 
 
 
@@ -188,12 +191,15 @@ namespace Game.Presentation.UI.Result
 
             if (_nextStageButton != null)
             {
-                // 最終Stageでは「次のStageへ進む」ボタンを非表示にする
-                _nextStageButton.gameObject.SetActive(false);
-
                 _nextStageButton.interactable = false;
                 _nextStageButton.onClick.RemoveAllListeners();
                 _nextStageButton.onClick.AddListener(() => onNextStageClicked?.Invoke());
+            }
+
+            if (_nextStageBoard != null)
+            {
+                // 最終Stageでは「次のStageへ進む」ボタンと鎖をまとめて非表示にする
+                _nextStageBoard.gameObject.SetActive(false);
             }
 
             StartCoroutine(PlayRoutine());
@@ -371,9 +377,9 @@ namespace Game.Presentation.UI.Result
             _mainBoardPos = _mainBoard.anchoredPosition;
             _smallBoardPos = _smallBoard.anchoredPosition;
 
-            if (_nextStageButton != null)
+            if (_nextStageBoard != null)
             {
-                _nextStageButtonPos = ((RectTransform)_nextStageButton.transform).anchoredPosition;
+                _nextStageBoardPos = _nextStageBoard.anchoredPosition;
             }
 
             _catsPos = new Vector2[_cats.Length];
@@ -421,9 +427,9 @@ namespace Game.Presentation.UI.Result
 
             _smallBoard.gameObject.SetActive(false);
 
-            if (_nextStageButton != null)
+            if (_nextStageBoard != null)
             {
-                _nextStageButton.gameObject.SetActive(_hasNextStage);
+                _nextStageBoard.gameObject.SetActive(_hasNextStage);
             }
 
             _isWaveActive = false;
@@ -433,9 +439,9 @@ namespace Game.Presentation.UI.Result
             _mainBoard.gameObject.SetActive(false);
             _smallBoard.gameObject.SetActive(false);
 
-            if (_nextStageButton != null)
+            if (_nextStageBoard != null)
             {
-                _nextStageButton.gameObject.SetActive(false);
+                _nextStageBoard.gameObject.SetActive(false);
             }
 
             foreach (var cat in _cats)
@@ -660,12 +666,12 @@ namespace Game.Presentation.UI.Result
 
         private IEnumerator PlayNextStageButtonAppearRoutine()
         {
-            if (!_hasNextStage || _nextStageButton == null)
+            if (!_hasNextStage || _nextStageBoard == null)
             {
                 yield break;
             }
 
-            yield return PlayBoardAppearRoutine((RectTransform)_nextStageButton.transform, _nextStageButtonPos);
+            yield return PlayBoardAppearRoutine(_nextStageBoard, _nextStageBoardPos);
         }
 
 
