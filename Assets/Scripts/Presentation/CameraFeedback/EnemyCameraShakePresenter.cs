@@ -161,6 +161,17 @@ namespace Game.Presentation.CameraFeedback
 
             ReadBaseLocalTransform(out Vector3 basePosition, out Quaternion baseRotation);
 
+            float strengthMultiplier = CameraShakeOptions.StrengthMultiplier;
+            if (strengthMultiplier == 0f)
+            {
+                _remainingTime = 0f;
+                if (_defenseLineBreakCoroutine != null)
+                {
+                    StopCoroutine(_defenseLineBreakCoroutine);
+                    _defenseLineBreakCoroutine = null;
+                }
+            }
+
             if (_remainingTime <= 0f)
             {
                 ApplyOffset(basePosition, baseRotation, Vector3.zero, Quaternion.identity);
@@ -174,6 +185,7 @@ namespace Game.Presentation.CameraFeedback
             float t = 1f - Mathf.Clamp01(_remainingTime / _totalTime);
             float power = 1f - t;
             power *= power;
+            power *= strengthMultiplier;
 
             // ノイズを使用して位置と回転のオフセットを計算
             float noiseTime = Time.time * _frequency;
@@ -257,6 +269,11 @@ namespace Game.Presentation.CameraFeedback
         /// <param name="frequency">周波数</param>
         private void StartShake(float duration, float positionStrength, float rotationStrength, float frequency)
         {
+            if (CameraShakeOptions.Level == 0)
+            {
+                return;
+            }
+
             // durationが0以下の場合は最小値を設定してクラッシュを防ぐ
             float safeDuration = Mathf.Max(0.01f, duration);
 
