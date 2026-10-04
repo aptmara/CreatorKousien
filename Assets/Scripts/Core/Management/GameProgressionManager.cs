@@ -386,7 +386,7 @@ namespace Game.Core.Management
             StartCoroutine(LoadSceneAdditiveRoutine(_roguelikeSceneName));
         }
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         /// <summary>
         /// デバッグ用。実行中のWaveを中断して、指定したWaveを演出なしで開始しまっす！
         /// </summary>

@@ -678,7 +678,10 @@ namespace Game.Core.Enemy
         {
             if (IsMoveSuspended) return;
 
-            switch(_enemyMoveState)
+            // 破壊やシーン破棄の途中はコルーチンを開始できないため何もしない
+            if (!isActiveAndEnabled) return;
+
+            switch (_enemyMoveState)
             {
                 case EnemyMoveState.Rise:
                     _riseCoroutine = StartCoroutine(RiseRoutine(transform));

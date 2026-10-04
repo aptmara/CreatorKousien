@@ -82,7 +82,7 @@ namespace Game.Gameplay.Collectibles
 
         private void Update()
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (Keyboard.current != null && Keyboard.current[_debugSpawnKey].wasPressedThisFrame)
             {
                 SpawnTestItems100();
