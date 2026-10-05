@@ -1309,6 +1309,34 @@ namespace Game.Gameplay.Enemy.Boss
             Debug.Log($"[{nameof(BossBattleController)}] ボス戦をすべてのフェーズをクリアして勝利したぜよ！", this);
         }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        /// <summary>
+        /// デバッグ用: 実行中の行動を止めて、全フェーズクリアとして扱う
+        /// </summary>
+        /// <returns>撃破扱いにできたかどうか</returns>
+        public bool DebugForceDefeat()
+        {
+            // 開幕演出中はカメラやボスの表示状態が途中のままになるため対象外
+            if (!_isBattleRunning || _currentState == BossBattleState.Intro)
+            {
+                return false;
+            }
+
+            if (_stateRoutine != null)
+            {
+                StopCoroutine(_stateRoutine);
+            }
+
+            if (_downPresentationController != null)
+            {
+                _downPresentationController.CancelPresentation();
+            }
+
+            CompleteBattle();
+            return true;
+        }
+#endif
+
 
         // ボス戦停止
         // ------------------------------------------------------------

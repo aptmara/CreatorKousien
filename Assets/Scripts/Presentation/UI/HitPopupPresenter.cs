@@ -79,6 +79,14 @@ namespace Game.Presentation.UI
         {
             if (_popupPrefab == null || _popupContainer == null || string.IsNullOrEmpty(ev.EnemyId)) return;
 
+
+            // バクの捕食など、エフェクトを出すためだけのヒットではポップアップを出さない
+            if (ev.HitCount <= 0)
+            {
+                return;
+            }
+
+
             // コンボが新たに始まった、または敵が新たにヒットした場合、ローカルコンボカウントを初期化
             if (!_enemyLocalComboTracker.ContainsKey(ev.EnemyId))
             {

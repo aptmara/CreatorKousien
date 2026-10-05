@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
 // ------------------------------------------------------------
 // File		: StageDebugShortcuts.cs
 // Summary	: Stage進行の動作確認用ショートカット
@@ -8,10 +8,11 @@
 //
 // Notes	:
 // - DebugOverlayシーンに置いて使います。
-// - エディタ実行時のみ動作します。
+// - エディタ実行時とDevelopment Buildで動作します。
 // ------------------------------------------------------------
 using Game.Core.Enemy;
 using Game.Core.Management;
+using Game.Gameplay.Enemy.Boss;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Core.Events;
@@ -34,7 +35,7 @@ namespace Game.DebugTools
 
         private void Update()
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (!_isEnabled || Keyboard.current == null)
             {
                 return;
@@ -74,6 +75,12 @@ namespace Game.DebugTools
             if (Keyboard.current.f7Key.wasPressedThisFrame)
             {
                 JumpToGameOver();
+            }
+
+            // F8: 戦闘中のボスを撃破する
+            if (Keyboard.current.f8Key.wasPressedThisFrame)
+            {
+                DefeatBosses();
             }
 #endif
         }
@@ -183,6 +190,56 @@ namespace Game.DebugTools
             //GameProgressionManagerBase.Instance.DebugJumpToGameOver();
             EventBus.Publish(new DefLineBreakReactionEvent(90000, new Vector3()));
 
+        }
+
+
+        /// <summary>
+        /// 戦闘中のボスを撃破扱いにします。
+        /// 通常の勝利処理を通すので、撃破演出・Wave完了判定がそのまま走ります。
+        /// </summary>
+        private static void DefeatBosses()
+        {
+            int defeatedCount = 0;
+
+            // ボッチャ・天秤ボス
+            BossBattleFlowController[] flowControllers = Object.FindObjectsByType<BossBattleFlowController>(FindObjectsSortMode.None);
+
+            foreach (BossBattleFlowController flow in flowControllers)
+            {
+                if (flow == null || !flow.IsBattleActive)
+                {
+                    continue;
+                }
+
+                // 開幕演出中に勝利させると、演出終了後に戦闘が再開してしまうので対象外
+                BossBattleFlowState state = flow.CurrentState;
+                if (state == BossBattleFlowState.Intro || state == BossBattleFlowState.Victory || state == BossBattleFlowState.Defeat)
+                {
+                    continue;
+                }
+
+                flow.TriggerVictory();
+                defeatedCount++;
+            }
+
+            // ジャックフラワーボス
+            BossBattleController[] battleControllers = Object.FindObjectsByType<BossBattleController>(FindObjectsSortMode.None);
+
+            foreach (BossBattleController battle in battleControllers)
+            {
+                if (battle != null && battle.DebugForceDefeat())
+                {
+                    defeatedCount++;
+                }
+            }
+
+            if (defeatedCount == 0)
+            {
+                Debug.Log("[StageDebug] F8: 撃破できるボスがいません。(開幕演出中は無効です)");
+                return;
+            }
+
+            Debug.Log($"[StageDebug] F8: ボス{defeatedCount}体を撃破しました。");
         }
     }
 }

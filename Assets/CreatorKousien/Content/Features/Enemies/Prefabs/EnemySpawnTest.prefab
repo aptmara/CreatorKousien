@@ -50,13 +50,13 @@ MonoBehaviour:
     LoopVFXPrefab: {fileID: 8035996757950515496, guid: 170793df188586a41bad20c0bff1a0b2, type: 3}
     DeathVFXPrefab: {fileID: 764230422517785610, guid: a3903a9f1a5a421439e626b15ab82bf2, type: 3}
     OverlayMaterial: {fileID: 2100000, guid: 93aad8f6debfb4b49a80725137d766e4, type: 2}
-    ChildScale: {x: 3.63, y: 3.63, z: 3.63}
+    ChildScale: {x: 4.63, y: 4.63, z: 4.63}
   - DebuffType: Ice
     LoopVFXPrefab: {fileID: 8521017165506079719, guid: ff5b1301f5cdbc046b8000c9a85be2f2, type: 3}
     DeathVFXPrefab: {fileID: 3140498029041030553, guid: 6c17ff86033df8e41b754e11780e86d8, type: 3}
     OverlayMaterial: {fileID: 2100000, guid: 32a997adbcf97d346882114aa4a4dffe, type: 2}
-    ChildScale: {x: 3.63, y: 3.63, z: 3.63}
+    ChildScale: {x: 4.63, y: 4.63, z: 4.63}
   _statusAilmentVFXRoot: {fileID: 0}
-  _statusAilmentVFXOffset: {x: 0, y: -0.83, z: -2.01}
+  _statusAilmentVFXOffset: {x: 0, y: 0.8, z: -1.31}
   _spawnBasePoint: {fileID: 8125261586118470773}
   _undergroundOffset: 10
