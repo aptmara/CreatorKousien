@@ -122,6 +122,10 @@ namespace Game.Gameplay.Cameras
 
             UpdateCameraTransformInstant();
         }
+        /// <summary>
+        /// 演出モード中かどうか。演出終了時に「演出前の状態」に戻すために参照
+        /// </summary>
+        public bool IsCinematicModeActive => _isCinematicMode;
 
         /// <summary>
         /// 外部から、通常の追従・固定処理を一時停止させるための関数
