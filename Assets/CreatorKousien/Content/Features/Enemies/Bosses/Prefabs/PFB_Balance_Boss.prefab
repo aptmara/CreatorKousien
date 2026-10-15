@@ -1223,7 +1223,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4498fce7b035e7344838e57eb486077b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossBalanceIntroPresenter
-  _pattern: 2
+  _pattern: 0
   _pattern1Steps:
   - _stepName: "\u5DE6\u4E0B\u304B\u3089\u51FA\u73FE"
     _snapToStartOffset: 1
