@@ -73,7 +73,42 @@ public class RealisticBalanceScale : MonoBehaviour
         _angularVelocity += acceleration * Time.fixedDeltaTime;
         _currentAngle += _angularVelocity * Time.fixedDeltaTime;
 
-        _beamTransform.localRotation = Quaternion.Euler(0, 0, _currentAngle);
+        ApplyPose();
+    }
+
+
+    //=================-
+    // 演出用
+    //=================-
+
+    private bool _presentationDriven;
+    private float _presentationAngle;
+
+    public void SetPresentationDriven(bool driven)
+    {
+        _presentationDriven = driven;
+
+        if(!driven)
+        {
+            _presentationAngle = 0.0f;
+            ApplyPose();
+        }
+    }
+
+    public void SetPresentationAngle(float degrees) => _presentationAngle = degrees;
+
+    private void LateUpdate()
+    {
+        if (!_presentationDriven) return;
+        ApplyPose();
+    }
+
+    private void ApplyPose()
+    {
+        if(_beamTransform != null)
+        {
+            _beamTransform.localRotation = Quaternion.Euler(0, 0, _currentAngle + _presentationAngle);
+        }
 
         UpdatePanTransform(_leftPanTransform, _leftPanAnchor, isLeft: true);
         UpdatePanTransform(_rightPanTransform, _rightPanAnchor, isLeft: false);

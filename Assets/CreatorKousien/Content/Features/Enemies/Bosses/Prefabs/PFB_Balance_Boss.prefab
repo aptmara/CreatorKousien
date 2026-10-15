@@ -934,6 +934,38 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &7973219974591592250
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2384737778054076767}
+  m_Layer: 0
+  m_Name: BossModelAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2384737778054076767
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7973219974591592250}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5264191776173235085}
+  m_Father: {fileID: 6479304743537242019}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8026623090168344250
 GameObject:
   m_ObjectHideFlags: 0
@@ -1001,6 +1033,8 @@ GameObject:
   - component: {fileID: 4916870854334847704}
   - component: {fileID: 1830859312870177099}
   - component: {fileID: 2705253161281346588}
+  - component: {fileID: 2132238556540472440}
+  - component: {fileID: 386927087053871441}
   m_Layer: 0
   m_Name: PFB_Balance_Boss
   m_TagString: Untagged
@@ -1022,7 +1056,7 @@ Transform:
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2197388475887105276}
-  - {fileID: 5264191776173235085}
+  - {fileID: 2384737778054076767}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5034448964020674823
@@ -1177,13 +1211,635 @@ MonoBehaviour:
   _scale: {fileID: 1387062995938564052}
   _launchImpulsePerMass: 3
   _minLaunchImpulse: 3
+--- !u!114 &2132238556540472440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8983832462583435428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4498fce7b035e7344838e57eb486077b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossBalanceIntroPresenter
+  _pattern: 0
+  _pattern1Steps:
+  - _stepName: "\u5DE6\u4E0B\u304B\u3089\u51FA\u73FE"
+    _snapToStartOffset: 1
+    _startOffset: {x: -12, y: -14, z: 0}
+    _targetOffset: {x: -12, y: -3, z: 0}
+    _moveDuration: 0.7
+    _moveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _holdDuration: 0.9
+    _bobPans: 1
+    _bobAngle: 22
+    _bobFrequency: 2.4
+    _spinRotations: 0
+    _cameraAction: 0
+    _cameraBlendDuration: 0
+    _arriveShake: 0.15
+  - _stepName: "\u5DE6\u4E0B\u3078\u623B\u308B"
+    _snapToStartOffset: 0
+    _startOffset: {x: -12, y: -3, z: 0}
+    _targetOffset: {x: -12, y: -14, z: 0}
+    _moveDuration: 0.45
+    _moveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _holdDuration: 0.1
+    _bobPans: 1
+    _bobAngle: 22
+    _bobFrequency: 2.4
+    _spinRotations: 0
+    _cameraAction: 0
+    _cameraBlendDuration: 0
+    _arriveShake: 0
+  - _stepName: "\u53F3\u4E0B\u304B\u3089\u51FA\u73FE"
+    _snapToStartOffset: 1
+    _startOffset: {x: 12, y: -14, z: 0}
+    _targetOffset: {x: 12, y: -3, z: 0}
+    _moveDuration: 0.7
+    _moveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _holdDuration: 0.9
+    _bobPans: 1
+    _bobAngle: 22
+    _bobFrequency: 2.4
+    _spinRotations: 0
+    _cameraAction: 0
+    _cameraBlendDuration: 0
+    _arriveShake: 0.15
+  - _stepName: "\u53F3\u4E0B\u3078\u623B\u308B"
+    _snapToStartOffset: 0
+    _startOffset: {x: 12, y: -3, z: 0}
+    _targetOffset: {x: 12, y: -14, z: 0}
+    _moveDuration: 0.45
+    _moveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _holdDuration: 0.1
+    _bobPans: 1
+    _bobAngle: 22
+    _bobFrequency: 2.4
+    _spinRotations: 0
+    _cameraAction: 0
+    _cameraBlendDuration: 0
+    _arriveShake: 0
+  - _stepName: "\u4E2D\u592E\u3067\uFF12\u56DE\u8EE2"
+    _snapToStartOffset: 1
+    _startOffset: {x: 0, y: -14, z: 0}
+    _targetOffset: {x: 0, y: 0, z: 0}
+    _moveDuration: 1.3
+    _moveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.7
+        value: 1.1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _holdDuration: 0.7
+    _bobPans: 0
+    _bobAngle: 22
+    _bobFrequency: 2.4
+    _spinRotations: 2
+    _cameraAction: 1
+    _cameraBlendDuration: 1.1
+    _arriveShake: 0.4
+  _pattern2Steps:
+  - _stepName: "\u5DE6\u304B\u3089\u51FA\u73FE"
+    _snapToStartOffset: 1
+    _startOffset: {x: -30, y: 0, z: 0}
+    _targetOffset: {x: -15, y: 0, z: 0}
+    _moveDuration: 0.45
+    _moveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _holdDuration: 0.5
+    _bobPans: 0
+    _bobAngle: 22
+    _bobFrequency: 2.4
+    _spinRotations: 0
+    _cameraAction: 0
+    _cameraBlendDuration: 0
+    _arriveShake: 0.1
+  - _stepName: "\u5DE6\u3078\u623B\u308B"
+    _snapToStartOffset: 0
+    _startOffset: {x: -15, y: 0, z: 0}
+    _targetOffset: {x: -30, y: 0, z: 0}
+    _moveDuration: 0.3
+    _moveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _holdDuration: 0.2
+    _bobPans: 0
+    _bobAngle: 22
+    _bobFrequency: 2.4
+    _spinRotations: 0
+    _cameraAction: 0
+    _cameraBlendDuration: 0
+    _arriveShake: 0
+  - _stepName: "\u53F3\u304B\u3089\u51FA\u73FE"
+    _snapToStartOffset: 1
+    _startOffset: {x: 30, y: 0, z: 0}
+    _targetOffset: {x: 15, y: 0, z: 0}
+    _moveDuration: 0.45
+    _moveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _holdDuration: 0.5
+    _bobPans: 0
+    _bobAngle: 22
+    _bobFrequency: 2.4
+    _spinRotations: 0
+    _cameraAction: 0
+    _cameraBlendDuration: 0
+    _arriveShake: 0.1
+  - _stepName: "\u53F3\u3078\u623B\u308B"
+    _snapToStartOffset: 0
+    _startOffset: {x: 15, y: 0, z: 0}
+    _targetOffset: {x: 30, y: 0, z: 0}
+    _moveDuration: 0.3
+    _moveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _holdDuration: 0.2
+    _bobPans: 1
+    _bobAngle: 22
+    _bobFrequency: 2.4
+    _spinRotations: 0
+    _cameraAction: 0
+    _cameraBlendDuration: 0
+    _arriveShake: 0
+  - _stepName: "\u4E0B\u304B\u3089\u51FA\u73FE"
+    _snapToStartOffset: 1
+    _startOffset: {x: 0, y: -10, z: 0}
+    _targetOffset: {x: 0, y: -2, z: 0}
+    _moveDuration: 0.45
+    _moveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _holdDuration: 0.5
+    _bobPans: 0
+    _bobAngle: 22
+    _bobFrequency: 2.4
+    _spinRotations: 0
+    _cameraAction: 0
+    _cameraBlendDuration: 0
+    _arriveShake: 0.1
+  - _stepName: "\u4E0B\u3078\u623B\u308B"
+    _snapToStartOffset: 0
+    _startOffset: {x: 0, y: -2, z: 0}
+    _targetOffset: {x: 0, y: -10, z: 0}
+    _moveDuration: 0.6
+    _moveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _holdDuration: 0.8
+    _bobPans: 0
+    _bobAngle: 22
+    _bobFrequency: 2.4
+    _spinRotations: 0
+    _cameraAction: 0
+    _cameraBlendDuration: 0
+    _arriveShake: 0
+  - _stepName: "\u4E0B\u3078\u623B\u308B"
+    _snapToStartOffset: 0
+    _startOffset: {x: 0, y: -10, z: 0}
+    _targetOffset: {x: 0, y: 0, z: 0}
+    _moveDuration: 0.6
+    _moveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.7
+        value: 1.1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    _holdDuration: 0.8
+    _bobPans: 0
+    _bobAngle: 22
+    _bobFrequency: 2.4
+    _spinRotations: 0
+    _cameraAction: 1
+    _cameraBlendDuration: 0.6
+    _arriveShake: 0.5
+  _startDelay: 0.3
+  _finishDelay: 0.3
+  _moveRoot: {fileID: 6479304743537242019}
+  _scale: {fileID: 1387062995938564052}
+  _disableColliderDuringIntro: 1
+  _battleBasePosition: {x: 0, y: -10, z: -10}
+  _targetCamera: {fileID: 0}
+  _cameraRigController: {fileID: 0}
+  _cameraProjectionMode: 1
+  _cameraBlendCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _cameraConfig: {fileID: 11400000, guid: 1c476a725e63dab4ba0182d0cc3e495e, type: 2}
+  _cameraMoveDuration: 1
+  _zoomInRatio: 0.45
+  _zoomFocusOffset: {x: 0, y: 1.5, z: 0}
+  _cameraCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _returnCameraDuration: 0.8
+  _playEdgeWarning: 1
+  _arriveShakeDuration: 0
+  _arriveShakeFrequency: 30
+--- !u!114 &386927087053871441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8983832462583435428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f092778cfe2feb46a95e880bd49514f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Enemy.Boss.BossBalanceRevealCloseUpPresenter
+  _director: {fileID: 0}
+  _targetCamera: {fileID: 0}
+  _cameraRigController: {fileID: 0}
+  _closeUpDistance: 12
+  _closeUpOrthoSize: 2.5
+  _closeUpFovOffset: 0
+  _focusOffset: {x: 0, y: 0, z: 0}
+  _rollDegrees: 4
+  _zoomInDuration: 0.5
+  _holdDuration: 1
+  _zoomOutDuration: 0.8
+  _zoomInCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 3
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _zoomOutCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _useSlowMotion: 1
+  _slowTimeScale: 0.15
+  _maxQueue: 4
+  _onCloseUpStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  _onCloseUpEnded:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &5657809737843735654
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 6479304743537242019}
+    m_TransformParent: {fileID: 2384737778054076767}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
       propertyPath: m_LocalScale.x
@@ -1215,7 +1871,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
       propertyPath: m_LocalRotation.y
@@ -1223,7 +1879,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2674086d7151e7243a65a5b9a6c0e0bd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
