@@ -10,6 +10,7 @@ public class FreeLookCamera : MonoBehaviour
     [SerializeField] InputAction _cameraInput;
     [SerializeField] InputAction _lookInput;
     [SerializeField] InputAction _useInput;
+    [SerializeField] InputAction _lookMoveInput;
 
     [SerializeField] InputAction _speedInput;
 
@@ -21,6 +22,9 @@ public class FreeLookCamera : MonoBehaviour
 
     bool _isSafeInit = false;
     bool _isUse = false;
+    bool _isPlayerMove = false;
+
+    int _mode = 2;
 
     float _speedUpValue;
     [SerializeField] int _priority;
@@ -36,6 +40,7 @@ public class FreeLookCamera : MonoBehaviour
         _lookInput.Enable();
         _useInput.Enable();
         _speedInput.Enable();
+        _lookMoveInput.Enable();
     }
 
     private void OnDisable()
@@ -44,6 +49,7 @@ public class FreeLookCamera : MonoBehaviour
         _lookInput.Disable();
         _useInput.Disable();
         _speedInput.Disable();
+        _lookMoveInput.Disable();
     }
 
     private IEnumerator Start()
@@ -88,6 +94,8 @@ public class FreeLookCamera : MonoBehaviour
 
         _camera.depth = _priority;
         _speedUpValue = _moveSpeed * 0.1f;
+
+        CameraToggle();
     }
 
     private void Update()
@@ -120,16 +128,44 @@ public class FreeLookCamera : MonoBehaviour
         return _useInput.triggered;
     }
 
+    private bool LookMoveToggleCheck()
+    {
+        return _lookMoveInput.triggered;
+    }
+
     private void CameraToggle()
     {
-        _isUse = !_isUse;
+        _mode++;
+        _mode %= 3;
 
-        if(_isUse)
+        switch (_mode)
+        {
+            case 0:
+                {
+                    _isUse = true;
+                    _isPlayerMove = false;
+                }
+                break;
+            case 1:
+                {
+                    _isUse = false;
+                    _isPlayerMove = true;
+                }
+                break;
+            case 2:
+                {
+                    _isUse = true;
+                    _isPlayerMove = true;
+                }
+                break;
+
+        }
+        if (_isUse)
         {
             _playerController.SetCanMove(false);
             _playerInput.enabled = false;
         }
-        else
+        if (_isPlayerMove)
         {
             _playerController.SetCanMove(true);
             _playerInput.enabled = true;
