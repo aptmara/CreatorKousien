@@ -2113,7 +2113,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BossHitReceiver
   _flowController: {fileID: 7013348292912107979}
   _minimumHitSpeed: 0.75
-  _damageMultiplier: 1.5
+  _damageMultiplier: 0.1
   _despawnItemOnHit: 1
 --- !u!135 &8126121512178337333
 SphereCollider:
